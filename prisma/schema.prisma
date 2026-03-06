@@ -1,0 +1,17 @@
+model Listing {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  source       String?
+  externalId   String?  @unique
+  title        String?
+  city         String?
+  zipcode      String?
+  address      String?
+  priceCHF     Int?
+  rooms        Float?
+  livingAreaM2 Float?
+  features     String?
+  raw          String?
+}
