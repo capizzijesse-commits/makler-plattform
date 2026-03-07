@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import ThemeSwitcher from "@/app/components/ThemeSwitcher";
+
 import Footer from "@/app/components/Footer";
 
 export const metadata: Metadata = {
@@ -16,16 +16,16 @@ export default function RootLayout({
   return (
     <html lang="de-CH">
       <body>
-        <header className="border-b" style={{ borderColor: "rgb(var(--border))" }}>
+          
           <div className="container-max py-5 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="badge">Makler</div>
-              <div className="font-semibold">Inserat Generator</div>
+              
             </div>
 
-            <ThemeSwitcher />
+           
+          
           </div>
-        </header>
+      
 
         {children}
 
@@ -42,5 +42,4 @@ export default function RootLayout({
     </div>
   </div>
 
-  <ThemeSwitcher />
 </header>

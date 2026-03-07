@@ -5,196 +5,665 @@ import { useMemo, useState } from "react";
 type Variant = {
   title: string;
   text: string;
-  highlights: string[];
+  highlights?: string[];
+  cta?: string;
 };
 
-function formatStandard(v: Variant) {
-  return [
-    v.title,
-    "",
-    v.text,
-    "",
-    "Highlights:",
-    ...v.highlights.map((h) => `• ${h}`),
-  ].join("\n");
-}
+export default function Page() {
+  const [location, setLocation] = useState("Winterthur");
+  const [propertyType, setPropertyType] = useState("Wohnung");
+  const [rooms, setRooms] = useState("4.5");
+  const [livingArea, setLivingArea] = useState("110");
+  const [price, setPrice] = useState("1'090'000");
+  const [style, setStyle] = useState("Luxus / Premium");
+  const [tone, setTone] = useState("Professionell, modern, vertrauenswürdig");
+  const [extras, setExtras] = useState("Balkon | Lift | Garage | Ruhige Lage");
 
-function formatHomegate(v: Variant) {
-  // Homegate: eher kompakt, klare Absätze + Highlights
-  return [
-    v.title.toUpperCase(),
-    "",
-    v.text,
-    "",
-    v.highlights.map((h) => `- ${h}`).join("\n"),
-    "",
-    "Kontakt: Helvetic Immobilien Capizzi",
-  ].join("\n");
-}
+  const [images, setImages] = useState<File[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [variants, setVariants] = useState<Variant[]>([]);
+  const [active, setActive] = useState(0);
+  const [freeCredits, setFreeCredit] = useState(5)
 
-function formatImmoScout(v: Variant) {
-  // ImmoScout: lesbar, Bulletpoints + kurzer CTA
-  return [
-    v.title,
-    "",
-    v.text,
-    "",
-    "Vorteile:",
-    v.highlights.map((h) => `• ${h}`).join("\n"),
-    "",
-    "Jetzt Besichtigung anfragen.",
-  ].join("\n");
-}
-
-async function copyToClipboard(text: string) {
-  await navigator.clipboard.writeText(text);
-}
-
-export default function DashboardPage() {
-  // 🔒 “Unlocked” (später Abo/Login). Für jetzt: true damit du testen kannst.
-  // Wenn du "copy" sperren willst: return false
   const isUnlocked = useMemo(() => true, []);
 
-  const [activePortal, setActivePortal] = useState<"standard" | "homegate" | "immoscout">("standard");
-
-  // Demo-Varianten (später kommen die von deiner API)
-  const [variants, setVariants] = useState<Variant[]>([
-    {
-      title: "Moderne 3.5-Zimmer-Wohnung in Winterthur – hell & zentral",
-      text:
-        "Diese attraktive Wohnung überzeugt mit einem klaren Grundriss, viel Tageslicht und einer Lage, die Alltag und Lebensqualität perfekt verbindet. Ideal für Paare oder kleine Familien, die Komfort und Nähe zur Stadt schätzen.",
-      highlights: ["3.5 Zimmer", "Helle Räume", "Zentrale Lage", "Guter Grundriss", "ÖV & Einkauf in Nähe"],
-    },
-    {
-      title: "Charmantes Zuhause mit durchdachter Raumaufteilung",
-      text:
-        "Ein Objekt, das mit Atmosphäre punktet: moderne Linien, angenehme Proportionen und eine Umgebung, in der man sich sofort wohlfühlt. Einziehen, ankommen, geniessen.",
-      highlights: ["Wohnqualität", "Praktische Aufteilung", "Angenehmes Wohngefühl", "Nahe Infrastruktur"],
-    },
-    {
-      title: "Stilvoll wohnen – effizient, ruhig und wertbeständig",
-      text:
-        "Wer Wert auf Stil, Ruhe und eine clevere Flächennutzung legt, findet hier die passende Basis. Ob Eigennutzung oder Investment: die Kombination aus Lage und Konzept überzeugt.",
-      highlights: ["Ruhige Umgebung", "Effiziente Fläche", "Wertige Basis", "Gutes Potenzial"],
-    },
-  ]);
-
-  function getPortalText(v: Variant) {
-    if (activePortal === "homegate") return formatHomegate(v);
-    if (activePortal === "immoscout") return formatImmoScout(v);
-    return formatStandard(v);
+  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!e.target.files) return;
+    const files = Array.from(e.target.files);
+    setImages(files);
   }
 
+  async function generate() {
+    if (freeCredits <= 0) {
+      alert("Gratislimit erreich. Bitte Upgrate anfordern.");
+      return;
+    }
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          location,
+          propertyType,
+          rooms,
+          livingArea,
+          price,
+          style,
+          tone,
+          extras,
+          variants: 3,
+        }),
+      });
+
+      const text = await res.text();
+
+      let json: any;
+      try {
+        json = JSON.parse(text);
+      } catch {
+        alert(text || "Fehler beim Generieren.");
+        return;
+      }
+
+      if (!res.ok) {
+        alert(json?.error || "Fehler beim Generieren.");
+        return;
+      }
+
+      setVariants(json?.variants ?? []);
+      setActive(0);
+      setFreeCredit((prev) => Math.max(prev - 1, 0));
+    } catch (error) {
+      console.error(error);
+      alert("Verbindungsfehler beim Generieren.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function copyActive() {
+    if (!current) return;
+
+    const fullText = [
+      current.title || "",
+      "",
+      current.text || "",
+      "",
+      ...(current.highlights || []),
+      "",
+      current.cta ? `CTA: ${current.cta}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    await navigator.clipboard.writeText(fullText);
+    alert("Kopiert!");
+  }
+
+  function copyPortal(portal: string) {
+    if (!current) return;
+
+    const highlightsText =
+      current.highlights && current.highlights.length > 0
+        ? `\n\nHighlights:\n- ${current.highlights.join("\n- ")}`
+        : "";
+
+    const ctaText = current.cta ? `\n\n${current.cta}` : "";
+
+    let text = `${current.title}\n\n${current.text}${highlightsText}${ctaText}`;
+
+    if (portal === "homegate") {
+      text = `🏡 Immobilienangebot\n\n${text}\n\nJetzt Besichtigung vereinbaren.`;
+    }
+
+    if (portal === "immoscout") {
+      text = `Immobilieninserat\n\n${text}\n\nKontaktieren Sie uns für weitere Informationen.`;
+    }
+
+    if (portal === "social") {
+      text = `✨ Neue Immobilie im Angebot!\n\n${text}\n\n#immobilien #wohnung #haus`;
+    }
+
+    navigator.clipboard.writeText(text);
+    alert(`${portal} kopiert!`);
+  }
+
+  function downloadPdfPlaceholder() {
+    if (!current) return;
+
+    const fullText = [
+      current.title || "",
+      "",
+      current.text || "",
+      "",
+      "Highlights:",
+      ...(current.highlights || []),
+      "",
+      current.cta ? `CTA: ${current.cta}` : "",
+    ].join("\n");
+
+    const blob = new Blob([fullText], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "immobilien-inserat.pdf";
+    a.click();
+
+    URL.revokeObjectURL(url);
+  }
+
+  const current = variants?.[active];
+
   return (
-    <main className="min-h-screen">
-      <div className="container-max py-10">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
-            <p className="text-muted mt-2">
-              Portal-Outputs (Standard / Homegate / ImmoScout) + Copy-Buttons. Theme ist oben rechts.
-            </p>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#111827",
+        color: "#F9FAFB",
+        padding: "28px",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "1600px",
+          margin: "0 auto",
+          display: "grid",
+          gridTemplateColumns: "1.15fr 0.85fr",
+          gap: "24px",
+        }}
+      >
+        <section
+          style={{
+            background: "#111827",
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: "20px",
+            padding: "18px",
+          }}
+        >
+          <div
+            style={{
+              display: "inline-block",
+              padding: "7px 12px",
+              borderRadius: "999px",
+              background: "rgba(200,162,77,0.14)",
+              border: "1px solid rgba(200,162,77,0.35)",
+              color: "#E7C97F",
+              fontSize: "13px",
+              fontWeight: 700,
+              marginBottom: "16px",
+            }}
+          >
+            Premium Inserat Generator
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="badge">Copy: {isUnlocked ? "aktiv" : "gesperrt"}</span>
-          </div>
-        </div>
-
-        {/* Portal Tabs */}
-        <div className="mt-8 flex flex-wrap gap-2">
-          <button
-            className={`btn ${activePortal === "standard" ? "btn-accent" : "btn-ghost"}`}
-            onClick={() => setActivePortal("standard")}
+          <h1
+            style={{
+              fontSize: "28px",
+              lineHeight: 1.15,
+              fontWeight: 800,
+              margin: 0,
+            }}
           >
-            Standard
-          </button>
-          <button
-            className={`btn ${activePortal === "homegate" ? "btn-accent" : "btn-ghost"}`}
-            onClick={() => setActivePortal("homegate")}
+            Inserate in Sekunden – hochwertig & verkaufsstark
+          </h1>
+
+          <p
+            style={{
+              marginTop: "10px",
+              color: "#9CA3AF",
+              lineHeight: 1.7,
+              maxWidth: "760px",
+            }}
           >
-            Homegate
-          </button>
-          <button
-            className={`btn ${activePortal === "immoscout" ? "btn-accent" : "btn-ghost"}`}
-            onClick={() => setActivePortal("immoscout")}
-          >
-            ImmoScout24
-          </button>
-        </div>
-
-        {/* Variants */}
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          {variants.map((v, idx) => {
-            const text = getPortalText(v);
-
-            return (
-              <div key={idx} className="card p-4">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="font-semibold">Variante {idx + 1}</div>
-                  <span className="badge">{activePortal}</span>
-                </div>
-
-                <div className="mt-3 text-sm whitespace-pre-wrap text-muted">
-                  {text}
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <button
-                    className="btn btn-accent"
-                    onClick={async () => {
-                      if (!isUnlocked) return alert("Copy ist gesperrt (später Abo/Login).");
-                      await copyToClipboard(text);
-                      alert("✅ Kopiert!");
-                    }}
-                  >
-                    Copy
-                  </button>
-
-                  <button
-                    className="btn btn-ghost"
-                    onClick={() => {
-                      // Quick edit title to show it works
-                      const next = [...variants];
-                      next[idx] = { ...next[idx], title: next[idx].title + " ✓" };
-                      setVariants(next);
-                    }}
-                  >
-                    Titel markieren
-                  </button>
-                </div>
-
-                {!isUnlocked && (
-                  <div className="mt-3 text-xs text-muted">
-                    Copy ist absichtlich deaktiviert. Später wird hier Login/Abo angebunden.
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Social share quick links */}
-        <div className="mt-10 card p-5">
-          <div className="font-semibold">Teilen</div>
-          <p className="text-muted text-sm mt-1">
-            Diese Buttons verknüpfen sofort mit Social Media (Share-Link). Für echtes Auto-Posting
-            braucht es API/Partnerzugang.
+            Fokus: Schweizer Markt, klare Struktur, luxuriöses Wording ohne unseriöse Übertreibungen.
           </p>
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            <a className="btn btn-ghost" target="_blank" rel="noreferrer"
-               href="https://wa.me/?text=Schau%20dir%20dieses%20Inserat%20an%20(Platzhalter)%20https%3A%2F%2Fdeine-domain.ch">
-              WhatsApp Share
-            </a>
-
-            <a className="btn btn-ghost" target="_blank" rel="noreferrer"
-               href="https://t.me/share/url?url=https%3A%2F%2Fdeine-domain.ch&text=Inserat%20(Platzhalter)">
-              Telegram Share
-            </a>
+          <div style={{ marginTop: "20px" }}>
+            <button
+  onClick={generate}
+  disabled={loading || freeCredits <= 0}
+              style={{
+                background: "#0EA5E9",
+                color: "#FFFFFF",
+                border: "none",
+                borderRadius: "10px",
+                padding: "12px 18px",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+             {loading
+  ? "Generiere..."
+  : freeCredits <= 0
+    ? "Gratislimit erreicht"
+    : "Generieren (3 Varianten)"}
+            </button>
           </div>
-        </div>
+         <div
+  style={{
+    marginTop: "12px",
+    fontSize: "14px",
+    color: freeCredits > 0 ? "#E7C97F" : "#FCA5A5",
+    fontWeight: 700,
+  }}
+>
+  Verbleibend: {freeCredits} / 5 Gratis-Inserate
+</div> 
+{freeCredits <= 0 && (
+  <div
+    style={{
+      marginTop: "14px",
+      padding: "14px",
+      borderRadius: "12px",
+      background: "rgba(248,113,113,0.10)",
+      border: "1px solid rgba(248,113,113,0.25)",
+    }}
+  >
+    <div
+      style={{
+        color: "#FCA5A5",
+        fontWeight: 800,
+        fontSize: "14px",
+      }}
+    >
+      Gratislimit erreicht
+    </div>
+
+    <div
+      style={{
+        marginTop: "6px",
+        color: "#D1D5DB",
+        fontSize: "14px",
+        lineHeight: 1.6,
+      }}
+    >
+      Upgrade ab 29 CHF / Monat oder Testmonat anfragen.
+    </div>
+
+    <a
+      href="/kontakt"
+      style={{
+        display: "inline-block",
+        marginTop: "12px",
+        background: "#C8A24D",
+        color: "#FFFFFF",
+        padding: "10px 16px",
+        borderRadius: "10px",
+        textDecoration: "none",
+        fontWeight: 700,
+      }}
+    >
+      Upgrade anfragen
+    </a>
+  </div>
+)}
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "16px",
+              marginTop: "24px",
+            }}
+          >
+            <div>
+              <div style={labelStyle}>Ort / Lage</div>
+              <input value={location} onChange={(e) => setLocation(e.target.value)} style={inputStyle} />
+            </div>
+
+            <div>
+              <div style={labelStyle}>Objektart</div>
+              <select value={propertyType} onChange={(e) => setPropertyType(e.target.value)} style={inputStyle}>
+                <option>Wohnung</option>
+                <option>Haus</option>
+                <option>Villa</option>
+                <option>Attika</option>
+                <option>Gewerbe</option>
+              </select>
+            </div>
+
+            <div style={{ gridColumn: "1 / -1" }}>
+              <div style={labelStyle}>Bilder hochladen</div>
+              <input type="file" multiple accept="image/*" onChange={handleImageUpload} style={{ color: "#E5E7EB" }} />
+            </div>
+
+            <div>
+              <div style={labelStyle}>Zimmer</div>
+              <input value={rooms} onChange={(e) => setRooms(e.target.value)} style={inputStyle} />
+            </div>
+
+            <div>
+              <div style={labelStyle}>Wohnfläche (m²)</div>
+              <input value={livingArea} onChange={(e) => setLivingArea(e.target.value)} style={inputStyle} />
+            </div>
+
+            <div>
+              <div style={labelStyle}>Preis (CHF)</div>
+              <input value={price} onChange={(e) => setPrice(e.target.value)} style={inputStyle} />
+            </div>
+
+            <div>
+              <div style={labelStyle}>Stil</div>
+              <select value={style} onChange={(e) => setStyle(e.target.value)} style={inputStyle}>
+                <option>Luxus / Premium</option>
+                <option>Modern</option>
+                <option>Minimalistisch</option>
+                <option>Klassisch</option>
+              </select>
+            </div>
+
+            <div>
+              <div style={labelStyle}>Ton / Sprache</div>
+              <input value={tone} onChange={(e) => setTone(e.target.value)} style={inputStyle} />
+            </div>
+
+            <div>
+              <div style={labelStyle}>Highlights (mit | trennen)</div>
+              <input value={extras} onChange={(e) => setExtras(e.target.value)} style={inputStyle} />
+            </div>
+          </div>
+        </section>
+
+        <aside
+          style={{
+            background: "#111827",
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: "20px",
+            padding: "18px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: "12px",
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  display: "inline-block",
+                  padding: "7px 12px",
+                  borderRadius: "999px",
+                  background: "rgba(200,162,77,0.14)",
+                  border: "1px solid rgba(200,162,77,0.35)",
+                  color: "#E7C97F",
+                  fontSize: "13px",
+                  fontWeight: 700,
+                }}
+              >
+                Output
+              </div>
+
+              <div style={{ marginTop: "10px", fontSize: "18px", fontWeight: 800 }}>
+                Variante {active + 1} aktiv
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              <button onClick={downloadPdfPlaceholder} disabled={!current} style={smallBtnStyle}>
+                PDF
+              </button>
+
+              <button
+                onClick={copyActive}
+                disabled={!current || !isUnlocked}
+                style={{
+                  ...smallBtnStyle,
+                  background: "#0EA5E9",
+                  color: "#FFFFFF",
+                  border: "none",
+                }}
+              >
+                Copy
+              </button>
+
+              <button onClick={() => copyPortal("homegate")} disabled={!current} style={smallBtnStyle}>
+                Homegate
+              </button>
+
+              <button onClick={() => copyPortal("immoscout")} disabled={!current} style={smallBtnStyle}>
+                ImmoScout
+              </button>
+
+              <button onClick={() => copyPortal("social")} disabled={!current} style={smallBtnStyle}>
+                Social
+              </button>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "8px",
+              flexWrap: "wrap",
+              marginTop: "20px",
+              marginBottom: "18px",
+            }}
+          >
+            {variants.map((v, i) => (
+              <button
+                key={i}
+                onClick={() => setActive(i)}
+                style={{
+                  padding: "10px 14px",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                  border: i === active ? "1px solid #C8A24D" : "1px solid rgba(255,255,255,0.1)",
+                  background: i === active ? "rgba(200,162,77,0.18)" : "transparent",
+                  color: "#F9FAFB",
+                  fontWeight: i === active ? 800 : 500,
+                }}
+              >
+                Variante {i + 1}
+              </button>
+            ))}
+          </div>
+
+          {!current ? (
+            <div
+              style={{
+                minHeight: "360px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#9CA3AF",
+                border: "1px dashed rgba(255,255,255,0.12)",
+                borderRadius: "18px",
+              }}
+            >
+              Noch nichts generiert.
+            </div>
+          ) : (
+            <div
+              style={{
+                background: "#FFFDF8",
+                border: "1px solid #EADDB8",
+                borderRadius: "22px",
+                padding: "18px",
+                color: "#1F2937",
+                boxShadow: "0 12px 40px rgba(0,0,0,0.08)",
+                maxHeight: "620px",
+                overflowY: "auto",
+              }}
+            >
+              <div
+                style={{
+                  display: "inline-block",
+                  padding: "7px 12px",
+                  borderRadius: "999px",
+                  background: "#F7F1E3",
+                  color: "#8A6A1F",
+                  fontWeight: 700,
+                  fontSize: "13px",
+                  marginBottom: "14px",
+                }}
+              >
+                Premium Inserat
+              </div>
+
+              <h2
+                style={{
+                  fontSize: "20px",
+                  lineHeight: 1.2,
+                  fontWeight: 800,
+                  margin: 0,
+                  color: "#1F2937",
+                }}
+              >
+                {current.title}
+              </h2>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  flexWrap: "wrap",
+                  marginTop: "16px",
+                  marginBottom: "18px",
+                }}
+              >
+                {[`${rooms} Zimmer`, `${livingArea} m²`, propertyType, "Premium Stil"].map((item) => (
+                  <span
+                    key={item}
+                    style={{
+                      background: "#F6F6F6",
+                      padding: "6px 12px",
+                      borderRadius: "20px",
+                      fontWeight: 600,
+                      fontSize: "14px",
+                      color: "#374151",
+                    }}
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+
+              {images.length > 0 && (
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "10px",
+                    flexWrap: "wrap",
+                    marginBottom: "20px",
+                  }}
+                >
+                  {images.slice(0, 3).map((img, i) => (
+                    <img
+                      key={i}
+                      src={URL.createObjectURL(img)}
+                      alt={`Preview ${i + 1}`}
+                      style={{
+                        width: "110px",
+                        height: "72px",
+                        objectFit: "cover",
+                        borderRadius: "10px",
+                        border: "1px solid #E5E7EB",
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+
+              <div
+                style={{
+                  color: "#4B5563",
+                  lineHeight: 1.9,
+                  whiteSpace: "pre-wrap",
+                  fontSize: "13px",
+                }}
+              >
+                {current.text}
+              </div>
+
+              {current.highlights && current.highlights.length > 0 && (
+                <div style={{ marginTop: "24px" }}>
+                  <div
+                    style={{
+                      fontWeight: 800,
+                      color: "#1F2937",
+                      marginBottom: "10px",
+                    }}
+                  >
+                    Highlights
+                  </div>
+
+                  <ul
+                    style={{
+                      paddingLeft: "20px",
+                      lineHeight: 1.9,
+                      color: "#374151",
+                      margin: 0,
+                    }}
+                  >
+                    {current.highlights.map((item, idx) => (
+                      <li key={idx}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {current.cta && (
+                <div
+                  style={{
+                    marginTop: "22px",
+                    padding: "14px 16px",
+                    borderRadius: "12px",
+                    background: "#F8FAFC",
+                    border: "1px solid #E5E7EB",
+                    color: "#374151",
+                  }}
+                >
+                  <strong>CTA:</strong> {current.cta}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div
+            style={{
+              marginTop: "14px",
+              fontSize: "12px",
+              color: "#9CA3AF",
+            }}
+          >
+            Vorschau kann geblurrt werden, Copy läuft später über Abo/Login.
+          </div>
+        </aside>
       </div>
-    </main>
+    </div>
   );
 }
+
+const labelStyle: React.CSSProperties = {
+  fontSize: "13px",
+  color: "#D1D5DB",
+  marginBottom: "6px",
+};
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  background: "#1F2937",
+  color: "#F9FAFB",
+  border: "1px solid rgba(255,255,255,0.1)",
+  borderRadius: "10px",
+  padding: "12px 14px",
+  outline: "none",
+};
+
+const smallBtnStyle: React.CSSProperties = {
+  padding: "10px 14px",
+  borderRadius: "10px",
+  cursor: "pointer",
+  background: "transparent",
+  color: "#F9FAFB",
+  border: "1px solid rgba(255,255,255,0.1)",
+};

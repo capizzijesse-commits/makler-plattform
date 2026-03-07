@@ -1,211 +1,391 @@
-"use client";
+import Navbar from "./components/Navbar";
 
-import { useMemo, useState } from "react";
-
-type Variant = { title: string; text: string };
-
-export default function Page() {
-  const [location, setLocation] = useState("Winterthur");
-  const [propertyType, setPropertyType] = useState("Wohnung");
-  const [rooms, setRooms] = useState("4.5");
-  const [livingArea, setLivingArea] = useState("110");
-  const [price, setPrice] = useState("1'090'000");
-  const [style, setStyle] = useState("Luxus / Premium");
-  const [tone, setTone] = useState("Professionell, modern, vertrauenswürdig");
-  const [extras, setExtras] = useState("Balkon | Lift | Garage | Ruhige Lage");
-
-  const [loading, setLoading] = useState(false);
-  const [variants, setVariants] = useState<Variant[]>([]);
-  const [active, setActive] = useState(0);
-
-  // Copy-Schutz: Preview ist blurred, Copy geht nur über Button
-  const isUnlocked = useMemo(() => {
-    // Später: hier kommt Abo/Login
-    return true; // für jetzt: true, damit du testen kannst
-  }, []);
-
-  async function generate() {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          location,
-          propertyType,
-          rooms,
-          livingArea,
-          price,
-          style,
-          tone,
-          extras,
-          variants: 3,
-        }),
-      });
-      const json = await res.json();
-      setVariants(json?.variants ?? []);
-      setActive(0);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function copyActive() {
-    const v = variants[active];
-    if (!v) return;
-    await navigator.clipboard.writeText(`${v.title}\n\n${v.text}`);
-    alert("✅ Text kopiert");
-  }
-
-  function downloadPdfPlaceholder() {
-    alert("PDF Export ist bei dir bereits integriert – das hängen wir hier sauber an.");
-  }
-
-  const current = variants[active];
-
+export default function Home() {
   return (
-    <div className="grid2">
-      <section className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-          <div>
-            <div className="badge">Premium Inserat Generator</div>
-            <h1 style={{ margin: "12px 0 6px", fontSize: 28, fontWeight: 800 }}>
-              Inserate in Sekunden – hochwertig & verkaufsstark
-            </h1>
-            <div style={{ color: "rgb(var(--muted))", fontSize: 14, maxWidth: 620 }}>
-              Fokus: Schweizer Markt, klare Struktur, luxuriöses Wording ohne unseriöse Übertreibungen.
-            </div>
-          </div>
-
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <button className="btn btnPrimary" onClick={generate} disabled={loading}>
-              {loading ? "Generiere…" : "Generieren (3 Varianten)"}
-            </button>
-          </div>
+    <>
+    <Navbar />
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#F8F6F1",
+        color: "#1F2937",
+        padding: "80px 24px",
+      }}
+    >
+      <section
+        style={{
+          maxWidth: "1100px",
+          margin: "0 auto",
+          textAlign: "center",
+        }}
+      >
+        <div
+          style={{
+            display: "inline-block",
+            padding: "8px 14px",
+            border: "1px solid #E5D7B2",
+            borderRadius: "999px",
+            background: "#FFFDF8",
+            color: "#8A6A1F",
+            fontWeight: 600,
+            fontSize: "14px",
+            marginBottom: "24px",
+          }}
+        >
+          Premium KI für Immobilienmakler
         </div>
 
-        <div style={{ height: 16 }} />
+        <h1
+          style={{
+            fontSize: "56px",
+            lineHeight: 1.05,
+            fontWeight: 800,
+            maxWidth: "950px",
+            margin: "0 auto",
+          }}
+        >
+          Hochwertige Immobilieninserate in Sekunden statt in Stunden.
+        </h1>
 
-        <div className="row">
-          <div>
-            <div className="label">Ort / Lage</div>
-            <input className="input" value={location} onChange={(e) => setLocation(e.target.value)} />
-          </div>
-          <div>
-            <div className="label">Objektart</div>
-            <select className="select" value={propertyType} onChange={(e) => setPropertyType(e.target.value)}>
-              <option>Wohnung</option>
-              <option>Haus</option>
-              <option>Villa</option>
-              <option>Attika</option>
-              <option>Gewerbe</option>
-            </select>
-          </div>
-          <div>
-            <div className="label">Zimmer</div>
-            <input className="input" value={rooms} onChange={(e) => setRooms(e.target.value)} />
-          </div>
-          <div>
-            <div className="label">Wohnfläche (m²)</div>
-            <input className="input" value={livingArea} onChange={(e) => setLivingArea(e.target.value)} />
-          </div>
-          <div>
-            <div className="label">Preis (CHF)</div>
-            <input className="input" value={price} onChange={(e) => setPrice(e.target.value)} />
-          </div>
-          <div>
-            <div className="label">Stil</div>
-            <select className="select" value={style} onChange={(e) => setStyle(e.target.value)}>
-              <option>Luxus / Premium</option>
-              <option>Modern</option>
-              <option>Klassisch</option>
-              <option>Minimalistisch</option>
-              <option>Familienfreundlich</option>
-            </select>
-          </div>
+        <p
+          style={{
+            maxWidth: "760px",
+            margin: "24px auto 0",
+            fontSize: "20px",
+            lineHeight: 1.7,
+            color: "#6B7280",
+          }}
+        >
+          Erstellen Sie professionelle Texte für Immobilienportale, Exposés und
+          Social Media automatisch – aus nur einer Eingabe.
+        </p>
+
+        <div
+          style={{
+            display: "flex",
+            gap: "14px",
+            justifyContent: "center",
+            marginTop: "32px",
+            flexWrap: "wrap",
+          }}
+        >
+          <a
+            href="/dashboard"
+            style={{
+              padding: "14px 28px",
+              background: "#C8A24D",
+              color: "#FFFFFF",
+              borderRadius: "10px",
+              fontWeight: 700,
+              textDecoration: "none",
+              boxShadow: "0 10px 30px rgba(200,162,77,0.25)",
+            }}
+          >
+            Kostenlos testen
+          </a>
+
+          <a
+            href="/dashboard"
+            style={{
+              padding: "14px 28px",
+              background: "#FFFFFF",
+              color: "#1F2937",
+              borderRadius: "10px",
+              fontWeight: 700,
+              textDecoration: "none",
+              border: "1px solid #E5E7EB",
+            }}
+          >
+            Demo ansehen
+          </a>
         </div>
 
-        <div style={{ height: 12 }} />
-
-        <div className="row">
-          <div>
-            <div className="label">Ton / Sprache</div>
-            <input className="input" value={tone} onChange={(e) => setTone(e.target.value)} />
-          </div>
-          <div>
-            <div className="label">Highlights (mit | trennen)</div>
-            <input className="input" value={extras} onChange={(e) => setExtras(e.target.value)} />
-          </div>
+        <div
+          style={{
+            marginTop: "22px",
+            color: "#8A6A1F",
+            fontWeight: 600,
+            fontSize: "15px",
+          }}
+        >
+          Für Homegate, ImmoScout24, Exposé-PDF und Social Media
         </div>
       </section>
 
-      <aside className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
-          <div>
-            <div className="badge">Output</div>
-            <div style={{ marginTop: 6, fontWeight: 800 }}>Varianten</div>
-          </div>
-
-          <div style={{ display: "flex", gap: 8 }}>
-            <button className="btn" onClick={downloadPdfPlaceholder} disabled={!current}>
-              PDF
-            </button>
-            <button className="btn btnPrimary" onClick={copyActive} disabled={!current || !isUnlocked}>
-              Copy
-            </button>
-          </div>
+      <section
+        style={{
+          maxWidth: "1100px",
+          margin: "72px auto 0",
+          display: "grid",
+          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+          gap: "20px",
+        }}
+      >
+        <div
+          style={{
+            background: "#FFFFFF",
+            borderRadius: "18px",
+            padding: "28px",
+            boxShadow: "0 8px 30px rgba(15,23,42,0.06)",
+            border: "1px solid #F1F5F9",
+          }}
+        >
+          <h3 style={{ fontSize: "20px", fontWeight: 700 }}>Zeit sparen</h3>
+          <p style={{ marginTop: "10px", color: "#6B7280", lineHeight: 1.7 }}>
+            Sparen Sie bis zu 30 Minuten pro Objekt bei Inserat, Exposé und
+            Vermarktung.
+          </p>
         </div>
 
-        <div style={{ height: 12 }} />
-
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {variants.map((v, i) => (
-            <button
-              key={i}
-              className="btn"
-              style={{
-                borderColor: i === active ? `rgb(var(--accent))` : undefined,
-                background: i === active ? `rgba(var(--accent), 0.15)` : undefined,
-              }}
-              onClick={() => setActive(i)}
-            >
-              Variante {i + 1}
-            </button>
-          ))}
+        <div
+          style={{
+            background: "#FFFFFF",
+            borderRadius: "18px",
+            padding: "28px",
+            boxShadow: "0 8px 30px rgba(15,23,42,0.06)",
+            border: "1px solid #F1F5F9",
+          }}
+        >
+          <h3 style={{ fontSize: "20px", fontWeight: 700 }}>
+            Eine Eingabe, mehrere Outputs
+          </h3>
+          <p style={{ marginTop: "10px", color: "#6B7280", lineHeight: 1.7 }}>
+            Aus einem Objekt entstehen direkt mehrere professionelle Textvarianten.
+          </p>
         </div>
 
-        <div style={{ height: 12 }} />
-
-        <div className="previewBox">
-          <div className={!isUnlocked ? "previewBlur" : undefined}>
-            <div style={{ fontWeight: 900, fontSize: 16 }}>
-              {current?.title || "Noch nichts generiert"}
-            </div>
-            <div style={{ height: 8 }} />
-            <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.55, color: "rgba(244,244,245,0.92)" }}>
-              {current?.text ||
-                "Klicke auf “Generieren”, um hochwertige Inserate zu erstellen. Copy & PDF sind für den professionellen Workflow gedacht."}
-            </div>
-          </div>
-
-          {!isUnlocked && (
-            <div className="overlayLock">
-              <div>
-                <div style={{ fontWeight: 900, fontSize: 16 }}>🔒 Vorschau-Modus</div>
-                <div style={{ marginTop: 6, color: "rgba(244,244,245,0.85)" }}>
-                  Voller Text + Copy/PDF nur mit Zugang.
-                </div>
-              </div>
-            </div>
-          )}
+        <div
+          style={{
+            background: "#FFFFFF",
+            borderRadius: "18px",
+            padding: "28px",
+            boxShadow: "0 8px 30px rgba(15,23,42,0.06)",
+            border: "1px solid #F1F5F9",
+          }}
+        >
+          <h3 style={{ fontSize: "20px", fontWeight: 700 }}>
+            Für Makler entwickelt
+          </h3>
+          <p style={{ marginTop: "10px", color: "#6B7280", lineHeight: 1.7 }}>
+            Optimiert für Immobilienvermarktung, Portale, Besichtigungen und
+            Verkauf.
+          </p>
         </div>
+      </section>
+<section
+  style={{
+    maxWidth: "1100px",
+    margin: "72px auto 0",
+    textAlign: "center",
+  }}
+>
+  <h2
+    style={{
+      fontSize: "32px",
+      fontWeight: 800,
+      marginBottom: "20px",
+    }}
+  >
+    Ein Objekt – alle Marketingkanäle
+  </h2>
 
-        <div style={{ height: 12 }} />
+  <p
+    style={{
+      color: "#6B7280",
+      maxWidth: "700px",
+      margin: "0 auto 40px",
+      lineHeight: 1.7,
+      fontSize: "18px",
+    }}
+  >
+    Erstellen Sie Inserate und Social-Media-Posts automatisch – optimiert für die
+    wichtigsten Immobilienplattformen und Marketingkanäle.
+  </p>
 
-        <div style={{ fontSize: 12, color: "rgb(var(--muted))" }}>
-          Anti-Copy Hinweis: Vorschau kann geblurrt werden, Copy läuft über Button (später Abo/Login).
-        </div>
-      </aside>
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "repeat(2, 1fr)",
+      gap: "24px",
+      maxWidth: "800px",
+      margin: "0 auto",
+    }}
+  >
+    <div
+      style={{
+        background: "#FFFFFF",
+        padding: "26px",
+        borderRadius: "16px",
+        border: "1px solid #eee",
+      }}
+    >
+      <h3 style={{ fontWeight: 700, marginBottom: "10px" }}>
+        Immobilienportale
+      </h3>
+
+      <p style={{ color: "#6B7280", lineHeight: 1.8 }}>
+        Homegate • ImmoScout24 • Newhome • Flatfox • Comparis
+      </p>
     </div>
+
+    <div
+      style={{
+        background: "#FFFFFF",
+        padding: "26px",
+        borderRadius: "16px",
+        border: "1px solid #eee",
+      }}
+    >
+      <h3 style={{ fontWeight: 700, marginBottom: "10px" }}>
+        Social Media
+      </h3>
+
+      <p style={{ color: "#6B7280", lineHeight: 1.8 }}>
+        Instagram • Facebook • LinkedIn • TikTok • YouTube
+      </p>
+    </div>
+  </div>
+</section>
+<section
+  style={{
+    maxWidth: "1100px",
+    margin: "80px auto 0",
+  }}
+>
+  <h2
+    style={{
+      fontSize: "32px",
+      fontWeight: 800,
+      textAlign: "center",
+      marginBottom: "40px",
+    }}
+  >
+    Beispiel-Inserat
+  </h2>
+
+  <div
+    style={{
+      background: "#FFFFFF",
+      borderRadius: "18px",
+      padding: "40px",
+      border: "1px solid #E5E7EB",
+      boxShadow: "0 10px 30px rgba(0,0,0,0.05)",
+      maxWidth: "800px",
+      margin: "0 auto",
+      lineHeight: 1.7,
+      color: "#374151",
+    }}
+  >
+    <h3 style={{ fontSize: "22px", fontWeight: 700 }}>
+      Moderne 4.5 Zimmer Wohnung in Winterthur
+    </h3>
+
+    <p style={{ marginTop: "16px" }}>
+      Diese stilvolle Wohnung bietet auf 110 m² grosszügigen Wohnraum in ruhiger Lage.
+      Der Balkon lädt zum Entspannen ein, während der Lift einen komfortablen Zugang
+      ermöglicht.
+    </p>
+
+    <p style={{ marginTop: "16px" }}>
+      Die Wohnung ist ideal für Familien oder Paare, die Wert auf eine ruhige
+      Umgebung mit guter Anbindung legen.
+    </p>
+
+    <p style={{ marginTop: "20px", fontWeight: 600 }}>
+      Highlights
+    </p>
+
+    <ul style={{ marginTop: "10px", paddingLeft: "20px" }}>
+      <li>4.5 Zimmer</li>
+      <li>110 m² Wohnfläche</li>
+      <li>Balkon</li>
+      <li>Lift</li>
+      <li>Garage</li>
+      <li>Ruhige Lage</li>
+    </ul>
+  </div>
+</section>
+      <section
+        style={{
+          maxWidth: "1100px",
+          margin: "72px auto 0",
+          background: "#FFFFFF",
+          borderRadius: "24px",
+          padding: "34px",
+          boxShadow: "0 8px 30px rgba(15,23,42,0.06)",
+          border: "1px solid #F1F5F9",
+        }}
+      >
+        <h2 style={{ fontSize: "32px", fontWeight: 800 }}>
+          Generiert automatisch
+        </h2>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: "14px",
+            marginTop: "20px",
+            color: "#374151",
+            lineHeight: 1.8,
+          }}
+        >
+          <div>• Immobilien-Inserat</div>
+          <div>• Exposé-PDF</div>
+          <div>• Homegate-Text</div>
+          <div>• ImmoScout24-Text</div>
+          <div>• Instagram-Post</div>
+          <div>• LinkedIn-Post</div>
+        </div>
+      </section>
+
+      <section
+        style={{
+          maxWidth: "1100px",
+          margin: "72px auto 0",
+          textAlign: "center",
+          background: "linear-gradient(180deg, #FFFDF8 0%, #F7F1E3 100%)",
+          border: "1px solid #EADDB8",
+          borderRadius: "24px",
+          padding: "40px 24px",
+        }}
+      >
+        <h2 style={{ fontSize: "34px", fontWeight: 800 }}>
+          5 Inserate kostenlos testen
+        </h2>
+
+        <p
+          style={{
+            marginTop: "14px",
+            color: "#6B7280",
+            maxWidth: "720px",
+            marginLeft: "auto",
+            marginRight: "auto",
+            lineHeight: 1.7,
+          }}
+        >
+          Ohne Risiko. Testen Sie die Plattform kostenlos und erleben Sie selbst,
+          wie schnell hochwertige Immobilieninserate erstellt werden können.
+        </p>
+
+        <div style={{ marginTop: "26px" }}>
+          <a
+            href="/dashboard"
+            style={{
+              padding: "14px 28px",
+              background: "#C8A24D",
+              color: "#FFFFFF",
+              borderRadius: "10px",
+              fontWeight: 700,
+              textDecoration: "none",
+              boxShadow: "0 10px 30px rgba(200,162,77,0.25)",
+            }}
+          >
+            Jetzt kostenlos testen
+          </a>
+        </div>
+      </section>
+    </main>
+  </>
   );
 }

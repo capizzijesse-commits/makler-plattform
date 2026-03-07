@@ -32,17 +32,26 @@ function languageRules(sprache: Sprache) {
 
 export async function POST(req: Request) {
   try {
-    const {
-      lage,
-      preis,
-      groesse,
-      besonderheiten,
-      stil,
-      sprache,
-      format,
-      nVariants,
-    } = await req.json();
+   const {
+  location,
+  propertyType,
+  rooms,
+  livingArea,
+  price,
+  style,
+  tone,
+  extras,
+  variants,
+} = await req.json();
 
+const lage = location ?? "";
+const preis = price ?? "";
+const groesse = `${rooms ?? "-"} Zimmer / ${livingArea ?? "-"} m² / ${propertyType ?? "-"}`;
+const besonderheiten = extras ?? "";
+const stil = (style ?? "luxus") as Stil;
+const sprache: Sprache = "de-CH";
+const format: Format = "standard";
+const nVariants = variants ?? 3;
     const n = Math.min(Math.max(Number(nVariants || 3), 1), 5);
 
     const prompt = `
@@ -89,23 +98,31 @@ WICHTIG:
     });
 
     const text = completion.choices?.[0]?.message?.content || "";
-    // JSON parsing robust
-    let json: any;
-    try {
-      json = JSON.parse(text);
-    } catch {
-      // fallback: versuchen JSON aus Text herauszuschneiden
-      const start = text.indexOf("{");
-      const end = text.lastIndexOf("}");
-      if (start >= 0 && end > start) {
-        json = JSON.parse(text.slice(start, end + 1));
-      } else {
-        throw new Error("Model returned non-JSON.");
-      }
-    }
 
-    return Response.json(json);
-  } catch (err: any) {
-    return new Response(err?.message || "Server error", { status: 500 });
+let json: any;
+try {
+  json = JSON.parse(text);
+} catch {
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start >= 0 && end > start) {
+    json = JSON.parse(text.slice(start, end + 1));
+  } else {
+    throw new Error("Model returned non-JSON.");
   }
+}
+
+const normalized = {
+  variants: (json?.variants ?? []).map((v: any) => ({
+    title: v.title ?? "",
+    text: v.raw ?? v.body ?? "",
+    highlights: v.bullets ?? [],
+    cta: v.cta ?? "",
+  })),
+};
+
+return Response.json(normalized);
+} catch (err: any) {
+  return new Response(err?.message || "Server error", { status: 500 });
+}
 }
