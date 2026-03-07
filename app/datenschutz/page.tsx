@@ -1,20 +1,19 @@
 export default function Page() {
   return (
-    <main style={{ padding: "40px", maxWidth: "800px", margin: "0 auto" }}>
+    <div style={{ padding: "40px", maxWidth: "800px", margin: "0 auto" }}>
       <h1>Datenschutz</h1>
 
       <p>
-        Diese Website dient zur Erstellung von Immobilieninseraten.
+        Diese Website dient zur Erstellung von Immobilieninseraten mit KI.
       </p>
 
       <p>
-        Es werden keine personenbezogenen Daten gespeichert. Alle Eingaben
-        werden nur zur Generierung von Texten verwendet.
+        Es werden keine personenbezogenen Daten gespeichert.
       </p>
 
       <p>
-        Bei Fragen kontaktieren Sie uns bitte per E-Mail.
+        Alle Eingaben werden nur zur Generierung von Texten verwendet.
       </p>
-    </main>
+    </div>
   );
 }
