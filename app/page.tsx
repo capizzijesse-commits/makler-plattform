@@ -154,14 +154,14 @@ Kostenlos testen
       </section>
 
       <section
-        style={{
-          maxWidth: "600px",
-          margin: "40px auto",
-          display: "grid",
-          textAlign:"center",
-          gridTemplateColumns: "1fr",
-          gap: "20px",
-        }}
+       style={{
+  maxWidth: "600px",
+  margin: "40px auto 0",
+  display: "grid",
+  gridTemplateColumns: "1fr",
+  gap: "20px",
+  textAlign: "center"
+}}
       >
         <div
           style={{
