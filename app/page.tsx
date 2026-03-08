@@ -248,7 +248,7 @@ Kostenlos testen
   <div
     style={{
       display: "grid",
-      gridTemplateColumns: "repeat(2, 1fr)",
+      gridTemplateColumns: "1fr",
       gap: "24px",
       maxWidth: "800px",
       margin: "0 auto",
