@@ -155,7 +155,7 @@ Kostenlos testen
 
       <section
         style={{
-          maxWidth: "700px",
+          maxWidth: "500px",
           margin: "72px auto 0",
           display: "grid",
           textAlign:"center",
