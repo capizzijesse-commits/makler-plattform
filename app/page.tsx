@@ -35,31 +35,72 @@ export default function Home() {
           Premium KI für Immobilienmakler
         </div>
 
-        <h1
-          style={{
-            fontSize: "56px",
-            lineHeight: 1.05,
-            fontWeight: 800,
-            maxWidth: "950px",
-            margin: "0 auto",
-          }}
-        >
-          Hochwertige Immobilieninserate in Sekunden statt in Stunden.
-        </h1>
+      <div style={{
+  padding: "40px 16px 24px",
+  textAlign: "center",
+  maxWidth: "100%",
+  width: "100%",
+  margin: "0 auto",
+  boxSizing: "border-box",
+  overflow: "hidden"
+}}>
 
-        <p
-          style={{
-            maxWidth: "760px",
-            margin: "24px auto 0",
-            fontSize: "20px",
-            lineHeight: 1.7,
-            color: "#6B7280",
-          }}
-        >
-          Erstellen Sie professionelle Texte für Immobilienportale, Exposés und
-          Social Media automatisch – aus nur einer Eingabe.
-        </p>
+<h1 style={{
+  fontSize: "clamp(18px, 7.5vw, 48px)",
+  lineHeight: 1.08,
+  fontWeight: 800,
+  margin: "0 auto 18px",
+  color: "#1F2937",
+  maxWidth: "100%",
+  wordBreak: "break-word",
+  overflowWrap: "anywhere",
+  textAlign: "center"
+}}>
 
+Makler Inserat Generator
+</h1>
+
+<p style={{
+  fontSize: "20px",
+  color: "#4B5563",
+  marginBottom: "35px"
+}}>
+Hochwertige Immobilieninserate in Sekunden statt Stunden.
+</p>
+
+<div style={{
+  display: "flex",
+  justifyContent: "center",
+  gap: "15px",
+  flexWrap: "wrap"
+}}>
+
+<button style={{
+  background: "#2563EB",
+  color: "white",
+  padding: "14px 28px",
+  borderRadius: "12px",
+  border: "none",
+  fontSize: "16px",
+  cursor: "pointer"
+}}>
+Kostenlos testen
+</button>
+
+<button style={{
+  background: "white",
+  border: "1px solid #D1D5DB",
+  padding: "14px 28px",
+  borderRadius: "12px",
+  fontSize: "16px",
+  cursor: "pointer"
+}}>
+5 Inserate gratis
+</button>
+
+</div>
+
+</div>
         <div
           style={{
             display: "flex",
@@ -117,7 +158,7 @@ export default function Home() {
           maxWidth: "1100px",
           margin: "72px auto 0",
           display: "grid",
-          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+          gridTemplateColumns: "1fr",
           gap: "20px",
         }}
       >
