@@ -291,8 +291,8 @@ Kostenlos testen
 </section>
 <section
   style={{
-    maxWidth: "1100px",
-    margin: "80px auto 0",
+    maxWidth: "100%",
+    margin: "40px auto 0",
   }}
 >
   <h2
