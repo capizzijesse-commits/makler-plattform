@@ -1,46 +1,33 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 type Variant = {
   title: string;
   text: string;
-  highlights?: string[];
-  cta?: string;
 };
 
-export default function Page() {
+export default function DashboardPage() {
   const [location, setLocation] = useState("Winterthur");
   const [propertyType, setPropertyType] = useState("Wohnung");
   const [rooms, setRooms] = useState("4.5");
   const [livingArea, setLivingArea] = useState("110");
-  const [price, setPrice] = useState("1'090'000");
-  const [style, setStyle] = useState("Luxus / Premium");
-  const [tone, setTone] = useState("Professionell, modern, vertrauenswürdig");
-  const [extras, setExtras] = useState("Balkon | Lift | Garage | Ruhige Lage");
+  const [price, setPrice] = useState("1090000");
+  const [styleText, setStyleText] = useState("Luxus / Premium");
+  const [highlights, setHighlights] = useState(
+    "Balkon, Lift, Garage, ruhige Lage"
+  );
 
-  const [images, setImages] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [variants, setVariants] = useState<Variant[]>([]);
-  const [active, setActive] = useState(0);
-  const [freeCredits, setFreeCredit] = useState(5)
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  const isUnlocked = useMemo(() => true, []);
+  const current = variants[activeIndex];
 
-  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    if (!e.target.files) return;
-    const files = Array.from(e.target.files);
-    setImages(files);
-  }
-
-  async function generate() {
-    if (freeCredits <= 0) {
-      alert("Gratislimit erreich. Bitte Upgrate anfordern.");
-      return;
-    }
-    setLoading(true);
-
+  async function generateText() {
     try {
+      setLoading(true);
+
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: {
@@ -52,31 +39,20 @@ export default function Page() {
           rooms,
           livingArea,
           price,
-          style,
-          tone,
-          extras,
-          variants: 3,
+          styleText,
+          highlights,
         }),
       });
 
-      const text = await res.text();
-
-      let json: any;
-      try {
-        json = JSON.parse(text);
-      } catch {
-        alert(text || "Fehler beim Generieren.");
-        return;
-      }
+      const data = await res.json();
 
       if (!res.ok) {
-        alert(json?.error || "Fehler beim Generieren.");
+        alert(data?.error || "Fehler beim Generieren.");
         return;
       }
 
-      setVariants(json?.variants ?? []);
-      setActive(0);
-      setFreeCredit((prev) => Math.max(prev - 1, 0));
+      setVariants(data.variants || []);
+      setActiveIndex(0);
     } catch (error) {
       console.error(error);
       alert("Verbindungsfehler beim Generieren.");
@@ -86,584 +62,603 @@ export default function Page() {
   }
 
   async function copyActive() {
-    if (!current) return;
+    if (!current) {
+      alert("Bitte zuerst eine Variante generieren.");
+      return;
+    }
 
-    const fullText = [
-      current.title || "",
-      "",
-      current.text || "",
-      "",
-      ...(current.highlights || []),
-      "",
-      current.cta ? `CTA: ${current.cta}` : "",
-    ]
-      .filter(Boolean)
-      .join("\n");
-
+    const fullText = `${current.title}\n\n${current.text}`;
     await navigator.clipboard.writeText(fullText);
-    alert("Kopiert!");
+    alert("Text kopiert.");
   }
 
-  function copyPortal(portal: string) {
-    if (!current) return;
-
-    const highlightsText =
-      current.highlights && current.highlights.length > 0
-        ? `\n\nHighlights:\n- ${current.highlights.join("\n- ")}`
-        : "";
-
-    const ctaText = current.cta ? `\n\n${current.cta}` : "";
-
-    let text = `${current.title}\n\n${current.text}${highlightsText}${ctaText}`;
-
-    if (portal === "homegate") {
-      text = `🏡 Immobilienangebot\n\n${text}\n\nJetzt Besichtigung vereinbaren.`;
+  function exportPdf() {
+    if (!current) {
+      alert("Bitte zuerst eine Variante generieren.");
+      return;
     }
 
-    if (portal === "immoscout") {
-      text = `Immobilieninserat\n\n${text}\n\nKontaktieren Sie uns für weitere Informationen.`;
+    const printWindow = window.open("", "_blank", "width=900,height=1200");
+
+    if (!printWindow) {
+      alert("Pop-up blockiert. Bitte Pop-ups erlauben.");
+      return;
     }
 
-    if (portal === "social") {
-      text = `✨ Neue Immobilie im Angebot!\n\n${text}\n\n#immobilien #wohnung #haus`;
-    }
+    const title = current.title;
+    const text = current.text.replace(/\n/g, "<br>");
 
-    navigator.clipboard.writeText(text);
-    alert(`${portal} kopiert!`);
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>${title}</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              padding: 40px;
+              line-height: 1.7;
+              color: #1f2937;
+            }
+
+            h1 {
+              font-size: 30px;
+              margin-bottom: 24px;
+              line-height: 1.15;
+            }
+
+            .meta {
+              margin-bottom: 14px;
+              font-size: 12px;
+              color: #8b7355;
+              font-weight: bold;
+              letter-spacing: 0.04em;
+            }
+
+            .container {
+              max-width: 900px;
+              margin: auto;
+            }
+
+            .content {
+              font-size: 16px;
+              white-space: normal;
+            }
+          </style>
+        </head>
+
+        <body>
+          <div class="container">
+            <div class="meta">Makler AI Pro – PDF Export</div>
+            <h1>${title}</h1>
+            <div class="content">${text}</div>
+          </div>
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+
+    setTimeout(() => {
+      printWindow.print();
+    }, 300);
   }
-
-  function downloadPdfPlaceholder() {
-    if (!current) return;
-
-    const fullText = [
-      current.title || "",
-      "",
-      current.text || "",
-      "",
-      "Highlights:",
-      ...(current.highlights || []),
-      "",
-      current.cta ? `CTA: ${current.cta}` : "",
-    ].join("\n");
-
-    const blob = new Blob([fullText], { type: "application/pdf" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "immobilien-inserat.pdf";
-    a.click();
-
-    URL.revokeObjectURL(url);
-  }
-
-  const current = variants?.[active];
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#111827",
-        color: "#F9FAFB",
-        padding: "28px",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "1600px",
-          margin: "0 auto",
-          display: "grid",
-          gridTemplateColumns: "1.15fr 0.85fr",
-          gap: "24px",
-        }}
-      >
-        <section
-          style={{
-            background: "#111827",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: "20px",
-            padding: "18px",
-          }}
-        >
-          <div
-            style={{
-              display: "inline-block",
-              padding: "7px 12px",
-              borderRadius: "999px",
-              background: "rgba(200,162,77,0.14)",
-              border: "1px solid rgba(200,162,77,0.35)",
-              color: "#E7C97F",
-              fontSize: "13px",
-              fontWeight: 700,
-              marginBottom: "16px",
-            }}
-          >
-            Premium Inserat Generator
+    <main className="page">
+      <div className="shell">
+        <div className="topbar">
+          <div className="hero">
+            <div className="badge">Makler AI Pro</div>
+            <h1>Premium Inserat Generator</h1>
+            <p>
+              Hochwertige Immobilientexte für Homegate, ImmoScout24, Exposé und
+              Social Media – strukturiert, verkaufsstark und professionell.
+            </p>
           </div>
 
-          <h1
-            style={{
-              fontSize: "28px",
-              lineHeight: 1.15,
-              fontWeight: 800,
-              margin: 0,
-            }}
-          >
-            Inserate in Sekunden – hochwertig & verkaufsstark
-          </h1>
-
-          <p
-            style={{
-              marginTop: "10px",
-              color: "#9CA3AF",
-              lineHeight: 1.7,
-              maxWidth: "760px",
-            }}
-          >
-            Fokus: Schweizer Markt, klare Struktur, luxuriöses Wording ohne unseriöse Übertreibungen.
-          </p>
-
-          <div style={{ marginTop: "20px" }}>
+          <div className="actions">
             <button
-  onClick={generate}
-  disabled={loading || freeCredits <= 0}
-              style={{
-                background: "#0EA5E9",
-                color: "#FFFFFF",
-                border: "none",
-                borderRadius: "10px",
-                padding: "12px 18px",
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
+              onClick={generateText}
+              disabled={loading}
+              className="btn btn-primary"
             >
-             {loading
-  ? "Generiere..."
-  : freeCredits <= 0
-    ? "Gratislimit erreicht"
-    : "Generieren (3 Varianten)"}
+              {loading ? "Generiere..." : "Generieren (3 Varianten)"}
+            </button>
+
+            <button
+              onClick={copyActive}
+              disabled={!current}
+              className="btn btn-secondary"
+            >
+              Copy
+            </button>
+
+            <button
+              onClick={exportPdf}
+              disabled={!current}
+              className="btn btn-secondary"
+            >
+              PDF
             </button>
           </div>
-         <div
-  style={{
-    marginTop: "12px",
-    fontSize: "14px",
-    color: freeCredits > 0 ? "#E7C97F" : "#FCA5A5",
-    fontWeight: 700,
-  }}
->
-  Verbleibend: {freeCredits} / 5 Gratis-Inserate
-</div> 
-{freeCredits <= 0 && (
-  <div
-    style={{
-      marginTop: "14px",
-      padding: "14px",
-      borderRadius: "12px",
-      background: "rgba(248,113,113,0.10)",
-      border: "1px solid rgba(248,113,113,0.25)",
-    }}
-  >
-    <div
-      style={{
-        color: "#FCA5A5",
-        fontWeight: 800,
-        fontSize: "14px",
-      }}
-    >
-      Gratislimit erreicht
-    </div>
+        </div>
 
-    <div
-      style={{
-        marginTop: "6px",
-        color: "#D1D5DB",
-        fontSize: "14px",
-        lineHeight: 1.6,
-      }}
-    >
-      Upgrade ab 29 CHF / Monat oder Testmonat anfragen.
-    </div>
+        <div className="grid">
+          <section className="leftCard">
+            <div className="badge">Objektdaten</div>
+            <h2>Eingabe</h2>
+            <p className="sectionText">
+              Erfasse die wichtigsten Eckdaten der Immobilie. Die KI erstellt
+              daraus mehrere professionelle Textvarianten.
+            </p>
 
-    <a
-      href="/kontakt"
-      style={{
-        display: "inline-block",
-        marginTop: "12px",
-        background: "#C8A24D",
-        color: "#FFFFFF",
-        padding: "10px 16px",
-        borderRadius: "10px",
-        textDecoration: "none",
-        fontWeight: 700,
-      }}
-    >
-      Upgrade anfragen
-    </a>
-  </div>
-)}
+            <div className="formGrid">
+              <Field label="Ort / Lage">
+                <input
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="input"
+                />
+              </Field>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "16px",
-              marginTop: "24px",
-            }}
-          >
-            <div>
-              <div style={labelStyle}>Ort / Lage</div>
-              <input value={location} onChange={(e) => setLocation(e.target.value)} style={inputStyle} />
-            </div>
+              <Field label="Objektart">
+                <input
+                  value={propertyType}
+                  onChange={(e) => setPropertyType(e.target.value)}
+                  className="input"
+                />
+              </Field>
 
-            <div>
-              <div style={labelStyle}>Objektart</div>
-              <select value={propertyType} onChange={(e) => setPropertyType(e.target.value)} style={inputStyle}>
-                <option>Wohnung</option>
-                <option>Haus</option>
-                <option>Villa</option>
-                <option>Attika</option>
-                <option>Gewerbe</option>
-              </select>
-            </div>
+              <Field label="Zimmer">
+                <input
+                  value={rooms}
+                  onChange={(e) => setRooms(e.target.value)}
+                  className="input"
+                />
+              </Field>
 
-            <div style={{ gridColumn: "1 / -1" }}>
-              <div style={labelStyle}>Bilder hochladen</div>
-              <input type="file" multiple accept="image/*" onChange={handleImageUpload} style={{ color: "#E5E7EB" }} />
-            </div>
+              <Field label="Wohnfläche (m²)">
+                <input
+                  value={livingArea}
+                  onChange={(e) => setLivingArea(e.target.value)}
+                  className="input"
+                />
+              </Field>
 
-            <div>
-              <div style={labelStyle}>Zimmer</div>
-              <input value={rooms} onChange={(e) => setRooms(e.target.value)} style={inputStyle} />
-            </div>
+              <Field label="Preis (CHF)">
+                <input
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  className="input"
+                />
+              </Field>
 
-            <div>
-              <div style={labelStyle}>Wohnfläche (m²)</div>
-              <input value={livingArea} onChange={(e) => setLivingArea(e.target.value)} style={inputStyle} />
-            </div>
+              <Field label="Stil">
+                <input
+                  value={styleText}
+                  onChange={(e) => setStyleText(e.target.value)}
+                  className="input"
+                />
+              </Field>
 
-            <div>
-              <div style={labelStyle}>Preis (CHF)</div>
-              <input value={price} onChange={(e) => setPrice(e.target.value)} style={inputStyle} />
-            </div>
-
-            <div>
-              <div style={labelStyle}>Stil</div>
-              <select value={style} onChange={(e) => setStyle(e.target.value)} style={inputStyle}>
-                <option>Luxus / Premium</option>
-                <option>Modern</option>
-                <option>Minimalistisch</option>
-                <option>Klassisch</option>
-              </select>
-            </div>
-
-            <div>
-              <div style={labelStyle}>Ton / Sprache</div>
-              <input value={tone} onChange={(e) => setTone(e.target.value)} style={inputStyle} />
-            </div>
-
-            <div>
-              <div style={labelStyle}>Highlights (mit | trennen)</div>
-              <input value={extras} onChange={(e) => setExtras(e.target.value)} style={inputStyle} />
-            </div>
-          </div>
-        </section>
-
-        <aside
-          style={{
-            background: "#111827",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: "20px",
-            padding: "18px",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              gap: "12px",
-              flexWrap: "wrap",
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  display: "inline-block",
-                  padding: "7px 12px",
-                  borderRadius: "999px",
-                  background: "rgba(200,162,77,0.14)",
-                  border: "1px solid rgba(200,162,77,0.35)",
-                  color: "#E7C97F",
-                  fontSize: "13px",
-                  fontWeight: 700,
-                }}
-              >
-                Output
-              </div>
-
-              <div style={{ marginTop: "10px", fontSize: "18px", fontWeight: 800 }}>
-                Variante {active + 1} aktiv
+              <div className="full">
+                <Field label="Highlights (mit Komma trennen)">
+                  <input
+                    value={highlights}
+                    onChange={(e) => setHighlights(e.target.value)}
+                    className="input"
+                  />
+                </Field>
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-              <button onClick={downloadPdfPlaceholder} disabled={!current} style={smallBtnStyle}>
-                PDF
-              </button>
+            <div className="divider" />
 
-              <button
-                onClick={copyActive}
-                disabled={!current || !isUnlocked}
-                style={{
-                  ...smallBtnStyle,
-                  background: "#0EA5E9",
-                  color: "#FFFFFF",
-                  border: "none",
-                }}
-              >
-                Copy
-              </button>
-
-              <button onClick={() => copyPortal("homegate")} disabled={!current} style={smallBtnStyle}>
-                Homegate
-              </button>
-
-              <button onClick={() => copyPortal("immoscout")} disabled={!current} style={smallBtnStyle}>
-                ImmoScout
-              </button>
-
-              <button onClick={() => copyPortal("social")} disabled={!current} style={smallBtnStyle}>
-                Social
-              </button>
+            <div className="miniStats">
+              <MiniStat title="Markt" value="Schweiz" />
+              <MiniStat title="Output" value="3 Varianten" />
+              <MiniStat title="Stil" value="Premium" />
             </div>
-          </div>
+          </section>
 
-          <div
-            style={{
-              display: "flex",
-              gap: "8px",
-              flexWrap: "wrap",
-              marginTop: "20px",
-              marginBottom: "18px",
-            }}
-          >
-            {variants.map((v, i) => (
-              <button
-                key={i}
-                onClick={() => setActive(i)}
-                style={{
-                  padding: "10px 14px",
-                  borderRadius: "10px",
-                  cursor: "pointer",
-                  border: i === active ? "1px solid #C8A24D" : "1px solid rgba(255,255,255,0.1)",
-                  background: i === active ? "rgba(200,162,77,0.18)" : "transparent",
-                  color: "#F9FAFB",
-                  fontWeight: i === active ? 800 : 500,
-                }}
-              >
-                Variante {i + 1}
-              </button>
-            ))}
-          </div>
-
-          {!current ? (
-            <div
-              style={{
-                minHeight: "360px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#9CA3AF",
-                border: "1px dashed rgba(255,255,255,0.12)",
-                borderRadius: "18px",
-              }}
-            >
-              Noch nichts generiert.
-            </div>
-          ) : (
-            <div
-              style={{
-                background: "#FFFDF8",
-                border: "1px solid #EADDB8",
-                borderRadius: "22px",
-                padding: "18px",
-                color: "#1F2937",
-                boxShadow: "0 12px 40px rgba(0,0,0,0.08)",
-                maxHeight: "620px",
-                overflowY: "auto",
-              }}
-            >
-              <div
-                style={{
-                  display: "inline-block",
-                  padding: "7px 12px",
-                  borderRadius: "999px",
-                  background: "#F7F1E3",
-                  color: "#8A6A1F",
-                  fontWeight: 700,
-                  fontSize: "13px",
-                  marginBottom: "14px",
-                }}
-              >
-                Premium Inserat
+          <section className="rightCard">
+            <div className="outputTop">
+              <div>
+                <div className="outputBadge">Output</div>
+                <div className="outputState">
+                  {current
+                    ? `Variante ${activeIndex + 1} aktiv`
+                    : "Noch nichts generiert"}
+                </div>
               </div>
 
-              <h2
-                style={{
-                  fontSize: "20px",
-                  lineHeight: 1.2,
-                  fontWeight: 800,
-                  margin: 0,
-                  color: "#1F2937",
-                }}
-              >
-                {current.title}
-              </h2>
-
-              <div
-                style={{
-                  display: "flex",
-                  gap: "10px",
-                  flexWrap: "wrap",
-                  marginTop: "16px",
-                  marginBottom: "18px",
-                }}
-              >
-                {[`${rooms} Zimmer`, `${livingArea} m²`, propertyType, "Premium Stil"].map((item) => (
-                  <span
-                    key={item}
-                    style={{
-                      background: "#F6F6F6",
-                      padding: "6px 12px",
-                      borderRadius: "20px",
-                      fontWeight: 600,
-                      fontSize: "14px",
-                      color: "#374151",
-                    }}
-                  >
-                    {item}
-                  </span>
-                ))}
-              </div>
-
-              {images.length > 0 && (
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "10px",
-                    flexWrap: "wrap",
-                    marginBottom: "20px",
-                  }}
-                >
-                  {images.slice(0, 3).map((img, i) => (
-                    <img
+              {variants.length > 0 && (
+                <div className="tabs">
+                  {variants.map((_, i) => (
+                    <button
                       key={i}
-                      src={URL.createObjectURL(img)}
-                      alt={`Preview ${i + 1}`}
-                      style={{
-                        width: "110px",
-                        height: "72px",
-                        objectFit: "cover",
-                        borderRadius: "10px",
-                        border: "1px solid #E5E7EB",
-                      }}
-                    />
+                      onClick={() => setActiveIndex(i)}
+                      className={`tab ${i === activeIndex ? "active" : ""}`}
+                    >
+                      Variante {i + 1}
+                    </button>
                   ))}
                 </div>
               )}
-
-              <div
-                style={{
-                  color: "#4B5563",
-                  lineHeight: 1.9,
-                  whiteSpace: "pre-wrap",
-                  fontSize: "13px",
-                }}
-              >
-                {current.text}
-              </div>
-
-              {current.highlights && current.highlights.length > 0 && (
-                <div style={{ marginTop: "24px" }}>
-                  <div
-                    style={{
-                      fontWeight: 800,
-                      color: "#1F2937",
-                      marginBottom: "10px",
-                    }}
-                  >
-                    Highlights
-                  </div>
-
-                  <ul
-                    style={{
-                      paddingLeft: "20px",
-                      lineHeight: 1.9,
-                      color: "#374151",
-                      margin: 0,
-                    }}
-                  >
-                    {current.highlights.map((item, idx) => (
-                      <li key={idx}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {current.cta && (
-                <div
-                  style={{
-                    marginTop: "22px",
-                    padding: "14px 16px",
-                    borderRadius: "12px",
-                    background: "#F8FAFC",
-                    border: "1px solid #E5E7EB",
-                    color: "#374151",
-                  }}
-                >
-                  <strong>CTA:</strong> {current.cta}
-                </div>
-              )}
             </div>
-          )}
 
-          <div
-            style={{
-              marginTop: "14px",
-              fontSize: "12px",
-              color: "#9CA3AF",
-            }}
-          >
-            Vorschau kann geblurrt werden, Copy läuft später über Abo/Login.
-          </div>
-        </aside>
+            {current ? (
+              <div className="outputBox">
+                <h3>{current.title}</h3>
+                <p>{current.text}</p>
+              </div>
+            ) : (
+              <div className="emptyBox">
+                <div className="emptyTitle">Noch keine Variante vorhanden</div>
+                <div className="emptyText">
+                  Gib links die Objektdaten ein und klicke auf „Generieren (3
+                  Varianten)“.
+                </div>
+              </div>
+            )}
+          </section>
+        </div>
       </div>
+
+      <style jsx>{`
+        .page {
+          min-height: 100vh;
+          background: linear-gradient(
+            180deg,
+            #07111e 0%,
+            #0a1627 45%,
+            #0d1b2e 100%
+          );
+          color: #ffffff;
+          padding: 28px 16px 40px;
+        }
+
+        .shell {
+          max-width: 1380px;
+          margin: 0 auto;
+        }
+
+        .topbar {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 24px;
+          flex-wrap: wrap;
+          margin-bottom: 26px;
+        }
+
+        .hero {
+          max-width: 760px;
+        }
+
+        .badge {
+          display: inline-block;
+          font-size: 12px;
+          font-weight: 700;
+          color: #e7c97f;
+          background: rgba(231, 201, 127, 0.14);
+          border: 1px solid rgba(231, 201, 127, 0.18);
+          padding: 6px 10px;
+          border-radius: 999px;
+          margin-bottom: 12px;
+        }
+
+        .hero h1 {
+          margin: 0;
+          font-size: clamp(30px, 4vw, 46px);
+          line-height: 1.08;
+          font-weight: 800;
+          letter-spacing: -0.02em;
+        }
+
+        .hero p {
+          margin: 10px 0 0 0;
+          color: rgba(255, 255, 255, 0.72);
+          line-height: 1.65;
+          font-size: 16px;
+        }
+
+        .actions {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+          align-items: center;
+        }
+
+        .btn {
+          border-radius: 12px;
+          padding: 12px 18px;
+          font-weight: 800;
+          cursor: pointer;
+          border: none;
+          transition: 0.2s ease;
+        }
+
+        .btn:disabled {
+          opacity: 0.55;
+          cursor: not-allowed;
+        }
+
+        .btn-primary {
+          background: linear-gradient(135deg, #1cb8f6 0%, #129ce0 100%);
+          color: #ffffff;
+          box-shadow: 0 10px 24px rgba(28, 184, 246, 0.25);
+        }
+
+        .btn-secondary {
+          background: rgba(255, 255, 255, 0.04);
+          color: #ffffff;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .grid {
+          display: grid;
+          grid-template-columns: 1.05fr 1fr;
+          gap: 22px;
+        }
+
+        .leftCard {
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 24px;
+          padding: 24px;
+          box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+        }
+
+        .rightCard {
+          background: #fff9ec;
+          border: 1px solid #e9d7a8;
+          border-radius: 24px;
+          padding: 24px;
+          box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+          color: #1f2937;
+        }
+
+        .leftCard h2 {
+          font-size: 28px;
+          font-weight: 800;
+          margin: 0 0 10px 0;
+        }
+
+        .sectionText {
+          color: rgba(255, 255, 255, 0.72);
+          line-height: 1.65;
+          margin-bottom: 22px;
+          font-size: 15px;
+        }
+
+        .formGrid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+        }
+
+        .full {
+          grid-column: 1 / -1;
+        }
+
+        .input {
+          width: 100%;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: #ffffff;
+          border-radius: 14px;
+          padding: 14px 15px;
+          outline: none;
+          box-sizing: border-box;
+          font-size: 15px;
+        }
+
+        .divider {
+          height: 1px;
+          background: rgba(255, 255, 255, 0.08);
+          margin: 22px 0;
+        }
+
+        .miniStats {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
+        }
+
+        .outputTop {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 14px;
+          flex-wrap: wrap;
+          margin-bottom: 18px;
+        }
+
+        .outputBadge {
+          display: inline-block;
+          font-size: 12px;
+          font-weight: 700;
+          color: #8a6a1f;
+          background: #f7ebc8;
+          border: 1px solid #e4c97e;
+          padding: 6px 10px;
+          border-radius: 999px;
+        }
+
+        .outputState {
+          font-size: 24px;
+          font-weight: 800;
+          color: #1f2937;
+          margin-top: 10px;
+        }
+
+        .tabs {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+
+        .tab {
+          padding: 10px 14px;
+          border-radius: 12px;
+          border: 1px solid #e8d9b5;
+          background: #ffffff;
+          color: #3b2f17;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        .tab.active {
+          border: 2px solid #c79a36;
+          background: #fff5dd;
+        }
+
+        .outputBox {
+          background: #ffffff;
+          border-radius: 18px;
+          border: 1px solid #f0e3c1;
+          padding: 22px;
+          min-height: 420px;
+        }
+
+        .outputBox h3 {
+          margin: 0 0 18px 0;
+          font-size: clamp(34px, 4vw, 52px);
+          line-height: 1.08;
+          letter-spacing: -0.02em;
+          color: #1f2937;
+        }
+
+        .outputBox p {
+          margin: 0;
+          white-space: pre-line;
+          color: #445066;
+          line-height: 2;
+          font-size: 17px;
+        }
+
+        .emptyBox {
+          border-radius: 18px;
+          border: 1px dashed #d8c392;
+          background: rgba(255, 255, 255, 0.65);
+          min-height: 320px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          padding: 24px;
+          color: #374151;
+          flex-direction: column;
+        }
+
+        .emptyTitle {
+          font-size: 18px;
+          font-weight: 700;
+          margin-bottom: 8px;
+        }
+
+        .emptyText {
+          color: #6b7280;
+          line-height: 1.7;
+          max-width: 420px;
+        }
+
+        @media (max-width: 1024px) {
+          .grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 700px) {
+          .formGrid {
+            grid-template-columns: 1fr;
+          }
+
+          .miniStats {
+            grid-template-columns: 1fr;
+          }
+
+          .hero h1 {
+            font-size: 34px;
+          }
+
+          .outputState {
+            font-size: 22px;
+          }
+
+          .outputBox h3 {
+            font-size: 34px;
+          }
+
+          .page {
+            padding: 20px 12px 32px;
+          }
+
+          .leftCard,
+          .rightCard {
+            padding: 18px;
+          }
+        }
+      `}</style>
+    </main>
+  );
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <div
+        style={{
+          fontSize: "13px",
+          color: "rgba(255,255,255,0.72)",
+          marginBottom: "8px",
+          fontWeight: 700,
+          letterSpacing: "0.01em",
+        }}
+      >
+        {label}
+      </div>
+      {children}
     </div>
   );
 }
 
-const labelStyle: React.CSSProperties = {
-  fontSize: "13px",
-  color: "#D1D5DB",
-  marginBottom: "6px",
-};
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  background: "#1F2937",
-  color: "#F9FAFB",
-  border: "1px solid rgba(255,255,255,0.1)",
-  borderRadius: "10px",
-  padding: "12px 14px",
-  outline: "none",
-};
-
-const smallBtnStyle: React.CSSProperties = {
-  padding: "10px 14px",
-  borderRadius: "10px",
-  cursor: "pointer",
-  background: "transparent",
-  color: "#F9FAFB",
-  border: "1px solid rgba(255,255,255,0.1)",
-};
+function MiniStat({ title, value }: { title: string; value: string }) {
+  return (
+    <div
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: "14px",
+        padding: "14px",
+      }}
+    >
+      <div
+        style={{
+          fontSize: "12px",
+          color: "rgba(255,255,255,0.58)",
+          marginBottom: "6px",
+        }}
+      >
+        {title}
+      </div>
+      <div
+        style={{
+          fontSize: "16px",
+          fontWeight: 700,
+          color: "#FFFFFF",
+        }}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
