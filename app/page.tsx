@@ -155,9 +155,10 @@ Kostenlos testen
 
       <section
         style={{
-          maxWidth: "1100px",
+          maxWidth: "100%",
           margin: "72px auto 0",
           display: "grid",
+          textAlign:"center",
           gridTemplateColumns: "1fr",
           gap: "20px",
         }}
