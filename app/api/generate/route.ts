@@ -54,38 +54,26 @@ const format: Format = "standard";
 const nVariants = variants ?? 3;
     const n = Math.min(Math.max(Number(nVariants || 3), 1), 5);
 
-    const prompt = `
-Du bist ein professioneller Immobilien-Copywriter.
+const prompt = `
+Du bist ein professioneller Immobilienmakler in der Schweiz.
 
-${languageRules(sprache)}
-${styleRules(stil)}
-${formatRules(format)}
+Erstelle 3 unterschiedliche Inserattexte für folgende Immobilie.
 
-Objektdaten:
-- Ort/Lage: ${lage}
-- Preis: ${preis}
-- Grösse/Typ: ${groesse}
-- Besonderheiten: ${besonderheiten || "-"}
+Ort: ${location}
+Zimmer: ${rooms}
+Wohnfläche: ${livingArea} m²
+Preis: ${price} CHF
 
-Erstelle ${n} unterschiedliche Varianten.
+Stil 1: Klassisch und sachlich (typisches Homegate Inserat)
+Stil 2: Emotional und verkaufsstark
+Stil 3: Luxus / Premium Stil
 
-WICHTIG:
-- Jede Variante hat: Titel, Fliesstext (2–4 Absätze), Highlights (5–7 Bulletpoints), CTA (1 Satz).
-- Keine erfundenen Fakten (z.B. "Seesicht" nur wenn es in Besonderheiten steht).
-- Preis nicht überbetonen, aber erwähnen wenn sinnvoll.
-- Gib als Antwort ausschliesslich gültiges JSON im folgenden Schema zurück:
+Jeder Text soll enthalten:
+- Titel
+- Beschreibung
+- Highlights als Liste
 
-{
-  "variants": [
-    {
-      "title": "...",
-      "body": "...",
-      "bullets": ["...", "..."],
-      "cta": "...",
-      "raw": "Kompletter Text wie für Copy/PDF"
-    }
-  ]
-}
+Die Texte sollen professionell und realistisch für Immobilienportale sein.
 `.trim();
 
     const completion = await openai.chat.completions.create({
