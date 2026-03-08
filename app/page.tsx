@@ -167,6 +167,7 @@ Kostenlos testen
             background: "#FFFFFF",
             borderRadius: "18px",
             padding: "28px",
+            textAlign: "center",
             boxShadow: "0 8px 30px rgba(15,23,42,0.06)",
             border: "1px solid #F1F5F9",
           }}
