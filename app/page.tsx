@@ -155,7 +155,7 @@ Kostenlos testen
 
       <section
         style={{
-          maxWidth: "100%",
+          maxWidth: "700px",
           margin: "72px auto 0",
           display: "grid",
           textAlign:"center",
@@ -276,6 +276,8 @@ Kostenlos testen
         background: "#FFFFFF",
         padding: "26px",
         borderRadius: "16px",
+        maxWidth: "650px",
+        margin: "20px auto",
         border: "1px solid #eee",
       }}
     >
