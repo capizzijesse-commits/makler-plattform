@@ -479,14 +479,6 @@ Copy
       </div>
     )}
 
-    {linkedinPost && (
-      <div>
-        <h3>LinkedIn Post</h3>
-        <p style={{ whiteSpace: "pre-line" }}>
-          {linkedinPost}
-        </p>
-      </div>
-    )}
 
   </div>
 )}
