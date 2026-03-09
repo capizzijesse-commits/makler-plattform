@@ -434,8 +434,25 @@ await navigator.clipboard.writeText(fullText);
     paddingRight: "10px"
   }}
 >
+    <button>
+      <button
+  onClick={() => navigator.clipboard.writeText(current.text)}
+  style={{
+    marginBottom: "10px",
+    padding: "6px 12px",
+    borderRadius: "6px",
+    background: "#1f2937",
+    color: "white",
+    cursor: "pointer"
+  }}
+>
+📋 Text kopieren
+</button>
+    </button>
+   
                 <h3>{current.title}</h3>
                 <p>{current.text}</p>
+             
 
                 {current.highlights && current.highlights.length > 0 && (
                   <div style={{ marginTop: "24px" }}>
