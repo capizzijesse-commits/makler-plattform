@@ -5,22 +5,102 @@ import { useState } from "react";
 type Variant = {
   title: string;
   text: string;
+  highlights?: string[];
+  cta?: string;
 };
 
 export default function DashboardPage() {
-  const [location, setLocation] = useState("Winterthur");
-  const [propertyType, setPropertyType] = useState("Wohnung");
-  const [rooms, setRooms] = useState("4.5");
-  const [livingArea, setLivingArea] = useState("110");
-  const [price, setPrice] = useState("1090000");
-  const [styleText, setStyleText] = useState("Luxus / Premium");
-  const [highlights, setHighlights] = useState(
+  const [instagramPost, setInstagramPost] = useState("");
+const [linkedinPost, setLinkedinPost] = useState("");
+ const [location, setLocation] = useState("")
+const [propertyType, setPropertyType] = useState("")
+const [rooms, setRooms] = useState("")
+const [livingArea, setLivingArea] = useState("")
+const [price, setPrice] = useState("")
+const [styleText, setStyleText] = useState("")
+const [highlights, setHighlights] = useState("")
+    
     "Balkon, Lift, Garage, ruhige Lage"
-  );
+  ;
 
   const [loading, setLoading] = useState(false);
   const [variants, setVariants] = useState<Variant[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  {(instagramPost || linkedinPost) && (
+  <div
+    style={{
+      marginTop: "24px",
+      display: "grid",
+      gap: "16px",
+    }}
+  >
+    {instagramPost && (
+      <div
+        style={{
+          background: "#ffffff",
+          borderRadius: "18px",
+          border: "1px solid #f0e3c1",
+          padding: "18px",
+        }}
+      >
+        <div
+          style={{
+            fontWeight: 800,
+            fontSize: "16px",
+            marginBottom: "10px",
+            color: "#1f2937",
+          }}
+        >
+          Instagram Post
+        </div>
+        <p
+          style={{
+            margin: 0,
+            whiteSpace: "pre-line",
+            color: "#445066",
+            lineHeight: 1.8,
+            fontSize: "15px",
+          }}
+        >
+          {instagramPost}
+        </p>
+      </div>
+    )}
+
+    {linkedinPost && (
+      <div
+        style={{
+          background: "#ffffff",
+          borderRadius: "18px",
+          border: "1px solid #f0e3c1",
+          padding: "18px",
+        }}
+      >
+        <div
+          style={{
+            fontWeight: 800,
+            fontSize: "16px",
+            marginBottom: "10px",
+            color: "#1f2937",
+          }}
+        >
+          LinkedIn Post
+        </div>
+        <p
+          style={{
+            margin: 0,
+            whiteSpace: "pre-line",
+            color: "#445066",
+            lineHeight: 1.8,
+            fontSize: "15px",
+          }}
+        >
+          {linkedinPost}
+        </p>
+      </div>
+    )}
+  </div>
+)}
 
   const current = variants[activeIndex];
 
@@ -51,8 +131,47 @@ export default function DashboardPage() {
         return;
       }
 
-      setVariants(data.variants || []);
-      setActiveIndex(0);
+     setVariants(data.variants || []);
+setActiveIndex(0);
+setInstagramPost(data?.social?.instagram || "");
+setLinkedinPost(data?.social?.linkedin || "");
+{(instagramPost || linkedinPost) && (
+  <div
+    style={{
+      marginTop: "30px",
+      background: "#0f172a",
+      borderRadius: "16px",
+      padding: "20px",
+      display: "grid",
+      gap: "20px",
+    }}
+  >
+    {instagramPost && (
+      <div>
+        <h3 style={{ color: "#fff", marginBottom: "10px" }}>
+          Instagram Post
+        </h3>
+
+        <p style={{ color: "#cbd5f5", whiteSpace: "pre-line" }}>
+          {instagramPost}
+        </p>
+      </div>
+    )}
+
+    {linkedinPost && (
+      <div>
+        <h3 style={{ color: "#fff", marginBottom: "10px" }}>
+          LinkedIn Post
+        </h3>
+
+        <p style={{ color: "#cbd5f5", whiteSpace: "pre-line" }}>
+          {linkedinPost}
+        </p>
+      </div>
+    )}
+  </div>
+)}
+
     } catch (error) {
       console.error(error);
       alert("Verbindungsfehler beim Generieren.");
@@ -67,9 +186,16 @@ export default function DashboardPage() {
       return;
     }
 
-    const fullText = `${current.title}\n\n${current.text}`;
-    await navigator.clipboard.writeText(fullText);
-    alert("Text kopiert.");
+    const bulletText =
+      current.highlights && current.highlights.length > 0
+        ? `\n\nHighlights\n${current.highlights.map((h) => `• ${h}`).join("\n")}`
+          : "";
+
+  const ctaText = current.cta ? `\n\n${current.cta}` : "";
+
+const fullText = `${current.title}\n\n${current.text}${bulletText}${ctaText}`;
+
+await navigator.clipboard.writeText(fullText);
   }
 
   function exportPdf() {
@@ -87,6 +213,17 @@ export default function DashboardPage() {
 
     const title = current.title;
     const text = current.text.replace(/\n/g, "<br>");
+    const bulletHtml =
+      current.highlights && current.highlights.length > 0
+        ? `
+          <div style="margin-top:24px;">
+            <div style="font-weight:700;font-size:16px;margin-bottom:10px;">Highlights</div>
+            <ul style="margin:0;padding-left:20px;line-height:1.8;">
+              ${current.highlights.map((h) => `<li>${h}</li>`).join("")}
+            </ul>
+          </div>
+        `
+        : "";
 
     printWindow.document.write(`
       <html>
@@ -99,13 +236,11 @@ export default function DashboardPage() {
               line-height: 1.7;
               color: #1f2937;
             }
-
             h1 {
               font-size: 30px;
               margin-bottom: 24px;
               line-height: 1.15;
             }
-
             .meta {
               margin-bottom: 14px;
               font-size: 12px;
@@ -113,24 +248,21 @@ export default function DashboardPage() {
               font-weight: bold;
               letter-spacing: 0.04em;
             }
-
             .container {
               max-width: 900px;
               margin: auto;
             }
-
             .content {
               font-size: 16px;
-              white-space: normal;
             }
           </style>
         </head>
-
         <body>
           <div class="container">
             <div class="meta">Makler AI Pro – PDF Export</div>
             <h1>${title}</h1>
             <div class="content">${text}</div>
+            ${bulletHtml}
           </div>
         </body>
       </html>
@@ -194,65 +326,74 @@ export default function DashboardPage() {
             </p>
 
             <div className="formGrid">
-              <Field label="Ort / Lage">
-                <input
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="input"
-                />
-              </Field>
+            <input placeholder="Winterthur" />
+<input placeholder="4.5" />
+<input placeholder="110" />
+<input placeholder="1090000" />
+<input placeholder="Balkon, Lift, Garage, ruhige Lage" />
+<Field label="Ort / Lage">
+  <input
+    value={location}
+    placeholder="Winterthur"
+    onChange={(e) => setLocation(e.target.value)}
+    className="input"
+  />
+</Field>
 
-              <Field label="Objektart">
-                <input
-                  value={propertyType}
-                  onChange={(e) => setPropertyType(e.target.value)}
-                  className="input"
-                />
-              </Field>
+<Field label="Objektart">
+  <input
+    value={propertyType}
+    placeholder="Wohnung"
+    onChange={(e) => setPropertyType(e.target.value)}
+    className="input"
+  />
+</Field>
 
-              <Field label="Zimmer">
-                <input
-                  value={rooms}
-                  onChange={(e) => setRooms(e.target.value)}
-                  className="input"
-                />
-              </Field>
+<Field label="Zimmer">
+  <input
+    value={rooms}
+    placeholder="4.5"
+    onChange={(e) => setRooms(e.target.value)}
+    className="input"
+  />
+</Field>
 
-              <Field label="Wohnfläche (m²)">
-                <input
-                  value={livingArea}
-                  onChange={(e) => setLivingArea(e.target.value)}
-                  className="input"
-                />
-              </Field>
+<Field label="Wohnfläche (m²)">
+  <input
+    value={livingArea}
+    placeholder="110"
+    onChange={(e) => setLivingArea(e.target.value)}
+    className="input"
+  />
+</Field>
 
-              <Field label="Preis (CHF)">
-                <input
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  className="input"
-                />
-              </Field>
+<Field label="Preis (CHF)">
+  <input
+    value={price}
+    placeholder="1090000"
+    onChange={(e) => setPrice(e.target.value)}
+    className="input"
+  />
+</Field>
 
-              <Field label="Stil">
-                <input
-                  value={styleText}
-                  onChange={(e) => setStyleText(e.target.value)}
-                  className="input"
-                />
-              </Field>
+<Field label="Stil">
+  <input
+    value={styleText}
+    placeholder="Luxus / Premium"
+    onChange={(e) => setStyleText(e.target.value)}
+    className="input"
+  />
+</Field>
 
-              <div className="full">
-                <Field label="Highlights (mit Komma trennen)">
-                  <input
-                    value={highlights}
-                    onChange={(e) => setHighlights(e.target.value)}
-                    className="input"
-                  />
-                </Field>
-              </div>
-            </div>
-
+<Field label="Highlights (mit Komma trennen)">
+  <input
+    value={highlights}
+    placeholder="Balkon, Lift, Garage, ruhige Lage"
+    onChange={(e) => setHighlights(e.target.value)}
+    className="input"
+  />
+</Field>
+</div>
             <div className="divider" />
 
             <div className="miniStats">
@@ -292,8 +433,61 @@ export default function DashboardPage() {
               <div className="outputBox">
                 <h3>{current.title}</h3>
                 <p>{current.text}</p>
+
+                {current.highlights && current.highlights.length > 0 && (
+                  <div style={{ marginTop: "24px" }}>
+                    <div
+                      style={{
+                        fontWeight: 800,
+                        fontSize: "16px",
+                        marginBottom: "10px",
+                        color: "#1f2937",
+                      }}
+                    >
+                      Highlights
+                    </div>
+
+                    <ul
+                      style={{
+                        margin: 0,
+                        paddingLeft: "20px",
+                        color: "#445066",
+                        lineHeight: 1.8,
+                        fontSize: "16px",
+                      }}
+                    >
+                      {current.highlights.map((item, i) => (
+                        <li key={i}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {(instagramPost || linkedinPost) && (
+  <div style={{ marginTop: "30px" }}>
+
+    {instagramPost && (
+      <div style={{ marginBottom: "20px" }}>
+        <h3>Instagram Post</h3>
+        <p style={{ whiteSpace: "pre-line" }}>
+          {instagramPost}
+        </p>
+      </div>
+    )}
+
+    {linkedinPost && (
+      <div>
+        <h3>LinkedIn Post</h3>
+        <p style={{ whiteSpace: "pre-line" }}>
+          {linkedinPost}
+        </p>
+      </div>
+    )}
+
+  </div>
+)}
               </div>
             ) : (
+              
               <div className="emptyBox">
                 <div className="emptyTitle">Noch keine Variante vorhanden</div>
                 <div className="emptyText">
@@ -302,6 +496,81 @@ export default function DashboardPage() {
                 </div>
               </div>
             )}
+           {(instagramPost || linkedinPost) && (
+  <div
+    style={{
+      marginTop: "24px",
+      display: "grid",
+      gap: "16px",
+    }}
+  >
+    {instagramPost && (
+      <div
+        style={{
+          background: "#ffffff",
+          borderRadius: "18px",
+          border: "1px solid #f0e3c1",
+          padding: "18px",
+        }}
+      >
+        <div
+          style={{
+            fontWeight: 800,
+            fontSize: "16px",
+            marginBottom: "10px",
+            color: "#1f2937",
+          }}
+        >
+          Instagram Post
+        </div>
+        <p
+          style={{
+            margin: 0,
+            whiteSpace: "pre-line",
+            color: "#445066",
+            lineHeight: 1.8,
+            fontSize: "15px",
+          }}
+        >
+          {instagramPost}
+        </p>
+      </div>
+    )}
+
+    {linkedinPost && (
+      <div
+        style={{
+          background: "#ffffff",
+          borderRadius: "18px",
+          border: "1px solid #f0e3c1",
+          padding: "18px",
+        }}
+      >
+        <div
+          style={{
+            fontWeight: 800,
+            fontSize: "16px",
+            marginBottom: "10px",
+            color: "#1f2937",
+          }}
+        >
+          LinkedIn Post
+        </div>
+        <p
+          style={{
+            margin: 0,
+            whiteSpace: "pre-line",
+            color: "#445066",
+            lineHeight: 1.8,
+            fontSize: "15px",
+          }}
+        >
+          {linkedinPost}
+        </p>
+      </div>
+    )}
+  </div>
+)} 
           </section>
         </div>
       </div>

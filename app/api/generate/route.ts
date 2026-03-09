@@ -27,6 +27,7 @@ Zimmer: ${rooms}
 Wohnfläche: ${livingArea} m²
 Preis: ${price} CHF
 Objekt: ${propertyType}
+Stilwunsch: ${styleText}
 
 Highlights:
 ${highlights}
@@ -39,6 +40,11 @@ Jeder Text soll enthalten:
 - Titel
 - Beschreibung
 - Highlights als Liste
+- Einen kurzen professionellen Call-to-Action
+
+Erstelle zusätzlich:
+- einen kurzen Instagram-Post
+- einen professionellen LinkedIn-Post
 
 Antworte nur mit gültigem JSON im folgenden Format:
 
@@ -47,9 +53,14 @@ Antworte nur mit gültigem JSON im folgenden Format:
     {
       "title": "Titel",
       "body": "Beschreibung",
-      "bullets": ["Highlight 1","Highlight 2","Highlight 3"]
+      "bullets": ["Highlight 1", "Highlight 2", "Highlight 3"],
+      "cta": "Vereinbaren Sie noch heute einen Besichtigungstermin."
     }
-  ]
+  ],
+  "social": {
+    "instagram": "Instagram Post",
+    "linkedin": "LinkedIn Post"
+  }
 }
 `.trim();
 
@@ -90,7 +101,12 @@ Antworte nur mit gültigem JSON im folgenden Format:
         title: v.title ?? "",
         text: v.body ?? "",
         highlights: v.bullets ?? [],
+        cta: v.cta ?? "",
       })),
+      social: {
+        instagram: json?.social?.instagram ?? "",
+        linkedin: json?.social?.linkedin ?? "",
+      },
     };
 
     return Response.json(normalized);

@@ -13,6 +13,7 @@ export default function Page() {
 
       <p>
         Jesse Capizzi
+        INSERO
       </p>
 
       <p>
@@ -20,7 +21,7 @@ export default function Page() {
       </p>
 
       <p>
-        E-Mail: info@makler-ai.ch
+        E-Mail: info@insero-ai.ch
       </p>
     </div>
   );

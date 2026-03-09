@@ -27,7 +27,7 @@ export default function Navbar() {
             color: "#F1F5F9"
           }}
         >
-          Inserat Generator
+          Inserate Generator
         </div>
       </div>
     </div>

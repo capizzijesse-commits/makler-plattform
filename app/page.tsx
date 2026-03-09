@@ -57,7 +57,8 @@ export default function Home() {
   textAlign: "center"
 }}>
 
-Makler Inserat Generator
+INSERO 
+Der KI-Inserate-Generator
 </h1>
 
 <p style={{
@@ -65,81 +66,90 @@ Makler Inserat Generator
   color: "#4B5563",
   marginBottom: "35px"
 }}>
-Hochwertige Immobilieninserate in Sekunden statt Stunden.
+Erstellen Sie professionelle Immobilieninserate in Sekunden statt Stunden
 </p>
 
-<div style={{
-  display: "flex",
-  justifyContent: "center",
-  gap: "15px",
-  flexWrap: "wrap"
-}}>
+<div style={{ marginTop: "24px", textAlign: "center" }}>
+  <a
+    href="https://buy.stripe.com/test_SKQ28sdozd1k3bsduy1wV00K"
+    target="_blank"
+    rel="noopener noreferrer"
+    style={{
+      display: "inline-block",
+      padding: "14px 28px",
+      background: "#D4A017",
+      color: "#FFFFFF",
+      borderRadius: "12px",
+      border: "none",
+      fontSize: "16px",
+      fontWeight: 700,
+      textDecoration: "none",
+      minWidth: "720px",
+      maxWidth: "100%",
+      boxSizing: "border-box",
+      textAlign: "center"
+    }}
+  >
+    Founder Zugang sichern – 19.90 CHF Lifetime Preis für die ersten 30 Makler verfügbar
+  </a>
 
-<button style={{
-  background: "#2563EB",
-  color: "white",
-  padding: "14px 28px",
-  borderRadius: "12px",
-  border: "none",
-  fontSize: "16px",
-  cursor: "pointer"
-}}>
-Kostenlos testen
-</button>
-
-<button style={{
-  background: "white",
-  border: "1px solid #D1D5DB",
-  padding: "14px 28px",
-  borderRadius: "12px",
-  fontSize: "16px",
-  cursor: "pointer"
-}}>
-5 Inserate gratis
-</button>
-
+  <p style={{ marginTop: "14px", fontSize: "14px", opacity: 0.8 }}>
+    <b>regulär 39.90 CHF / Monat</b>
+  </p>
 </div>
 
 </div>
         <div
-          style={{
-            display: "flex",
-            gap: "14px",
-            justifyContent: "center",
-            marginTop: "32px",
-            flexWrap: "wrap",
-          }}
-        >
-          <a
-            href="/dashboard"
-            style={{
-              padding: "14px 28px",
-              background: "#C8A24D",
-              color: "#FFFFFF",
-              borderRadius: "10px",
-              fontWeight: 700,
-              textDecoration: "none",
-              boxShadow: "0 10px 30px rgba(200,162,77,0.25)",
-            }}
-          >
-            Kostenlos testen
-          </a>
+  style={{
+    display: "flex",
+    gap: "14px",
+    justifyContent: "center",
+    marginTop: "26px",
+    flexWrap: "wrap"
+  }}
+>
+  <a
+    href="#"
+    style={{
+      padding: "14px 28px",
+      background: "#2F3747",
+      color: "#FFFFFF",
+      borderRadius: "10px",
+      fontWeight: 700,
+      textDecoration: "none"
+    }}
+  >
+    Maklerkollegen empfehlen
+  </a>
 
-          <a
-            href="/dashboard"
-            style={{
-              padding: "14px 28px",
-              background: "#FFFFFF",
-              color: "#1F2937",
-              borderRadius: "10px",
-              fontWeight: 700,
-              textDecoration: "none",
-              border: "1px solid #E5E7EB",
-            }}
-          >
-            Demo ansehen
-          </a>
-        </div>
+  <a
+    href="/dashboard"
+    style={{
+      padding: "14px 28px",
+      background: "#0A84FF",
+      color: "#FFFFFF",
+      borderRadius: "10px",
+      fontWeight: 700,
+      textDecoration: "none"
+    }}
+  >
+    Kostenlos testen 5 Inserate gratis
+  </a>
+
+  <a
+    href="#demo"
+    style={{
+      padding: "14px 28px",
+      background: "transparent",
+      color: "#1F2937",
+      borderRadius: "10px",
+      fontWeight: 700,
+      textDecoration: "none"
+    }}
+  >
+    Demo ansehen
+  </a>
+</div>
 
         <div
           style={{
@@ -149,7 +159,9 @@ Kostenlos testen
             fontSize: "15px",
           }}
         >
+          Funktioniert perfekt für:<br/>
           Für Homegate, ImmoScout24, Exposé-PDF und Social Media
+        
         </div>
       </section>
 
@@ -361,20 +373,22 @@ Kostenlos testen
           border: "1px solid #F1F5F9",
         }}
       >
-        <h2 style={{ fontSize: "32px", fontWeight: 800 }}>
-          Generiert automatisch
-        </h2>
+        <h2 style={{ fontSize: "32px", fontWeight: 800, textAlign: "center" }}>
+Generiert automatisch
+</h2>
 
         <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-            gap: "14px",
-            marginTop: "20px",
-            color: "#374151",
-            lineHeight: 1.8,
-          }}
-        >
+style={{
+display: "grid",
+gridTemplateColumns: "repeat(2, minmax(0,1fr))",
+gap: "14px",
+marginTop: "20px",
+color: "#374151",
+lineHeight: 1.8,
+textAlign: "center",
+justifyItems: "center"
+}}
+>
           <div>• Immobilien-Inserat</div>
           <div>• Exposé-PDF</div>
           <div>• Homegate-Text</div>
@@ -415,7 +429,7 @@ Kostenlos testen
 
         <div style={{ marginTop: "26px" }}>
           <a
-            href="/dashboard"
+            href="https://buy.stripe.com/test_5kQ28sdozdIk3bsduy1wY00"
             style={{
               padding: "14px 28px",
               background: "#C8A24D",
@@ -426,8 +440,12 @@ Kostenlos testen
               boxShadow: "0 10px 30px rgba(200,162,77,0.25)",
             }}
           >
-            Jetzt kostenlos testen
+            Founder Zugang sichern - 19.90 CHF
+            Lifetime Preis für die ersten 30 Makler verfügbar
           </a>
+         <p style={{marginTop:"14px", fontSize:"14px", opacity:0.8}}>
+    <b>regulär 39.90 CHF / Monat</b><br/>
+</p>
         </div>
       </section>
     </main>

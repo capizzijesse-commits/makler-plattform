@@ -10,7 +10,7 @@ export default function Footer() {
       }}
     >
       <p>
-        © {new Date().getFullYear()} Helvetic Immobilien Capizzi
+        © {new Date().getFullYear()} INSERO AI
       </p>
 
       <div style={{ marginTop: "12px", display: "flex", gap: "14px", justifyContent: "center" }}>

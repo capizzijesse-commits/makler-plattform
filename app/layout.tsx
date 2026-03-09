@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 import Footer from "@/app/components/Footer";
-
+import Script from "next/script";
 export const metadata: Metadata = {
   title: "Makler Plattform",
   description: "Immobilien-Inserate Generator für die Schweiz",
@@ -15,22 +15,30 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="de-CH">
-      <body>
-          
-          <div className="container-max py-5 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              
-            </div>
+     <body>
+  <div className="container-max py-5 flex flex-wrap items-center justify-between gap-4">
+    <div className="flex items-center gap-3">
+    </div>
+  </div>
 
-           
-          
-          </div>
-      
+  {children}
 
-        {children}
+  <Script
+    src="https://www.googletagmanager.com/gtag/js?id=G-8BM9S2ZME5"
+    strategy="afterInteractive"
+  />
 
-        <Footer />
-      </body>
+  <Script id="google-analytics" strategy="afterInteractive">
+    {`
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-8BM9S2ZME5');
+    `}
+  </Script>
+
+  <Footer />
+</body>
     </html>
   );
 }
@@ -38,7 +46,7 @@ export default function RootLayout({
   <div className="flex items-center gap-3">
     <div className="badge">Makler</div>
     <div className="font-semibold text-lg">
-      Helvetic Immobilien Capizzi
+      INSERO AI
     </div>
   </div>
 
