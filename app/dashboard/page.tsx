@@ -475,10 +475,7 @@ Copy
 
     {instagramPost && (
       <div style={{ marginBottom: "20px" }}>
-        <h3>Instagram Post</h3>
-        <p style={{ whiteSpace: "pre-line" }}>
-          {instagramPost}
-        </p>
+        
       </div>
     )}
 
