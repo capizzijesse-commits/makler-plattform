@@ -298,13 +298,13 @@ await navigator.clipboard.writeText(fullText);
               {loading ? "Generiere..." : "Generieren (3 Varianten)"}
             </button>
 
-           <button
-  onClick={() => {
-    if (current?.text) {
-      navigator.clipboard.writeText(current.text);
-      alert("Text kopiert!");
-    }
-  }}
+          <button
+className="btn"
+onClick={() => {
+  if (current?.text) {
+    navigator.clipboard.writeText(current.text);
+  }
+}}
 >
 Copy
 </button>
