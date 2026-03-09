@@ -32,7 +32,7 @@ export default function Home() {
             marginBottom: "24px",
           }}
         >
-          Premium KI für Immobilienmakler
+          Für Immobilienmakler entwicklet
         </div>
 
       <div style={{
