@@ -17,7 +17,7 @@ export default function Navbar() {
             color: "#9CA3AF"
           }}
         >
-          MAKLER AI
+        
         </div>
 
         <div

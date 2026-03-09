@@ -57,8 +57,8 @@ export default function Home() {
   textAlign: "center"
 }}>
 
-INSERO 
-Der KI-Inserate-Generator
+INSERO - Immobilieninserate in Sekunden erstellen
+
 </h1>
 
 <p style={{
@@ -66,7 +66,7 @@ Der KI-Inserate-Generator
   color: "#4B5563",
   marginBottom: "35px"
 }}>
-Erstellen Sie professionelle Immobilieninserate in Sekunden statt Stunden
+Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Social Media in wenigen Sekunden statt Stunden
 </p>
 
 <div style={{ marginTop: "24px", textAlign: "center" }}>
