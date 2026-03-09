@@ -298,13 +298,16 @@ await navigator.clipboard.writeText(fullText);
               {loading ? "Generiere..." : "Generieren (3 Varianten)"}
             </button>
 
-            <button
-              onClick={copyActive}
-              disabled={!current}
-              className="btn btn-secondary"
-            >
-              Copy
-            </button>
+           <button
+  onClick={() => {
+    if (current?.text) {
+      navigator.clipboard.writeText(current.text);
+      alert("Text kopiert!");
+    }
+  }}
+>
+Copy
+</button>
 
             <button
               onClick={exportPdf}
@@ -434,9 +437,6 @@ await navigator.clipboard.writeText(fullText);
     paddingRight: "10px"
   }}
 >
-    
-    
-    
    
                 <h3>{current.title}</h3>
                 <p>{current.text}</p>
