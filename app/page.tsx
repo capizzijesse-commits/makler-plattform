@@ -71,7 +71,7 @@ Erstellen Sie professionelle Immobilieninserate in Sekunden statt Stunden
 
 <div style={{ marginTop: "24px", textAlign: "center" }}>
   <a
-    href="https://buy.stripe.com/test_SKQ28sdozd1k3bsduy1wV00K"
+    href="https://buy.stripe.com/test_5kQ28sdozdIk3bsduy1wY00"
     target="_blank"
     rel="noopener noreferrer"
     style={{
