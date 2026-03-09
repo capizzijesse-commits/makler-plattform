@@ -298,7 +298,7 @@ await navigator.clipboard.writeText(fullText);
               {loading ? "Generiere..." : "Generieren (3 Varianten)"}
             </button>
 
-          <button
+        <button
 className="btn"
 onClick={() => {
   if (current?.text) {
