@@ -299,7 +299,7 @@ await navigator.clipboard.writeText(fullText);
             </button>
 
         <button
-className="btn"
+className="btn btn-secondary"
 onClick={() => {
   if (current?.text) {
     navigator.clipboard.writeText(current.text);
