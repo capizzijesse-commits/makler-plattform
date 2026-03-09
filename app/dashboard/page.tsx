@@ -325,76 +325,72 @@ await navigator.clipboard.writeText(fullText);
               daraus mehrere professionelle Textvarianten.
             </p>
 
-            <div className="formGrid">
-            <input placeholder="Winterthur" />
-<input placeholder="4.5" />
-<input placeholder="110" />
-<input placeholder="1090000" />
-<input placeholder="Balkon, Lift, Garage, ruhige Lage" />
-<Field label="Ort / Lage">
-  <input
-    value={location}
-    placeholder="Winterthur"
-    onChange={(e) => setLocation(e.target.value)}
-    className="input"
-  />
-</Field>
+        <div className="formGrid">
+  <Field label="Ort / Lage">
+    <input
+      value={location}
+      placeholder="Winterthur"
+      onChange={(e) => setLocation(e.target.value)}
+      className="input"
+    />
+  </Field>
 
-<Field label="Objektart">
-  <input
-    value={propertyType}
-    placeholder="Wohnung"
-    onChange={(e) => setPropertyType(e.target.value)}
-    className="input"
-  />
-</Field>
+  <Field label="Zimmer">
+    <input
+      value={rooms}
+      placeholder="4.5"
+      onChange={(e) => setRooms(e.target.value)}
+      className="input"
+    />
+  </Field>
 
-<Field label="Zimmer">
-  <input
-    value={rooms}
-    placeholder="4.5"
-    onChange={(e) => setRooms(e.target.value)}
-    className="input"
-  />
-</Field>
+  <Field label="Wohnfläche (m²)">
+    <input
+      value={livingArea}
+      placeholder="110"
+      onChange={(e) => setLivingArea(e.target.value)}
+      className="input"
+    />
+  </Field>
 
-<Field label="Wohnfläche (m²)">
-  <input
-    value={livingArea}
-    placeholder="110"
-    onChange={(e) => setLivingArea(e.target.value)}
-    className="input"
-  />
-</Field>
+  <Field label="Preis (CHF)">
+    <input
+      value={price}
+      placeholder="1090000"
+      onChange={(e) => setPrice(e.target.value)}
+      className="input"
+    />
+  </Field>
 
-<Field label="Preis (CHF)">
-  <input
-    value={price}
-    placeholder="1090000"
-    onChange={(e) => setPrice(e.target.value)}
-    className="input"
-  />
-</Field>
+  <Field label="Objektart">
+    <input
+      value={propertyType}
+      placeholder="Wohnung"
+      onChange={(e) => setPropertyType(e.target.value)}
+      className="input"
+    />
+  </Field>
 
-<Field label="Stil">
-  <input
-    value={styleText}
-    placeholder="Luxus / Premium"
-    onChange={(e) => setStyleText(e.target.value)}
-    className="input"
-  />
-</Field>
+  <Field label="Stil">
+    <input
+      value={styleText}
+      placeholder="Luxus / Premium"
+      onChange={(e) => setStyleText(e.target.value)}
+      className="input"
+    />
+  </Field>
 
-<Field label="Highlights (mit Komma trennen)">
-  <input
-    value={highlights}
-    placeholder="Balkon, Lift, Garage, ruhige Lage"
-    onChange={(e) => setHighlights(e.target.value)}
-    className="input"
-  />
-</Field>
+  <Field label="Highlights (mit Komma trennen)">
+    <input
+      value={highlights}
+      placeholder="Balkon, Lift, Garage, ruhige Lage"
+      onChange={(e) => setHighlights(e.target.value)}
+      className="input"
+    />
+  </Field>
 </div>
-            <div className="divider" />
+
+<div className="divider" />
 
             <div className="miniStats">
               <MiniStat title="Markt" value="Schweiz" />
