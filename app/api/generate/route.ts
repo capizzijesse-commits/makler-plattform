@@ -21,6 +21,7 @@ export async function POST(req: NextRequest) {
 Du bist ein professioneller Immobilienmakler in der Schweiz.
 
 Erstelle 3 unterschiedliche Inserattexte für folgende Immobilie.
+Der Kaufpreis MUSS im Text klar erwähnt werden (z.B. "Kaufpreis: CHF ...").
 
 Ort: ${location}
 Zimmer: ${rooms}

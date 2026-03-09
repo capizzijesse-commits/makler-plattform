@@ -426,7 +426,14 @@ await navigator.clipboard.writeText(fullText);
             </div>
 
             {current ? (
-              <div className="outputBox">
+              <div
+  className="outputBox"
+  style={{
+    maxHeight: "500px",
+    overflowY: "auto",
+    paddingRight: "10px"
+  }}
+>
                 <h3>{current.title}</h3>
                 <p>{current.text}</p>
 
