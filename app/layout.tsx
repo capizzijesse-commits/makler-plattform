@@ -46,7 +46,7 @@ export default function RootLayout({
   <div className="flex items-center gap-3">
     <div className="badge">Makler</div>
     <div className="font-semibold text-lg">
-      INSERO AI
+      INSERAT AI
     </div>
   </div>
 
