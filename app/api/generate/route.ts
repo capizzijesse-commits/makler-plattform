@@ -44,25 +44,42 @@ Jeder Text soll enthalten:
 - Einen kurzen professionellen Call-to-Action
 
 Erstelle zusätzlich:
-- einen kurzen Instagram-Post
+- einen professionellen Instagram-Post
 - einen professionellen LinkedIn-Post
+- einen professionellen Facebook-Post
 
-Antworte nur mit gültigem JSON im folgenden Format:
+Antworte nur mit gültigem JSON in folgendem Format:
 
 {
   "variants": [
     {
       "title": "Titel",
-      "body": "Beschreibung",
-      "bullets": ["Highlight 1", "Highlight 2", "Highlight 3"],
-      "cta": "Vereinbaren Sie noch heute einen Besichtigungstermin."
+      "text": "Beschreibung",
+      "highlights": ["Highlight 1", "Highlight 2", "Highlight 3"],
+      "cta": "Vereinbaren Sie noch heute einen Besichtigungstermin.",
+      "instagramPost": "Instagram Text",
+      "linkedinPost": "LinkedIn Text",
+      "facebookPost": "Facebook Text"
+    },
+    {
+      "title": "Titel",
+      "text": "Beschreibung",
+      "highlights": ["Highlight 1", "Highlight 2", "Highlight 3"],
+      "cta": "Vereinbaren Sie noch heute einen Besichtigungstermin.",
+      "instagramPost": "Instagram Text",
+      "linkedinPost": "LinkedIn Text",
+      "facebookPost": "Facebook Text"
+    },
+    {
+      "title": "Titel",
+      "text": "Beschreibung",
+      "highlights": ["Highlight 1", "Highlight 2", "Highlight 3"],
+      "cta": "Vereinbaren Sie noch heute einen Besichtigungstermin.",
+      "instagramPost": "Instagram Text",
+      "linkedinPost": "LinkedIn Text",
+      "facebookPost": "Facebook Text"
     }
-  ],
-  "social": {
-               "instagramPost"
-               "linkedinPost"
-               "facebookPost"
-  }
+  ]
 }
 `.trim();
 
