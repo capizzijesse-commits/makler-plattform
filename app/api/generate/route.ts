@@ -103,24 +103,36 @@ function normalizeVariant(variant: any, social?: any) {
     }
 
     const normalized = {
-  variants: (json?.variants ?? []).map((v: any) => ({
-    title: v.title ?? "",
-    objectType: v.objectType ?? "",
-    price: v.price ?? "",
-    text: v.text ?? v.body ?? v.description ?? "",
-    highlights: v.highlights ?? v.bullets ?? [],
-    instagramPost:
-      v.instagramPost ?? json?.social?.instagramPost ?? json?.social?.instagram ?? "",
-    linkedinPost:
-      v.linkedinPost ?? json?.social?.linkedinPost ?? json?.social?.linkedin ?? "",
-    facebookPost:
-      v.facebookPost ?? json?.social?.facebookPost ?? json?.social?.facebook ?? "",
-    cta: v.cta ?? "",
-  })),
-};
+      variants: (json?.variants ?? []).map((v: any) => ({
+        title: v.title ?? "",
+        objectType: v.objectType ?? "",
+        price: v.price ?? "",
+        text: v.text ?? v.body ?? v.description ?? "",
+        highlights: v.highlights ?? v.bullets ?? [],
+        instagramPost:
+          v.instagramPost ??
+          json?.social?.instagramPost ??
+          json?.social?.instagram ??
+          "",
+        linkedinPost:
+          v.linkedinPost ??
+          json?.social?.linkedinPost ??
+          json?.social?.linkedin ??
+          "",
+        facebookPost:
+          v.facebookPost ??
+          json?.social?.facebookPost ??
+          json?.social?.facebook ??
+          "",
+        cta: v.cta ?? "",
+      })),
+    };
 
     return Response.json(normalized);
   } catch (err: any) {
-    return new Response(err?.message || "Server error", { status: 500 });
+    return Response.json(
+      { error: err?.message || "Server error" },
+      { status: 500 }
+    );
   }
 }
