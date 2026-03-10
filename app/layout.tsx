@@ -10,60 +10,38 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="de-CH">
-     <body>
-  <div className="container-max py-5 flex flex-wrap items-center justify-between gap-4">
-    <div className="flex items-center gap-3">
-    </div>
-  </div>
+      <body>
 
-  {children}
+        <header className="container-max py-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="badge">Makler</div>
+            <div className="font-semibold text-lg">INSERAT AI</div>
+          </div>
 
-  <Script
-    src="https://www.googletagmanager.com/gtag/js?id=G-8BM9S2ZME5"
-    strategy="afterInteractive"
-  />
+          <div className="flex items-center gap-4">
+            <a href="/login" className="text-sm font-medium">
+              Login
+            </a>
 
-  <Script id="google-analytics" strategy="afterInteractive">
-    {`
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-8BM9S2ZME5');
-    `}
-  </Script>
+            <a
+              href="/register"
+              className="bg-yellow-500 text-black px-4 py-2 rounded-lg font-medium"
+            >
+              Kostenlos testen
+            </a>
+          </div>
+        </header>
 
-  <Footer />
-</body>
+        {children}
+
+        <Footer />
+
+      </body>
     </html>
   );
 }
-<header className="container-max py-6 flex items-center justify-between">
-
-  <div className="flex items-center gap-3">
-    <div className="badge">Makler</div>
-    <div className="font-semibold text-lg">
-      INSERAT AI
-    </div>
-  </div>
-
-  <div className="flex items-center gap-4">
-
-    <a href="/login" className="text-sm font-medium">
-      Login
-    </a>
-
-    <a 
-      href="/register"
-      className="bg-yellow-500 text-black px-4 py-2 rounded-lg font-medium"
-    >
-      Kostenlos testen
-    </a>
-
-  </div>
-
-</header>
