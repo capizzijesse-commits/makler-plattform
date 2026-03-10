@@ -30,6 +30,80 @@ const [highlights, setHighlights] = useState("")
   const [loading, setLoading] = useState(false);
   const [variants, setVariants] = useState<Variant[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [plan, setPlan] = useState("free");
+const [freeGenerationsUsed, setFreeGenerationsUsed] = useState(0);
+const [showUpgrade, setShowUpgrade] = useState(false);
+async function generateText() {
+  if (plan === "free" && freeGenerationsUsed >= 5) {
+    setShowUpgrade(true);
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const response = await fetch("/api/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        location,
+        rooms,
+        livingArea,
+        price,
+        propertyType,
+        styleText,
+        highlights,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.error || "Fehler beim Generieren.");
+      return;
+    }
+
+    setVariants([
+      {
+        title: data.variants[0].title,
+        objectType: data.variants[0].objectType || propertyType,
+        price: data.variants[0].price || price,
+        text: data.variants[0].text,
+        highlights: data.variants[0].highlights || [],
+        instagramPost: data.variants[0].instagramPost || "",
+        linkedinPost: data.variants[0].linkedinPost || "",
+      },
+      {
+        title: data.variants[1].title,
+        objectType: data.variants[1].objectType || propertyType,
+        price: data.variants[1].price || price,
+        text: data.variants[1].text,
+        highlights: data.variants[1].highlights || [],
+        instagramPost: data.variants[1].instagramPost || "",
+        linkedinPost: data.variants[1].linkedinPost || "",
+      },
+      {
+        title: data.variants[2].title,
+        objectType: data.variants[2].objectType || propertyType,
+        price: data.variants[2].price || price,
+        text: data.variants[2].text,
+        highlights: data.variants[2].highlights || [],
+        instagramPost: data.variants[2].instagramPost || "",
+        linkedinPost: data.variants[2].linkedinPost || "",
+      },
+    ]);
+
+    if (plan === "free") {
+      setFreeGenerationsUsed((prev) => prev + 1);
+    }
+  } catch (error) {
+    alert("Fehler beim Generieren.");
+  } finally {
+    setLoading(false);
+  }
+}
   {(instagramPost || linkedinPost) && (
   <div
     style={{
@@ -108,117 +182,84 @@ const [highlights, setHighlights] = useState("")
 
   const current = variants[activeIndex];
 
-  async function generateText() {
-    try {
-      setLoading(true);
-
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          location,
-          propertyType,
-          rooms,
-          livingArea,
-          price,
-          styleText,
-          highlights,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data?.error || "Fehler beim Generieren.");
-        return;
-      }
-
-    
-     setVariants([
-  {
-    title: data.variants[0].title,
-    objectType: data.variants[0].objectType || propertyType,
-    price: data.variants[0].price || price,
-    text: data.variants[0].text,
-    highlights: data.variants[0].highlights || [],
-    instagramPost: data.variants[0].instagramPost || "",
-    linkedinPost: data.variants[0].linkedinPost || "",
-  },
-  {
-    title: data.variants[1].title,
-    objectType: data.variants[1].objectType || propertyType,
-    price: data.variants[1].price || price,
-    text: data.variants[1].text,
-    highlights: data.variants[1].highlights || [],
-    instagramPost: data.variants[1].instagramPost || "",
-    linkedinPost: data.variants[1].linkedinPost || "",
-  },
-  {
-    title: data.variants[2].title,
-    objectType: data.variants[2].objectType || propertyType,
-    price: data.variants[2].price || price,
-    text: data.variants[2].text,
-    highlights: data.variants[2].highlights || [],
-    instagramPost: data.variants[2].instagramPost || "",
-    linkedinPost: data.variants[2].linkedinPost || "",
-  }
-]);
-setActiveIndex(0);
-setInstagramPost(data?.social?.instagram || "");
-setLinkedinPost(data?.social?.linkedin || "");
-{(instagramPost || linkedinPost) && (
-  <div
-    style={{
-      marginTop: "30px",
-      background: "#0f172a",
-      borderRadius: "16px",
-      padding: "20px",
-      display: "grid",
-      gap: "20px",
-    }}
-  >
-    {instagramPost && (
-      <div>
-        <h3 style={{ color: "#fff", marginBottom: "10px" }}>
-          Instagram Post
-        </h3>
-
-        <p style={{ color: "#cbd5f5", whiteSpace: "pre-line" }}>
-          {instagramPost}
-        </p>
-      </div>
-    )}
-
-    {linkedinPost && (
-      <div>
-        <h3 style={{ color: "#fff", marginBottom: "10px" }}>
-          LinkedIn Post
-        </h3>
-
-        <p style={{ color: "#cbd5f5", whiteSpace: "pre-line" }}>
-          {linkedinPost}
-        </p>
-      </div>
-    )}
-  </div>
-)}
-
-    } catch (error) {
-      console.error(error);
-      alert("Verbindungsfehler beim Generieren.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  
 
   async function copyActive() {
     if (!current) {
       alert("Bitte zuerst eine Variante generieren.");
       return;
     }
+async function generateText() {
+  if (plan === "free" && freeGenerationsUsed >= 5) {
+    setShowUpgrade(true);
+    return;
+  }
 
+  setLoading(true);
+
+  try {
+    const response = await fetch("/api/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        location,
+        rooms,
+        livingArea,
+        price,
+        propertyType,
+        styleText,
+        highlights,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.error || "Fehler beim Generieren.");
+      return;
+    }
+
+    setVariants([
+      {
+        title: data.variants[0].title,
+        objectType: data.variants[0].objectType || propertyType,
+        price: data.variants[0].price || price,
+        text: data.variants[0].text,
+        highlights: data.variants[0].highlights || [],
+        instagramPost: data.variants[0].instagramPost || "",
+        linkedinPost: data.variants[0].linkedinPost || "",
+      },
+      {
+        title: data.variants[1].title,
+        objectType: data.variants[1].objectType || propertyType,
+        price: data.variants[1].price || price,
+        text: data.variants[1].text,
+        highlights: data.variants[1].highlights || [],
+        instagramPost: data.variants[1].instagramPost || "",
+        linkedinPost: data.variants[1].linkedinPost || "",
+      },
+      {
+        title: data.variants[2].title,
+        objectType: data.variants[2].objectType || propertyType,
+        price: data.variants[2].price || price,
+        text: data.variants[2].text,
+        highlights: data.variants[2].highlights || [],
+        instagramPost: data.variants[2].instagramPost || "",
+        linkedinPost: data.variants[2].linkedinPost || "",
+      },
+    ]);
+
+    if (plan === "free") {
+      setFreeGenerationsUsed((prev) => prev + 1);
+    }
+  } catch (error) {
+    alert("Fehler beim Generieren.");
+  } finally {
+    setLoading(false);
+  }
+}
     const bulletText =
       current.highlights && current.highlights.length > 0
         ? `\n\nHighlights\n${current.highlights.map((h) => `• ${h}`).join("\n")}`
