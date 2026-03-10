@@ -4,8 +4,12 @@ import { useState } from "react";
 
 type Variant = {
   title: string;
+  objectType?: string;
+  price?: string;
   text: string;
   highlights?: string[];
+  instagramPost?: string;
+  linkedinPost?: string;
   cta?: string;
 };
 
@@ -131,7 +135,36 @@ const [highlights, setHighlights] = useState("")
         return;
       }
 
-     setVariants(data.variants || []);
+    
+     setVariants([
+  {
+    title: data.variants[0].title,
+    objectType: data.variants[0].objectType || propertyType,
+    price: data.variants[0].price || price,
+    text: data.variants[0].text,
+    highlights: data.variants[0].highlights || [],
+    instagramPost: data.variants[0].instagramPost || "",
+    linkedinPost: data.variants[0].linkedinPost || "",
+  },
+  {
+    title: data.variants[1].title,
+    objectType: data.variants[1].objectType || propertyType,
+    price: data.variants[1].price || price,
+    text: data.variants[1].text,
+    highlights: data.variants[1].highlights || [],
+    instagramPost: data.variants[1].instagramPost || "",
+    linkedinPost: data.variants[1].linkedinPost || "",
+  },
+  {
+    title: data.variants[2].title,
+    objectType: data.variants[2].objectType || propertyType,
+    price: data.variants[2].price || price,
+    text: data.variants[2].text,
+    highlights: data.variants[2].highlights || [],
+    instagramPost: data.variants[2].instagramPost || "",
+    linkedinPost: data.variants[2].linkedinPost || "",
+  }
+]);
 setActiveIndex(0);
 setInstagramPost(data?.social?.instagram || "");
 setLinkedinPost(data?.social?.linkedin || "");
@@ -359,7 +392,7 @@ Copy
   <Field label="Preis (CHF)">
     <input
       value={price}
-      placeholder="1090000"
+      placeholder="1'000'000"
       onChange={(e) => setPrice(e.target.value)}
       className="input"
     />

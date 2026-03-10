@@ -321,46 +321,71 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
   </h2>
 
   <div
+  style={{
+    background: "#fff",
+    borderRadius: "20px",
+    padding: "40px",
+    boxShadow: "0 8px 30px rgba(0,0,0,0.06)",
+    maxWidth: "900px",
+    margin: "0 auto"
+  }}
+>
+  <h3
     style={{
-      background: "#FFFFFF",
-      borderRadius: "18px",
-      padding: "40px",
-      border: "1px solid #E5E7EB",
-      boxShadow: "0 10px 30px rgba(0,0,0,0.05)",
-      maxWidth: "800px",
-      margin: "0 auto",
-      lineHeight: 1.7,
-      color: "#374151",
+      fontSize: "24px",
+      fontWeight: 700,
+      color: "#27364a",
+      marginBottom: "18px"
     }}
   >
-    <h3 style={{ fontSize: "22px", fontWeight: 700 }}>
-      Moderne 4.5 Zimmer Wohnung in Winterthur
-    </h3>
+    Moderne 4.5 Zimmer Wohnung in Winterthur
+  </h3>
 
-    <p style={{ marginTop: "16px" }}>
-      Diese stilvolle Wohnung bietet auf 110 m² grosszügigen Wohnraum in ruhiger Lage.
-      Der Balkon lädt zum Entspannen ein, während der Lift einen komfortablen Zugang
-      ermöglicht.
-    </p>
+  <p style={{ marginBottom: "8px", color: "#4b5563", fontSize: "16px" }}>
+    <strong>Objektart:</strong> Eigentumswohnung
+  </p>
 
-    <p style={{ marginTop: "16px" }}>
-      Die Wohnung ist ideal für Familien oder Paare, die Wert auf eine ruhige
-      Umgebung mit guter Anbindung legen.
-    </p>
+  <p style={{ marginBottom: "22px", color: "#4b5563", fontSize: "16px" }}>
+    <strong>Preis:</strong> CHF 1&apos;090&apos;000
+  </p>
 
-    <p style={{ marginTop: "20px", fontWeight: 600 }}>
-      Highlights
-    </p>
+  <p style={{ color: "#4b5563", lineHeight: 1.8, marginBottom: "18px" }}>
+    Diese stilvolle Wohnung bietet auf 110 m² grosszügigen Wohnraum in ruhiger Lage.
+    Der Balkon lädt zum Entspannen ein, während der Lift einen komfortablen Zugang ermöglicht.
+  </p>
 
-    <ul style={{ marginTop: "10px", paddingLeft: "20px" }}>
-      <li>4.5 Zimmer</li>
-      <li>110 m² Wohnfläche</li>
-      <li>Balkon</li>
-      <li>Lift</li>
-      <li>Garage</li>
-      <li>Ruhige Lage</li>
-    </ul>
-  </div>
+  <p style={{ color: "#4b5563", lineHeight: 1.8, marginBottom: "24px" }}>
+    Die Wohnung ist ideal für Familien oder Paare, die Wert auf eine ruhige Umgebung
+    mit guter Anbindung legen.
+  </p>
+
+  <h4
+    style={{
+      fontSize: "18px",
+      fontWeight: 700,
+      color: "#27364a",
+      marginBottom: "14px"
+    }}
+  >
+    Highlights
+  </h4>
+
+  <ul
+    style={{
+      paddingLeft: "20px",
+      margin: 0,
+      color: "#4b5563",
+      lineHeight: 1.9
+    }}
+  >
+    <li>4.5 Zimmer</li>
+    <li>110 m² Wohnfläche</li>
+    <li>Balkon</li>
+    <li>Lift</li>
+    <li>Garage</li>
+    <li>Ruhige Lage</li>
+  </ul>
+</div>
 </section>
       <section
         style={{
