@@ -550,6 +550,7 @@ Copy
                       ))}
                     </ul>
                   </div>
+                  
                 )}
 {(current?.instagramPost || current?.linkedinPost || current?.facebookPost) && (
   <div
@@ -594,8 +595,7 @@ Copy
         </p>
       </div>
     )}
-
-    {current?.facebookPost && (
+     {current?.facebookPost && (
       <div
         style={{
           background: "#ffffff",
