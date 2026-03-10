@@ -37,38 +37,57 @@ Stil 1: Klassisch und sachlich (typisches Homegate Inserat)
 Stil 2: Emotional und verkaufsstark
 Stil 3: Luxus / Premium Stil
 
-Jeder Text soll enthalten:
-- Titel
-- Beschreibung
-- Highlights als Liste
-- Einen kurzen professionellen Call-to-Action
+Jede Variante soll enthalten:
+- title
+- objectType
+- price
+- text
+- highlights (als Liste)
+- cta
+- instagramPost
+- linkedinPost
+- facebookPost
 
-Erstelle zusätzlich:
-- einen professionellen Instagram-Post
-- einen professionellen LinkedIn-Post
-- einen professionellen Facebook-Post
+Antworte nur mit gültigem JSON in genau diesem Format:
 
-function normalizeVariant(variant: any, social?: any) {
-  return {
-    title: variant?.title || "",
-    objectType: variant?.objectType || "",
-    price: variant?.price || "",
-    text: variant?.text || variant?.body || variant?.description || "",
-    highlights: Array.isArray(variant?.highlights)
-      ? variant.highlights
-      : Array.isArray(variant?.bullets)
-      ? variant.bullets
-      : [],
-    instagramPost:
-      variant?.instagramPost || social?.instagramPost || "",
-    linkedinPost:
-      variant?.linkedinPost || social?.linkedinPost || "",
-    facebookPost:
-      variant?.facebookPost || social?.facebookPost || "",
-    cta: variant?.cta || "",
-  };
+{
+  "variants": [
+    {
+      "title": "Titel Variante 1",
+      "objectType": "${propertyType}",
+      "price": "${price}",
+      "text": "Beschreibung der Immobilie in 3 bis 5 Sätzen.",
+      "highlights": ["Highlight 1", "Highlight 2", "Highlight 3"],
+      "cta": "Vereinbaren Sie noch heute einen Besichtigungstermin.",
+      "instagramPost": "Kurzer emotionaler Instagram-Post.",
+      "linkedinPost": "Professioneller LinkedIn-Post.",
+      "facebookPost": "Facebook-Post für Interessenten."
+    },
+    {
+      "title": "Titel Variante 2",
+      "objectType": "${propertyType}",
+      "price": "${price}",
+      "text": "Beschreibung der Immobilie in 3 bis 5 Sätzen.",
+      "highlights": ["Highlight 1", "Highlight 2", "Highlight 3"],
+      "cta": "Vereinbaren Sie noch heute einen Besichtigungstermin.",
+      "instagramPost": "Kurzer emotionaler Instagram-Post.",
+      "linkedinPost": "Professioneller LinkedIn-Post.",
+      "facebookPost": "Facebook-Post für Interessenten."
+    },
+    {
+      "title": "Titel Variante 3",
+      "objectType": "${propertyType}",
+      "price": "${price}",
+      "text": "Beschreibung der Immobilie in 3 bis 5 Sätzen.",
+      "highlights": ["Highlight 1", "Highlight 2", "Highlight 3"],
+      "cta": "Vereinbaren Sie noch heute einen Besichtigungstermin.",
+      "instagramPost": "Kurzer emotionaler Instagram-Post.",
+      "linkedinPost": "Professioneller LinkedIn-Post.",
+      "facebookPost": "Facebook-Post für Interessenten."
+    }
+  ]
 }
-`.trim();
+    `.trim();
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -105,26 +124,14 @@ function normalizeVariant(variant: any, social?: any) {
     const normalized = {
       variants: (json?.variants ?? []).map((v: any) => ({
         title: v.title ?? "",
-        objectType: v.objectType ?? "",
-        price: v.price ?? "",
+        objectType: v.objectType ?? propertyType ?? "",
+        price: v.price ?? price ?? "",
         text: v.text ?? v.body ?? v.description ?? "",
         highlights: v.highlights ?? v.bullets ?? [],
-        instagramPost:
-          v.instagramPost ??
-          json?.social?.instagramPost ??
-          json?.social?.instagram ??
-          "",
-        linkedinPost:
-          v.linkedinPost ??
-          json?.social?.linkedinPost ??
-          json?.social?.linkedin ??
-          "",
-        facebookPost:
-          v.facebookPost ??
-          json?.social?.facebookPost ??
-          json?.social?.facebook ??
-          "",
         cta: v.cta ?? "",
+        instagramPost: v.instagramPost ?? "",
+        linkedinPost: v.linkedinPost ?? "",
+        facebookPost: v.facebookPost ?? "",
       })),
     };
 
