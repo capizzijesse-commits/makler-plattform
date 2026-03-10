@@ -75,6 +75,7 @@ async function generateText() {
         highlights: data.variants[0].highlights || [],
         instagramPost: data.variants[0].instagramPost || "",
         linkedinPost: data.variants[0].linkedinPost || "",
+        facebookPost: data.variants[0].facebookPost || "",
       },
       {
         title: data.variants[1].title,
@@ -84,6 +85,7 @@ async function generateText() {
         highlights: data.variants[1].highlights || [],
         instagramPost: data.variants[1].instagramPost || "",
         linkedinPost: data.variants[1].linkedinPost || "",
+        facebookPost: data.variants[0].facebookPost || "",
       },
       {
         title: data.variants[2].title,
@@ -93,6 +95,7 @@ async function generateText() {
         highlights: data.variants[2].highlights || [],
         instagramPost: data.variants[2].instagramPost || "",
         linkedinPost: data.variants[2].linkedinPost || "",
+        facebookPost: data.variants[0].facebookPost || "",
       },
     ]);
 

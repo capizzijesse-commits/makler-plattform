@@ -59,8 +59,9 @@ Antworte nur mit gültigem JSON im folgenden Format:
     }
   ],
   "social": {
-    "instagram": "Instagram Post",
-    "linkedin": "LinkedIn Post"
+               "instagramPost"
+               "linkedinPost"
+               "facebookPost"
   }
 }
 `.trim();
