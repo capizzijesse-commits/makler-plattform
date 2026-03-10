@@ -443,7 +443,6 @@ Copy
   <Field label="Preis (CHF)">
     <input
       value={price}
-      placeholder="1'095'000"
       onChange={(e) => setPrice(e.target.value)}
       className="input"
     />
