@@ -522,10 +522,35 @@ Copy
 >
    
                 <h3>{current.title}</h3>
-                <pre style={{ fontSize: "12px", whiteSpace: "pre-wrap", color: "red" }}>
-  {JSON.stringify(current, null, 2)}
-</pre>
-             
+                
+             <p style={{ marginTop: "16px" }}>
+{current.text}
+</p>
+
+{current.highlights && current.highlights.length > 0 && (
+<ul style={{ marginTop: "16px" }}>
+{current.highlights.map((h: string, i: number) => (
+<li key={i}>{h}</li>
+))}
+</ul>
+)}
+
+<p style={{ marginTop: "16px", fontWeight: "bold" }}>
+{current.cta}
+</p>
+
+<div style={{ marginTop: "24px" }}>
+
+<h4>Instagram</h4>
+<p>{current.instagramPost}</p>
+
+<h4>LinkedIn</h4>
+<p>{current.linkedinPost}</p>
+
+<h4>Facebook</h4>
+<p>{current.facebookPost}</p>
+
+</div>
 
                 {current.highlights && current.highlights.length > 0 && (
                   <div style={{ marginTop: "24px" }}>
