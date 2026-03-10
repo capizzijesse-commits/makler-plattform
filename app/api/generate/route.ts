@@ -48,53 +48,25 @@ Erstelle zusätzlich:
 - einen professionellen LinkedIn-Post
 - einen professionellen Facebook-Post
 
-Antworte nur mit gültigem JSON im folgenden Format:
-
-{
-  "variants": [
-    {
-      "title": "Titel des Inserats",
-      "objectType": "Wohnung",
-      "price": "CHF Preis",
-      "text": "Ausführliche Beschreibung der Immobilie (3-5 Sätze).",
-      "highlights": [
-        "Highlight 1",
-        "Highlight 2",
-        "Highlight 3"
-      ],
-      "instagramPost": "Kurzer emotionaler Instagram-Post mit passenden Emojis.",
-      "linkedinPost": "Professioneller LinkedIn-Post für Immobilienmakler.",
-      "facebookPost": "Facebook-Post für Immobilieninteressenten."
-    },
-    {
-      "title": "Titel Variante 2",
-      "objectType": "Wohnung",
-      "price": "CHF Preis",
-      "text": "Ausführliche Beschreibung der Immobilie.",
-      "highlights": [
-        "Highlight 1",
-        "Highlight 2",
-        "Highlight 3"
-      ],
-      "instagramPost": "Instagram-Post",
-      "linkedinPost": "LinkedIn-Post",
-      "facebookPost": "Facebook-Post"
-    },
-    {
-      "title": "Titel Variante 3",
-      "objectType": "Wohnung",
-      "price": "CHF Preis",
-      "text": "Ausführliche Beschreibung der Immobilie.",
-      "highlights": [
-        "Highlight 1",
-        "Highlight 2",
-        "Highlight 3"
-      ],
-      "instagramPost": "Instagram-Post",
-      "linkedinPost": "LinkedIn-Post",
-      "facebookPost": "Facebook-Post"
-    }
-  ]
+function normalizeVariant(variant: any, social?: any) {
+  return {
+    title: variant?.title || "",
+    objectType: variant?.objectType || "",
+    price: variant?.price || "",
+    text: variant?.text || variant?.body || variant?.description || "",
+    highlights: Array.isArray(variant?.highlights)
+      ? variant.highlights
+      : Array.isArray(variant?.bullets)
+      ? variant.bullets
+      : [],
+    instagramPost:
+      variant?.instagramPost || social?.instagramPost || "",
+    linkedinPost:
+      variant?.linkedinPost || social?.linkedinPost || "",
+    facebookPost:
+      variant?.facebookPost || social?.facebookPost || "",
+    cta: variant?.cta || "",
+  };
 }
 `.trim();
 
@@ -131,17 +103,21 @@ Antworte nur mit gültigem JSON im folgenden Format:
     }
 
     const normalized = {
-      variants: (json?.variants ?? []).map((v: any) => ({
-        title: v.title ?? "",
-        text: v.body ?? "",
-        highlights: v.bullets ?? [],
-        cta: v.cta ?? "",
-      })),
-      social: {
-        instagram: json?.social?.instagram ?? "",
-        linkedin: json?.social?.linkedin ?? "",
-      },
-    };
+  variants: (json?.variants ?? []).map((v: any) => ({
+    title: v.title ?? "",
+    objectType: v.objectType ?? "",
+    price: v.price ?? "",
+    text: v.text ?? v.body ?? v.description ?? "",
+    highlights: v.highlights ?? v.bullets ?? [],
+    instagramPost:
+      v.instagramPost ?? json?.social?.instagramPost ?? json?.social?.instagram ?? "",
+    linkedinPost:
+      v.linkedinPost ?? json?.social?.linkedinPost ?? json?.social?.linkedin ?? "",
+    facebookPost:
+      v.facebookPost ?? json?.social?.facebookPost ?? json?.social?.facebook ?? "",
+    cta: v.cta ?? "",
+  })),
+};
 
     return Response.json(normalized);
   } catch (err: any) {
