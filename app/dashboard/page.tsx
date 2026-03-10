@@ -62,7 +62,7 @@ async function generateText() {
     const data = await response.json();
 
     if (!response.ok) {
-      alert(data.error || "Fehler beim Generieren.");
+      alert(JSON.stringify(data));
       return;
     }
 
