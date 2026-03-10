@@ -48,36 +48,51 @@ Erstelle zusätzlich:
 - einen professionellen LinkedIn-Post
 - einen professionellen Facebook-Post
 
-Antworte nur mit gültigem JSON in folgendem Format:
+Antworte nur mit gültigem JSON im folgenden Format:
 
 {
   "variants": [
     {
-      "title": "Titel",
-      "text": "Beschreibung",
-      "highlights": ["Highlight 1", "Highlight 2", "Highlight 3"],
-      "cta": "Vereinbaren Sie noch heute einen Besichtigungstermin.",
-      "instagramPost": "Instagram Text",
-      "linkedinPost": "LinkedIn Text",
-      "facebookPost": "Facebook Text"
+      "title": "Titel des Inserats",
+      "objectType": "Wohnung",
+      "price": "CHF Preis",
+      "text": "Ausführliche Beschreibung der Immobilie (3-5 Sätze).",
+      "highlights": [
+        "Highlight 1",
+        "Highlight 2",
+        "Highlight 3"
+      ],
+      "instagramPost": "Kurzer emotionaler Instagram-Post mit passenden Emojis.",
+      "linkedinPost": "Professioneller LinkedIn-Post für Immobilienmakler.",
+      "facebookPost": "Facebook-Post für Immobilieninteressenten."
     },
     {
-      "title": "Titel",
-      "text": "Beschreibung",
-      "highlights": ["Highlight 1", "Highlight 2", "Highlight 3"],
-      "cta": "Vereinbaren Sie noch heute einen Besichtigungstermin.",
-      "instagramPost": "Instagram Text",
-      "linkedinPost": "LinkedIn Text",
-      "facebookPost": "Facebook Text"
+      "title": "Titel Variante 2",
+      "objectType": "Wohnung",
+      "price": "CHF Preis",
+      "text": "Ausführliche Beschreibung der Immobilie.",
+      "highlights": [
+        "Highlight 1",
+        "Highlight 2",
+        "Highlight 3"
+      ],
+      "instagramPost": "Instagram-Post",
+      "linkedinPost": "LinkedIn-Post",
+      "facebookPost": "Facebook-Post"
     },
     {
-      "title": "Titel",
-      "text": "Beschreibung",
-      "highlights": ["Highlight 1", "Highlight 2", "Highlight 3"],
-      "cta": "Vereinbaren Sie noch heute einen Besichtigungstermin.",
-      "instagramPost": "Instagram Text",
-      "linkedinPost": "LinkedIn Text",
-      "facebookPost": "Facebook Text"
+      "title": "Titel Variante 3",
+      "objectType": "Wohnung",
+      "price": "CHF Preis",
+      "text": "Ausführliche Beschreibung der Immobilie.",
+      "highlights": [
+        "Highlight 1",
+        "Highlight 2",
+        "Highlight 3"
+      ],
+      "instagramPost": "Instagram-Post",
+      "linkedinPost": "LinkedIn-Post",
+      "facebookPost": "Facebook-Post"
     }
   ]
 }
