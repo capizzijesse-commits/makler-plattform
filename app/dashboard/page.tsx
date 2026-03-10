@@ -10,6 +10,7 @@ type Variant = {
   highlights?: string[];
   instagramPost?: string;
   linkedinPost?: string;
+  facebookPost?: string;
   cta?: string;
 };
 
@@ -222,34 +223,40 @@ async function generateText() {
     }
 
     setVariants([
-      {
-        title: data.variants[0].title,
-        objectType: data.variants[0].objectType || propertyType,
-        price: data.variants[0].price || price,
-        text: data.variants[0].text,
-        highlights: data.variants[0].highlights || [],
-        instagramPost: data.variants[0].instagramPost || "",
-        linkedinPost: data.variants[0].linkedinPost || "",
-      },
-      {
-        title: data.variants[1].title,
-        objectType: data.variants[1].objectType || propertyType,
-        price: data.variants[1].price || price,
-        text: data.variants[1].text,
-        highlights: data.variants[1].highlights || [],
-        instagramPost: data.variants[1].instagramPost || "",
-        linkedinPost: data.variants[1].linkedinPost || "",
-      },
-      {
-        title: data.variants[2].title,
-        objectType: data.variants[2].objectType || propertyType,
-        price: data.variants[2].price || price,
-        text: data.variants[2].text,
-        highlights: data.variants[2].highlights || [],
-        instagramPost: data.variants[2].instagramPost || "",
-        linkedinPost: data.variants[2].linkedinPost || "",
-      },
-    ]);
+  {
+    title: data.variants[0].title,
+    objectType: data.variants[0].objectType || propertyType,
+    price: data.variants[0].price || price,
+    text: data.variants[0].text,
+    highlights: data.variants[0].highlights || [],
+    instagramPost: data.variants[0].instagramPost || "",
+    linkedinPost: data.variants[0].linkedinPost || "",
+    facebookPost: data.variants[0].facebookPost || "",
+    cta: data.variants[0].cta || "",
+  },
+  {
+    title: data.variants[1].title,
+    objectType: data.variants[1].objectType || propertyType,
+    price: data.variants[1].price || price,
+    text: data.variants[1].text,
+    highlights: data.variants[1].highlights || [],
+    instagramPost: data.variants[1].instagramPost || "",
+    linkedinPost: data.variants[1].linkedinPost || "",
+    facebookPost: data.variants[1].facebookPost || "",
+    cta: data.variants[1].cta || "",
+  },
+  {
+    title: data.variants[2].title,
+    objectType: data.variants[2].objectType || propertyType,
+    price: data.variants[2].price || price,
+    text: data.variants[2].text,
+    highlights: data.variants[2].highlights || [],
+    instagramPost: data.variants[2].instagramPost || "",
+    linkedinPost: data.variants[2].linkedinPost || "",
+    facebookPost: data.variants[2].facebookPost || "",
+    cta: data.variants[2].cta || "",
+  },
+]);
 
     if (plan === "free") {
       setFreeGenerationsUsed((prev) => prev + 1);
@@ -544,16 +551,67 @@ Copy
                     </ul>
                   </div>
                 )}
-                {(instagramPost || linkedinPost) && (
-  <div style={{ marginTop: "30px" }}>
-
-    {instagramPost && (
-      <div style={{ marginBottom: "20px" }}>
-        
+{(current?.instagramPost || current?.linkedinPost || current?.facebookPost) && (
+  <div
+    style={{
+      marginTop: "24px",
+      display: "grid",
+      gap: "16px",
+    }}
+  >
+    {current?.instagramPost && (
+      <div
+        style={{
+          background: "#ffffff",
+          borderRadius: "20px",
+          padding: "20px",
+          border: "1px solid rgba(15,23,42,0.08)",
+        }}
+      >
+        <h3 style={{ marginBottom: "10px", fontSize: "18px", fontWeight: 800 }}>
+          Instagram Post
+        </h3>
+        <p style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>
+          {current.instagramPost}
+        </p>
       </div>
     )}
 
+    {current?.linkedinPost && (
+      <div
+        style={{
+          background: "#ffffff",
+          borderRadius: "20px",
+          padding: "20px",
+          border: "1px solid rgba(15,23,42,0.08)",
+        }}
+      >
+        <h3 style={{ marginBottom: "10px", fontSize: "18px", fontWeight: 800 }}>
+          LinkedIn Post
+        </h3>
+        <p style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>
+          {current.linkedinPost}
+        </p>
+      </div>
+    )}
 
+    {current?.facebookPost && (
+      <div
+        style={{
+          background: "#ffffff",
+          borderRadius: "20px",
+          padding: "20px",
+          border: "1px solid rgba(15,23,42,0.08)",
+        }}
+      >
+        <h3 style={{ marginBottom: "10px", fontSize: "18px", fontWeight: 800 }}>
+          Facebook Post
+        </h3>
+        <p style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>
+          {current.facebookPost}
+        </p>
+      </div>
+    )}
   </div>
 )}
               </div>
