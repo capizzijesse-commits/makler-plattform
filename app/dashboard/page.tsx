@@ -522,7 +522,9 @@ Copy
 >
    
                 <h3>{current.title}</h3>
-                <p>{current.text}</p>
+                <pre style={{ fontSize: "12px", whiteSpace: "pre-wrap", color: "red" }}>
+  {JSON.stringify(current, null, 2)}
+</pre>
              
 
                 {current.highlights && current.highlights.length > 0 && (
