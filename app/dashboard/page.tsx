@@ -20,7 +20,7 @@ const [linkedinPost, setLinkedinPost] = useState("");
 const [propertyType, setPropertyType] = useState("")
 const [rooms, setRooms] = useState("")
 const [livingArea, setLivingArea] = useState("")
-const [price, setPrice] = useState("")
+const [price, setPrice] = useState("1'095'000")
 const [styleText, setStyleText] = useState("")
 const [highlights, setHighlights] = useState("")
     
@@ -433,7 +433,7 @@ Copy
   <Field label="Preis (CHF)">
     <input
       value={price}
-      placeholder="1'000'000"
+      placeholder="1'095'000"
       onChange={(e) => setPrice(e.target.value)}
       className="input"
     />
