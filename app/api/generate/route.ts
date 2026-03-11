@@ -157,8 +157,13 @@ Wichtig:
     title: v.title ?? "",
     objectType: v.objectType ?? propertyType ?? "",
     price: v.price ?? price ?? "",
-    text: (v.body ?? v.text ?? "").split("Instagram")[0],
-    body: (v.body ?? v.text ?? "").split("Instagram")[0],
+   text: (v.body ?? v.text ?? "")
+  .split(/Instagram|LinkedIn|Facebook|Highlights/i)[0]
+  .trim(),
+
+body: (v.body ?? v.text ?? "")
+  .split(/Instagram|LinkedIn|Facebook|Highlights/i)[0]
+  .trim(),
     highlights: v.bullets ?? v.highlights ?? [],
     bullets: v.bullets ?? v.highlights ?? [],
     cta: v.cta ?? "",
