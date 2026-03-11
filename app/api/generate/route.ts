@@ -31,6 +31,9 @@ WICHTIG:
 - Die Highlights müssen separat zurückgegeben werden.
 - Schreibe keine Platzhalter.
 - Schreibe natürliches, hochwertiges Deutsch wie in echten Immobilieninseraten in der Schweiz.
+- Erstelle für Instagram, LinkedIn und Facebook jeweils passende Hashtags.
+- Gib die Hashtags separat in den Feldern instagramHashtags, linkedinHashtags und facebookHashtags zurück.
+- Keine Hashtags im normalen Beschreibungstext.
 
 Objektdaten:
 - Ort/Lage: ${location}
@@ -54,6 +57,9 @@ Format:
       "instagramPost": "Kurzer emotionaler Instagram-Post",
       "linkedinPost": "Etwas professioneller LinkedIn-Post",
       "facebookPost": "Etwas ausführlicher Facebook-Post"
+      "instagramHashtags": "#Immobilien #Zürich #Wohnung #Wohntraum",
+      "linkedinHashtags": "#Immobilien #RealEstate #Zürich #Wohnen",
+      "facebookHashtags": "#Immobilien #Zürich #Familienwohnung #Wohnung"
     },
     {
       "title": "Titel 2",
