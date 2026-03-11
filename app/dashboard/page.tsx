@@ -572,36 +572,58 @@ className="input"
   }}
 >
    
-                <h3>{current.title}</h3>
-                
-             <p style={{ marginTop: "16px" }}>
-{current.text}
+               <h3>{current.title}</h3>
+
+<p style={{ marginTop: "16px", lineHeight: "1.6" }}>
+  {(current.text || "")
+    .split(/Instagram|LinkedIn|Facebook|Highlights/i)[0]
+    .trim()}
 </p>
 
-{current.highlights && current.highlights.length > 0 && (
-<ul style={{ marginTop: "16px" }}>
-{current.highlights.map((h: string, i: number) => (
-<li key={i}>{h}</li>
-))}
-</ul>
+{(current.highlights || []).length > 0 && (
+  <div style={{ marginTop: "24px" }}>
+    <div style={{ fontWeight: 600, marginBottom: "10px" }}>
+      Highlights
+    </div>
+
+    <ul style={{ paddingLeft: "20px", lineHeight: "1.8" }}>
+      {(current.highlights || []).map((h: string, i: number) => (
+        <li key={i}>{h}</li>
+      ))}
+    </ul>
+  </div>
 )}
+
+<div style={{ marginTop: "32px", display: "grid", gap: "16px" }}>
+
+  {current.instagramPost && (
+    <div>
+      <div style={{ fontWeight: 600 }}>Instagram Post</div>
+      <p>{current.instagramPost}</p>
+    </div>
+  )}
+
+  {current.linkedinPost && (
+    <div>
+      <div style={{ fontWeight: 600 }}>LinkedIn Post</div>
+      <p>{current.linkedinPost}</p>
+    </div>
+  )}
+
+  {current.facebookPost && (
+    <div>
+      <div style={{ fontWeight: 600 }}>Facebook Post</div>
+      <p>{current.facebookPost}</p>
+    </div>
+  )}
+
+</div>
 
 <p style={{ marginTop: "16px", fontWeight: "bold" }}>
 {current.cta}
 </p>
 
-<div style={{ marginTop: "24px" }}>
 
-<h4>Instagram</h4>
-<p>{current.instagramPost}</p>
-
-<h4>LinkedIn</h4>
-<p>{current.linkedinPost}</p>
-
-<h4>Facebook</h4>
-<p>{current.facebookPost}</p>
-
-</div>
 
                 {current.highlights && current.highlights.length > 0 && (
                   <div style={{ marginTop: "24px" }}>
