@@ -84,6 +84,37 @@ Antworte nur mit gültigem JSON in genau diesem Format:
       "instagramPost": "Kurzer emotionaler Instagram-Post.",
       "linkedinPost": "Professioneller LinkedIn-Post.",
       "facebookPost": "Facebook-Post für Interessenten."
+      Wichtig:
+- "body" darf nur die eigentliche Immobilienbeschreibung enthalten.
+- Keine Highlights im body.
+- Keine Instagram-, LinkedIn- oder Facebook-Texte im body.
+- Highlights nur im Feld "bullets".
+- Social Media Texte nur in den Feldern "instagramPost", "linkedinPost" und "facebookPost".
+- Kein Feld doppelt ausgeben.
+Antworte ausschließlich im folgenden JSON Format:
+
+{
+  "variants": [
+    {
+      "title": "Titel der Immobilie",
+      "body": "Nur die Beschreibung der Immobilie, keine Highlights und keine Social Media Texte",
+      "bullets": ["Highlight 1", "Highlight 2", "Highlight 3"],
+      "cta": "Vereinbaren Sie noch heute einen Besichtigungstermin.",
+      "instagramPost": "Instagram Text",
+      "linkedinPost": "LinkedIn Text",
+      "facebookPost": "Facebook Text"
+    }
+  ]
+}
+
+Wichtig:
+
+- "body" darf nur die Immobilienbeschreibung enthalten.
+- Keine Highlights im body.
+- Keine Instagram, LinkedIn oder Facebook Texte im body.
+- Highlights nur im Feld "bullets".
+- Social Media Texte nur in den Feldern instagramPost, linkedinPost und facebookPost.
+- Gib nur JSON zurück.
     }
   ]
 }
