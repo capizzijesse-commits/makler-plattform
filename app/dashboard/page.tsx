@@ -6,8 +6,13 @@ type Variant = {
   title: string;
   objectType?: string;
   price?: string;
-  text: string;
+
+  text?: string;
+  body?: string;
+
   highlights?: string[];
+  bullets?: string[];
+
   instagramPost?: string;
   linkedinPost?: string;
   facebookPost?: string;
@@ -66,6 +71,14 @@ async function generateText() {
         propertyType,
         styleText,
         highlights,
+        locationDescription,
+equipment,
+targetGroup,
+specialFeatures,
+renovations,
+view,
+parking,
+balconyGarden
       }),
     });
 
@@ -198,16 +211,43 @@ highlights: data.variants[0].highlights || data.variants[0].bullets || [],
 
   
 
-  async function copyActive() {
+  async function copyActive() { 
+    
     if (!current) {
       alert("Bitte zuerst eine Variante generieren.");
+      
       return;
     }
+    
 async function generateText() {
   if (plan === "free" && freeGenerationsUsed >= 5) {
     setShowUpgrade(true);
     return;
   }
+
+function exportPortalText() {
+  if (!current) {
+    alert("Bitte zuerst eine Variante generieren.");
+    return;
+  }
+
+  const bulletText =
+    current.bullets && current.bullets.length > 0
+      ? "\n\nHighlights\n" + current.bullets.map((h) => "• " + h).join("\n")
+      : "";
+
+  const ctaText = current.cta ? "\n\n" + current.cta : "";
+
+  const portalText =
+    current.title +
+    "\n\n" +
+    (((current as any).text) || current.body || "") +
+    bulletText +
+    ctaText;
+
+  navigator.clipboard.writeText(portalText);
+  alert("Inserattext für Immobilienportale kopiert.");
+}
 
   setLoading(true);
 
@@ -234,6 +274,7 @@ async function generateText() {
       alert(data.error || "Fehler beim Generieren.");
       return;
     }
+    
 
     setVariants([
   {
@@ -306,7 +347,7 @@ await navigator.clipboard.writeText(fullText);
     }
 
     const title = current.title;
-    const text = current.text.replace(/\n/g, "<br>");
+    const text = (current.text || current.body || "").replace(/\n/g, "<br>");
     const bulletHtml =
       current.highlights && current.highlights.length > 0
         ? `
