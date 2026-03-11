@@ -21,9 +21,19 @@ const [linkedinPost, setLinkedinPost] = useState("");
 const [propertyType, setPropertyType] = useState("")
 const [rooms, setRooms] = useState("")
 const [livingArea, setLivingArea] = useState("")
-const [price, setPrice] = useState("1'095'000");
+const [price, setPrice] = useState("1'095'000")
 const [styleText, setStyleText] = useState("")
 const [highlights, setHighlights] = useState("")
+
+const [locationDescription, setLocationDescription] = useState("")
+const [equipment, setEquipment] = useState("")
+const [targetGroup, setTargetGroup] = useState("")
+const [specialFeatures, setSpecialFeatures] = useState("")
+const [renovations, setRenovations] = useState("")
+const [view, setView] = useState("")
+const [parking, setParking] = useState("")
+const [balconyGarden, setBalconyGarden] = useState("")
+
     
     "Balkon, Lift, Garage, ruhige Lage"
   ;
@@ -413,14 +423,14 @@ Copy
             </p>
 
         <div className="formGrid">
-  <Field label="Ort / Lage">
-    <input
-      value={location}
-      placeholder="Winterthur"
-      onChange={(e) => setLocation(e.target.value)}
-      className="input"
-    />
-  </Field>
+  <Field label="Lagebeschreibung">
+<input
+value={locationDescription}
+placeholder="z.B. ruhig, Nähe Bahnhof"
+onChange={(e)=>setLocationDescription(e.target.value)}
+className="input"
+/>
+</Field>
 
   <Field label="Zimmer">
     <input
