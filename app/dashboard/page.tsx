@@ -6,13 +6,8 @@ type Variant = {
   title: string;
   objectType?: string;
   price?: string;
-
-  text?: string;
-  body?: string;
-
+  text: string;
   highlights?: string[];
-  bullets?: string[];
-
   instagramPost?: string;
   linkedinPost?: string;
   facebookPost?: string;
@@ -29,16 +24,6 @@ const [livingArea, setLivingArea] = useState("")
 const [price, setPrice] = useState("1'095'000")
 const [styleText, setStyleText] = useState("")
 const [highlights, setHighlights] = useState("")
-
-const [locationDescription, setLocationDescription] = useState("")
-const [equipment, setEquipment] = useState("")
-const [targetGroup, setTargetGroup] = useState("")
-const [specialFeatures, setSpecialFeatures] = useState("")
-const [renovations, setRenovations] = useState("")
-const [view, setView] = useState("")
-const [parking, setParking] = useState("")
-const [balconyGarden, setBalconyGarden] = useState("")
-
     
     "Balkon, Lift, Garage, ruhige Lage"
   ;
@@ -71,21 +56,13 @@ async function generateText() {
         propertyType,
         styleText,
         highlights,
-        locationDescription,
-equipment,
-targetGroup,
-specialFeatures,
-renovations,
-view,
-parking,
-balconyGarden
       }),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      alert(JSON.stringify(data));
+      alert(data.error || "Fehler beim Generieren.");
       return;
     }
 
@@ -94,31 +71,28 @@ balconyGarden
         title: data.variants[0].title,
         objectType: data.variants[0].objectType || propertyType,
         price: data.variants[0].price || price,
-       text: data.variants[0].text || data.variants[0].body || "",
-highlights: data.variants[0].highlights || data.variants[0].bullets || [],
+        text: data.variants[0].text,
+        highlights: data.variants[0].highlights || [],
         instagramPost: data.variants[0].instagramPost || "",
         linkedinPost: data.variants[0].linkedinPost || "",
-        facebookPost: data.variants[0].facebookPost || "",
       },
       {
         title: data.variants[1].title,
         objectType: data.variants[1].objectType || propertyType,
         price: data.variants[1].price || price,
-       text: data.variants[0].text || data.variants[0].body || "",
-highlights: data.variants[0].highlights || data.variants[0].bullets || [],
+        text: data.variants[1].text,
+        highlights: data.variants[1].highlights || [],
         instagramPost: data.variants[1].instagramPost || "",
         linkedinPost: data.variants[1].linkedinPost || "",
-        facebookPost: data.variants[0].facebookPost || "",
       },
       {
         title: data.variants[2].title,
         objectType: data.variants[2].objectType || propertyType,
         price: data.variants[2].price || price,
-        text: data.variants[0].text || data.variants[0].body || "",
-highlights: data.variants[0].highlights || data.variants[0].bullets || [],
+        text: data.variants[2].text,
+        highlights: data.variants[2].highlights || [],
         instagramPost: data.variants[2].instagramPost || "",
         linkedinPost: data.variants[2].linkedinPost || "",
-        facebookPost: data.variants[0].facebookPost || "",
       },
     ]);
 
@@ -208,46 +182,26 @@ highlights: data.variants[0].highlights || data.variants[0].bullets || [],
 )}
 
   const current = variants[activeIndex];
+  const cleanedBody = (current?.text || "")
+  .split(/Instagram|LinkedIn|Facebook|Highlights/i)[0]
+  .trim();
+
+const cleanedHighlights = current?.highlights || [];
+const cleanedCta = current?.cta || "";
+  
 
   
 
-  async function copyActive() { 
-    
+  async function copyActive() {
     if (!current) {
       alert("Bitte zuerst eine Variante generieren.");
-      
       return;
     }
-    
 async function generateText() {
   if (plan === "free" && freeGenerationsUsed >= 5) {
     setShowUpgrade(true);
     return;
   }
-
-function exportPortalText() {
-  if (!current) {
-    alert("Bitte zuerst eine Variante generieren.");
-    return;
-  }
-
-  const bulletText =
-    current.bullets && current.bullets.length > 0
-      ? "\n\nHighlights\n" + current.bullets.map((h) => "• " + h).join("\n")
-      : "";
-
-  const ctaText = current.cta ? "\n\n" + current.cta : "";
-
-  const portalText =
-    current.title +
-    "\n\n" +
-    (((current as any).text) || current.body || "") +
-    bulletText +
-    ctaText;
-
-  navigator.clipboard.writeText(portalText);
-  alert("Inserattext für Immobilienportale kopiert.");
-}
 
   setLoading(true);
 
@@ -274,7 +228,6 @@ function exportPortalText() {
       alert(data.error || "Fehler beim Generieren.");
       return;
     }
-    
 
     setVariants([
   {
@@ -347,7 +300,7 @@ await navigator.clipboard.writeText(fullText);
     }
 
     const title = current.title;
-    const text = (current.text || current.body || "").replace(/\n/g, "<br>");
+    const text = current.text.replace(/\n/g, "<br>");
     const bulletHtml =
       current.highlights && current.highlights.length > 0
         ? `
@@ -464,14 +417,14 @@ Copy
             </p>
 
         <div className="formGrid">
-  <Field label="Lagebeschreibung">
-<input
-value={locationDescription}
-placeholder="z.B. ruhig, Nähe Bahnhof"
-onChange={(e)=>setLocationDescription(e.target.value)}
-className="input"
-/>
-</Field>
+  <Field label="Ort / Lage">
+    <input
+      value={location}
+      placeholder="Winterthur"
+      onChange={(e) => setLocation(e.target.value)}
+      className="input"
+    />
+  </Field>
 
   <Field label="Zimmer">
     <input
@@ -494,6 +447,7 @@ className="input"
   <Field label="Preis (CHF)">
     <input
       value={price}
+      placeholder="1'095'000"
       onChange={(e) => setPrice(e.target.value)}
       className="input"
     />
@@ -572,59 +526,12 @@ className="input"
   }}
 >
    
-               <h3>{current.title}</h3>
-
-<p style={{ marginTop: "16px", lineHeight: "1.6" }}>
-  {(current.text || "")
-    .split(/Instagram|LinkedIn|Facebook|Highlights/i)[0]
-    .trim()}
+                <h3>{current.title}</h3>
+           <p style={{ whiteSpace: "pre-line", lineHeight: 1.8 }}>
+  {current.text
+    ?.replace(/Highlights:[\s\S]*/i, "")
+    ?.trim()}
 </p>
-
-{(current.highlights || []).length > 0 && (
-  <div style={{ marginTop: "24px" }}>
-    <div style={{ fontWeight: 600, marginBottom: "10px" }}>
-      Highlights
-    </div>
-
-    <ul style={{ paddingLeft: "20px", lineHeight: "1.8" }}>
-      {(current.highlights || []).map((h: string, i: number) => (
-        <li key={i}>{h}</li>
-      ))}
-    </ul>
-  </div>
-)}
-
-<div style={{ marginTop: "32px", display: "grid", gap: "16px" }}>
-
-  {current.instagramPost && (
-    <div>
-      <div style={{ fontWeight: 600 }}>Instagram Post</div>
-      <p>{current.instagramPost}</p>
-    </div>
-  )}
-
-  {current.linkedinPost && (
-    <div>
-      <div style={{ fontWeight: 600 }}>LinkedIn Post</div>
-      <p>{current.linkedinPost}</p>
-    </div>
-  )}
-
-  {current.facebookPost && (
-    <div>
-      <div style={{ fontWeight: 600 }}>Facebook Post</div>
-      <p>{current.facebookPost}</p>
-    </div>
-  )}
-
-</div>
-
-<p style={{ marginTop: "16px", fontWeight: "bold" }}>
-{current.cta}
-</p>
-
-
-
                 {current.highlights && current.highlights.length > 0 && (
                   <div style={{ marginTop: "24px" }}>
                     <div
@@ -654,7 +561,7 @@ className="input"
                   </div>
                   
                 )}
-{(current?.instagramPost || current?.linkedinPost || current?.facebookPost) && (
+
   <div
     style={{
       marginTop: "24px",
@@ -697,7 +604,8 @@ className="input"
         </p>
       </div>
     )}
-     {current?.facebookPost && (
+
+    {current?.facebookPost && (
       <div
         style={{
           background: "#ffffff",
@@ -715,7 +623,6 @@ className="input"
       </div>
     )}
   </div>
-)}
               </div>
             ) : (
               
@@ -727,81 +634,7 @@ className="input"
                 </div>
               </div>
             )}
-           {(instagramPost || linkedinPost) && (
-  <div
-    style={{
-      marginTop: "24px",
-      display: "grid",
-      gap: "16px",
-    }}
-  >
-    {instagramPost && (
-      <div
-        style={{
-          background: "#ffffff",
-          borderRadius: "18px",
-          border: "1px solid #f0e3c1",
-          padding: "18px",
-        }}
-      >
-        <div
-          style={{
-            fontWeight: 800,
-            fontSize: "16px",
-            marginBottom: "10px",
-            color: "#1f2937",
-          }}
-        >
-          Instagram Post
-        </div>
-        <p
-          style={{
-            margin: 0,
-            whiteSpace: "pre-line",
-            color: "#445066",
-            lineHeight: 1.8,
-            fontSize: "15px",
-          }}
-        >
-          {instagramPost}
-        </p>
-      </div>
-    )}
-
-    {linkedinPost && (
-      <div
-        style={{
-          background: "#ffffff",
-          borderRadius: "18px",
-          border: "1px solid #f0e3c1",
-          padding: "18px",
-        }}
-      >
-        <div
-          style={{
-            fontWeight: 800,
-            fontSize: "16px",
-            marginBottom: "10px",
-            color: "#1f2937",
-          }}
-        >
-          LinkedIn Post
-        </div>
-        <p
-          style={{
-            margin: 0,
-            whiteSpace: "pre-line",
-            color: "#445066",
-            lineHeight: 1.8,
-            fontSize: "15px",
-          }}
-        >
-          {linkedinPost}
-        </p>
-      </div>
-    )}
-  </div>
-)} 
+           
           </section>
         </div>
       </div>
