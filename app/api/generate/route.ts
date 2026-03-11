@@ -48,49 +48,49 @@ Jede Variante soll enthalten:
 - linkedinPost
 - facebookPost
 
-Antworte nur mit gültigem JSON in genau diesem Format:
+
+Antworte ausschließlich im folgenden JSON-Format:
 
 {
   "variants": [
     {
-      "title": "Titel Variante 1",
-      "objectType": "${propertyType}",
-      "price": "${price}",
-      "text": "Beschreibung der Immobilie in 3 bis 5 Sätzen.",
-      "highlights": ["Highlight 1", "Highlight 2", "Highlight 3"],
+      "title": "Titel der Immobilie",
+      "body": "Nur die Beschreibung der Immobilie",
+      "bullets": ["Highlight 1", "Highlight 2", "Highlight 3"],
       "cta": "Vereinbaren Sie noch heute einen Besichtigungstermin.",
-      "instagramPost": "Kurzer emotionaler Instagram-Post.",
-      "linkedinPost": "Professioneller LinkedIn-Post.",
-      "facebookPost": "Facebook-Post für Interessenten."
+      "instagramPost": "Instagram Text",
+      "linkedinPost": "LinkedIn Text",
+      "facebookPost": "Facebook Text"
     },
     {
-      "title": "Titel Variante 2",
-      "objectType": "${propertyType}",
-      "price": "${price}",
-      "text": "Beschreibung der Immobilie in 3 bis 5 Sätzen.",
-      "highlights": ["Highlight 1", "Highlight 2", "Highlight 3"],
+      "title": "Titel der Immobilie",
+      "body": "Nur die Beschreibung der Immobilie",
+      "bullets": ["Highlight 1", "Highlight 2", "Highlight 3"],
       "cta": "Vereinbaren Sie noch heute einen Besichtigungstermin.",
-      "instagramPost": "Kurzer emotionaler Instagram-Post.",
-      "linkedinPost": "Professioneller LinkedIn-Post.",
-      "facebookPost": "Facebook-Post für Interessenten."
+      "instagramPost": "Instagram Text",
+      "linkedinPost": "LinkedIn Text",
+      "facebookPost": "Facebook Text"
     },
     {
-      "title": "Titel Variante 3",
-      "objectType": "${propertyType}",
-      "price": "${price}",
-      "text": "Beschreibung der Immobilie in 3 bis 5 Sätzen.",
-      "highlights": ["Highlight 1", "Highlight 2", "Highlight 3"],
+      "title": "Titel der Immobilie",
+      "body": "Nur die Beschreibung der Immobilie",
+      "bullets": ["Highlight 1", "Highlight 2", "Highlight 3"],
       "cta": "Vereinbaren Sie noch heute einen Besichtigungstermin.",
-      "instagramPost": "Kurzer emotionaler Instagram-Post.",
-      "linkedinPost": "Professioneller LinkedIn-Post.",
-      "facebookPost": "Facebook-Post für Interessenten."
-      Wichtig:
-- "body" darf nur die eigentliche Immobilienbeschreibung enthalten.
+      "instagramPost": "Instagram Text",
+      "linkedinPost": "LinkedIn Text",
+      "facebookPost": "Facebook Text"
+    }
+  ]
+}
+
+Wichtig:
+- "body" darf nur die Immobilienbeschreibung enthalten.
 - Keine Highlights im body.
 - Keine Instagram-, LinkedIn- oder Facebook-Texte im body.
 - Highlights nur im Feld "bullets".
 - Social Media Texte nur in den Feldern "instagramPost", "linkedinPost" und "facebookPost".
-- Kein Feld doppelt ausgeben.
+- Kein Text doppelt.
+- Gib nur gültiges JSON zurück.
 Antworte ausschließlich im folgenden JSON Format:
 
 {
@@ -153,18 +153,20 @@ Wichtig:
     }
 
     const normalized = {
-      variants: (json?.variants ?? []).map((v: any) => ({
-        title: v.title ?? "",
-        objectType: v.objectType ?? propertyType ?? "",
-        price: v.price ?? price ?? "",
-        text: v.text ?? v.body ?? v.description ?? "",
-        highlights: v.highlights ?? v.bullets ?? [],
-        cta: v.cta ?? "",
-        instagramPost: v.instagramPost ?? "",
-        linkedinPost: v.linkedinPost ?? "",
-        facebookPost: v.facebookPost ?? "",
-      })),
-    };
+  variants: (json?.variants ?? []).map((v: any) => ({
+    title: v.title ?? "",
+    objectType: v.objectType ?? propertyType ?? "",
+    price: v.price ?? price ?? "",
+    text: (v.body ?? v.text ?? "").split("Instagram")[0],
+    body: (v.body ?? v.text ?? "").split("Instagram")[0],
+    highlights: v.bullets ?? v.highlights ?? [],
+    bullets: v.bullets ?? v.highlights ?? [],
+    cta: v.cta ?? "",
+    instagramPost: v.instagramPost ?? "",
+    linkedinPost: v.linkedinPost ?? "",
+    facebookPost: v.facebookPost ?? "",
+  })),
+};
 
     return Response.json(normalized);
   } catch (err: any) {
