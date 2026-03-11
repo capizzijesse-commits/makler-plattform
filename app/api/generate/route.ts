@@ -16,108 +16,66 @@ export async function POST(req: NextRequest) {
       highlights,
       styleText,
     } = await req.json();
+    
+const prompt = `
+Du bist ein professioneller Schweizer Immobilien-Texter.
 
-    const prompt = `
-Du bist ein professioneller Immobilienmakler in der Schweiz.
+Erstelle 3 verschiedene hochwertige Inserat-Varianten für eine Immobilie in der Schweiz.
 
-Erstelle 3 unterschiedliche Inserattexte für folgende Immobilie.
-Der Kaufpreis MUSS im Text klar erwähnt werden (z.B. "Kaufpreis: CHF ...").
+WICHTIG:
+- Schreibe auf professionellem Makler-Niveau.
+- Die Texte sollen verkaufsstark, konkret und hochwertig wirken.
+- Jede Variante soll deutlich unterschiedlich formuliert sein.
+- Der Beschreibungstext soll ausführlich sein, ca. 120 bis 180 Wörter.
+- Keine Wiederholung von "Highlights" im Fliesstext.
+- Die Highlights müssen separat zurückgegeben werden.
+- Schreibe keine Platzhalter.
+- Schreibe natürliches, hochwertiges Deutsch wie in echten Immobilieninseraten in der Schweiz.
 
-Ort: ${location}
-Zimmer: ${rooms}
-Wohnfläche: ${livingArea} m²
-Preis: ${price} CHF
-Objekt: ${propertyType}
-Stilwunsch: ${styleText}
+Objektdaten:
+- Ort/Lage: ${location}
+- Objektart: ${propertyType}
+- Zimmer: ${rooms}
+- Wohnfläche: ${livingArea} m²
+- Preis: ${price} CHF
+- Stil: ${styleText}
+- Highlights: ${highlights}
 
-Highlights:
-${highlights}
+Gib nur valides JSON zurück, ohne Einleitung, ohne Erklärung, ohne Markdown.
 
-Stil 1: Klassisch und sachlich (typisches Homegate Inserat)
-Stil 2: Emotional und verkaufsstark
-Stil 3: Luxus / Premium Stil
-
-Jede Variante soll enthalten:
-- title
-- objectType
-- price
-- text
-- highlights (als Liste)
-- cta
-- instagramPost
-- linkedinPost
-- facebookPost
-
-
-Antworte ausschließlich im folgenden JSON-Format:
-
+Format:
 {
   "variants": [
     {
-      "title": "Titel der Immobilie",
-      "body": "Nur die Beschreibung der Immobilie",
-      "bullets": ["Highlight 1", "Highlight 2", "Highlight 3"],
-      "cta": "Vereinbaren Sie noch heute einen Besichtigungstermin.",
-      "instagramPost": "Instagram Text",
-      "linkedinPost": "LinkedIn Text",
-      "facebookPost": "Facebook Text"
+      "title": "Kurzer hochwertiger Titel",
+      "text": "Ausführlicher Fliesstext ohne Überschrift Highlights und ohne Social-Media-Texte",
+      "highlights": ["Punkt 1", "Punkt 2", "Punkt 3"],
+      "cta": "Kurzer Call to Action",
+      "instagramPost": "Kurzer emotionaler Instagram-Post",
+      "linkedinPost": "Etwas professioneller LinkedIn-Post",
+      "facebookPost": "Etwas ausführlicher Facebook-Post"
     },
     {
-      "title": "Titel der Immobilie",
-      "body": "Nur die Beschreibung der Immobilie",
-      "bullets": ["Highlight 1", "Highlight 2", "Highlight 3"],
-      "cta": "Vereinbaren Sie noch heute einen Besichtigungstermin.",
-      "instagramPost": "Instagram Text",
-      "linkedinPost": "LinkedIn Text",
-      "facebookPost": "Facebook Text"
+      "title": "Titel 2",
+      "text": "Text 2",
+      "highlights": ["...", "...", "..."],
+      "cta": "CTA 2",
+      "instagramPost": "Instagram 2",
+      "linkedinPost": "LinkedIn 2",
+      "facebookPost": "Facebook 2"
     },
     {
-      "title": "Titel der Immobilie",
-      "body": "Nur die Beschreibung der Immobilie",
-      "bullets": ["Highlight 1", "Highlight 2", "Highlight 3"],
-      "cta": "Vereinbaren Sie noch heute einen Besichtigungstermin.",
-      "instagramPost": "Instagram Text",
-      "linkedinPost": "LinkedIn Text",
-      "facebookPost": "Facebook Text"
+      "title": "Titel 3",
+      "text": "Text 3",
+      "highlights": ["...", "...", "..."],
+      "cta": "CTA 3",
+      "instagramPost": "Instagram 3",
+      "linkedinPost": "LinkedIn 3",
+      "facebookPost": "Facebook 3"
     }
   ]
 }
-
-Wichtig:
-- "body" darf nur die Immobilienbeschreibung enthalten.
-- Keine Highlights im body.
-- Keine Instagram-, LinkedIn- oder Facebook-Texte im body.
-- Highlights nur im Feld "bullets".
-- Social Media Texte nur in den Feldern "instagramPost", "linkedinPost" und "facebookPost".
-- Kein Text doppelt.
-- Gib nur gültiges JSON zurück.
-Antworte ausschließlich im folgenden JSON Format:
-
-{
-  "variants": [
-    {
-      "title": "Titel der Immobilie",
-      "body": "Nur die Beschreibung der Immobilie, keine Highlights und keine Social Media Texte",
-      "bullets": ["Highlight 1", "Highlight 2", "Highlight 3"],
-      "cta": "Vereinbaren Sie noch heute einen Besichtigungstermin.",
-      "instagramPost": "Instagram Text",
-      "linkedinPost": "LinkedIn Text",
-      "facebookPost": "Facebook Text"
-    }
-  ]
-}
-
-Wichtig:
-
-- "body" darf nur die Immobilienbeschreibung enthalten.
-- Keine Highlights im body.
-- Keine Instagram, LinkedIn oder Facebook Texte im body.
-- Highlights nur im Feld "bullets".
-- Social Media Texte nur in den Feldern instagramPost, linkedinPost und facebookPost.
-- Gib nur JSON zurück.
-    }
-  ]
-}
+   
     `.trim();
 
     const completion = await openai.chat.completions.create({
