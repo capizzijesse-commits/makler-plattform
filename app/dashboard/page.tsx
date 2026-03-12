@@ -434,6 +434,8 @@ await navigator.clipboard.writeText(fullText);
         <div className="formGrid">
   <Field label="Ort / Lage">
    <input
+   className="input"
+autoComplete="off"
   value={location}
   onChange={(e) => setLocation(e.target.value)}
   placeholder="Zürich Seefeld"
@@ -442,6 +444,8 @@ await navigator.clipboard.writeText(fullText);
 
   <Field label="Zimmer">
    <input
+   className="input"
+autoComplete="off"
   value={rooms}
   onChange={(e) => setRooms(e.target.value)}
   placeholder="4.5"
@@ -450,6 +454,8 @@ await navigator.clipboard.writeText(fullText);
 
   <Field label="Wohnfläche (m²)">
    <input
+   className="input"
+autoComplete="off"
   value={livingArea}
   onChange={(e) => setLivingArea(e.target.value)}
   placeholder="120"
@@ -458,6 +464,8 @@ await navigator.clipboard.writeText(fullText);
 
   <Field label="Preis (CHF)">
     <input
+    className="input"
+autoComplete="off"
   value={price}
   onChange={(e) => setPrice(e.target.value)}
   placeholder="1'095'000"
@@ -466,6 +474,8 @@ await navigator.clipboard.writeText(fullText);
 
   <Field label="Objektart">
     <input
+    className="input"
+autoComplete="off"
   value={propertyType}
   onChange={(e) => setPropertyType(e.target.value)}
   placeholder="Wohnung"
@@ -474,6 +484,8 @@ await navigator.clipboard.writeText(fullText);
 
   <Field label="Stil">
   <input
+  className="input"
+autoComplete="off"
   value={styleText}
   onChange={(e) => setStyleText(e.target.value)}
   placeholder="Modern / Premium"
@@ -482,6 +494,8 @@ await navigator.clipboard.writeText(fullText);
 
   <Field label="Highlights (mit Komma trennen)">
   <input
+  className="input"
+autoComplete="off"
   value={highlights}
   onChange={(e) => setHighlights(e.target.value)}
   placeholder="Balkon, Tiefgarage, Lift, ruhige Lage"
