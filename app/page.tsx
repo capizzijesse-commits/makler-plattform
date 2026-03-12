@@ -142,19 +142,35 @@ und erstellen Sie Immobilieninserate in Sekunden.
 [ Founder Zugang sichern – 19.90 CHF ]
   </a>
 
-  <a
-    href="#demo"
+  <div style={{ textAlign: "center" }}>
+  <button
+    onClick={() => window.location.href="/dashboard"}
     style={{
       padding: "14px 28px",
-      background: "transparent",
-      color: "#1F2937",
+      background: "#1cb8f6",
+      color: "white",
       borderRadius: "10px",
+      border: "none",
       fontWeight: 700,
-      textDecoration: "none"
+      cursor: "pointer"
     }}
   >
-    Demo ansehen
-  </a>
+    Jetzt Inserat erstellen
+  </button>
+
+  <div style={{ marginTop: "10px" }}>
+    <a
+      href="/dashboard"
+      style={{
+        color: "#1F2937",
+        fontWeight: 600,
+        textDecoration: "none"
+      }}
+    >
+      oder Demo ansehen
+    </a>
+  </div>
+</div>
 </div>
 
         <div
