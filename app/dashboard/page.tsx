@@ -1145,6 +1145,38 @@ autoComplete="off"
           .rightCard {
             padding: 18px;
           }
+            .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .outputTop {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tabs {
+    width: 100%;
+  }
+
+  .tab {
+    flex: 1;
+    text-align: center;
+  }
+
+  .hero p {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .outputBox {
+    min-height: auto;
+  }
         }
       `}</style>
     </main>
@@ -1208,14 +1240,14 @@ function MiniStat({ title, value }: { title: string; value: string }) {
 href="mailto:support@inserat-ai.ch?subject=Inserat AI Support"
 style={{
 position: "fixed",
-bottom: "20px",
-right: "20px",
+bottom: "16px",
+right: "16px",
 background: "#0ea5e9",
 color: "white",
-padding: "12px 16px",
+padding: "10px 14px",
 borderRadius: "12px",
 textDecoration: "none",
-fontSize: "14px",
+fontSize: "13px",
 fontWeight: "600",
 boxShadow: "0 4px 10px rgba(0,0,0,0.2)"
 }}

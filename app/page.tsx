@@ -144,10 +144,20 @@ und erstellen Sie Immobilieninserate in Sekunden.
 [ Founder Zugang sichern – 19.90 CHF ]
   </a>
 
-  <div style={{ textAlign: "center" }}>
+  <div
+  style={{
+    textAlign: "center",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "10px",
+  }}
+>
   <button
     onClick={() => window.location.href="/dashboard"}
     style={{
+      width: "100%",
+    maxWidth: "320px",
       padding: "14px 28px",
       background: "#1cb8f6",
       color: "white",
