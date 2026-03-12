@@ -21,10 +21,10 @@ export default function DashboardPage() {
   const [instagramPost, setInstagramPost] = useState("");
 const [linkedinPost, setLinkedinPost] = useState("");
  const [location, setLocation] = useState("")
-const [propertyType, setPropertyType] = useState("")
 const [rooms, setRooms] = useState("")
 const [livingArea, setLivingArea] = useState("")
-const [price, setPrice] = useState("1'095'000")
+const [price, setPrice] = useState("")
+const [propertyType, setPropertyType] = useState("")
 const [styleText, setStyleText] = useState("")
 const [highlights, setHighlights] = useState("")
     
