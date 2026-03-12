@@ -133,7 +133,13 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
       textDecoration: "none"
     }}
   >
-    Kostenlos testen 5 Inserate gratis
+   50 Inserate kostenlos testen
+für die ersten 100 Makler
+
+Ohne Risiko. Testen Sie die Plattform kostenlos
+und erstellen Sie Immobilieninserate in Sekunden.
+
+[ Founder Zugang sichern – 19.90 CHF ]
   </a>
 
   <a
@@ -434,23 +440,22 @@ justifyItems: "center"
           padding: "40px 24px",
         }}
       >
-        <h2 style={{ fontSize: "34px", fontWeight: 800 }}>
-          5 Inserate kostenlos testen
-        </h2>
+       <h2 style={{ fontSize: "34px", fontWeight: 800 }}>
+50 Inserate kostenlos testen
+</h2>
 
-        <p
-          style={{
-            marginTop: "14px",
-            color: "#6B7280",
-            maxWidth: "720px",
-            marginLeft: "auto",
-            marginRight: "auto",
-            lineHeight: 1.7,
-          }}
-        >
-          Ohne Risiko. Testen Sie die Plattform kostenlos und erleben Sie selbst,
-          wie schnell hochwertige Immobilieninserate erstellt werden können.
-        </p>
+<p
+style={{
+marginTop: "14px",
+color: "#6B7280",
+maxWidth: "720px",
+marginLeft: "auto",
+marginRight: "auto",
+lineHeight: 1.7
+}}
+>
+Founder-Angebot: Die ersten 100 Makler erhalten 50 Inserate kostenlos.
+</p>
 
         <div style={{ marginTop: "26px" }}>
           <a
