@@ -197,6 +197,12 @@ facebookHashtags: data.variants[2].facebookHashtags || "",
 )}
 
   const current = variants[activeIndex];
+  const FREE_LIMIT = 50;
+const MINUTES_PER_INSERT = 20;
+
+const remaining = FREE_LIMIT - freeGenerationsUsed;
+const minutesSaved = freeGenerationsUsed * MINUTES_PER_INSERT;
+const hoursSaved = Math.floor(minutesSaved / 60);
   const cleanedBody = (current?.text || "")
   .split(/Instagram|LinkedIn|Facebook|Highlights/i)[0]
   .trim();
@@ -546,6 +552,7 @@ autoComplete="off"
     overflowY: "auto",
     paddingRight: "10px"
   }}
+  
 >
    
                 <h3>{current.title}</h3>
@@ -671,6 +678,62 @@ autoComplete="off"
                 </div>
               </div>
             )}
+            <div
+  style={{
+    marginTop: "20px",
+    padding: "16px",
+    background: "#f8f5ee",
+    borderRadius: "12px",
+    color: "#1f2937",
+  }}
+>
+  <div style={{ fontWeight: 700 }}>
+    Du hast {freeGenerationsUsed} Inserate erstellt
+  </div>
+
+  <div style={{ marginTop: "6px" }}>
+    ≈ {hoursSaved} Stunden Arbeit gespart
+  </div>
+
+  <div style={{ marginTop: "6px" }}>
+    Noch {remaining} kostenlose Inserate übrig
+  </div>
+</div>
+
+<div
+  style={{
+    marginTop: "20px",
+    padding: "16px",
+    border: "1px dashed #d6caa8",
+    borderRadius: "12px",
+    color: "#1f2937",
+  }}
+>
+  <div style={{ fontWeight: 700 }}>
+    🎁 Bonus
+  </div>
+
+  <div style={{ marginTop: "6px" }}>
+    Empfehle InseratAI einem Maklerkollegen und erhalte 5 zusätzliche Inserate kostenlos.
+  </div>
+
+  <button
+    style={{
+      marginTop: "10px",
+      padding: "8px 14px",
+      borderRadius: "8px",
+      background: "#e8d9b5",
+      border: "none",
+      cursor: "pointer",
+    }}
+    onClick={() => {
+      navigator.clipboard.writeText(window.location.href);
+      alert("Empfehlungslink kopiert");
+    }}
+  >
+    Empfehlungslink kopieren
+  </button>
+</div>
            
           </section>
         </div>
