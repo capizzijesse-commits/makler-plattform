@@ -810,6 +810,9 @@ await navigator.clipboard.writeText(fullText);
           box-sizing: border-box;
           font-size: 15px;
         }
+          .input::placeholder {
+  color: rgba(255, 255, 255, 0.38);
+}
 
         .divider {
           height: 1px;
