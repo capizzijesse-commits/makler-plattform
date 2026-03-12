@@ -15,6 +15,7 @@ export async function POST(req: NextRequest) {
       propertyType,
       highlights,
       styleText,
+      imageAnalysis,
     } = await req.json();
     
 const prompt = `
@@ -43,7 +44,7 @@ Objektdaten:
 - Preis: ${price} CHF
 - Stil: ${styleText}
 - Highlights: ${highlights}
-
+- Zusätzliche Bildanalyse: ${imageAnalysis || "Keine Bildanalyse vorhanden."}
 Gib nur valides JSON zurück, ohne Einleitung, ohne Erklärung, ohne Markdown.
 
 Format:

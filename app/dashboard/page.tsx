@@ -27,6 +27,10 @@ const [price, setPrice] = useState("")
 const [propertyType, setPropertyType] = useState("")
 const [styleText, setStyleText] = useState("")
 const [highlights, setHighlights] = useState("")
+const [selectedImage, setSelectedImage] = useState<File | null>(null);
+const [imagePreview, setImagePreview] = useState("");
+const [imageAnalysis, setImageAnalysis] = useState("");
+const [analyzingImage, setAnalyzingImage] = useState(false);
     
     "Balkon, Lift, Garage, ruhige Lage"
   ;
@@ -59,6 +63,7 @@ async function generateText() {
         propertyType,
         styleText,
         highlights,
+        imageAnalysis,
       }),
     });
 
@@ -118,6 +123,33 @@ facebookHashtags: data.variants[2].facebookHashtags || "",
     alert("Fehler beim Generieren.");
   } finally {
     setLoading(false);
+  }
+}
+async function analyzeImage() {
+  if (!selectedImage) {
+    alert("Bitte zuerst ein Bild auswählen.");
+    return;
+  }
+
+  setAnalyzingImage(true);
+
+  try {
+    const formData = new FormData();
+    formData.append("image", selectedImage);
+
+    const response = await fetch("/api/analyze-image", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    setImageAnalysis(data.analysis || "");
+
+  } catch (error) {
+    alert("Fehler bei der Bildanalyse.");
+  } finally {
+    setAnalyzingImage(false);
   }
 }
   {(instagramPost || linkedinPost) && (
@@ -507,8 +539,76 @@ autoComplete="off"
   placeholder="Balkon, Tiefgarage, Lift, ruhige Lage"
 />
   </Field>
+  <Field label="Immobilienfoto">
+  <input
+    type="file"
+    accept="image/*"
+    className="input"
+    onChange={(e) => {
+      const file = e.target.files?.[0] || null;
+      setSelectedImage(file);
+
+      if (file) {
+        setImagePreview(URL.createObjectURL(file));
+      } else {
+        setImagePreview("");
+      }
+    }}
+  />
+</Field>
+{imagePreview && (
+  <div style={{ marginTop: "12px" }}>
+    <img
+      src={imagePreview}
+      alt="Vorschau"
+      style={{
+        width: "100%",
+        maxWidth: "320px",
+        borderRadius: "14px",
+        border: "1px solid rgba(255,255,255,0.1)",
+      }}
+    />
+  </div>
+)}
+<div style={{ marginTop: "12px" }}>
+  <button
+    type="button"
+    className="btn btn-secondary"
+    onClick={analyzeImage}
+    disabled={analyzingImage || !selectedImage}
+  >
+    {analyzingImage ? "Bild wird analysiert..." : "Foto analysieren"}
+  </button>
 </div>
 
+<div style={{ marginTop: "12px" }}>
+  <button
+    type="button"
+    className="btn btn-secondary"
+    onClick={analyzeImage}
+    disabled={analyzingImage || !selectedImage}
+  >
+    {analyzingImage ? "Bild wird analysiert..." : "Foto analysieren"}
+  </button>
+</div>
+{imageAnalysis && (
+  <div
+    style={{
+      marginTop: "16px",
+      padding: "14px",
+      borderRadius: "12px",
+      background: "rgba(255,255,255,0.04)",
+      border: "1px solid rgba(255,255,255,0.08)",
+      color: "rgba(255,255,255,0.85)",
+      lineHeight: 1.7,
+      whiteSpace: "pre-line",
+    }}
+  >
+    <strong>Bildanalyse:</strong>
+    <div style={{ marginTop: "8px" }}>{imageAnalysis}</div>
+  </div>
+)}
+</div>
 <div className="divider" />
 
             <div className="miniStats">
