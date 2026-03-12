@@ -537,25 +537,34 @@ autoComplete="off"
   value={highlights}
   onChange={(e) => setHighlights(e.target.value)}
   placeholder="Balkon, Tiefgarage, Lift, ruhige Lage"
-/>
-  </Field>
-  <Field label="Immobilienfoto">
-  <input
-    type="file"
-    accept="image/*"
-    className="input"
-    onChange={(e) => {
-      const file = e.target.files?.[0] || null;
-      setSelectedImage(file);
+/><Field label="Immobilienfoto">
+  <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+    <label className="btn btn-secondary" style={{ display: "inline-block" }}>
+      Datei auswählen
+      <input
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={(e) => {
+          const file = e.target.files?.[0] || null;
+          setSelectedImage(file);
 
-      if (file) {
-        setImagePreview(URL.createObjectURL(file));
-      } else {
-        setImagePreview("");
-      }
-    }}
-  />
+          if (file) {
+            setImagePreview(URL.createObjectURL(file));
+          } else {
+            setImagePreview("");
+          }
+        }}
+      />
+    </label>
+
+    <span style={{ color: "rgba(255,255,255,0.7)", fontSize: "14px" }}>
+      {selectedImage ? selectedImage.name : "Keine Datei ausgewählt"}
+    </span>
+  </div>
 </Field>
+  </Field>
+ 
 {imagePreview && (
   <div style={{ marginTop: "12px" }}>
     <img
