@@ -433,66 +433,59 @@ await navigator.clipboard.writeText(fullText);
 
         <div className="formGrid">
   <Field label="Ort / Lage">
-    <input
-      value={location}
-      placeholder="Winterthur"
-      onChange={(e) => setLocation(e.target.value)}
-      className="input"
-    />
+   <input
+  value={location}
+  onChange={(e) => setLocation(e.target.value)}
+  placeholder="Zürich Seefeld"
+/>
   </Field>
 
   <Field label="Zimmer">
-    <input
-      value={rooms}
-      placeholder="4.5"
-      onChange={(e) => setRooms(e.target.value)}
-      className="input"
-    />
+   <input
+  value={rooms}
+  onChange={(e) => setRooms(e.target.value)}
+  placeholder="4.5"
+/>
   </Field>
 
   <Field label="Wohnfläche (m²)">
-    <input
-      value={livingArea}
-      placeholder="110"
-      onChange={(e) => setLivingArea(e.target.value)}
-      className="input"
-    />
+   <input
+  value={livingArea}
+  onChange={(e) => setLivingArea(e.target.value)}
+  placeholder="120"
+/>
   </Field>
 
   <Field label="Preis (CHF)">
     <input
-      value={price}
-      placeholder="1'095'000"
-      onChange={(e) => setPrice(e.target.value)}
-      className="input"
-    />
+  value={price}
+  onChange={(e) => setPrice(e.target.value)}
+  placeholder="1'095'000"
+/>
   </Field>
 
   <Field label="Objektart">
     <input
-      value={propertyType}
-      placeholder="Wohnung"
-      onChange={(e) => setPropertyType(e.target.value)}
-      className="input"
-    />
+  value={propertyType}
+  onChange={(e) => setPropertyType(e.target.value)}
+  placeholder="Wohnung"
+/>
   </Field>
 
   <Field label="Stil">
-    <input
-      value={styleText}
-      placeholder="Luxus / Premium"
-      onChange={(e) => setStyleText(e.target.value)}
-      className="input"
-    />
+  <input
+  value={styleText}
+  onChange={(e) => setStyleText(e.target.value)}
+  placeholder="Modern / Premium"
+/>
   </Field>
 
   <Field label="Highlights (mit Komma trennen)">
-    <input
-      value={highlights}
-      placeholder="Balkon, Lift, Garage, ruhige Lage"
-      onChange={(e) => setHighlights(e.target.value)}
-      className="input"
-    />
+  <input
+  value={highlights}
+  onChange={(e) => setHighlights(e.target.value)}
+  placeholder="Balkon, Tiefgarage, Lift, ruhige Lage"
+/>
   </Field>
 </div>
 
