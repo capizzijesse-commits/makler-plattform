@@ -799,21 +799,22 @@ await navigator.clipboard.writeText(fullText);
           grid-column: 1 / -1;
         }
 
-        .input {
-          width: 100%;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          color: #ffffff;
-          border-radius: 14px;
-          padding: 14px 15px;
-          outline: none;
-          box-sizing: border-box;
-          font-size: 15px;
-        }
-          .input::placeholder {
+      .input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 14px 15px;
+  outline: none;
+  box-sizing: border-box;
+  font-size: 15px;
+  color: #ffffff;
+}
+  .input::placeholder {
   color: rgba(255, 255, 255, 0.38);
 }
-
+        }
+        
         .divider {
           height: 1px;
           background: rgba(255, 255, 255, 0.08);
