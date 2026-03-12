@@ -101,102 +101,76 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
 </div>
 
 </div>
-        <div
+      <div
   style={{
-    display: "flex",
-    gap: "14px",
-    justifyContent: "center",
-    marginTop: "26px",
-    flexWrap: "wrap"
-  }}
->
-  <a
-    href="#"
-    style={{
-      padding: "14px 28px",
-      background: "#2F3747",
-      color: "#FFFFFF",
-      borderRadius: "10px",
-      fontWeight: 700,
-      textDecoration: "none"
-    }}
-  >
-    Maklerkollegen empfehlen
-  </a>
-
-  <a
-    href="/dashboard"
-    style={{
-      padding: "14px 28px",
-      background: "#0A84FF",
-      color: "#FFFFFF",
-      borderRadius: "10px",
-      fontWeight: 700,
-      textDecoration: "none"
-    }}
-  >
-   50 Inserate kostenlos testen
-für die ersten 100 Makler
-
-Ohne Risiko. Testen Sie die Plattform kostenlos
-und erstellen Sie Immobilieninserate in Sekunden.
-
-[ Founder Zugang sichern – 19.90 CHF ]
-  </a>
-
-  <div
-  style={{
-    textAlign: "center",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    gap: "10px",
+    gap: "16px",
+    marginTop: "26px",
+    textAlign: "center",
   }}
 >
+  <div
+    style={{
+      padding: "14px 28px",
+      background: "#0A40FF",
+      color: "#FFFFFF",
+      borderRadius: "10px",
+      fontWeight: 700,
+      textDecoration: "none",
+      maxWidth: "1000px",
+      width: "100%",
+    }}
+  >
+    50 Inserate kostenlos testen
+    <br />
+    für die ersten 100 Makler
+  </div>
+
   <button
     onClick={() => window.location.href="/dashboard"}
     style={{
-      width: "100%",
-    maxWidth: "320px",
       padding: "14px 28px",
       background: "#1cb8f6",
-      color: "white",
+      color: "#FFFFFF",
       borderRadius: "10px",
       border: "none",
       fontWeight: 700,
-      cursor: "pointer"
+      cursor: "pointer",
+      boxShadow: "0 10px 30px rgba(28,184,246,0.25)",
     }}
   >
     Jetzt Inserat erstellen
   </button>
 
-  <div style={{ marginTop: "10px" }}>
-    <a
-      href="/dashboard"
-      style={{
-        color: "#1F2937",
-        fontWeight: 600,
-        textDecoration: "none"
-      }}
-    >
-      oder Demo ansehen
-    </a>
+  <div
+    style={{
+      marginTop: "6px",
+      color: "#8A6A1F",
+      fontWeight: 600,
+      fontSize: "15px",
+      lineHeight: 1.6,
+    }}
+  >
+    Ohne Risiko. Testen Sie die Plattform kostenlos und erstellen Sie
+    Immobilieninserate in Sekunden.
   </div>
-</div>
-</div>
 
-        <div
-          style={{
-            marginTop: "22px",
-            color: "#8A6A1F",
-            fontWeight: 600,
-            fontSize: "15px",
-          }}
-        >
-          Funktioniert perfekt für:<br/>
-          Für Homegate, ImmoScout24, Exposé-PDF und Social Media
-        
-        </div>
+  <div
+    style={{
+      marginTop: "10px",
+      color: "#8A6A1F",
+      fontWeight: 600,
+      fontSize: "15px",
+      lineHeight: 1.6,
+    }}
+  >
+    Funktioniert perfekt für:
+    <br />
+    Für Homegate, ImmoScout24, Exposé-PDF und Social Media
+  </div>
+</div>  
       </section>
 
       <section
@@ -505,8 +479,9 @@ Founder-Angebot: Die ersten 100 Makler erhalten 50 Inserate kostenlos.
     <b>regulär 39.90 CHF / Monat</b><br/>
 </p>
         </div>
+
       </section>
     </main>
-  </>
+    </>
   );
-}
+  }
