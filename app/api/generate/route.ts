@@ -61,24 +61,30 @@ Format:
       "linkedinHashtags": "#Immobilien #RealEstate #Zürich #Wohnen",
       "facebookHashtags": "#Immobilien #Zürich #Familienwohnung #Wohnung"
     },
+   {
+"title": "Titel 2",
+"text": "Text 2",
+"highlights": ["...", "...", "..."],
+"cta": "CTA 2",
+"instagramPost": "Instagram 2",
+"instagramHashtags": "#Immobilien #Zürich #Wohnung",
+"linkedinPost": "LinkedIn 2",
+"linkedinHashtags": "#RealEstate #Zürich #Immobilien",
+"facebookPost": "Facebook 2",
+"facebookHashtags": "#Immobilien #Familienwohnung #Zürich"
+}
     {
-      "title": "Titel 2",
-      "text": "Text 2",
-      "highlights": ["...", "...", "..."],
-      "cta": "CTA 2",
-      "instagramPost": "Instagram 2",
-      "linkedinPost": "LinkedIn 2",
-      "facebookPost": "Facebook 2"
-    },
-    {
-      "title": "Titel 3",
-      "text": "Text 3",
-      "highlights": ["...", "...", "..."],
-      "cta": "CTA 3",
-      "instagramPost": "Instagram 3",
-      "linkedinPost": "LinkedIn 3",
-      "facebookPost": "Facebook 3"
-    }
+"title": "Titel 3",
+"text": "Text 3",
+"highlights": ["...", "...", "..."],
+"cta": "CTA 3",
+"instagramPost": "Instagram 3",
+"instagramHashtags": "#Immobilien #Zürich #Wohnung",
+"linkedinPost": "LinkedIn 3",
+"linkedinHashtags": "#RealEstate #Zürich #Immobilien",
+"facebookPost": "Facebook 3",
+"facebookHashtags": "#Immobilien #Familienwohnung #Zürich"
+}
   ]
 }
    

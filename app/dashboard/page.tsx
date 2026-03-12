@@ -385,7 +385,7 @@ await navigator.clipboard.writeText(fullText);
         <div className="topbar">
           <div className="hero">
             <div className="badge">Makler AI Pro</div>
-            <h1>Premium Inserat Generator</h1>
+            <h1>KI-Assistent für Immobilienmakler</h1>
             <p>
               Hochwertige Immobilientexte für Homegate, ImmoScout24, Exposé und
               Social Media – strukturiert, verkaufsstark und professionell.
@@ -401,15 +401,15 @@ await navigator.clipboard.writeText(fullText);
               {loading ? "Generiere..." : "Generieren (3 Varianten)"}
             </button>
 
-        <button
-className="btn btn-secondary"
-onClick={() => {
-  if (current?.text) {
-    navigator.clipboard.writeText(current.text);
-  }
-}}
+      <button
+  className="btn btn-secondary"
+  onClick={async () => {
+    if (!current?.text) return;
+    await navigator.clipboard.writeText(current.text);
+    alert("Text kopiert");
+  }}
 >
-Copy
+  Copy
 </button>
 
             <button
@@ -593,12 +593,27 @@ Copy
           border: "1px solid rgba(15,23,42,0.08)",
         }}
       >
-        <h3 style={{ marginBottom: "10px", fontSize: "18px", fontWeight: 800 }}>
-          Instagram Post
-        </h3>
-        <p style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>
-          {current.instagramPost}
-        </p>
+      <h3 style={{ marginBottom: "10px", fontSize: "18px", fontWeight: 800 }}>
+  Instagram Post
+</h3>
+
+<p style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>
+  {current.instagramPost}
+</p>
+
+{current.instagramHashtags && (
+  <p
+    style={{
+      whiteSpace: "pre-line",
+      lineHeight: 1.7,
+      marginTop: "12px",
+      color: "#6b7280",
+      fontSize: "14px",
+    }}
+  >
+    {current.instagramHashtags}
+  </p>
+)}
       </div>
     )}
 
