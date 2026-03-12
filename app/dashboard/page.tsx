@@ -1042,6 +1042,24 @@ function MiniStat({ title, value }: { title: string; value: string }) {
       >
         {value}
       </div>
+      <a
+href="mailto:support@inserat-ai.ch?subject=Inserat AI Support"
+style={{
+position: "fixed",
+bottom: "20px",
+right: "20px",
+background: "#0ea5e9",
+color: "white",
+padding: "12px 16px",
+borderRadius: "12px",
+textDecoration: "none",
+fontSize: "14px",
+fontWeight: "600",
+boxShadow: "0 4px 10px rgba(0,0,0,0.2)"
+}}
+>
+💬 Feedback / Support
+</a>
     </div>
   );
 }
