@@ -579,16 +579,6 @@ autoComplete="off"
     />
   </div>
 )}
-<div style={{ marginTop: "12px" }}>
-  <button
-    type="button"
-    className="btn btn-secondary"
-    onClick={analyzeImage}
-    disabled={analyzingImage || !selectedImage}
-  >
-    {analyzingImage ? "Bild wird analysiert..." : "Foto analysieren"}
-  </button>
-</div>
 
 <div style={{ marginTop: "12px" }}>
   <button
