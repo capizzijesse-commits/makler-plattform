@@ -465,8 +465,8 @@ await navigator.clipboard.writeText(fullText);
             <div className="badge">Objektdaten</div>
             <h2>Eingabe</h2>
             <p className="sectionText">
-              Erfasse die wichtigsten Eckdaten der Immobilie. Die KI erstellt
-              daraus mehrere professionelle Textvarianten.
+              Erfasse die wichtigsten Eckdaten der Immobilie. Daraus entstehen automatisch mehrere
+              professionelle Textvarianten.
             </p>
 
         <div className="formGrid">
