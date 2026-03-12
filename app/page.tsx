@@ -119,8 +119,8 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
       borderRadius: "10px",
       fontWeight: 700,
       textDecoration: "none",
-      maxWidth: "1000px",
-      width: "100%",
+      maxWidth: "520px",
+margin: "0 auto",
     }}
   >
     50 Inserate kostenlos testen
@@ -153,7 +153,7 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
       lineHeight: 1.6,
     }}
   >
-    Ohne Risiko. Testen Sie die Plattform kostenlos und erstellen Sie
+    Testen Sie die Plattform kostenlos und erstellen Sie
     Immobilieninserate in Sekunden.
   </div>
 
