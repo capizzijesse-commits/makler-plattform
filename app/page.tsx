@@ -111,22 +111,26 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
     textAlign: "center",
   }}
 >
-  <div
-    style={{
-      padding: "14px 28px",
-      background: "#0A40FF",
-      color: "#FFFFFF",
-      borderRadius: "10px",
-      fontWeight: 700,
-      textDecoration: "none",
-      maxWidth: "520px",
-margin: "0 auto",
-    }}
-  >
-    50 Inserate kostenlos testen
-    <br />
-    für die ersten 100 Makler
-  </div>
+  <button
+  onClick={() => window.location.href = "/dashboard"}
+  style={{
+    padding: "14px 28px",
+    background: "#0A40FF",
+    color: "#FFFFFF",
+    borderRadius: "10px",
+    fontWeight: 700,
+    border: "none",
+    cursor: "pointer",
+    maxWidth: "520px",
+    width: "100%",
+    margin: "0 auto",
+    display: "block",
+  }}
+>
+  50 Inserate kostenlos testen
+  <br />
+  für die ersten 100 Makler
+</button>
 
   <button
     onClick={() => window.location.href="/dashboard"}
