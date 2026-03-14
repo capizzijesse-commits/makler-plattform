@@ -34,7 +34,7 @@ export default function Home() {
             marginBottom: "24px",
           }}
         >
-          Für Immobilienmakler entwicklet
+          Für Immobilienmakler entwickelt
         </div>
 
       <div style={{
