@@ -36,18 +36,7 @@ export default function Home() {
         >
           Für Immobilienmakler entwickelt
         </div>
-<div style={{ marginTop: "20px", textAlign: "center" }}>
-  <div style={{ fontSize: "14px", opacity: 0.8, marginBottom: "12px" }}>
-    Sichere Zahlung mit
-  </div>
 
-  <div style={{ display: "flex", justifyContent: "center", gap: "16px", flexWrap: "wrap" }}>
-    <span>TWINT</span>
-    <span>VISA</span>
-    <span>MASTERCARD</span>
-    <span>STRIPE</span>
-  </div>
-</div>
       <div style={{
   padding: "40px 16px 24px",
   textAlign: "center",
@@ -191,21 +180,18 @@ alignItems: "stretch",
     <p>Teams / mehrere Makler</p>
   </div>
 
-  </div>
-
-  <div style={{ marginTop: "28px", textAlign: "center" }}>
-  <p style={{ opacity: 0.8, fontSize: "14px", marginBottom: "10px" }}>
+  <div style={{ marginTop: "20px", textAlign: "center" }}>
+  <div style={{ fontSize: "14px", opacity: 0.8, marginBottom: "12px" }}>
     Sichere Zahlung mit
-  </p>
-
-  <div style={{
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: "16px"
-  }}>
-    
   </div>
+
+  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
+    <img src="/twint.png" alt="TWINT" width="60" />
+    <img src="/visa.png" alt="Visa" width="60" />
+    <img src="/mastercard.png" alt="Mastercard" width="60" />
+    <img src="/stripe.png" alt="Stripe" width="60" />
+  </div>
+</div>
 </div>
 </section>
 
