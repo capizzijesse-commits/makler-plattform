@@ -36,13 +36,11 @@ export default function Home() {
         >
           Für Immobilienmakler entwickelt
         </div>
-<div style={{display:"flex", gap:"20px", justifyContent:"center", marginTop:"20px"}}>
-
-<img src="/twint.png" width="60" style={{opacity:0.8}} />
-<img src="/visa.png" width="60" style={{opacity:0.8}} />
-<img src="/mastercard.png" width="60" style={{opacity:0.8}} />
-<img src="/stripe.png" width="60" style={{opacity:0.8}} />
-
+<div style={{ display: "flex", gap: "20px", justifyContent: "center", marginTop: "20px" }}>
+  <img src="/twint.png" width="60" style={{ opacity: 0.8 }} />
+  <img src="/visa.png" width="60" style={{ opacity: 0.8 }} />
+  <img src="/mastercard.png" width="60" style={{ opacity: 0.8 }} />
+  <img src="/stripe.png" width="60" style={{ opacity: 0.8 }} />
 </div>
       <div style={{
   padding: "40px 16px 24px",
