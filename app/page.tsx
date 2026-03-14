@@ -130,10 +130,7 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
   für die ersten 100 Makler
 </button>
 
-{/* PREISE START */}
-
 <section style={{ marginTop: "80px", textAlign: "center" }}>
-
   <h2 style={{ fontSize: "32px", fontWeight: 700, marginBottom: "30px" }}>
     Preise
   </h2>
@@ -144,17 +141,47 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
       gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
       gap: "24px",
       maxWidth: "1100px",
-      margin: "0 auto"
+      margin: "0 auto",
+      padding: "0 20px",
     }}
   >
+    <div className="priceCard">
+      <h3>Free</h3>
+      <p className="price">0 CHF</p>
+      <p>50 Inserate kostenlos testen</p>
+    </div>
 
-    {/* Preis Karten */}
+    <div className="priceCard featuredCard">
+      <div className="badge">Founder</div>
+      <h3>Founder ⭐</h3>
+      <p className="price">19.90 CHF</p>
+      <p>für die ersten 30 Makler</p>
+      <small>regulär 39.90 CHF / Monat</small>
+    </div>
 
+    <div className="priceCard">
+      <h3>Standard</h3>
+      <p className="price">39.90 CHF</p>
+      <p>danach</p>
+    </div>
+
+    <div className="priceCard">
+      <h3>Pro</h3>
+      <p className="price">79.90 CHF</p>
+      <p>Social Media / mehr Features</p>
+    </div>
+
+    <div className="priceCard">
+      <h3>Agency</h3>
+      <p className="price">249.90 CHF</p>
+      <p>Teams / mehrere Makler</p>
+    </div>
   </div>
 
+  <div style={{ marginTop: "28px", opacity: 0.8, fontSize: "14px" }}>
+    Sichere Zahlung mit Visa, Mastercard, TWINT und Stripe
+  </div>
 </section>
-
-{/* PREISE ENDE */}
 
   <div
     style={{
