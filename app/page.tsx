@@ -59,7 +59,7 @@ export default function Home() {
   textAlign: "center"
 }}>
 
-INSERO - Immobilieninserate in Sekunden erstellen
+Immobilieninserate in Sekunden erstellen
 
 </h1>
 
@@ -96,11 +96,6 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
     Nur für die ersten 30 verfügbar
     regulär 39.90 CHF / Monat
   </a>
-
-
-  <p style={{ marginTop: "14px", fontSize: "14px", opacity: 0.8 }}>
-    <b>regulär 39.90 CHF / Monat</b>
-  </p>
 </div>
 
 </div>
