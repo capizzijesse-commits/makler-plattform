@@ -131,7 +131,58 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
   <br />
   für die ersten 100 Makler
 </button>
+<button>
+  50 Inserate kostenlos testen
+</button>
 
+{/* PREISE START */}
+
+<section style={{ marginTop: "80px" }}>
+  <h2 style={{ textAlign: "center", fontSize: "32px", fontWeight: "700" }}>
+    Preise
+  </h2>
+
+  <div style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: "20px",
+    marginTop: "40px"
+  }}>
+
+    <div className="priceCard">
+      <h3>Free</h3>
+      <p className="price">0 CHF</p>
+      <p>50 Inserate kostenlos testen</p>
+    </div>
+
+    <div className="priceCard">
+      <h3>Founder</h3>
+      <p className="price">19.90 CHF</p>
+      <p>für die ersten 30 Makler</p>
+    </div>
+
+    <div className="priceCard">
+      <h3>Standard</h3>
+      <p className="price">39.90 CHF</p>
+      <p>danach</p>
+    </div>
+
+    <div className="priceCard">
+      <h3>Pro</h3>
+      <p className="price">79.90 CHF</p>
+      <p>Social Media / mehr Features</p>
+    </div>
+
+    <div className="priceCard">
+      <h3>Agency</h3>
+      <p className="price">249.90 CHF</p>
+      <p>Teams / mehrere Makler</p>
+    </div>
+
+  </div>
+</section>
+
+{/* PREISE ENDE */}
   <button
     onClick={() => window.location.href="/dashboard"}
     style={{

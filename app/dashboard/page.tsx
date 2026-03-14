@@ -18,6 +18,7 @@ facebookHashtags?: string;
 };
 
 export default function DashboardPage() {
+
   const [instagramPost, setInstagramPost] = useState("");
 const [linkedinPost, setLinkedinPost] = useState("");
  const [location, setLocation] = useState("")
@@ -41,6 +42,7 @@ const [analyzingImage, setAnalyzingImage] = useState(false);
   const [plan, setPlan] = useState("free");
 const [freeGenerationsUsed, setFreeGenerationsUsed] = useState(0);
 const [showUpgrade, setShowUpgrade] = useState(false);
+
 async function generateText() {
   if (plan === "free" && freeGenerationsUsed >= 5) {
     setShowUpgrade(true);
@@ -229,6 +231,9 @@ async function analyzeImage() {
 )}
 
   const current = variants[activeIndex];
+
+
+ 
   const FREE_LIMIT = 50;
 const MINUTES_PER_INSERT = 20;
 
@@ -241,14 +246,13 @@ const hoursSaved = Math.floor(minutesSaved / 60);
 
 const cleanedHighlights = current?.highlights || [];
 const cleanedCta = current?.cta || "";
-  
 
-  
+    async function copyActive() {
 
-  async function copyActive() {
     if (!current) {
       alert("Bitte zuerst eine Variante generieren.");
       return;
+  
     }
 async function generateText() {
   if (plan === "free" && freeGenerationsUsed >= 5) {
@@ -697,74 +701,118 @@ autoComplete="off"
       gap: "16px",
     }}
   >
-    {current?.instagramPost && (
-      <div
-        style={{
-          background: "#ffffff",
-          borderRadius: "20px",
-          padding: "20px",
-          border: "1px solid rgba(15,23,42,0.08)",
-        }}
-      >
-      <h3 style={{ marginBottom: "10px", fontSize: "18px", fontWeight: 800 }}>
-  Instagram Post
-</h3>
+    <div
+  style={{
+    marginTop: "24px",
+    display: "grid",
+    gap: "16px",
+  }}
+>
 
-<p style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>
-  {current.instagramPost}
-</p>
-
-{current.instagramHashtags && (
-  <p
+{/* Instagram */}
+{current?.instagramPost && (
+  <div
     style={{
-      whiteSpace: "pre-line",
-      lineHeight: 1.7,
-      marginTop: "12px",
-      color: "#6b7280",
-      fontSize: "14px",
+      background: "#ffffff",
+      borderRadius: "20px",
+      padding: "20px",
+      border: "1px solid rgba(15,23,42,0.08)",
     }}
   >
-    {current.instagramHashtags}
-  </p>
+    <h3 style={{ marginBottom: "10px", fontSize: "18px", fontWeight: 800 }}>
+      Instagram Post
+    </h3>
+
+    <p style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>
+      {current.instagramPost}
+    </p>
+
+    {current.instagramHashtags && (
+      <p
+        style={{
+          whiteSpace: "pre-line",
+          lineHeight: 1.7,
+          marginTop: "12px",
+          color: "#6b7280",
+          fontSize: "14px",
+        }}
+      >
+        {current.instagramHashtags}
+      </p>
+    )}
+  </div>
 )}
-      </div>
-    )}
 
-    {current?.linkedinPost && (
-      <div
+{/* LinkedIn */}
+{current?.linkedinPost && (
+  <div
+    style={{
+      background: "#ffffff",
+      borderRadius: "20px",
+      padding: "20px",
+      border: "1px solid rgba(15,23,42,0.08)",
+    }}
+  >
+    <h3 style={{ marginBottom: "10px", fontSize: "18px", fontWeight: 800 }}>
+      LinkedIn Post
+    </h3>
+
+    <p style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>
+      {current.linkedinPost}
+    </p>
+
+    {current.linkedinHashtags && (
+      <p
         style={{
-          background: "#ffffff",
-          borderRadius: "20px",
-          padding: "20px",
-          border: "1px solid rgba(15,23,42,0.08)",
+          whiteSpace: "pre-line",
+          lineHeight: 1.7,
+          marginTop: "12px",
+          color: "#6b7280",
+          fontSize: "14px",
         }}
       >
-        <h3 style={{ marginBottom: "10px", fontSize: "18px", fontWeight: 800 }}>
-          LinkedIn Post
-        </h3>
-        <p style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>
-          {current.linkedinPost}
-        </p>
-      </div>
+        {current.linkedinHashtags}
+      </p>
     )}
+  </div>
+)}
 
-    {current?.facebookPost && (
-      <div
+{/* Facebook */}
+{current?.facebookPost && (
+  <div
+    style={{
+      background: "#ffffff",
+      borderRadius: "20px",
+      padding: "20px",
+      border: "1px solid rgba(15,23,42,0.08)",
+    }}
+  >
+    <h3 style={{ marginBottom: "10px", fontSize: "18px", fontWeight: 800 }}>
+      Facebook Post
+    </h3>
+
+    <p style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>
+      {current.facebookPost}
+    </p>
+
+    {current.facebookHashtags && (
+      <p
         style={{
-          background: "#ffffff",
-          borderRadius: "20px",
-          padding: "20px",
-          border: "1px solid rgba(15,23,42,0.08)",
+          whiteSpace: "pre-line",
+          lineHeight: 1.7,
+          marginTop: "12px",
+          color: "#6b7280",
+          fontSize: "14px",
         }}
       >
-        <h3 style={{ marginBottom: "10px", fontSize: "18px", fontWeight: 800 }}>
-          Facebook Post
-        </h3>
-        <p style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>
-          {current.facebookPost}
-        </p>
-      </div>
+        {current.facebookHashtags}
+      </p>
     )}
+  </div>
+)}
+
+</div>
+    
   </div>
               </div>
             ) : (
