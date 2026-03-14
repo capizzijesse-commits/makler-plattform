@@ -172,24 +172,24 @@ alignItems: "stretch",
       <p>Social Media / mehr Features</p>
     </div>
 
-  </div>
-<div style={{ maxWidth: "500px", margin: "24px auto 0" }}>
+ <div style={{ maxWidth: "500px", margin: "24px auto 0" }}>
   <div className="priceCard">
     <h3>Agency</h3>
     <p className="price">249.90 CHF</p>
     <p>Teams / mehrere Makler</p>
   </div>
+</div>
 
-  <div style={{ marginTop: "20px", textAlign: "center" }}>
+<div style={{ marginTop: "20px", textAlign: "center" }}>
   <div style={{ fontSize: "14px", opacity: 0.8, marginBottom: "12px" }}>
     Sichere Zahlung mit
   </div>
 
-  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
-    <img src="/twint.png" alt="TWINT" width="60" />
-    <img src="/visa.png" alt="Visa" width="60" />
-    <img src="/mastercard.png" alt="Mastercard" width="60" />
-    <img src="/stripe.png" alt="Stripe" width="60" />
+  <div style={{ display: "flex", justifyContent: "center", gap: "18px", flexWrap: "wrap", fontSize: "15px", opacity: 0.9 }}>
+    <span>TWINT</span>
+    <span>VISA</span>
+    <span>MASTERCARD</span>
+    <span>STRIPE</span>
   </div>
 </div>
 </div>
@@ -405,7 +405,7 @@ alignItems: "stretch",
   </p>
 
   <p style={{ marginBottom: "22px", color: "#4b5563", fontSize: "16px" }}>
-    <strong>Preis:</strong> CHF 1&apos;090&apos;000
+    <strong>Preis:</strong> CHF 1&apos;095&apos;000
   </p>
 
   <p style={{ color: "#4b5563", lineHeight: 1.8, marginBottom: "18px" }}>
