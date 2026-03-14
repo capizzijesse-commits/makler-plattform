@@ -118,76 +118,61 @@ body {
   background: rgba(255,255,255,0.03);
 }
 .priceCard {
-  background: white;
-  border-radius: 14px;
-  padding: 24px;
-  text-align: center;
-  border: 1px solid #eee;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  min-height: 220px;
-display: flex;
-flex-direction: column;
-justify-content: center;
-}
-
-.priceCard h3 {
-  font-size: 20px;
-  margin-bottom: 6px;
-}
-
-.price {
-  font-size: 28px;
-  font-weight: 700;
-  margin: 10px 0;
-}
-.priceCard {
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 18px;
-  padding: 28px 20px;
+  border-radius: 20px;
+  padding: 32px 24px;
   text-align: center;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   position: relative;
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .priceCard h3 {
-  font-size: 20px;
-  margin-bottom: 10px;
+  font-size: 24px;
+  margin-bottom: 12px;
   color: #111827;
 }
 
 .price {
-  font-size: 34px;
+  font-size: 42px;
   font-weight: 800;
-  margin: 12px 0;
+  margin: 14px 0;
   color: #0f172a;
 }
 
 .priceCard p {
   color: #4b5563;
   line-height: 1.5;
+  font-size: 17px;
 }
 
 .priceCard small {
   display: block;
   margin-top: 10px;
   color: #9ca3af;
+  font-size: 14px;
 }
 
 .featuredCard {
   border: 2px solid #facc15;
-  box-shadow: 0 10px 28px rgba(250, 204, 21, 0.18);
+  box-shadow: 0 14px 34px rgba(250, 204, 21, 0.22);
+  transform: scale(1.05);
+  z-index: 2;
 }
 
 .badge {
   position: absolute;
-  top: -12px;
+  top: -14px;
   left: 50%;
   transform: translateX(-50%);
   background: #facc15;
   color: #111827;
   font-size: 12px;
   font-weight: 700;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 999px;
 }

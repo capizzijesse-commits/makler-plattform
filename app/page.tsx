@@ -172,11 +172,14 @@ alignItems: "stretch",
       <p>Social Media / mehr Features</p>
     </div>
 
-    <div className="priceCard">
-      <h3>Agency</h3>
-      <p className="price">249.90 CHF</p>
-      <p>Teams / mehrere Makler</p>
-    </div>
+  </div>
+<div style={{ maxWidth: "500px", margin: "24px auto 0" }}>
+  <div className="priceCard">
+    <h3>Agency</h3>
+    <p className="price">249.90 CHF</p>
+    <p>Teams / mehrere Makler</p>
+  </div>
+
   </div>
 
   <div style={{ marginTop: "28px", textAlign: "center" }}>
