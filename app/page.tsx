@@ -132,19 +132,8 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
 
 {/* PREISE START */}
 
-<section style={{ marginTop: "80px" }}>
-  <h2 style={{ textAlign: "center", fontSize: "32px", fontWeight: "700" }}>
-    Preise
-  </h2>
+<section style={{ marginTop: "80px", textAlign: "center" }}>
 
-  <div style={{
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: "20px",
-    marginTop: "40px"
-  }}>
-
-  <section style={{ marginTop: "80px", textAlign: "center" }}>
   <h2 style={{ fontSize: "32px", fontWeight: 700, marginBottom: "30px" }}>
     Preise
   </h2>
@@ -155,67 +144,17 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
       gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
       gap: "24px",
       maxWidth: "1100px",
-      margin: "0 auto",
-      padding: "0 20px",
+      margin: "0 auto"
     }}
   >
-    <div className="priceCard">
-      <h3>Free</h3>
-      <p className="price">0 CHF</p>
-      <p>50 Inserate kostenlos testen</p>
-    </div>
 
-    <div className="priceCard featuredCard">
-      <div className="badge">Founder</div>
-      <h3>Founder ⭐</h3>
-      <p className="price">19.90 CHF</p>
-      <p>für die ersten 30 Makler</p>
-      <small>regulär 39.90 CHF / Monat</small>
-    </div>
-
-    <div className="priceCard">
-      <h3>Standard</h3>
-      <p className="price">39.90 CHF</p>
-      <p>danach</p>
-    </div>
-
-    <div className="priceCard">
-      <h3>Pro</h3>
-      <p className="price">79.90 CHF</p>
-      <p>Social Media / mehr Features</p>
-    </div>
-
-    <div className="priceCard">
-      <h3>Agency</h3>
-      <p className="price">249.90 CHF</p>
-      <p>Teams / mehrere Makler</p>
-    </div>
-  </div>
-
-  <div style={{ marginTop: "28px", opacity: 0.8, fontSize: "14px" }}>
-    Sichere Zahlung mit Visa, Mastercard, TWINT und Stripe
-  </div>
-</section> 
+    {/* Preis Karten */}
 
   </div>
+
 </section>
 
 {/* PREISE ENDE */}
-  <button
-    onClick={() => window.location.href="/dashboard"}
-    style={{
-      padding: "14px 28px",
-      background: "#1cb8f6",
-      color: "#FFFFFF",
-      borderRadius: "10px",
-      border: "none",
-      fontWeight: 700,
-      cursor: "pointer",
-      boxShadow: "0 10px 30px rgba(28,184,246,0.25)",
-    }}
-  >
-    Jetzt Inserat erstellen
-  </button>
 
   <div
     style={{
