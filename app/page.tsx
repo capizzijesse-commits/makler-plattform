@@ -180,7 +180,7 @@ alignItems: "stretch",
   </div>
 </div>
 
-<div style={{ marginTop: "20px", textAlign: "center" }}>
+<div style={{ marginTop: "70px", textAlign: "center" }}>
   <div style={{ fontSize: "14px", opacity: 0.8, marginBottom: "12px" }}>
     Sichere Zahlung mit
   </div>
