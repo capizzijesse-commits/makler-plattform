@@ -92,8 +92,11 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
       textAlign: "center"
     }}
   >
-    Founder Zugang sichern – 19.90 CHF Lifetime Preis für die ersten 30 Makler verfügbar
+    Founder Zugang sichern – 19.90 CHF / Monat
+    Nur für die ersten 30 verfügbar
+    regulär 39.90 CHF / Monat
   </a>
+
 
   <p style={{ marginTop: "14px", fontSize: "14px", opacity: 0.8 }}>
     <b>regulär 39.90 CHF / Monat</b>
