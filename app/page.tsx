@@ -36,11 +36,17 @@ export default function Home() {
         >
           Für Immobilienmakler entwickelt
         </div>
-<div style={{ display: "flex", gap: "20px", justifyContent: "center", marginTop: "20px" }}>
-  <img src="/twint.png" width="60" style={{ opacity: 0.8 }} />
-  <img src="/visa.png" width="60" style={{ opacity: 0.8 }} />
-  <img src="/mastercard.png" width="60" style={{ opacity: 0.8 }} />
-  <img src="/stripe.png" width="60" style={{ opacity: 0.8 }} />
+<div style={{ marginTop: "20px", textAlign: "center" }}>
+  <div style={{ fontSize: "14px", opacity: 0.8, marginBottom: "12px" }}>
+    Sichere Zahlung mit
+  </div>
+
+  <div style={{ display: "flex", justifyContent: "center", gap: "16px", flexWrap: "wrap" }}>
+    <span>TWINT</span>
+    <span>VISA</span>
+    <span>MASTERCARD</span>
+    <span>STRIPE</span>
+  </div>
 </div>
       <div style={{
   padding: "40px 16px 24px",
