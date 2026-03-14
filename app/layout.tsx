@@ -19,7 +19,7 @@ export default function RootLayout({
 
         <header className="container-max py-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="badge">Makler</div>
+           
             <div className="font-semibold text-lg">INSERAT AI</div>
           </div>
 

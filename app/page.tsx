@@ -140,9 +140,10 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
       gap: "24px",
-      maxWidth: "1100px",
-      margin: "0 auto",
-      padding: "0 20px",
+      maxWidth: "1280px",
+margin: "0 auto",
+padding: "0 40px",
+alignItems: "stretch",
     }}
   >
     <div className="priceCard">
@@ -178,9 +179,23 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
     </div>
   </div>
 
-  <div style={{ marginTop: "28px", opacity: 0.8, fontSize: "14px" }}>
-    Sichere Zahlung mit Visa, Mastercard, TWINT und Stripe
+  <div style={{ marginTop: "28px", textAlign: "center" }}>
+  <p style={{ opacity: 0.8, fontSize: "14px", marginBottom: "10px" }}>
+    Sichere Zahlung mit
+  </p>
+
+  <div style={{
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "16px"
+  }}>
+    <img src="/visa.png" height="26" />
+    <img src="/mastercard.png" height="26" />
+    <img src="/twint.png" height="26" />
+    <img src="/stripe.png" height="26" />
   </div>
+</div>
 </section>
 
   <div

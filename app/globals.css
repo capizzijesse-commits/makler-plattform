@@ -124,6 +124,10 @@ body {
   text-align: center;
   border: 1px solid #eee;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  min-height: 220px;
+display: flex;
+flex-direction: column;
+justify-content: center;
 }
 
 .priceCard h3 {
