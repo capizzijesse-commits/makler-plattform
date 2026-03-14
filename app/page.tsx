@@ -193,10 +193,7 @@ alignItems: "stretch",
     alignItems: "center",
     gap: "16px"
   }}>
-    <img src="/visa.png" height="26" />
-    <img src="/mastercard.png" height="26" />
-    <img src="/twint.png" height="26" />
-    <img src="/stripe.png" height="26" />
+    
   </div>
 </div>
 </section>
