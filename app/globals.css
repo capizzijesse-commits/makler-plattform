@@ -176,3 +176,129 @@ body {
   padding: 6px 14px;
   border-radius: 999px;
 }
+@media (max-width: 768px) {
+  .shell {
+    padding: 20px 16px !important;
+  }
+
+  .topbar {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .hero {
+    width: 100% !important;
+  }
+
+  .hero h1 {
+    font-size: 42px !important;
+    line-height: 1.08 !important;
+    margin-bottom: 14px !important;
+  }
+
+  .hero p {
+    font-size: 20px !important;
+    line-height: 1.45 !important;
+    margin-bottom: 18px !important;
+  }
+
+  .grid {
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+  }
+
+  .leftCard,
+  .rightCard {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Hero CTA Buttons */
+  .heroCtas {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    width: 100% !important;
+  }
+
+  .heroCtas a,
+  .heroCtas button {
+    width: 100% !important;
+    text-align: center !important;
+    padding: 16px 18px !important;
+    font-size: 18px !important;
+    white-space: normal !important;
+    line-height: 1.35 !important;
+  }
+
+  /* Founder / gold banner */
+  .founderBanner,
+  .promoBanner,
+  .heroBanner {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 16px 18px !important;
+    font-size: 18px !important;
+    line-height: 1.35 !important;
+    white-space: normal !important;
+    text-align: center !important;
+    display: block !important;
+    margin: 14px 0 0 0 !important;
+  }
+
+  /* Pricing */
+  .pricingSection {
+    padding: 32px 0 !important;
+  }
+
+  .pricingTitle {
+    font-size: 42px !important;
+    margin-bottom: 18px !important;
+    text-align: center !important;
+  }
+
+  .pricingGrid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+  }
+
+  .priceCard {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    min-height: auto !important;
+    padding: 26px 20px !important;
+  }
+
+  .priceCard h3 {
+    font-size: 26px !important;
+    line-height: 1.2 !important;
+  }
+
+  .priceCard .price,
+  .priceCard p,
+  .priceCard small {
+    font-size: 18px !important;
+    line-height: 1.45 !important;
+  }
+
+  .priceCard .badge,
+  .featuredBadge,
+  .founderBadge {
+    position: static !important;
+    display: inline-block !important;
+    margin-bottom: 12px !important;
+  }
+
+  .agencyCard {
+    grid-column: auto !important;
+    width: 100% !important;
+  }
+
+  /* Safety */
+  body {
+    overflow-x: hidden !important;
+  }
+}

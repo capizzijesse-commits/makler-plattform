@@ -457,6 +457,7 @@ await navigator.clipboard.writeText(fullText);
               Social Media – strukturiert, verkaufsstark und professionell.
             </p>
           </div>
+          
 <div
   style={{
     display: "flex",
@@ -466,6 +467,56 @@ await navigator.clipboard.writeText(fullText);
     marginBottom: "18px",
   }}
 >
+  <main className="page">
+  <div className="shell">
+    <div className="topbar">
+      <div className="hero">
+        <div className="badge">Makler AI Pro</div>
+        <h1>Inserat Generator für Immobilienmakler</h1>
+        <p>
+          Hochwertige Immobilientexte für Homegate, ImmoScout24, Exposé und
+          Social Media – strukturiert, verkaufsstark und professionell.
+        </p>
+
+        <div className="heroCtas">
+          <a className="promoBanner">Founder Zugang sichern – 19.90 CHF</a>
+          <a className="heroBanner">50 Inserate kostenlos testen für die ersten 100 Makler</a>
+        </div>
+      </div>
+    </div>
+
+    <section className="pricingSection">
+      <h2 className="pricingTitle">Preise</h2>
+
+      <div className="pricingGrid">
+        <div className="priceCard">
+          <div className="badge">Founder</div>
+          <h3>Founder ⭐</h3>
+          <p className="price">19.90 CHF</p>
+          <p>für die ersten 30 Makler</p>
+        </div>
+
+        <div className="priceCard">
+          <h3>Standard</h3>
+          <p className="price">39.90 CHF</p>
+          <p>danach</p>
+        </div>
+
+        <div className="priceCard">
+          <h3>Pro</h3>
+          <p className="price">79.90 CHF</p>
+          <p>Social Media / mehr Features</p>
+        </div>
+
+        <div className="priceCard agencyCard">
+          <h3>Agency</h3>
+          <p className="price">249.90 CHF</p>
+          <p>Teams / mehrere Makler</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
   <div
     style={{
       padding: "10px 14px",
