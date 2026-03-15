@@ -446,7 +446,7 @@ await navigator.clipboard.writeText(fullText);
   }
 
   return (
-    <main className="landingPage">
+    <main className="page">
       <div className="shell">
         <div className="topbar">
           <div className="hero">
@@ -457,108 +457,7 @@ await navigator.clipboard.writeText(fullText);
               Social Media – strukturiert, verkaufsstark und professionell.
             </p>
           </div>
-          
-<div
-  style={{
-    display: "flex",
-    gap: "12px",
-    flexWrap: "wrap",
-    marginTop: "16px",
-    marginBottom: "18px",
-  }}
->
-  <main className="page">
-  <div className="shell">
-    <div className="topbar">
-      <div className="hero">
-        <div className="badge">Makler AI Pro</div>
-        <h1>Inserat Generator für Immobilienmakler</h1>
-        <p>
-          Hochwertige Immobilientexte für Homegate, ImmoScout24, Exposé und
-          Social Media – strukturiert, verkaufsstark und professionell.
-        </p>
 
-        <div className="heroCtas">
-          <a className="promoBanner">Founder Zugang sichern – 19.90 CHF</a>
-          <a className="heroBanner">50 Inserate kostenlos testen für die ersten 100 Makler</a>
-        </div>
-      </div>
-    </div>
-
-    <section className="pricingSection">
-      <h2 className="pricingTitle">Preise</h2>
-
-      <div className="pricingGrid">
-        <div className="priceCard">
-          <div className="badge">Founder</div>
-          <h3>Founder ⭐</h3>
-          <p className="price">19.90 CHF</p>
-          <p>für die ersten 30 Makler</p>
-        </div>
-
-        <div className="priceCard">
-          <h3>Standard</h3>
-          <p className="price">39.90 CHF</p>
-          <p>danach</p>
-        </div>
-
-        <div className="priceCard">
-          <h3>Pro</h3>
-          <p className="price">79.90 CHF</p>
-          <p>Social Media / mehr Features</p>
-        </div>
-
-        <div className="priceCard agencyCard">
-          <h3>Agency</h3>
-          <p className="price">249.90 CHF</p>
-          <p>Teams / mehrere Makler</p>
-        </div>
-      </div>
-    </section>
-  </div>
-</main>
-  <div
-    style={{
-      padding: "10px 14px",
-      borderRadius: "12px",
-      background: "rgba(255,255,255,0.06)",
-      border: "1px solid rgba(255,255,255,0.08)",
-      color: "#fff",
-      fontSize: "14px",
-      fontWeight: 600,
-    }}
-  >
-    ⚡ Inserate erstellt: 0
-  </div>
-
-  <div
-    style={{
-      padding: "10px 14px",
-      borderRadius: "12px",
-      background: "rgba(255,255,255,0.06)",
-      border: "1px solid rgba(255,255,255,0.08)",
-      color: "#fff",
-      fontSize: "14px",
-      fontWeight: 600,
-    }}
-  >
-    ⏱ Zeit gespart: 0h
-  </div>
-
-  <div
-    style={{
-      padding: "10px 14px",
-      borderRadius: "12px",
-      background: "rgba(255,255,255,0.06)",
-      border: "1px solid rgba(255,255,255,0.08)",
-      color: "#fff",
-      fontSize: "14px",
-      fontWeight: 600,
-    }}
-  >
-    🏢 Plattformen: 4
-  </div>
-</div>
         </div>
 
         <div className="grid">
@@ -662,53 +561,51 @@ autoComplete="off"
     <span style={{ color: "rgba(255,255,255,0.7)", fontSize: "14px" }}>
       {selectedImage ? selectedImage.name : "Keine Datei ausgewählt"}
     </span>
+  </div>
+  <div style={{ marginTop: "20px", width: "100%" }}>
+ <div style={{ marginTop: "20px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
   <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}></div>
-
-   <div style={{ display: "flex", gap: "10px", marginTop: "10px", alignItems: "center", flexWrap: "nowrap" }}>
   <button
     onClick={generateText}
     style={{
-      padding: "12px 16px",
+      padding: "14px",
       borderRadius: "12px",
       border: "none",
       background: "#1cc8ff",
       color: "#fff",
       fontWeight: 700,
-      fontSize: "15px",
+      fontSize: "16px",
       cursor: "pointer",
-      whiteSpace: "nowrap"
     }}
   >
     Inserat generieren (3 Varianten)
   </button>
 
   <button
-  onClick={copyText}
-  style={{
-    padding: "12px 14px",
-    borderRadius: "12px",
-    border: "none",
-    background: "#2d3748",
-    color: "#fff",
-    fontWeight: 600,
-    cursor: "pointer",
-    whiteSpace: "nowrap"
-  }}
->
-  Copy
-</button>
-
-  <button
-    onClick={downloadPdf}
+    onClick={copyText}
     style={{
-      padding: "12px 14px",
+      padding: "14px",
       borderRadius: "12px",
       border: "none",
       background: "#2d3748",
       color: "#fff",
       fontWeight: 600,
       cursor: "pointer",
-      whiteSpace: "nowrap"
+    }}
+  >
+    Copy
+  </button>
+
+  <button
+    onClick={downloadPdf}
+    style={{
+      padding: "14px",
+      borderRadius: "12px",
+      border: "none",
+      background: "#2d3748",
+      color: "#fff",
+      fontWeight: 600,
+      cursor: "pointer",
     }}
   >
     PDF
