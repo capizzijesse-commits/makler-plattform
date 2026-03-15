@@ -539,7 +539,6 @@ await navigator.clipboard.writeText(fullText);
 
         <div className="grid">
           <section className="leftCard">
-            <div className="badge">Objektdaten</div>
             <h2>Eingabe</h2>
             <p className="sectionText">
               Erfasse die wichtigsten Eckdaten der Immobilie. Daraus entstehen automatisch mehrere
