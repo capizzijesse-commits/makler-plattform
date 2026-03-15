@@ -446,7 +446,7 @@ await navigator.clipboard.writeText(fullText);
   }
 
   return (
-    <main className="page">
+   <main className="page dashboardPage">
       <div className="shell">
         <div className="topbar">
         <div

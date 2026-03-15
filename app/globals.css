@@ -372,3 +372,105 @@ body {
     overflow-x: hidden !important;
   }
 }
+@media (max-width: 768px) {
+  .dashboardPage .shell {
+    padding: 16px !important;
+  }
+
+  .dashboardPage .topbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 14px !important;
+  }
+
+  .dashboardPage .hero {
+    width: 100% !important;
+    margin-top: 12px !important;
+    text-align: center !important;
+  }
+
+  .dashboardPage .hero h1 {
+    font-size: 28px !important;
+    line-height: 1.15 !important;
+    margin-bottom: 10px !important;
+  }
+
+  .dashboardPage .hero p {
+    font-size: 15px !important;
+    line-height: 1.45 !important;
+    margin-bottom: 12px !important;
+  }
+
+  .dashboardPage .grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .dashboardPage .leftCard,
+  .dashboardPage .rightCard {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .dashboardPage .formGrid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .dashboardPage input,
+  .dashboardPage textarea,
+  .dashboardPage select {
+    width: 100% !important;
+    font-size: 16px !important;
+  }
+
+  .dashboardPage button {
+    max-width: 100% !important;
+  }
+
+  .dashboardPage .rightCard {
+    order: 2 !important;
+  }
+
+  .dashboardPage .leftCard {
+    order: 1 !important;
+  }
+
+  .dashboardPage .hero > div[style*="justifyContent"] {
+    justify-content: center !important;
+  }
+
+  .dashboardPage .hero > div[style*="justifyContent"] > div {
+    font-size: 12px !important;
+  }
+
+  .dashboardPage [style*="display: flex"][style*="gap: 10px"] {
+    flex-wrap: wrap !important;
+    justify-content: flex-start !important;
+  }
+
+  .dashboardPage [style*="display: flex"][style*="gap: 10px"] button {
+    flex: 0 0 auto !important;
+  }
+
+  .dashboardPage .rightCard h2,
+  .dashboardPage .leftCard h2 {
+    font-size: 28px !important;
+  }
+
+  .dashboardPage .rightCard,
+  .dashboardPage .leftCard {
+    border-radius: 20px !important;
+  }
+
+  .dashboardPage .outputBox,
+  .dashboardPage .emptyBox {
+    min-height: auto !important;
+  }
+
+  body {
+    overflow-x: hidden !important;
+  }
+}
