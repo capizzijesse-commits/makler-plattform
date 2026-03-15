@@ -157,7 +157,6 @@ alignItems: "stretch",
       <h3>Founder ⭐</h3>
       <p className="price">19.90 CHF</p>
       <p>für die ersten 30 Makler</p>
-      <small>regulär 39.90 CHF / Monat</small>
     </div>
 
     <div className="priceCard">
@@ -172,23 +171,24 @@ alignItems: "stretch",
       <p>Social Media / mehr Features</p>
     </div>
 
- <div
-  style={{
-    marginTop: "40px",
-    width: "100%",
-    background: "white",
-    borderRadius: "14px",
-    padding: "30px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-    textAlign: "center"
-  }}
->
-  <h3>Agency</h3>
-  <div style={{ fontSize: "22px", fontWeight: "600" }}>
-    249.90 CHF
-  </div>
-  <div style={{ opacity: 0.7 }}>
-    Teams / mehrere Makler
+<div style={{ gridColumn: "1 / -1", marginTop: "30px" }}>
+  <div
+    style={{
+      width: "100%",
+      background: "white",
+      borderRadius: "14px",
+      padding: "30px",
+      textAlign: "center",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
+    }}
+  >
+    <h3>Agency</h3>
+    <div style={{ fontSize: "22px", fontWeight: "600" }}>
+      249.90 CHF
+    </div>
+    <div style={{ opacity: 0.7 }}>
+      Teams / mehrere Makler
+    </div>
   </div>
 </div>
 
