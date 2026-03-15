@@ -589,35 +589,37 @@ autoComplete="off"
       Inserat generieren (3 Varianten)
     </button>
 
-    <button
-      onClick={copyText}
-      style={{
-        padding: "14px",
-        borderRadius: "12px",
-        border: "none",
-        background: "#2d3748",
-        color: "#fff",
-        fontWeight: 600,
-        cursor: "pointer",
-      }}
-    >
-      Copy
-    </button>
+ <button
+  onClick={copyText}
+  style={{
+    padding: "12px 14px",
+    borderRadius: "12px",
+    border: "none",
+    background: "#2d3748",
+    color: "#fff",
+    fontWeight: 600,
+    cursor: "pointer",
+    whiteSpace: "nowrap"
+  }}
+>
+  Copy
+</button>
 
-    <button
-      onClick={downloadPdf}
-      style={{
-        padding: "14px",
-        borderRadius: "12px",
-        border: "none",
-        background: "#2d3748",
-        color: "#fff",
-        fontWeight: 600,
-        cursor: "pointer",
-      }}
-    >
-      PDF
-    </button>
+  <button
+  onClick={downloadPdf}
+  style={{
+    padding: "12px 14px",
+    borderRadius: "12px",
+    border: "none",
+    background: "#2d3748",
+    color: "#fff",
+    fontWeight: 600,
+    cursor: "pointer",
+    whiteSpace: "nowrap"
+  }}
+>
+  PDF
+</button> 
   </div>
 </div>
   <div
