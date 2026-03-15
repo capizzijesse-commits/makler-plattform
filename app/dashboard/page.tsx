@@ -18,6 +18,26 @@ facebookHashtags?: string;
 };
 
 export default function DashboardPage() {
+  function copyText() {
+  const text = document.querySelector(".outputText")?.textContent || "";
+  if (!text) return;
+  navigator.clipboard.writeText(text);
+}
+
+function downloadPdf() {
+  const text = document.querySelector(".outputText")?.textContent || "";
+  if (!text) return;
+
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "inserat.txt";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
 
   const [instagramPost, setInstagramPost] = useState("");
 const [linkedinPost, setLinkedinPost] = useState("");
@@ -439,6 +459,13 @@ await navigator.clipboard.writeText(fullText);
           </div>
 
           <div className="actions">
+            <button
+              onClick={generateText}
+              disabled={loading}
+              className="btn btn-primary"
+            >
+              {loading ? "Generiere..." : "Generieren (3 Varianten)"}
+            </button>
 
       <button
   className="btn btn-secondary"
@@ -564,10 +591,10 @@ autoComplete="off"
     </span>
   </div>
   <div style={{ marginTop: "20px", width: "100%" }}>
+ <div style={{ marginTop: "20px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
   <button
     onClick={generateText}
     style={{
-      width: "100%",
       padding: "14px",
       borderRadius: "12px",
       border: "none",
@@ -580,6 +607,37 @@ autoComplete="off"
   >
     Inserat generieren (3 Varianten)
   </button>
+
+  <button
+    onClick={copyText}
+    style={{
+      padding: "14px",
+      borderRadius: "12px",
+      border: "none",
+      background: "#2d3748",
+      color: "#fff",
+      fontWeight: 600,
+      cursor: "pointer",
+    }}
+  >
+    Copy
+  </button>
+
+  <button
+    onClick={downloadPdf}
+    style={{
+      padding: "14px",
+      borderRadius: "12px",
+      border: "none",
+      background: "#2d3748",
+      color: "#fff",
+      fontWeight: 600,
+      cursor: "pointer",
+    }}
+  >
+    PDF
+  </button>
+</div>
 
   <div
     style={{
