@@ -168,7 +168,7 @@ alignItems: "stretch",
     <div className="priceCard">
       <h3>Pro</h3>
       <p className="price">79.90 CHF</p>
-      <p>Social Media / mehr Features</p>
+      <p>Exposé PDF / Social Media / mehr Features</p>
     </div>
 
 <div style={{ gridColumn: "1 / -1", marginTop: "30px" }}>
