@@ -561,54 +561,53 @@ autoComplete="off"
     <span style={{ color: "rgba(255,255,255,0.7)", fontSize: "14px" }}>
       {selectedImage ? selectedImage.name : "Keine Datei ausgewählt"}
     </span>
-  </div>
-  <div style={{ marginTop: "20px" }}>
- <div style={{ marginTop: "20px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
   <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}></div>
 
-   <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}></div>
+   <div style={{ display: "flex", gap: "10px", marginTop: "10px", alignItems: "center", flexWrap: "nowrap" }}>
   <button
     onClick={generateText}
     style={{
-      padding: "14px",
+      padding: "12px 16px",
       borderRadius: "12px",
       border: "none",
       background: "#1cc8ff",
       color: "#fff",
       fontWeight: 700,
-      fontSize: "16px",
+      fontSize: "15px",
       cursor: "pointer",
+      whiteSpace: "nowrap"
     }}
   >
-   
     Inserat generieren (3 Varianten)
   </button>
 
   <button
-    onClick={copyText}
-    style={{
-      padding: "14px",
-      borderRadius: "12px",
-      border: "none",
-      background: "#2d3748",
-      color: "#fff",
-      fontWeight: 600,
-      cursor: "pointer",
-    }}
-  >
-    Copy
-  </button>
+  onClick={copyText}
+  style={{
+    padding: "12px 14px",
+    borderRadius: "12px",
+    border: "none",
+    background: "#2d3748",
+    color: "#fff",
+    fontWeight: 600,
+    cursor: "pointer",
+    whiteSpace: "nowrap"
+  }}
+>
+  Copy
+</button>
 
   <button
     onClick={downloadPdf}
     style={{
-      padding: "14px",
+      padding: "12px 14px",
       borderRadius: "12px",
       border: "none",
       background: "#2d3748",
       color: "#fff",
       fontWeight: 600,
       cursor: "pointer",
+      whiteSpace: "nowrap"
     }}
   >
     PDF
