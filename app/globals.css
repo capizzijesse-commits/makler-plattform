@@ -258,6 +258,13 @@ body {
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
 }
+@media (max-width: 768px) {
+
+  .landingPage .pricingGrid {
+    grid-template-columns: 1fr;
+  }
+
+}
 
 .landingPage .priceCard {
   width: 100%;
@@ -473,4 +480,7 @@ body {
   body {
     overflow-x: hidden !important;
   }
+}
+html, body {
+  overflow-x: hidden;
 }
