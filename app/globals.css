@@ -178,7 +178,10 @@ body {
 }
 @media (max-width: 768px) {
   .shell {
-    padding: 20px 16px !important;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 24px;
+}
   }
 
   .topbar {
@@ -204,9 +207,9 @@ body {
   }
 
   .grid {
-    grid-template-columns: 1fr !important;
-    gap: 18px !important;
-  }
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
 
   .leftCard,
   .rightCard {
@@ -301,4 +304,3 @@ body {
   body {
     overflow-x: hidden !important;
   }
-}
