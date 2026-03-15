@@ -172,21 +172,22 @@ alignItems: "stretch",
       <p>Social Media / mehr Features</p>
     </div>
 
- <div style={{
-  marginTop: "60px",
-  padding: "30px",
-  borderRadius: "12px",
-  border: "1px solid #eee",
-  textAlign: "center",
-  maxWidth: "700px",
-  marginLeft: "auto",
-  marginRight: "auto"
-}}>
+ <div
+  style={{
+    marginTop: "40px",
+    width: "100%",
+    background: "white",
+    borderRadius: "14px",
+    padding: "30px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+    textAlign: "center"
+  }}
+>
   <h3>Agency</h3>
-  <div style={{fontSize:"24px", fontWeight:"bold"}}>
+  <div style={{ fontSize: "22px", fontWeight: "600" }}>
     249.90 CHF
   </div>
-  <div style={{opacity:0.8}}>
+  <div style={{ opacity: 0.7 }}>
     Teams / mehrere Makler
   </div>
 </div>
