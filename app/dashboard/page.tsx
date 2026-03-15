@@ -458,34 +458,6 @@ await navigator.clipboard.writeText(fullText);
             </p>
           </div>
 
-          <div className="actions">
-            <button
-              onClick={generateText}
-              disabled={loading}
-              className="btn btn-primary"
-            >
-              {loading ? "Generiere..." : "Generieren (3 Varianten)"}
-            </button>
-
-      <button
-  className="btn btn-secondary"
-  onClick={async () => {
-    if (!current?.text) return;
-    await navigator.clipboard.writeText(current.text);
-    alert("Text kopiert");
-  }}
->
-  Copy
-</button>
-
-            <button
-              onClick={exportPdf}
-              disabled={!current}
-              className="btn btn-secondary"
-            >
-              PDF
-            </button>
-          </div>
         </div>
 
         <div className="grid">
@@ -606,6 +578,7 @@ autoComplete="off"
       cursor: "pointer",
     }}
   >
+    <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}></div>
     Inserat generieren (3 Varianten)
   </button>
 
