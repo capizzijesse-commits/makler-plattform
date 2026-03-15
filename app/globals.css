@@ -252,6 +252,11 @@ body {
   margin-bottom: 18px;
   text-align: center;
 }
+@media (max-width: 768px) {
+  .landingPage .pricingTitle {
+    font-size: 32px;
+  }
+}
 
 .landingPage .pricingGrid {
   display: grid;
