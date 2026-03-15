@@ -592,6 +592,7 @@ autoComplete="off"
   </div>
   <div style={{ marginTop: "20px", width: "100%" }}>
  <div style={{ marginTop: "20px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
+  <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}></div>
   <button
     onClick={generateText}
     style={{
