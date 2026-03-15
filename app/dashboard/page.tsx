@@ -563,53 +563,58 @@ autoComplete="off"
     </span>
   </div>
   <div style={{ marginTop: "20px", width: "100%" }}>
- <div style={{ marginTop: "20px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
-  <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}></div>
-  <button
-    onClick={generateText}
-    style={{
-      padding: "14px",
-      borderRadius: "12px",
-      border: "none",
-      background: "#1cc8ff",
-      color: "#fff",
-      fontWeight: 700,
-      fontSize: "16px",
-      cursor: "pointer",
-    }}
-  >
-    Inserat generieren (3 Varianten)
-  </button>
+ <div style={{ marginTop: "20px", width: "100%" }}>
 
-  <button
-    onClick={copyText}
-    style={{
-      padding: "14px",
-      borderRadius: "12px",
-      border: "none",
-      background: "#2d3748",
-      color: "#fff",
-      fontWeight: 600,
-      cursor: "pointer",
-    }}
-  >
-    Copy
-  </button>
+  <div style={{ marginTop: "20px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
 
-  <button
-    onClick={downloadPdf}
-    style={{
-      padding: "14px",
-      borderRadius: "12px",
-      border: "none",
-      background: "#2d3748",
-      color: "#fff",
-      fontWeight: 600,
-      cursor: "pointer",
-    }}
-  >
-    PDF
-  </button>
+    <button
+      onClick={generateText}
+      style={{
+        padding: "14px",
+        borderRadius: "12px",
+        border: "none",
+        background: "#1cc8ff",
+        color: "#fff",
+        fontWeight: 700,
+        fontSize: "16px",
+        cursor: "pointer"
+      }}
+    >
+      Inserat generieren (3 Varianten)
+    </button>
+
+    <button
+      onClick={copyText}
+      style={{
+        padding: "14px",
+        borderRadius: "12px",
+        border: "none",
+        background: "#2d3748",
+        color: "#fff",
+        fontWeight: 600,
+        cursor: "pointer"
+      }}
+    >
+      Copy
+    </button>
+
+    <button
+      onClick={downloadPdf}
+      style={{
+        padding: "14px",
+        borderRadius: "12px",
+        border: "none",
+        background: "#2d3748",
+        color: "#fff",
+        fontWeight: 600,
+        cursor: "pointer"
+      }}
+    >
+      PDF
+    </button>
+
+  </div>
+
 </div>
 
   <div
