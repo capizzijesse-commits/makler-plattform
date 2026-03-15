@@ -175,7 +175,7 @@ alignItems: "stretch",
   <div
     style={{
       width: "100%",
-      background: "white",
+      background: "#fafafa",
       borderRadius: "14px",
       padding: "30px",
       textAlign: "center",
