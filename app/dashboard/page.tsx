@@ -565,6 +565,8 @@ autoComplete="off"
   <div style={{ marginTop: "20px", width: "100%" }}>
  <div style={{ marginTop: "20px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
   <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}></div>
+
+   <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}></div>
   <button
     onClick={generateText}
     style={{
@@ -578,7 +580,7 @@ autoComplete="off"
       cursor: "pointer",
     }}
   >
-    <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}></div>
+   
     Inserat generieren (3 Varianten)
   </button>
 
