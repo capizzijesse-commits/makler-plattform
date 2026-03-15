@@ -449,8 +449,13 @@ await navigator.clipboard.writeText(fullText);
     <main className="page">
       <div className="shell">
         <div className="topbar">
-          <div className="hero">
-            <div className="badge">Makler AI Pro</div>
+        <div
+  className="hero"
+  style={{
+    marginTop: "30px",
+    textAlign: "center"
+  }}
+>
           
           </div>
 <div
@@ -463,7 +468,9 @@ await navigator.clipboard.writeText(fullText);
   }}
 >
   <div>
-    <h1>Inserat Generator für Immobilienmakler</h1>
+    <h1 style={{ textAlign: "center", marginBottom: "10px" }}>
+  Inserat Generator für Immobilienmakler
+</h1>
     <p>
       Hochwertige Immobilientexte für Homegate, ImmoScout24, Exposé und
       Social Media – strukturiert, verkaufsstark und professionell.
