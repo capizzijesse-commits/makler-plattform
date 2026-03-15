@@ -457,7 +457,57 @@ await navigator.clipboard.writeText(fullText);
               Social Media – strukturiert, verkaufsstark und professionell.
             </p>
           </div>
+<div
+  style={{
+    display: "flex",
+    gap: "12px",
+    flexWrap: "wrap",
+    marginTop: "16px",
+    marginBottom: "18px",
+  }}
+>
+  <div
+    style={{
+      padding: "10px 14px",
+      borderRadius: "12px",
+      background: "rgba(255,255,255,0.06)",
+      border: "1px solid rgba(255,255,255,0.08)",
+      color: "#fff",
+      fontSize: "14px",
+      fontWeight: 600,
+    }}
+  >
+    ⚡ Inserate erstellt: 0
+  </div>
 
+  <div
+    style={{
+      padding: "10px 14px",
+      borderRadius: "12px",
+      background: "rgba(255,255,255,0.06)",
+      border: "1px solid rgba(255,255,255,0.08)",
+      color: "#fff",
+      fontSize: "14px",
+      fontWeight: 600,
+    }}
+  >
+    ⏱ Zeit gespart: 0h
+  </div>
+
+  <div
+    style={{
+      padding: "10px 14px",
+      borderRadius: "12px",
+      background: "rgba(255,255,255,0.06)",
+      border: "1px solid rgba(255,255,255,0.08)",
+      color: "#fff",
+      fontSize: "14px",
+      fontWeight: 600,
+    }}
+  >
+    🏢 Plattformen: 4
+  </div>
+</div>
         </div>
 
         <div className="grid">
