@@ -171,22 +171,51 @@ alignItems: "stretch",
       <p>Exposé PDF / Social Media / mehr Features</p>
     </div>
 
-<div style={{ gridColumn: "1 / -1", marginTop: "30px" }}>
+<div
+  style={{
+    gridColumn: "1 / -1",
+    marginTop: "32px",
+  }}
+>
   <div
     style={{
-      width: "100%",
-      background: "#fafafa",
-      borderRadius: "14px",
-      padding: "30px",
+      background: "#ffffff",
+      border: "1px solid #e5e7eb",
+      borderRadius: "20px",
+      padding: "34px 24px",
       textAlign: "center",
-      boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
+      boxShadow: "0 10px 30px rgba(0, 0, 0, 0.08)",
+      width: "100%",
+      boxSizing: "border-box",
     }}
   >
-    <h3>Agency</h3>
-    <div style={{ fontSize: "22px", fontWeight: "600" }}>
+    <h3
+      style={{
+        fontSize: "28px",
+        marginBottom: "14px",
+        color: "#111827",
+      }}
+    >
+      Agency
+    </h3>
+
+    <div
+      style={{
+        fontSize: "42px",
+        fontWeight: 800,
+        marginBottom: "12px",
+        color: "#0f172a",
+      }}
+    >
       249.90 CHF
     </div>
-    <div style={{ opacity: 0.7 }}>
+
+    <div
+      style={{
+        fontSize: "18px",
+        color: "#4b5563",
+      }}
+    >
       Teams / mehrere Makler
     </div>
   </div>
