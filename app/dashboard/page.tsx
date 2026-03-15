@@ -71,6 +71,10 @@ async function generateText() {
 
     const data = await response.json();
 
+    let text = data.text;
+
+text = text.replace(/ß/g, "ss");
+
     if (!response.ok) {
       alert(data.error || "Fehler beim Generieren.");
       return;
