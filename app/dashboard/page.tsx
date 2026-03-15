@@ -451,13 +451,75 @@ await navigator.clipboard.writeText(fullText);
         <div className="topbar">
           <div className="hero">
             <div className="badge">Makler AI Pro</div>
-            <h1>Inserat Generator für Immobilienmakler</h1>
-            <p>
-              Hochwertige Immobilientexte für Homegate, ImmoScout24, Exposé und
-              Social Media – strukturiert, verkaufsstark und professionell.
-            </p>
+          
           </div>
+<div
+  style={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: "20px",
+  }}
+>
+  <div>
+    <h1>Inserat Generator für Immobilienmakler</h1>
+    <p>
+      Hochwertige Immobilientexte für Homegate, ImmoScout24, Exposé und
+      Social Media – strukturiert, verkaufsstark und professionell.
+    </p>
+  </div>
 
+  <div
+    style={{
+      display: "flex",
+      gap: "10px",
+      flexWrap: "wrap",
+    }}
+  >
+    <div
+      style={{
+        padding: "8px 12px",
+        borderRadius: "10px",
+        background: "rgba(255,255,255,0.06)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        color: "#fff",
+        fontSize: "13px",
+        fontWeight: 600,
+      }}
+    >
+      ⚡ Inserate: 0
+    </div>
+
+    <div
+      style={{
+        padding: "8px 12px",
+        borderRadius: "10px",
+        background: "rgba(255,255,255,0.06)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        color: "#fff",
+        fontSize: "13px",
+        fontWeight: 600,
+      }}
+    >
+      ⏱ Zeit: 0h
+    </div>
+
+    <div
+      style={{
+        padding: "8px 12px",
+        borderRadius: "10px",
+        background: "rgba(255,255,255,0.06)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        color: "#fff",
+        fontSize: "13px",
+        fontWeight: 600,
+      }}
+    >
+      🏢 Plattformen: 4
+    </div>
+  </div>
+</div>
         </div>
 
         <div className="grid">
