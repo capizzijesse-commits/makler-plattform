@@ -567,59 +567,60 @@ autoComplete="off"
   <div
     style={{
       display: "flex",
-      gap: "10px",
+      gap: "8px",
       marginTop: "10px",
       alignItems: "center",
-      flexWrap: "wrap",
+      flexWrap: "nowrap",
     }}
   >
     <button
       onClick={generateText}
       style={{
-        padding: "14px",
+        padding: "12px 14px",
         borderRadius: "12px",
         border: "none",
         background: "#1cc8ff",
         color: "#fff",
         fontWeight: 700,
-        fontSize: "16px",
+        fontSize: "14px",
         cursor: "pointer",
+        whiteSpace: "nowrap",
       }}
     >
       Inserat generieren (3 Varianten)
     </button>
 
- <button
-  onClick={copyText}
-  style={{
-    padding: "12px 14px",
-    borderRadius: "12px",
-    border: "none",
-    background: "#2d3748",
-    color: "#fff",
-    fontWeight: 600,
-    cursor: "pointer",
-    whiteSpace: "nowrap"
-  }}
->
-  Copy
-</button>
+    <button
+      onClick={copyText}
+      style={{
+        padding: "12px 14px",
+        borderRadius: "12px",
+        border: "none",
+        background: "#2d3748",
+        color: "#fff",
+        fontWeight: 600,
+        cursor: "pointer",
+        whiteSpace: "nowrap",
+      }}
+    >
+      Copy
+    </button>
 
-  <button
-  onClick={downloadPdf}
-  style={{
-    padding: "12px 14px",
-    borderRadius: "12px",
-    border: "none",
-    background: "#2d3748",
-    color: "#fff",
-    fontWeight: 600,
-    cursor: "pointer",
-    whiteSpace: "nowrap"
-  }}
->
-  PDF
-</button> 
+    <button
+      onClick={downloadPdf}
+      style={{
+        padding: "12px 14px",
+        borderRadius: "12px",
+        border: "none",
+        background: "#2d3748",
+        color: "#fff",
+        fontWeight: 600,
+        cursor: "pointer",
+        whiteSpace: "nowrap",
+      }}
+    >
+      PDF
+    </button>
   </div>
 </div>
   <div
