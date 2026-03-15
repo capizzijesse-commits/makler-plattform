@@ -174,48 +174,31 @@ alignItems: "stretch",
 <div
   style={{
     gridColumn: "1 / -1",
-    marginTop: "32px",
+    display: "flex",
+    justifyContent: "center",
+    marginTop: "32px"
   }}
 >
   <div
     style={{
+      width: "80%",
       background: "#ffffff",
       border: "1px solid #e5e7eb",
       borderRadius: "20px",
       padding: "34px 24px",
       textAlign: "center",
-      boxShadow: "0 10px 30px rgba(0, 0, 0, 0.08)",
-      width: "100%",
-      boxSizing: "border-box",
+      boxShadow: "0 10px 30px rgba(0,0,0,0.08)"
     }}
   >
-    <h3
-      style={{
-        fontSize: "28px",
-        marginBottom: "14px",
-        color: "#111827",
-      }}
-    >
+    <h3 style={{ fontSize: "24px", marginBottom: "12px" }}>
       Agency
     </h3>
 
-    <div
-      style={{
-        fontSize: "42px",
-        fontWeight: 800,
-        marginBottom: "12px",
-        color: "#0f172a",
-      }}
-    >
+    <div style={{ fontSize: "40px", fontWeight: "800", marginBottom: "10px" }}>
       249.90 CHF
     </div>
 
-    <div
-      style={{
-        fontSize: "18px",
-        color: "#4b5563",
-      }}
-    >
+    <div style={{ color: "#4b5563" }}>
       Teams / mehrere Makler
     </div>
   </div>
