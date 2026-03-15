@@ -439,13 +439,6 @@ await navigator.clipboard.writeText(fullText);
           </div>
 
           <div className="actions">
-            <button
-              onClick={generateText}
-              disabled={loading}
-              className="btn btn-primary"
-            >
-              {loading ? "Generiere..." : "Generieren (3 Varianten)"}
-            </button>
 
       <button
   className="btn btn-secondary"
@@ -570,6 +563,35 @@ autoComplete="off"
       {selectedImage ? selectedImage.name : "Keine Datei ausgewählt"}
     </span>
   </div>
+  <div style={{ marginTop: "20px", width: "100%" }}>
+  <button
+    onClick={generateText}
+    style={{
+      width: "100%",
+      padding: "14px",
+      borderRadius: "12px",
+      border: "none",
+      background: "#1cc8ff",
+      color: "#fff",
+      fontWeight: 700,
+      fontSize: "16px",
+      cursor: "pointer",
+    }}
+  >
+    Inserat generieren (3 Varianten)
+  </button>
+
+  <div
+    style={{
+      textAlign: "center",
+      fontSize: "13px",
+      marginTop: "6px",
+      opacity: 0.7,
+    }}
+  >
+    Erstellt 3 professionelle Varianten in wenigen Sekunden
+  </div>
+</div>
 </Field>
   </Field>
  
