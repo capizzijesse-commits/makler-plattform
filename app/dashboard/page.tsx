@@ -564,9 +564,15 @@ autoComplete="off"
   </div>
   <div style={{ marginTop: "20px", width: "100%" }}>
  <div style={{ marginTop: "20px", width: "100%" }}>
-
-  <div style={{ marginTop: "20px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
-
+  <div
+    style={{
+      display: "flex",
+      gap: "10px",
+      marginTop: "10px",
+      alignItems: "center",
+      flexWrap: "wrap",
+    }}
+  >
     <button
       onClick={generateText}
       style={{
@@ -577,7 +583,7 @@ autoComplete="off"
         color: "#fff",
         fontWeight: 700,
         fontSize: "16px",
-        cursor: "pointer"
+        cursor: "pointer",
       }}
     >
       Inserat generieren (3 Varianten)
@@ -592,7 +598,7 @@ autoComplete="off"
         background: "#2d3748",
         color: "#fff",
         fontWeight: 600,
-        cursor: "pointer"
+        cursor: "pointer",
       }}
     >
       Copy
@@ -607,16 +613,13 @@ autoComplete="off"
         background: "#2d3748",
         color: "#fff",
         fontWeight: 600,
-        cursor: "pointer"
+        cursor: "pointer",
       }}
     >
       PDF
     </button>
-
   </div>
-
 </div>
-
   <div
     style={{
       textAlign: "center",
