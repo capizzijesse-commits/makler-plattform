@@ -468,7 +468,15 @@ await navigator.clipboard.writeText(fullText);
   }}
 >
   <div>
-    <h1 style={{ textAlign: "center", marginBottom: "10px" }}>
+   <h1
+  style={{
+    textAlign: "center",
+    marginBottom: "12px",
+    fontSize: "34px",
+    fontWeight: 800,
+    letterSpacing: "-0.5px",
+  }}
+>
   Inserat Generator für Immobilienmakler
 </h1>
     <p>
