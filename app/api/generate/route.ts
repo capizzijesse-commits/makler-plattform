@@ -5,10 +5,17 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req: Request) {
   try {
-    const { userInput } = await req.json();
+    const body = await req.json();
+    
+    // RETTUNG: Wir suchen alle gängigen Namen ab, damit 'content' nie null ist
+    const promptText = body.userInput || body.prompt || body.text || body.content;
 
-    if (!userInput) {
-      return NextResponse.json({ error: "Kein Input vorhanden" }, { status: 400 });
+    // Falls gar nichts gefunden wurde, geben wir eine klare Fehlermeldung zurück
+    if (!promptText) {
+      console.error("Frontend Fehler: Body enthält keine bekannten Keys", body);
+      return NextResponse.json({ 
+        error: "Kein Text empfangen. Bitte prüfen Sie, ob das Frontend 'userInput' sendet." 
+      }, { status: 400 });
     }
 
     const response = await openai.chat.completions.create({
@@ -16,29 +23,26 @@ export async function POST(req: Request) {
       messages: [
         { 
           role: "system", 
-          content: "Du bist ein Assistent für insera-ai.ch. Antworte AUSSCHLIESSLICH im JSON-Format. Schema: { \"titel\": \"string\", \"beschreibung\": \"string\" }" 
+          content: "Du bist ein Assistent für insera-ai.ch. Antworte IMMER im JSON-Format: { \"titel\": \"string\", \"beschreibung\": \"string\" }." 
         },
-        { role: "user", content: userInput }
+        { 
+          role: "user", 
+          content: String(promptText) // Sicherstellen, dass es ein String ist
+        }
       ],
-      response_format: { type: "json_object" } 
+      response_format: { type: "json_object" }
     });
 
-    // WICHTIG: Das [0] ist zwingend erforderlich!
     const content = response.choices[0].message.content;
-    
-    if (!content) {
-      throw new Error("KI hat leeren Inhalt geliefert");
-    }
+    if (!content) throw new Error("KI Antwort ist leer");
 
-    // Das parst den Text zu echtem JSON und schickt es ans Frontend
     return NextResponse.json(JSON.parse(content));
-    
+
   } catch (error: any) {
     console.error("Generate API error:", error);
-    // Gibt die genaue Fehlermeldung ans Frontend, damit wir sehen, was los ist
-    return NextResponse.json(
-      { error: "Fehler beim Generieren", details: error.message }, 
-      { status: 500 }
-    );
+    return NextResponse.json({ 
+      error: "Fehler bei der Generierung", 
+      details: error.message 
+    }, { status: 500 });
   }
 }
