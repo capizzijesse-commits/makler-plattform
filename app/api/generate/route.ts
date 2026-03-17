@@ -18,18 +18,10 @@ export async function POST(req: NextRequest) {
       imageAnalysis,
     } = await req.json();
 
-    const prompt = `
-Du bist ein professioneller Schweizer Immobilien-Texter.
-
+   const prompt = `
 Erstelle genau 3 hochwertige Inserat-Varianten für diese Immobilie.
 
-WICHTIG:
-- Antworte AUSSCHLIESSLICH als gültiges JSON
-- Kein Markdown
-- Keine Erklärung
-- Kein Text vor oder nach dem JSON
-
-Format:
+Antworte NUR als gültiges JSON in genau diesem Format:
 
 {
   "variants": [
@@ -59,17 +51,21 @@ Stil: ${styleText}
 Bildanalyse: ${imageAnalysis || "keine"}
 `;
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-    });
-
+ const completion = await openai.chat.completions.create({
+  model: "gpt-4o-mini",
+  response_format: { type: "json_object" },
+  messages: [
+    {
+      role: "system",
+      content:
+        "Du antwortest ausschließlich mit gültigem JSON. Kein Markdown. Kein zusätzlicher Text.",
+    },
+    {
+      role: "user",
+      content: prompt,
+    },
+  ],
+});
     const text =
       completion.choices?.[0]?.message?.content || "{}";
 
