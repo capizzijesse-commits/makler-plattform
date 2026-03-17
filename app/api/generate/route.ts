@@ -1,48 +1,103 @@
-import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import { NextRequest } from "next/server";
+import OpenAI from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    
-    // RETTUNG: Wir suchen alle gängigen Namen ab, damit 'content' nie null ist
-    const promptText = body.userInput || body.prompt || body.text || body.content;
+    const {
+      location,
+      rooms,
+      livingArea,
+      price,
+      propertyType,
+      highlights,
+      styleText,
+      imageAnalysis,
+    } = await req.json();
 
-    // Falls gar nichts gefunden wurde, geben wir eine klare Fehlermeldung zurück
-    if (!promptText) {
-      console.error("Frontend Fehler: Body enthält keine bekannten Keys", body);
-      return NextResponse.json({ 
-        error: "Kein Text empfangen. Bitte prüfen Sie, ob das Frontend 'userInput' sendet." 
-      }, { status: 400 });
+    const prompt = `
+Du bist ein professioneller Schweizer Immobilien-Texter.
+
+Erstelle genau 3 hochwertige Inserat-Varianten für diese Immobilie.
+
+WICHTIG:
+- Antworte AUSSCHLIESSLICH als gültiges JSON
+- Kein Markdown
+- Keine Erklärung
+- Kein Text vor oder nach dem JSON
+
+Format:
+
+{
+  "variants": [
+    {
+      "title": "Titel 1",
+      "text": "Beschreibung 1"
+    },
+    {
+      "title": "Titel 2",
+      "text": "Beschreibung 2"
+    },
+    {
+      "title": "Titel 3",
+      "text": "Beschreibung 3"
     }
+  ]
+}
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+Daten:
+Ort: ${location}
+Zimmer: ${rooms}
+Wohnfläche: ${livingArea}
+Preis: ${price}
+Typ: ${propertyType}
+Highlights: ${highlights}
+Stil: ${styleText}
+Bildanalyse: ${imageAnalysis || "keine"}
+`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      response_format: { type: "json_object" },
       messages: [
-        { 
-          role: "system", 
-          content: "Du bist ein Assistent für insera-ai.ch. Antworte IMMER im JSON-Format: { \"titel\": \"string\", \"beschreibung\": \"string\" }." 
+        {
+          role: "user",
+          content: prompt,
         },
-        { 
-          role: "user", 
-          content: String(promptText) // Sicherstellen, dass es ein String ist
-        }
       ],
-      response_format: { type: "json_object" }
     });
 
-    const content = response.choices[0].message.content;
-    if (!content) throw new Error("KI Antwort ist leer");
+    const text =
+      completion.choices?.[0]?.message?.content || "{}";
 
-    return NextResponse.json(JSON.parse(content));
+    let json;
 
-  } catch (error: any) {
-    console.error("Generate API error:", error);
-    return NextResponse.json({ 
-      error: "Fehler bei der Generierung", 
-      details: error.message 
-    }, { status: 500 });
+    try {
+      json = JSON.parse(text);
+    } catch {
+      console.error("JSON PARSE FAILED:", text);
+      return Response.json(
+        { error: "Ungültige AI-Antwort" },
+        { status: 500 }
+      );
+    }
+
+    const normalized = {
+      variants: (json.variants || []).map((v: any) => ({
+        title: v.title || "",
+        text: v.text || "",
+      })),
+    };
+
+    return Response.json(normalized);
+  } catch (error) {
+    console.error("ERROR DETAILS:", error);
+    return Response.json(
+      { error: "Fehler beim Generieren" },
+      { status: 500 }
+    );
   }
 }
