@@ -4,54 +4,21 @@ import { useState } from "react";
 
 type Variant = {
   title: string;
-  objectType?: string;
-  price?: string;
   text: string;
   highlights?: string[];
-  instagramPost?: string;
-  linkedinPost?: string;
-  facebookPost?: string;
   cta?: string;
-  instagramHashtags?: string;
-linkedinHashtags?: string;
-facebookHashtags?: string;
 };
 
 export default function DashboardPage() {
-  function copyText() {
-  const text = document.querySelector(".outputText")?.textContent || "";
-  if (!text) return;
-  navigator.clipboard.writeText(text);
-}
-
-function downloadPdf() {
-  const text = document.querySelector(".outputText")?.textContent || "";
-  if (!text) return;
-
-  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "inserat.txt";
-  a.click();
-
-  URL.revokeObjectURL(url);
-}
-
   const [instagramPost, setInstagramPost] = useState("");
 const [linkedinPost, setLinkedinPost] = useState("");
  const [location, setLocation] = useState("")
+const [propertyType, setPropertyType] = useState("")
 const [rooms, setRooms] = useState("")
 const [livingArea, setLivingArea] = useState("")
 const [price, setPrice] = useState("")
-const [propertyType, setPropertyType] = useState("")
 const [styleText, setStyleText] = useState("")
 const [highlights, setHighlights] = useState("")
-const [selectedImage, setSelectedImage] = useState<File | null>(null);
-const [imagePreview, setImagePreview] = useState("");
-const [imageAnalysis, setImageAnalysis] = useState("");
-const [analyzingImage, setAnalyzingImage] = useState(false);
     
     "Balkon, Lift, Garage, ruhige Lage"
   ;
@@ -59,125 +26,6 @@ const [analyzingImage, setAnalyzingImage] = useState(false);
   const [loading, setLoading] = useState(false);
   const [variants, setVariants] = useState<Variant[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [plan, setPlan] = useState("free");
-const [freeGenerationsUsed, setFreeGenerationsUsed] = useState(0);
-const [showUpgrade, setShowUpgrade] = useState(false);
-
-async function generateText() {
-  if (plan === "free" && freeGenerationsUsed >= 5) {
-    setShowUpgrade(true);
-    return;
-  }
-
-  setLoading(true);
-
-  try {
-    const response = await fetch("/api/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        location,
-        rooms,
-        livingArea,
-        price,
-        propertyType,
-        styleText,
-        highlights,
-        imageAnalysis,
-      }),
-    });
-
-    const data = await response.json();
-
-    let text = data.text;
-
-text = text.replace(/ß/g, "ss");
-
-    if (!response.ok) {
-      alert(data.error || "Fehler beim Generieren.");
-      return;
-    }
-
-    setVariants([
-      {
-        title: data.variants[0].title,
-        objectType: data.variants[0].objectType || propertyType,
-        price: data.variants[0].price || price,
-        text: data.variants[0].text,
-        highlights: data.variants[0].highlights || [],
-        instagramPost: data.variants[0].instagramPost || "",
-        linkedinPost: data.variants[0].linkedinPost || "",
-        facebookPost: data.variants[0].facebookPost || "",
-        instagramHashtags: data.variants[0].instagramHashtags || "",
-linkedinHashtags: data.variants[0].linkedinHashtags || "",
-facebookHashtags: data.variants[0].facebookHashtags || "",
-      },
-      {
-        title: data.variants[1].title,
-        objectType: data.variants[1].objectType || propertyType,
-        price: data.variants[1].price || price,
-        text: data.variants[1].text,
-        highlights: data.variants[1].highlights || [],
-        instagramPost: data.variants[1].instagramPost || "",
-        linkedinPost: data.variants[1].linkedinPost || "",
-        facebookPost: data.variants[1].facebookPost || "",
-        instagramHashtags: data.variants[1].instagramHashtags || "",
-linkedinHashtags: data.variants[1].linkedinHashtags || "",
-facebookHashtags: data.variants[1].facebookHashtags || "",
-      },
-      {
-        title: data.variants[2].title,
-        objectType: data.variants[2].objectType || propertyType,
-        price: data.variants[2].price || price,
-        text: data.variants[2].text,
-        highlights: data.variants[2].highlights || [],
-        instagramPost: data.variants[2].instagramPost || "",
-        linkedinPost: data.variants[2].linkedinPost || "",
-        facebookPost: data.variants[2].facebookPost || "",
-        instagramHashtags: data.variants[2].instagramHashtags || "",
-linkedinHashtags: data.variants[2].linkedinHashtags || "",
-facebookHashtags: data.variants[2].facebookHashtags || "",
-      },
-    ]);
-
-    if (plan === "free") {
-      setFreeGenerationsUsed((prev) => prev + 1);
-    }
-  } catch (error) {
-    alert("Fehler beim Generieren.");
-  } finally {
-    setLoading(false);
-  }
-}
-async function analyzeImage() {
-  if (!selectedImage) {
-    alert("Bitte zuerst ein Bild auswählen.");
-    return;
-  }
-
-  setAnalyzingImage(true);
-
-  try {
-    const formData = new FormData();
-    formData.append("image", selectedImage);
-
-    const response = await fetch("/api/analyze-image", {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await response.json();
-
-    setImageAnalysis(data.analysis || "");
-
-  } catch (error) {
-    alert("Fehler bei der Bildanalyse.");
-  } finally {
-    setAnalyzingImage(false);
-  }
-}
   {(instagramPost || linkedinPost) && (
   <div
     style={{
@@ -256,105 +104,88 @@ async function analyzeImage() {
 
   const current = variants[activeIndex];
 
+  async function generateText() {
+    try {
+      setLoading(true);
 
- 
-  const FREE_LIMIT = 50;
-const MINUTES_PER_INSERT = 20;
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          location,
+          propertyType,
+          rooms,
+          livingArea,
+          price,
+          styleText,
+          highlights,
+        }),
+      });
 
-const remaining = FREE_LIMIT - freeGenerationsUsed;
-const minutesSaved = freeGenerationsUsed * MINUTES_PER_INSERT;
-const hoursSaved = Math.floor(minutesSaved / 60);
-  const cleanedBody = (current?.text || "")
-  .split(/Instagram|LinkedIn|Facebook|Highlights/i)[0]
-  .trim();
+      const data = await res.json();
 
-const cleanedHighlights = current?.highlights || [];
-const cleanedCta = current?.cta || "";
+      if (!res.ok) {
+        alert(data?.error || "Fehler beim Generieren.");
+        return;
+      }
 
-    async function copyActive() {
+     setVariants(data.variants || []);
+setActiveIndex(0);
+setInstagramPost(data?.social?.instagram || "");
+setLinkedinPost(data?.social?.linkedin || "");
+{(instagramPost || linkedinPost) && (
+  <div
+    style={{
+      marginTop: "30px",
+      background: "#0f172a",
+      borderRadius: "16px",
+      padding: "20px",
+      display: "grid",
+      gap: "20px",
+    }}
+  >
+    {instagramPost && (
+      <div>
+        <h3 style={{ color: "#fff", marginBottom: "10px" }}>
+          Instagram Post
+        </h3>
 
+        <p style={{ color: "#cbd5f5", whiteSpace: "pre-line" }}>
+          {instagramPost}
+        </p>
+      </div>
+    )}
+
+    {linkedinPost && (
+      <div>
+        <h3 style={{ color: "#fff", marginBottom: "10px" }}>
+          LinkedIn Post
+        </h3>
+
+        <p style={{ color: "#cbd5f5", whiteSpace: "pre-line" }}>
+          {linkedinPost}
+        </p>
+      </div>
+    )}
+  </div>
+)}
+
+    } catch (error) {
+      console.error(error);
+      alert("Verbindungsfehler beim Generieren.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function copyActive() {
     if (!current) {
       alert("Bitte zuerst eine Variante generieren.");
       return;
-  
-    }
-async function generateText() {
-  if (plan === "free" && freeGenerationsUsed >= 5) {
-    setShowUpgrade(true);
-    return;
-  }
-
-  setLoading(true);
-
-  try {
-    const response = await fetch("/api/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        location,
-        rooms,
-        livingArea,
-        price,
-        propertyType,
-        styleText,
-        highlights,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      alert(data.error || "Fehler beim Generieren.");
-      return;
     }
 
-    setVariants([
-  {
-    title: data.variants[0].title,
-    objectType: data.variants[0].objectType || propertyType,
-    price: data.variants[0].price || price,
-    text: data.variants[0].text,
-    highlights: data.variants[0].highlights || [],
-    instagramPost: data.variants[0].instagramPost || "",
-    linkedinPost: data.variants[0].linkedinPost || "",
-    facebookPost: data.variants[0].facebookPost || "",
-    cta: data.variants[0].cta || "",
-  },
-  {
-    title: data.variants[1].title,
-    objectType: data.variants[1].objectType || propertyType,
-    price: data.variants[1].price || price,
-    text: data.variants[1].text,
-    highlights: data.variants[1].highlights || [],
-    instagramPost: data.variants[1].instagramPost || "",
-    linkedinPost: data.variants[1].linkedinPost || "",
-    facebookPost: data.variants[1].facebookPost || "",
-    cta: data.variants[1].cta || "",
-  },
-  {
-    title: data.variants[2].title,
-    objectType: data.variants[2].objectType || propertyType,
-    price: data.variants[2].price || price,
-    text: data.variants[2].text,
-    highlights: data.variants[2].highlights || [],
-    instagramPost: data.variants[2].instagramPost || "",
-    linkedinPost: data.variants[2].linkedinPost || "",
-    facebookPost: data.variants[2].facebookPost || "",
-    cta: data.variants[2].cta || "",
-  },
-]);
-
-    if (plan === "free") {
-      setFreeGenerationsUsed((prev) => prev + 1);
-    }
-  } catch (error) {
-    alert("Fehler beim Generieren.");
-  } finally {
-    setLoading(false);
-  }
-}
     const bulletText =
       current.highlights && current.highlights.length > 0
         ? `\n\nHighlights\n${current.highlights.map((h) => `• ${h}`).join("\n")}`
@@ -446,317 +277,124 @@ await navigator.clipboard.writeText(fullText);
   }
 
   return (
-   <main className="page dashboardPage">
+    <main className="page">
       <div className="shell">
         <div className="topbar">
-        <div
-  className="hero"
-  style={{
-    marginTop: "30px",
-    textAlign: "center"
-  }}
->
-          
+          <div className="hero">
+            <div className="badge">Makler AI Pro</div>
+            <h1>Premium Inserat Generator</h1>
+            <p>
+              Hochwertige Immobilientexte für Homegate, ImmoScout24, Exposé und
+              Social Media – strukturiert, verkaufsstark und professionell.
+            </p>
           </div>
-<div
-  style={{
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    flexWrap: "wrap",
-    gap: "20px",
-  }}
->
-  <div>
-   <h1
-  style={{
-    textAlign: "center",
-    marginBottom: "12px",
-    fontSize: "34px",
-    fontWeight: 800,
-    letterSpacing: "-0.5px",
-  }}
->
-  Inserat Generator für Immobilienmakler
-</h1>
-    <p>
-      Hochwertige Immobilientexte für Homegate, ImmoScout24, Exposé und
-      Social Media – strukturiert, verkaufsstark und professionell.
-    </p>
-  </div>
 
-  <div
-    style={{
-      display: "flex",
-      gap: "10px",
-      flexWrap: "wrap",
-    }}
-  >
-    <div
-      style={{
-        padding: "8px 12px",
-        borderRadius: "10px",
-        background: "rgba(255,255,255,0.06)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        color: "#fff",
-        fontSize: "13px",
-        fontWeight: 600,
-      }}
-    >
-      ⚡ Inserate: 0
-    </div>
+          <div className="actions">
+            <button
+              onClick={generateText}
+              disabled={loading}
+              className="btn btn-primary"
+            >
+              {loading ? "Generiere..." : "Generieren (3 Varianten)"}
+            </button>
 
-    <div
-      style={{
-        padding: "8px 12px",
-        borderRadius: "10px",
-        background: "rgba(255,255,255,0.06)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        color: "#fff",
-        fontSize: "13px",
-        fontWeight: 600,
-      }}
-    >
-      ⏱ Zeit: 0h
-    </div>
+            <button
+              onClick={copyActive}
+              disabled={!current}
+              className="btn btn-secondary"
+            >
+              Copy
+            </button>
 
-    <div
-      style={{
-        padding: "8px 12px",
-        borderRadius: "10px",
-        background: "rgba(255,255,255,0.06)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        color: "#fff",
-        fontSize: "13px",
-        fontWeight: 600,
-      }}
-    >
-      🏢 Plattformen: 4
-    </div>
-  </div>
-</div>
+            <button
+              onClick={exportPdf}
+              disabled={!current}
+              className="btn btn-secondary"
+            >
+              PDF
+            </button>
+          </div>
         </div>
 
         <div className="grid">
           <section className="leftCard">
+            <div className="badge">Objektdaten</div>
             <h2>Eingabe</h2>
             <p className="sectionText">
-              Erfasse die wichtigsten Eckdaten der Immobilie. Daraus entstehen automatisch mehrere
-              professionelle Textvarianten.
+              Erfasse die wichtigsten Eckdaten der Immobilie. Die KI erstellt
+              daraus mehrere professionelle Textvarianten.
             </p>
 
-        <div className="formGrid">
-  <Field label="Ort / Lage">
-   <input
-   className="input"
-autoComplete="off"
-  value={location}
-  onChange={(e) => setLocation(e.target.value)}
-  placeholder="Zürich Seefeld"
-/>
-  </Field>
-
-  <Field label="Zimmer">
-   <input
-   className="input"
-autoComplete="off"
-  value={rooms}
-  onChange={(e) => setRooms(e.target.value)}
-  placeholder="4.5"
-/>
-  </Field>
-
-  <Field label="Wohnfläche (m²)">
-   <input
-   className="input"
-autoComplete="off"
-  value={livingArea}
-  onChange={(e) => setLivingArea(e.target.value)}
-  placeholder="120"
-/>
-  </Field>
-
-  <Field label="Preis (CHF)">
-    <input
-    className="input"
-autoComplete="off"
-  value={price}
-  onChange={(e) => setPrice(e.target.value)}
-  placeholder="1'095'000"
-/>
-  </Field>
-
-  <Field label="Objektart">
-    <input
-    className="input"
-autoComplete="off"
-  value={propertyType}
-  onChange={(e) => setPropertyType(e.target.value)}
-  placeholder="Wohnung"
-/>
-  </Field>
-
-  <Field label="Stil">
+            <div className="formGrid">
+            <input placeholder="Winterthur" />
+<input placeholder="4.5" />
+<input placeholder="110" />
+<input placeholder="1090000" />
+<input placeholder="Balkon, Lift, Garage, ruhige Lage" />
+<Field label="Ort / Lage">
   <input
-  className="input"
-autoComplete="off"
-  value={styleText}
-  onChange={(e) => setStyleText(e.target.value)}
-  placeholder="Modern / Premium"
-/>
-  </Field>
-
-  <Field label="Highlights (mit Komma trennen)">
-  <input
-  className="input"
-autoComplete="off"
-  value={highlights}
-  onChange={(e) => setHighlights(e.target.value)}
-  placeholder="Balkon, Tiefgarage, Lift, ruhige Lage"
-/><Field label="Immobilienfoto">
-  <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
-    <label className="btn btn-secondary" style={{ display: "inline-block" }}>
-      Datei auswählen
-      <input
-        type="file"
-        accept="image/*"
-        style={{ display: "none" }}
-        onChange={(e) => {
-          const file = e.target.files?.[0] || null;
-          setSelectedImage(file);
-
-          if (file) {
-            setImagePreview(URL.createObjectURL(file));
-          } else {
-            setImagePreview("");
-          }
-        }}
-      />
-    </label>
-
-    <span style={{ color: "rgba(255,255,255,0.7)", fontSize: "14px" }}>
-      {selectedImage ? selectedImage.name : "Keine Datei ausgewählt"}
-    </span>
-  </div>
-  <div style={{ marginTop: "20px", width: "100%" }}>
- <div style={{ marginTop: "20px", width: "100%" }}>
-  <div
-    style={{
-      display: "flex",
-      gap: "8px",
-      marginTop: "10px",
-      alignItems: "center",
-      flexWrap: "nowrap",
-    }}
-  >
-    <button
-      onClick={generateText}
-      style={{
-        padding: "12px 14px",
-        borderRadius: "12px",
-        border: "none",
-        background: "#1cc8ff",
-        color: "#fff",
-        fontWeight: 700,
-        fontSize: "14px",
-        cursor: "pointer",
-        whiteSpace: "nowrap",
-      }}
-    >
-      Inserat generieren (3 Varianten)
-    </button>
-
-    <button
-      onClick={copyText}
-      style={{
-        padding: "12px 14px",
-        borderRadius: "12px",
-        border: "none",
-        background: "#2d3748",
-        color: "#fff",
-        fontWeight: 600,
-        cursor: "pointer",
-        whiteSpace: "nowrap",
-      }}
-    >
-      Copy
-    </button>
-
-    <button
-      onClick={downloadPdf}
-      style={{
-        padding: "12px 14px",
-        borderRadius: "12px",
-        border: "none",
-        background: "#2d3748",
-        color: "#fff",
-        fontWeight: 600,
-        cursor: "pointer",
-        whiteSpace: "nowrap",
-      }}
-    >
-      PDF
-    </button>
-  </div>
-</div>
-  <div
-    style={{
-      textAlign: "center",
-      fontSize: "13px",
-      marginTop: "6px",
-      opacity: 0.7,
-    }}
-  >
-    Erstellt 3 professionelle Varianten in wenigen Sekunden
-  </div>
-</div>
+    value={location}
+    placeholder="Winterthur"
+    onChange={(e) => setLocation(e.target.value)}
+    className="input"
+  />
 </Field>
-  </Field>
- 
-{imagePreview && (
-  <div style={{ marginTop: "12px" }}>
-    <img
-      src={imagePreview}
-      alt="Vorschau"
-      style={{
-        width: "100%",
-        maxWidth: "320px",
-        borderRadius: "14px",
-        border: "1px solid rgba(255,255,255,0.1)",
-      }}
-    />
-  </div>
-)}
 
-<div style={{ marginTop: "12px" }}>
-  <button
-  type="button"
-  className="btn btn-secondary"
-  onClick={analyzeImage}
-  disabled={analyzingImage || !selectedImage}
->
-  {analyzingImage ? "Bild wird analysiert..." : "Foto analysieren"}
-</button>
+<Field label="Objektart">
+  <input
+    value={propertyType}
+    placeholder="Wohnung"
+    onChange={(e) => setPropertyType(e.target.value)}
+    className="input"
+  />
+</Field>
+
+<Field label="Zimmer">
+  <input
+    value={rooms}
+    placeholder="4.5"
+    onChange={(e) => setRooms(e.target.value)}
+    className="input"
+  />
+</Field>
+
+<Field label="Wohnfläche (m²)">
+  <input
+    value={livingArea}
+    placeholder="110"
+    onChange={(e) => setLivingArea(e.target.value)}
+    className="input"
+  />
+</Field>
+
+<Field label="Preis (CHF)">
+  <input
+    value={price}
+    placeholder="1090000"
+    onChange={(e) => setPrice(e.target.value)}
+    className="input"
+  />
+</Field>
+
+<Field label="Stil">
+  <input
+    value={styleText}
+    placeholder="Luxus / Premium"
+    onChange={(e) => setStyleText(e.target.value)}
+    className="input"
+  />
+</Field>
+
+<Field label="Highlights (mit Komma trennen)">
+  <input
+    value={highlights}
+    placeholder="Balkon, Lift, Garage, ruhige Lage"
+    onChange={(e) => setHighlights(e.target.value)}
+    className="input"
+  />
+</Field>
 </div>
-{imageAnalysis && (
-  <div
-    style={{
-      marginTop: "16px",
-      padding: "14px",
-      borderRadius: "12px",
-      background: "rgba(255,255,255,0.04)",
-      border: "1px solid rgba(255,255,255,0.08)",
-      color: "rgba(255,255,255,0.85)",
-      lineHeight: 1.7,
-      whiteSpace: "pre-line",
-    }}
-  >
-    <strong>Bildanalyse:</strong>
-    <div style={{ marginTop: "8px" }}>{imageAnalysis}</div>
-  </div>
-)}
-</div>
-<div className="divider" />
+            <div className="divider" />
 
             <div className="miniStats">
               <MiniStat title="Markt" value="Schweiz" />
@@ -792,22 +430,10 @@ autoComplete="off"
             </div>
 
             {current ? (
-              <div
-  className="outputBox"
-  style={{
-    maxHeight: "500px",
-    overflowY: "auto",
-    paddingRight: "10px"
-  }}
-  
->
-   
+              <div className="outputBox">
                 <h3>{current.title}</h3>
-           <p style={{ whiteSpace: "pre-line", lineHeight: 1.8 }}>
-  {current.text
-    ?.replace(/Highlights:[\s\S]*/i, "")
-    ?.trim()}
-</p>
+                <p>{current.text}</p>
+
                 {current.highlights && current.highlights.length > 0 && (
                   <div style={{ marginTop: "24px" }}>
                     <div
@@ -835,129 +461,30 @@ autoComplete="off"
                       ))}
                     </ul>
                   </div>
-                  
                 )}
+                {(instagramPost || linkedinPost) && (
+  <div style={{ marginTop: "30px" }}>
 
-  <div
-    style={{
-      marginTop: "24px",
-      display: "grid",
-      gap: "16px",
-    }}
-  >
-    <div
-  style={{
-    marginTop: "24px",
-    display: "grid",
-    gap: "16px",
-  }}
->
-
-{/* Instagram */}
-{current?.instagramPost && (
-  <div
-    style={{
-      background: "#ffffff",
-      borderRadius: "20px",
-      padding: "20px",
-      border: "1px solid rgba(15,23,42,0.08)",
-    }}
-  >
-    <h3 style={{ marginBottom: "10px", fontSize: "18px", fontWeight: 800 }}>
-      Instagram Post
-    </h3>
-
-    <p style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>
-      {current.instagramPost}
-    </p>
-
-    {current.instagramHashtags && (
-      <p
-        style={{
-          whiteSpace: "pre-line",
-          lineHeight: 1.7,
-          marginTop: "12px",
-          color: "#6b7280",
-          fontSize: "14px",
-        }}
-      >
-        {current.instagramHashtags}
-      </p>
+    {instagramPost && (
+      <div style={{ marginBottom: "20px" }}>
+        <h3>Instagram Post</h3>
+        <p style={{ whiteSpace: "pre-line" }}>
+          {instagramPost}
+        </p>
+      </div>
     )}
+
+    {linkedinPost && (
+      <div>
+        <h3>LinkedIn Post</h3>
+        <p style={{ whiteSpace: "pre-line" }}>
+          {linkedinPost}
+        </p>
+      </div>
+    )}
+
   </div>
 )}
-
-{/* LinkedIn */}
-{current?.linkedinPost && (
-  <div
-    style={{
-      background: "#ffffff",
-      borderRadius: "20px",
-      padding: "20px",
-      border: "1px solid rgba(15,23,42,0.08)",
-    }}
-  >
-    <h3 style={{ marginBottom: "10px", fontSize: "18px", fontWeight: 800 }}>
-      LinkedIn Post
-    </h3>
-
-    <p style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>
-      {current.linkedinPost}
-    </p>
-
-    {current.linkedinHashtags && (
-      <p
-        style={{
-          whiteSpace: "pre-line",
-          lineHeight: 1.7,
-          marginTop: "12px",
-          color: "#6b7280",
-          fontSize: "14px",
-        }}
-      >
-        {current.linkedinHashtags}
-      </p>
-    )}
-  </div>
-)}
-
-{/* Facebook */}
-{current?.facebookPost && (
-  <div
-    style={{
-      background: "#ffffff",
-      borderRadius: "20px",
-      padding: "20px",
-      border: "1px solid rgba(15,23,42,0.08)",
-    }}
-  >
-    <h3 style={{ marginBottom: "10px", fontSize: "18px", fontWeight: 800 }}>
-      Facebook Post
-    </h3>
-
-    <p style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>
-      {current.facebookPost}
-    </p>
-
-    {current.facebookHashtags && (
-      <p
-        style={{
-          whiteSpace: "pre-line",
-          lineHeight: 1.7,
-          marginTop: "12px",
-          color: "#6b7280",
-          fontSize: "14px",
-        }}
-      >
-        {current.facebookHashtags}
-      </p>
-    )}
-  </div>
-)}
-
-</div>
-    
-  </div>
               </div>
             ) : (
               
@@ -969,63 +496,81 @@ autoComplete="off"
                 </div>
               </div>
             )}
-            <div
-  style={{
-    marginTop: "20px",
-    padding: "16px",
-    background: "#f8f5ee",
-    borderRadius: "12px",
-    color: "#1f2937",
-  }}
->
-  <div style={{ fontWeight: 700 }}>
-    Du hast {freeGenerationsUsed} Inserate erstellt
-  </div>
-
-  <div style={{ marginTop: "6px" }}>
-    ≈ {hoursSaved} Stunden Arbeit gespart
-  </div>
-
-  <div style={{ marginTop: "6px" }}>
-    Noch {remaining} kostenlose Inserate übrig
-  </div>
-</div>
-
-<div
-  style={{
-    marginTop: "20px",
-    padding: "16px",
-    border: "1px dashed #d6caa8",
-    borderRadius: "12px",
-    color: "#1f2937",
-  }}
->
-  <div style={{ fontWeight: 700 }}>
-    🎁 Bonus
-  </div>
-
-  <div style={{ marginTop: "6px" }}>
-    Empfehle InseratAI einem Maklerkollegen und erhalte 5 zusätzliche Inserate kostenlos.
-  </div>
-
-  <button
+           {(instagramPost || linkedinPost) && (
+  <div
     style={{
-      marginTop: "10px",
-      padding: "8px 14px",
-      borderRadius: "8px",
-      background: "#e8d9b5",
-      border: "none",
-      cursor: "pointer",
-    }}
-    onClick={() => {
-      navigator.clipboard.writeText(window.location.href);
-      alert("Empfehlungslink kopiert");
+      marginTop: "24px",
+      display: "grid",
+      gap: "16px",
     }}
   >
-    Empfehlungslink kopieren
-  </button>
-</div>
-           
+    {instagramPost && (
+      <div
+        style={{
+          background: "#ffffff",
+          borderRadius: "18px",
+          border: "1px solid #f0e3c1",
+          padding: "18px",
+        }}
+      >
+        <div
+          style={{
+            fontWeight: 800,
+            fontSize: "16px",
+            marginBottom: "10px",
+            color: "#1f2937",
+          }}
+        >
+          Instagram Post
+        </div>
+        <p
+          style={{
+            margin: 0,
+            whiteSpace: "pre-line",
+            color: "#445066",
+            lineHeight: 1.8,
+            fontSize: "15px",
+          }}
+        >
+          {instagramPost}
+        </p>
+      </div>
+    )}
+
+    {linkedinPost && (
+      <div
+        style={{
+          background: "#ffffff",
+          borderRadius: "18px",
+          border: "1px solid #f0e3c1",
+          padding: "18px",
+        }}
+      >
+        <div
+          style={{
+            fontWeight: 800,
+            fontSize: "16px",
+            marginBottom: "10px",
+            color: "#1f2937",
+          }}
+        >
+          LinkedIn Post
+        </div>
+        <p
+          style={{
+            margin: 0,
+            whiteSpace: "pre-line",
+            color: "#445066",
+            lineHeight: 1.8,
+            fontSize: "15px",
+          }}
+        >
+          {linkedinPost}
+        </p>
+      </div>
+    )}
+  </div>
+)} 
           </section>
         </div>
       </div>
@@ -1167,31 +712,18 @@ autoComplete="off"
           grid-column: 1 / -1;
         }
 
-      .input {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
-  padding: 14px 15px;
-  outline: none;
-  box-sizing: border-box;
-  font-size: 15px;
-  color: #ffffff;
-}
-  .input::placeholder {
-  color: rgba(255, 255, 255, 0.38);
-}
-  .input:-webkit-autofill,
-.input:-webkit-autofill:hover,
-.input:-webkit-autofill:focus,
-.input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0.05) inset !important;
-  -webkit-text-fill-color: #ffffff !important;
-  caret-color: #ffffff !important;
-  transition: background-color 9999s ease-in-out 0s;
-}
+        .input {
+          width: 100%;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: #ffffff;
+          border-radius: 14px;
+          padding: 14px 15px;
+          outline: none;
+          box-sizing: border-box;
+          font-size: 15px;
         }
-        
+
         .divider {
           height: 1px;
           background: rgba(255, 255, 255, 0.08);
@@ -1337,38 +869,6 @@ autoComplete="off"
           .rightCard {
             padding: 18px;
           }
-            .actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .btn {
-    width: 100%;
-    text-align: center;
-  }
-
-  .outputTop {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .tabs {
-    width: 100%;
-  }
-
-  .tab {
-    flex: 1;
-    text-align: center;
-  }
-
-  .hero p {
-    font-size: 15px;
-    line-height: 1.6;
-  }
-
-  .outputBox {
-    min-height: auto;
-  }
         }
       `}</style>
     </main>
@@ -1428,24 +928,6 @@ function MiniStat({ title, value }: { title: string; value: string }) {
       >
         {value}
       </div>
-      <a
-href="mailto:support@inserat-ai.ch?subject=Inserat AI Support"
-style={{
-position: "fixed",
-bottom: "16px",
-right: "16px",
-background: "#0ea5e9",
-color: "white",
-padding: "10px 14px",
-borderRadius: "12px",
-textDecoration: "none",
-fontSize: "13px",
-fontWeight: "600",
-boxShadow: "0 4px 10px rgba(0,0,0,0.2)"
-}}
->
-💬 Feedback / Support
-</a>
     </div>
   );
 }
