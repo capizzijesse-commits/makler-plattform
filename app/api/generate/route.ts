@@ -19,28 +19,44 @@ export async function POST(req: NextRequest) {
       imageAnalysis,
     } = await req.json();
 
-    const prompt = `
+   const prompt = `
 Du bist ein professioneller Schweizer Immobilien-Texter.
 
-Erstelle 3 hochwertige Inserat-Varianten für:
+Erstelle 3 hochwertige Inserat-Varianten.
 
-Ort: ${location}
-Zimmer: ${rooms}
-Fläche: ${livingArea} m²
-Preis: ${price} CHF
-Objekt: ${propertyType}
-Highlights: ${highlights}
-Stil: ${styleText}
+WICHTIG:
+- Antworte AUSSCHLIESSLICH im JSON Format
+- KEIN zusätzlicher Text
+- KEINE Erklärungen
+- KEIN Markdown
 
-Antwort als JSON im Format:
+Format:
 
 {
   "variants": [
-    { "title": "...", "body": "..." },
-    { "title": "...", "body": "..." },
-    { "title": "...", "body": "..." }
+    {
+      "title": "Titel 1",
+      "text": "Beschreibung 1"
+    },
+    {
+      "title": "Titel 2",
+      "text": "Beschreibung 2"
+    },
+    {
+      "title": "Titel 3",
+      "text": "Beschreibung 3"
+    }
   ]
 }
+
+Daten:
+Ort: ${location}
+Zimmer: ${rooms}
+Wohnfläche: ${livingArea}
+Preis: ${price}
+Typ: ${propertyType}
+Highlights: ${highlights}
+Stil: ${styleText}
 `;
 
     const completion = await openai.chat.completions.create({
