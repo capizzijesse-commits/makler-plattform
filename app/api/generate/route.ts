@@ -6,6 +6,7 @@ const openai = new OpenAI({
 });
 
 export async function POST(req: NextRequest) {
+  console.log("API CALLED");
   try {
     const {
       location,
@@ -78,7 +79,7 @@ Antwort als JSON im Format:
     return Response.json({ variants: normalized.variants });
 
   } catch (error) {
-    console.error("Generate API error:", error);
+  console.error("ERROR DETAILS:", error);
     return Response.json(
       { error: "Fehler beim Generieren" },
       { status: 500 }
