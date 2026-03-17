@@ -95,6 +95,11 @@ async function generateText() {
 
 text = text.replace(/ß/g, "ss");
 
+    if (!response.ok) {
+      alert(data.error || "Fehler beim Generieren.");
+      return;
+    }
+
     setVariants([
       {
         title: data.variants[0].title,
