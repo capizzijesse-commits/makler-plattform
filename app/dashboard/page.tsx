@@ -253,31 +253,6 @@ await navigator.clipboard.writeText(fullText);
             </p>
           </div>
 
-          <div className="actions">
-            <button
-              onClick={generateText}
-              disabled={loading}
-              className="btn btn-primary"
-            >
-              {loading ? "Generiere..." : "Generieren (3 Varianten)"}
-            </button>
-
-            <button
-              onClick={copyActive}
-              disabled={!current}
-              className="btn btn-secondary"
-            >
-              Copy
-            </button>
-
-            <button
-              onClick={exportPdf}
-              disabled={!current}
-              className="btn btn-secondary"
-            >
-              PDF
-            </button>
-          </div>
         </div>
 
         <div className="grid">
@@ -360,6 +335,31 @@ await navigator.clipboard.writeText(fullText);
 </div>
             <div className="divider" />
 
+          <div className="actions">
+            <button
+              onClick={generateText}
+              disabled={loading}
+              className="btn btn-primary"
+            >
+              {loading ? "Generiere..." : "Generieren (3 Varianten)"}
+            </button>
+
+            <button
+              onClick={copyActive}
+              disabled={!current}
+              className="btn btn-secondary"
+            >
+              Copy
+            </button>
+
+            <button
+              onClick={exportPdf}
+              disabled={!current}
+              className="btn btn-secondary"
+            >
+              PDF
+            </button>
+          </div>
             <div className="miniStats">
               <MiniStat title="Markt" value="Schweiz" />
               <MiniStat title="Output" value="3 Varianten" />
