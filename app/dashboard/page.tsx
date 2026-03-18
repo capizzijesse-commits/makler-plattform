@@ -104,7 +104,6 @@ const [highlights, setHighlights] = useState("")
 
   const current = variants[activeIndex];
 
- 
  async function generateText() {
   try {
     const response = await fetch("/api/generate", {
