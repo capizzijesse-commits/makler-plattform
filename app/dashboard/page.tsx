@@ -366,363 +366,228 @@ await navigator.clipboard.writeText(fullText);
               <MiniStat title="Stil" value="Premium" />
             </div>
           </section>
-<section
-  className="rightCard"
-  style={{
-    height: "750px",
-    overflowY: "auto",
-    padding: "24px",
-  }}
->
-  <div style={{ marginBottom: "18px" }}>
-    <div className="outputBadge">Output</div>
-
-    <div style={{ fontSize: "22px", fontWeight: 700, marginTop: "10px" }}>
-      {variants.length > 0
-        ? `Variante ${activeIndex + 1} aktiv`
-        : "Noch nichts generiert"}
+<section className="rightCard">
+  <div className="outputTop">
+    <div>
+      <div className="outputBadge">Output</div>
+      <div className="outputState">
+        {variants.length > 0
+          ? `Variante ${activeIndex + 1} aktiv`
+          : "Noch nichts generiert"}
+      </div>
     </div>
+
+    {variants.length > 0 && (
+      <div className="tabs">
+        {variants.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setActiveIndex(i)}
+            className={`tab ${i === activeIndex ? "active" : ""}`}
+          >
+            Variante {i + 1}
+          </button>
+        ))}
+      </div>
+    )}
   </div>
 
-  {variants.length > 0 && (
-    <div style={{ display: "flex", gap: "8px", marginBottom: "18px" }}>
-      {variants.map((_, i) => (
-        <button
-          key={i}
-          onClick={() => setActiveIndex(i)}
-          style={{
-            padding: "8px 12px",
-            borderRadius: "10px",
-            border:
-              i === activeIndex
-                ? "1px solid #c59a2d"
-                : "1px solid #ccc",
-            background:
-              i === activeIndex ? "#f7e4b5" : "#fff",
-            cursor: "pointer",
-          }}
-        >
-          Variante {i + 1}
-        </button>
-      ))}
+  <div className="outputCard">
+    {variants.length === 0 ? (
+      <div className="emptyState">
+        <div className="emptyTitle">Noch keine Variante vorhanden</div>
+        <div className="emptyText">
+          Gib links die Objektdaten ein und klicke auf „Generieren (3 Varianten)“.
+        </div>
+      </div>
+    ) : (
+      <>
+        <h2 className="outputTitle">
+          {variants[activeIndex]?.title}
+        </h2>
+
+        <p className="outputText">
+          {variants[activeIndex]?.text}
+        </p>
+      </>
+    )}
+  </div>
+
+  <div className="outputMeta">
+    <div className="metaBlock">
+      <div className="metaTitle">
+        Du hast {variants.length > 0 ? 1 : 0} Inserate erstellt
+      </div>
+      <div className="metaLine">≈ 0 Stunden Arbeit gespart</div>
+      <div className="metaLine">Noch 50 kostenlose Inserate übrig</div>
     </div>
-  )}
 
-  <div
-    style={{
-      background: "#fff",
-      borderRadius: "16px",
-      padding: "20px",
-      border: "1px solid #eee",
-    }}
-  >
-   <h2 style={{ fontSize: "28px", marginBottom: "12px" }}>
-  {variants[activeIndex]?.title}
-</h2>
-
-<p style={{ whiteSpace: "pre-line", lineHeight: 1.6 }}>
-  {variants[activeIndex]?.text}
-</p>
+    <div className="bonusBlock">
+      <div className="bonusTitle">🎁 Bonus</div>
+      <div className="bonusText">
+        Empfehle InseratAI einem Maklerkollegen und erhalte 5 zusätzliche Inserate kostenlos.
+      </div>
+      <button className="bonusBtn">Empfehlungslink kopieren</button>
+    </div>
   </div>
 </section>
         </div>
       </div>
 
       <style jsx>{`
-        .page {
-          min-height: 100vh;
-          background: linear-gradient(
-            180deg,
-            #07111e 0%,
-            #0a1627 45%,
-            #0d1b2e 100%
-          );
-          color: #ffffff;
-          padding: 28px 16px 40px;
-        }
-
-        .shell {
-          max-width: 1380px;
-          margin: 0 auto;
-        }
-
-        .topbar {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 24px;
-          flex-wrap: wrap;
-          margin-bottom: 26px;
-        }
-
-        .hero {
-          max-width: 760px;
-        }
-
-        .badge {
-          display: inline-block;
-          font-size: 12px;
-          font-weight: 700;
-          color: #e7c97f;
-          background: rgba(231, 201, 127, 0.14);
-          border: 1px solid rgba(231, 201, 127, 0.18);
-          padding: 6px 10px;
-          border-radius: 999px;
-          margin-bottom: 12px;
-        }
-
-        .hero h1 {
-          margin: 0;
-          font-size: clamp(30px, 4vw, 46px);
-          line-height: 1.08;
-          font-weight: 800;
-          letter-spacing: -0.02em;
-        }
-
-        .hero p {
-          margin: 10px 0 0 0;
-          color: rgba(255, 255, 255, 0.72);
-          line-height: 1.65;
-          font-size: 16px;
-        }
-
-        .actions {
-          display: flex;
-          gap: 10px;
-          flex-wrap: wrap;
-          align-items: center;
-        }
-
-        .btn {
-          border-radius: 12px;
-          padding: 12px 18px;
-          font-weight: 800;
-          cursor: pointer;
-          border: none;
-          transition: 0.2s ease;
-        }
-
-        .btn:disabled {
-          opacity: 0.55;
-          cursor: not-allowed;
-        }
-
-        .btn-primary {
-          background: linear-gradient(135deg, #1cb8f6 0%, #129ce0 100%);
-          color: #ffffff;
-          box-shadow: 0 10px 24px rgba(28, 184, 246, 0.25);
-        }
-
-        .btn-secondary {
-          background: rgba(255, 255, 255, 0.04);
-          color: #ffffff;
-          border: 1px solid rgba(255, 255, 255, 0.12);
-        }
-
-        .grid {
-          display: grid;
-          grid-template-columns: 1.05fr 1fr;
-          gap: 22px;
-        }
-
-        .leftCard {
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 24px;
-          padding: 24px;
-          box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
-        }
-
         .rightCard {
-          background: #fff9ec;
-          border: 1px solid #e9d7a8;
-          border-radius: 24px;
-          padding: 24px;
-          box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
-          color: #1f2937;
-        }
+  background: #fff9ec;
+  border: 1px solid #e9d7a8;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+  color: #1f2937;
+  height: 750px;
+  overflow-y: auto;
+}
 
-        .leftCard h2 {
-          font-size: 28px;
-          font-weight: 800;
-          margin: 0 0 10px 0;
-        }
+.outputTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
 
-        .sectionText {
-          color: rgba(255, 255, 255, 0.72);
-          line-height: 1.65;
-          margin-bottom: 22px;
-          font-size: 15px;
-        }
+.outputBadge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #8a6a1f;
+  background: #f7ebc8;
+  border: 1px solid #e4c97e;
+  padding: 6px 10px;
+  border-radius: 999px;
+}
 
-        .formGrid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 16px;
-        }
+.outputState {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1f2937;
+  margin-top: 10px;
+}
 
-        .full {
-          grid-column: 1 / -1;
-        }
+.tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 
-        .input {
-          width: 100%;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          color: #ffffff;
-          border-radius: 14px;
-          padding: 14px 15px;
-          outline: none;
-          box-sizing: border-box;
-          font-size: 15px;
-        }
+.tab {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #e8d9b5;
+  background: #fffdf7;
+  color: #6b5530;
+  font-weight: 700;
+  cursor: pointer;
+}
 
-        .divider {
-          height: 1px;
-          background: rgba(255, 255, 255, 0.08);
-          margin: 22px 0;
-        }
+.tab.active {
+  border: 1px solid #c59a2d;
+  background: #f7e4b5;
+  color: #4f3d1d;
+}
 
-        .miniStats {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 12px;
-        }
+.outputCard {
+  background: #ffffff;
+  border: 1px solid #f0e3c1;
+  border-radius: 18px;
+  padding: 22px;
+  min-height: 260px;
+}
 
-        .outputTop {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 14px;
-          flex-wrap: wrap;
-          margin-bottom: 18px;
-        }
+.emptyState {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #8b8b8b;
+}
 
-        .outputBadge {
-          display: inline-block;
-          font-size: 12px;
-          font-weight: 700;
-          color: #8a6a1f;
-          background: #f7ebc8;
-          border: 1px solid #e4c97e;
-          padding: 6px 10px;
-          border-radius: 999px;
-        }
+.emptyTitle {
+  font-weight: 700;
+  font-size: 22px;
+  margin-bottom: 10px;
+  color: #6b7280;
+}
 
-        .outputState {
-          font-size: 24px;
-          font-weight: 800;
-          color: #1f2937;
-          margin-top: 10px;
-        }
+.emptyText {
+  line-height: 1.6;
+}
 
-        .tabs {
-          display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
-        }
+.outputTitle {
+  margin: 0 0 18px 0;
+  font-size: 36px;
+  line-height: 1.08;
+  color: #1f2937;
+}
 
-        .tab {
-          padding: 10px 14px;
-          border-radius: 12px;
-          border: 1px solid #e8d9b5;
-          background: #ffffff;
-          color: #3b2f17;
-          font-weight: 700;
-          cursor: pointer;
-        }
+.outputText {
+  white-space: pre-line;
+  font-size: 18px;
+  line-height: 1.8;
+  color: #4b5563;
+  margin: 0;
+}
 
-        .tab.active {
-          border: 2px solid #c79a36;
-          background: #fff5dd;
-        }
+.outputMeta {
+  margin-top: 18px;
+  display: grid;
+  gap: 14px;
+}
 
-        .outputBox {
-          background: #ffffff;
-          border-radius: 18px;
-          border: 1px solid #f0e3c1;
-          padding: 22px;
-          min-height: 420px;
-        }
+.metaBlock {
+  color: #7b7b7b;
+  line-height: 1.7;
+}
 
-        .outputBox h3 {
-          margin: 0 0 18px 0;
-          font-size: clamp(34px, 4vw, 52px);
-          line-height: 1.08;
-          letter-spacing: -0.02em;
-          color: #1f2937;
-        }
+.metaTitle {
+  font-weight: 700;
+  color: #5c5c5c;
+  margin-bottom: 4px;
+}
 
-        .outputBox p {
-          margin: 0;
-          white-space: pre-line;
-          color: #445066;
-          line-height: 2;
-          font-size: 17px;
-        }
+.metaLine {
+  color: #8c8c8c;
+}
 
-        .emptyBox {
-          border-radius: 18px;
-          border: 1px dashed #d8c392;
-          background: rgba(255, 255, 255, 0.65);
-          min-height: 320px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-          padding: 24px;
-          color: #374151;
-          flex-direction: column;
-        }
+.bonusBlock {
+  border: 1px solid #f0e3c1;
+  background: #fffaf0;
+  border-radius: 16px;
+  padding: 16px;
+}
 
-        .emptyTitle {
-          font-size: 18px;
-          font-weight: 700;
-          margin-bottom: 8px;
-        }
+.bonusTitle {
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: #8a6a1f;
+}
 
-        .emptyText {
-          color: #6b7280;
-          line-height: 1.7;
-          max-width: 420px;
-        }
+.bonusText {
+  color: #7b6a46;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
 
-        @media (max-width: 1024px) {
-          .grid {
-            grid-template-columns: 1fr;
-          }
-        }
-
-        @media (max-width: 700px) {
-          .formGrid {
-            grid-template-columns: 1fr;
-          }
-
-          .miniStats {
-            grid-template-columns: 1fr;
-          }
-
-          .hero h1 {
-            font-size: 34px;
-          }
-
-          .outputState {
-            font-size: 22px;
-          }
-
-          .outputBox h3 {
-            font-size: 34px;
-          }
-
-          .page {
-            padding: 20px 12px 32px;
-          }
-
-          .leftCard,
-          .rightCard {
-            padding: 18px;
-          }
-        }
+.bonusBtn {
+  border: 1px solid #ecd9a3;
+  background: #f8ebc4;
+  color: #7a6021;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
       `}</style>
     </main>
   );
