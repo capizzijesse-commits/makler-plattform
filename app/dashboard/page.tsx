@@ -366,176 +366,65 @@ await navigator.clipboard.writeText(fullText);
               <MiniStat title="Stil" value="Premium" />
             </div>
           </section>
+<section
+  className="rightCard"
+  style={{
+    height: "750px",
+    overflowY: "auto",
+    padding: "24px",
+  }}
+>
+  <div style={{ marginBottom: "18px" }}>
+    <div className="outputBadge">Output</div>
 
-          <section className="rightCard">
-            <div className="outputTop">
-              <div>
-                <div className="outputBadge">Output</div>
-                <div className="outputState">
-                  {current
-                    ? `Variante ${activeIndex + 1} aktiv`
-                    : "Noch nichts generiert"}
-                </div>
-              </div>
-
-              {variants.length > 0 && (
-                <div className="tabs">
-                  {variants.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setActiveIndex(i)}
-                      className={`tab ${i === activeIndex ? "active" : ""}`}
-                    >
-                      Variante {i + 1}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {current ? (
-              <div className="outputBox">
-                <h3>{current.title}</h3>
-                <p>{current.text}</p>
-
-                {current.highlights && current.highlights.length > 0 && (
-                  <div style={{ marginTop: "24px" }}>
-                    <div
-                      style={{
-                        fontWeight: 800,
-                        fontSize: "16px",
-                        marginBottom: "10px",
-                        color: "#1f2937",
-                      }}
-                    >
-                      Highlights
-                    </div>
-
-                    <ul
-                      style={{
-                        margin: 0,
-                        paddingLeft: "20px",
-                        color: "#445066",
-                        lineHeight: 1.8,
-                        fontSize: "16px",
-                      }}
-                    >
-                      {current.highlights.map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {(instagramPost || linkedinPost) && (
-  <div style={{ marginTop: "30px" }}>
-
-    {instagramPost && (
-      <div style={{ marginBottom: "20px" }}>
-        <h3>Instagram Post</h3>
-        <p style={{ whiteSpace: "pre-line" }}>
-          {instagramPost}
-        </p>
-      </div>
-    )}
-
-    {linkedinPost && (
-      <div>
-        <h3>LinkedIn Post</h3>
-        <p style={{ whiteSpace: "pre-line" }}>
-          {linkedinPost}
-        </p>
-      </div>
-    )}
-
+    <div style={{ fontSize: "22px", fontWeight: 700, marginTop: "10px" }}>
+      {variants.length > 0
+        ? `Variante ${activeIndex + 1} aktiv`
+        : "Noch nichts generiert"}
+    </div>
   </div>
-)}
-              </div>
-            ) : (
-              
-              <div className="emptyBox">
-                <div className="emptyTitle">Noch keine Variante vorhanden</div>
-                <div className="emptyText">
-                  Gib links die Objektdaten ein und klicke auf „Generieren (3
-                  Varianten)“.
-                </div>
-              </div>
-            )}
-           {(instagramPost || linkedinPost) && (
+
+  {variants.length > 0 && (
+    <div style={{ display: "flex", gap: "8px", marginBottom: "18px" }}>
+      {variants.map((_, i) => (
+        <button
+          key={i}
+          onClick={() => setActiveIndex(i)}
+          style={{
+            padding: "8px 12px",
+            borderRadius: "10px",
+            border:
+              i === activeIndex
+                ? "1px solid #c59a2d"
+                : "1px solid #ccc",
+            background:
+              i === activeIndex ? "#f7e4b5" : "#fff",
+            cursor: "pointer",
+          }}
+        >
+          Variante {i + 1}
+        </button>
+      ))}
+    </div>
+  )}
+
   <div
     style={{
-      marginTop: "24px",
-      display: "grid",
-      gap: "16px",
+      background: "#fff",
+      borderRadius: "16px",
+      padding: "20px",
+      border: "1px solid #eee",
     }}
   >
-    {instagramPost && (
-      <div
-        style={{
-          background: "#ffffff",
-          borderRadius: "18px",
-          border: "1px solid #f0e3c1",
-          padding: "18px",
-        }}
-      >
-        <div
-          style={{
-            fontWeight: 800,
-            fontSize: "16px",
-            marginBottom: "10px",
-            color: "#1f2937",
-          }}
-        >
-          Instagram Post
-        </div>
-        <p
-          style={{
-            margin: 0,
-            whiteSpace: "pre-line",
-            color: "#445066",
-            lineHeight: 1.8,
-            fontSize: "15px",
-          }}
-        >
-          {instagramPost}
-        </p>
-      </div>
-    )}
+   <h2 style={{ fontSize: "28px", marginBottom: "12px" }}>
+  {variants[activeIndex]?.title}
+</h2>
 
-    {linkedinPost && (
-      <div
-        style={{
-          background: "#ffffff",
-          borderRadius: "18px",
-          border: "1px solid #f0e3c1",
-          padding: "18px",
-        }}
-      >
-        <div
-          style={{
-            fontWeight: 800,
-            fontSize: "16px",
-            marginBottom: "10px",
-            color: "#1f2937",
-          }}
-        >
-          LinkedIn Post
-        </div>
-        <p
-          style={{
-            margin: 0,
-            whiteSpace: "pre-line",
-            color: "#445066",
-            lineHeight: 1.8,
-            fontSize: "15px",
-          }}
-        >
-          {linkedinPost}
-        </p>
-      </div>
-    )}
+<p style={{ whiteSpace: "pre-line", lineHeight: 1.6 }}>
+  {variants[activeIndex]?.text}
+</p>
   </div>
-)} 
-          </section>
+</section>
         </div>
       </div>
 
