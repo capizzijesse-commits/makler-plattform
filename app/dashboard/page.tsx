@@ -377,9 +377,9 @@ await navigator.clipboard.writeText(fullText);
       </div>
     </div>
 
-    {variants.length > 0 && (
-      <div className="tabs">
-        {variants.map((_, i) => (
+    <div className="tabs">
+      {variants.length > 0 &&
+        variants.map((_, i) => (
           <button
             key={i}
             onClick={() => setActiveIndex(i)}
@@ -388,8 +388,7 @@ await navigator.clipboard.writeText(fullText);
             Variante {i + 1}
           </button>
         ))}
-      </div>
-    )}
+    </div>
   </div>
 
   <div className="outputCard">
@@ -434,13 +433,144 @@ await navigator.clipboard.writeText(fullText);
         </div>
       </div>
 
-      <style jsx>{`
-        .rightCard {
+    <style jsx>{`
+.page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #07111e 0%, #0a1627 45%, #0d1b2e 100%);
+  color: #ffffff;
+  padding: 28px 16px 40px;
+}
+
+.shell {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.logo {
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 0.08em;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 22px;
+  align-items: start;
+}
+
+/* ---------- LEFT CARD ---------- */
+
+.leftCard {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.22);
+}
+
+.leftCard h2 {
+  font-size: 26px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.sectionText {
+  color: rgba(255,255,255,0.72);
+  margin-bottom: 22px;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.input {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  padding: 14px 15px;
+  color: #fff;
+  font-size: 15px;
+  outline: none;
+}
+
+.input::placeholder {
+  color: rgba(255,255,255,0.4);
+}
+
+.divider {
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+  margin: 22px 0;
+}
+
+/* ---------- BUTTONS ---------- */
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.btn {
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-weight: 800;
+  cursor: pointer;
+  border: none;
+  transition: 0.2s ease;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #1cb8f6 0%, #129ce0 100%);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(28,184,246,0.25);
+}
+
+.btn-secondary {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #fff;
+}
+
+/* ---------- MINI STATS ---------- */
+
+.miniStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+/* ---------- RIGHT CARD ---------- */
+
+.rightCard {
   background: #fff9ec;
   border: 1px solid #e9d7a8;
   border-radius: 24px;
   padding: 24px;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 18px 50px rgba(0,0,0,0.18);
   color: #1f2937;
   height: 750px;
   overflow-y: auto;
@@ -448,15 +578,14 @@ await navigator.clipboard.writeText(fullText);
 
 .outputTop {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
+  align-items: flex-start;
   gap: 14px;
   flex-wrap: wrap;
   margin-bottom: 18px;
 }
 
 .outputBadge {
-  display: inline-block;
   font-size: 12px;
   font-weight: 700;
   color: #8a6a1f;
@@ -467,134 +596,96 @@ await navigator.clipboard.writeText(fullText);
 }
 
 .outputState {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 800;
-  color: #1f2937;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .tabs {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
 }
 
 .tab {
-  padding: 10px 14px;
-  border-radius: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
   border: 1px solid #e8d9b5;
   background: #fffdf7;
-  color: #6b5530;
-  font-weight: 700;
   cursor: pointer;
+  font-weight: 700;
 }
 
 .tab.active {
-  border: 1px solid #c59a2d;
   background: #f7e4b5;
-  color: #4f3d1d;
+  border: 1px solid #c59a2d;
 }
 
 .outputCard {
-  background: #ffffff;
+  background: #fff;
   border: 1px solid #f0e3c1;
   border-radius: 18px;
-  padding: 22px;
-  min-height: 260px;
-}
-
-.emptyState {
-  min-height: 220px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: #8b8b8b;
-}
-
-.emptyTitle {
-  font-weight: 700;
-  font-size: 22px;
-  margin-bottom: 10px;
-  color: #6b7280;
-}
-
-.emptyText {
-  line-height: 1.6;
+  padding: 20px;
 }
 
 .outputTitle {
-  margin: 0 0 18px 0;
-  font-size: 36px;
-  line-height: 1.08;
-  color: #1f2937;
+  font-size: 30px;
+  font-weight: 800;
+  margin-bottom: 14px;
 }
 
 .outputText {
-  white-space: pre-line;
-  font-size: 18px;
-  line-height: 1.8;
+  font-size: 17px;
+  line-height: 1.7;
   color: #4b5563;
-  margin: 0;
-}
-  .grid {
-  display: grid;
-  grid-template-columns: 1.05fr 1fr;
-  gap: 22px;
-  align-items: start;
 }
 
 .outputMeta {
   margin-top: 18px;
   display: grid;
-  gap: 14px;
+  gap: 12px;
 }
 
 .metaBlock {
-  color: #7b7b7b;
-  line-height: 1.7;
-}
-
-.metaTitle {
-  font-weight: 700;
-  color: #5c5c5c;
-  margin-bottom: 4px;
-}
-
-.metaLine {
-  color: #8c8c8c;
+  color: #777;
 }
 
 .bonusBlock {
   border: 1px solid #f0e3c1;
   background: #fffaf0;
-  border-radius: 16px;
-  padding: 16px;
-}
-
-.bonusTitle {
-  font-weight: 800;
-  margin-bottom: 8px;
-  color: #8a6a1f;
-}
-
-.bonusText {
-  color: #7b6a46;
-  line-height: 1.6;
-  margin-bottom: 12px;
+  border-radius: 14px;
+  padding: 14px;
 }
 
 .bonusBtn {
+  margin-top: 10px;
   border: 1px solid #ecd9a3;
   background: #f8ebc4;
-  color: #7a6021;
   border-radius: 10px;
   padding: 10px 14px;
-  font-weight: 700;
   cursor: pointer;
+  font-weight: 700;
 }
-      `}</style>
+
+/* ---------- MOBILE ---------- */
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rightCard {
+    height: auto;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .miniStats {
+    grid-template-columns: 1fr;
+  }
+}
+`}</style>
     </main>
   );
 }
