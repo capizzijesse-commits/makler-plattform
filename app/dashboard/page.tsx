@@ -289,7 +289,7 @@ await navigator.clipboard.writeText(fullText);
               daraus mehrere professionelle Textvarianten.
             </p>
 
-            <div className="formGrid">
+            <div className="grid">
             <input placeholder="Winterthur" />
 <input placeholder="4.5" />
 <input placeholder="110" />
@@ -537,6 +537,12 @@ await navigator.clipboard.writeText(fullText);
   line-height: 1.8;
   color: #4b5563;
   margin: 0;
+}
+  .grid {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 22px;
+  align-items: start;
 }
 
 .outputMeta {
