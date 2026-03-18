@@ -366,7 +366,14 @@ await navigator.clipboard.writeText(fullText);
               <MiniStat title="Stil" value="Premium" />
             </div>
           </section>
-<section className="rightCard">
+<section
+  className="rightCard"
+  style={{
+    height: "620px",
+    display: "flex",
+    flexDirection: "column",
+  }}
+>
   <div className="outputTop">
     <div>
       <div className="outputBadge">Output</div>
@@ -391,7 +398,15 @@ await navigator.clipboard.writeText(fullText);
     </div>
   </div>
 
-  <div className="outputCard">
+ <div
+  className="outputCard"
+  style={{
+    flex: 1,
+    overflowY: "auto",
+    overflowX: "hidden",
+    paddingRight: "6px",
+  }}
+>
     {variants.length === 0 ? (
       <div className="emptyState">
         <div className="emptyTitle">Noch keine Variante vorhanden</div>
