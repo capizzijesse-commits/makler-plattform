@@ -104,81 +104,46 @@ const [highlights, setHighlights] = useState("")
 
   const current = variants[activeIndex];
 
-  async function generateText() {
-    try {
-      setLoading(true);
+ 
+ async function generateText() {
+  try {
+    const response = await fetch("/api/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        location,
+        rooms,
+        livingArea,
+        price,
+        propertyType,
+        highlights,
+        styleText,
+        imageAnalysis: "",
+      }),
+    });
 
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          location,
-          propertyType,
-          rooms,
-          livingArea,
-          price,
-          styleText,
-          highlights,
-        }),
-      });
+    const data = await response.json();
+    console.log("GENERATE RESPONSE:", data);
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data?.error || "Fehler beim Generieren.");
-        return;
-      }
-
-     setVariants(data.variants || []);
-setActiveIndex(0);
-setInstagramPost(data?.social?.instagram || "");
-setLinkedinPost(data?.social?.linkedin || "");
-{(instagramPost || linkedinPost) && (
-  <div
-    style={{
-      marginTop: "30px",
-      background: "#0f172a",
-      borderRadius: "16px",
-      padding: "20px",
-      display: "grid",
-      gap: "20px",
-    }}
-  >
-    {instagramPost && (
-      <div>
-        <h3 style={{ color: "#fff", marginBottom: "10px" }}>
-          Instagram Post
-        </h3>
-
-        <p style={{ color: "#cbd5f5", whiteSpace: "pre-line" }}>
-          {instagramPost}
-        </p>
-      </div>
-    )}
-
-    {linkedinPost && (
-      <div>
-        <h3 style={{ color: "#fff", marginBottom: "10px" }}>
-          LinkedIn Post
-        </h3>
-
-        <p style={{ color: "#cbd5f5", whiteSpace: "pre-line" }}>
-          {linkedinPost}
-        </p>
-      </div>
-    )}
-  </div>
-)}
-
-    } catch (error) {
-      console.error(error);
-      alert("Verbindungsfehler beim Generieren.");
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      throw new Error(data?.error || "Fehler beim Generieren");
     }
+
+    const variants = Array.isArray(data?.variants) ? data.variants : [];
+
+    if (!variants.length) {
+      throw new Error("Keine Varianten erhalten");
+    }
+
+    setVariants(variants);
+    setActiveIndex(0);
+  } catch (error) {
+    console.error("FRONTEND GENERATE ERROR:", error);
+    alert("Fehler beim Generieren.");
   }
+}
 
   async function copyActive() {
     if (!current) {
