@@ -223,6 +223,7 @@ await navigator.clipboard.writeText(fullText);
         </head>
         <body>
           <div class="container">
+            <div class="meta">Makler AI Pro – PDF Export</div>
             <h1>${title}</h1>
             <div class="content">${text}</div>
             ${bulletHtml}
@@ -244,7 +245,6 @@ await navigator.clipboard.writeText(fullText);
       <div className="shell">
         <div className="topbar">
           <div className="hero">
-            <div className="badge">Makler AI Pro</div>
             <h1>Premium Inserat Generator</h1>
             <p>
               Hochwertige Immobilientexte für Homegate, ImmoScout24, Exposé und
