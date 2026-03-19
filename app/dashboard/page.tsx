@@ -256,7 +256,14 @@ await navigator.clipboard.writeText(fullText);
         </div>
 
         <div className="grid">
-          <section className="leftCard">
+          <section
+  className="leftCard"
+  style={{
+    height: "620px",
+    display: "flex",
+    flexDirection: "column",
+  }}
+>
             <div className="badge">Objektdaten</div>
             <h2>Eingabe</h2>
             <p className="sectionText">
@@ -369,7 +376,7 @@ await navigator.clipboard.writeText(fullText);
 <section
   className="rightCard"
   style={{
-    height: "620px",
+    height: "100%",
     display: "flex",
     flexDirection: "column",
   }}
@@ -478,7 +485,7 @@ await navigator.clipboard.writeText(fullText);
   display: grid;
   grid-template-columns: 1.05fr 1fr;
   gap: 22px;
-  align-items: start;
+  align-items: stretch;
 }
 
 /* ---------- LEFT CARD ---------- */
