@@ -264,12 +264,15 @@ await navigator.clipboard.writeText(fullText);
     flexDirection: "column",
   }}
 >
+            <div className="badge">Objektdaten</div>
+            <h2>Eingabe</h2>
+            <p className="sectionText">
+              Erfasse die wichtigsten Eckdaten der Immobilie. Die KI erstellt
+              daraus mehrere professionelle Textvarianten.
+            </p>
+
             <div className="grid">
-            <input placeholder="Winterthur" />
-<input placeholder="4.5" />
-<input placeholder="110" />
-<input placeholder="1090000" />
-<input placeholder="Balkon, Lift, Garage, ruhige Lage" />
+              
 <Field label="Ort / Lage">
   <input
     value={location}

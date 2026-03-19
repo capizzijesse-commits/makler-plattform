@@ -100,10 +100,10 @@ body {
 
 .input {
   @apply w-full px-3 py-2 outline-none;
-  background: rgb(var(--card));
-  border: 1px solid rgb(var(--border));
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
   border-radius: calc(var(--radius) - 6px);
-  color: rgb(var(--fg));
+  color: #fff;
 }
 
 .input::placeholder {
