@@ -546,10 +546,9 @@ flex: 1;
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
-  margin-top: 24px;
-  margin-bottom: 18px;
+  margin-top: 28px;
+  margin-bottom: 22px;
 }
-
 .btn {
   border-radius: 12px;
   padding: 12px 18px;
@@ -582,7 +581,8 @@ flex: 1;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  margin-top: 10px;
+  margin-top: 14px;
+  margin-bottom: 30px;
 }
   .miniStats div {
   background: rgba(255,255,255,0.04);
