@@ -223,7 +223,6 @@ await navigator.clipboard.writeText(fullText);
         </head>
         <body>
           <div class="container">
-            <div class="meta">Makler AI Pro – PDF Export</div>
             <h1>${title}</h1>
             <div class="content">${text}</div>
             ${bulletHtml}
