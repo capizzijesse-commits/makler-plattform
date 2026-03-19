@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 type Variant = {
   title: string;
@@ -10,17 +10,15 @@ type Variant = {
 };
 
 export default function DashboardPage() {
-  const [instagramPost, setInstagramPost] = useState("");
+ const [instagramPost, setInstagramPost] = useState("");
 const [linkedinPost, setLinkedinPost] = useState("");
- const [location, setLocation] = useState("")
-const [propertyType, setPropertyType] = useState("")
-const [rooms, setRooms] = useState("")
-const [livingArea, setLivingArea] = useState("")
-const [price, setPrice] = useState("")
-const [styleText, setStyleText] = useState("")
-const [highlights, setHighlights] = useState("")
-    
-    "Balkon, Lift, Garage, ruhige Lage"
+const [location, setLocation] = useState("Winterthur");
+const [propertyType, setPropertyType] = useState("Wohnung");
+const [rooms, setRooms] = useState("4.5");
+const [livingArea, setLivingArea] = useState("110");
+const [price, setPrice] = useState("1090000");
+const [styleText, setStyleText] = useState("Luxus / Premium");
+const [highlights, setHighlights] = useState("Balkon, Lift, Garage, ruhige Lage");
   ;
 
   const [loading, setLoading] = useState(false);
@@ -430,6 +428,7 @@ await navigator.clipboard.writeText(fullText);
   </div>
 
   <div className="outputMeta">
+    
     <div className="metaBlock">
       <div className="metaTitle">
         Du hast {variants.length > 0 ? 1 : 0} Inserate erstellt
@@ -446,6 +445,81 @@ await navigator.clipboard.writeText(fullText);
       <button className="bonusBtn">Empfehlungslink kopieren</button>
     </div>
   </div>
+  {(instagramPost || linkedinPost) && (
+  <div
+    style={{
+      marginTop: "24px",
+      display: "grid",
+      gap: "16px",
+    }}
+  >
+    {instagramPost && (
+      <div
+        style={{
+          background: "#ffffff",
+          borderRadius: "18px",
+          border: "1px solid #f0e3c1",
+          padding: "18px",
+        }}
+      >
+        <div
+          style={{
+            fontWeight: 800,
+            fontSize: "16px",
+            marginBottom: "10px",
+            color: "#1f2937",
+          }}
+        >
+          Instagram Post
+        </div>
+        <p
+          style={{
+            margin: 0,
+            whiteSpace: "pre-line",
+            color: "#445066",
+            lineHeight: 1.8,
+            fontSize: "15px",
+          }}
+        >
+          {instagramPost}
+        </p>
+      </div>
+    )}
+
+    {linkedinPost && (
+      <div
+        style={{
+          background: "#ffffff",
+          borderRadius: "18px",
+          border: "1px solid #f0e3c1",
+          padding: "18px",
+        }}
+      >
+        <div
+          style={{
+            fontWeight: 800,
+            fontSize: "16px",
+            marginBottom: "10px",
+            color: "#1f2937",
+          }}
+        >
+          LinkedIn Post
+        </div>
+        <p
+          style={{
+            margin: 0,
+            whiteSpace: "pre-line",
+            color: "#445066",
+            lineHeight: 1.8,
+            fontSize: "15px",
+          }}
+        >
+          {linkedinPost}
+        </p>
+      </div>
+    )}
+  </div>
+)}
 </section>
         </div>
       </div>
@@ -723,7 +797,7 @@ function Field({
   children,
 }: {
   label: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <div>
