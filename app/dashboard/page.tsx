@@ -405,7 +405,7 @@ await navigator.clipboard.writeText(fullText);
   style={{
     flex: 1,
     overflowY: "auto",
-    overflowX: "hidden",
+    overflow: "visible",
     paddingRight: "6px",
   }}
 >
