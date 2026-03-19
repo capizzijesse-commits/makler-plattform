@@ -102,8 +102,10 @@ const [highlights, setHighlights] = useState("Balkon, Lift, Garage, ruhige Lage"
 
   const current = variants[activeIndex];
 
- async function generateText() {
+async function generateText() {
   try {
+    setLoading(true);
+
     const response = await fetch("/api/generate", {
       method: "POST",
       headers: {
@@ -128,17 +130,21 @@ const [highlights, setHighlights] = useState("Balkon, Lift, Garage, ruhige Lage"
       throw new Error(data?.error || "Fehler beim Generieren");
     }
 
-    const variants = Array.isArray(data?.variants) ? data.variants : [];
+    const newVariants = Array.isArray(data?.variants) ? data.variants : [];
 
-    if (!variants.length) {
+    if (!newVariants.length) {
       throw new Error("Keine Varianten erhalten");
     }
 
-    setVariants(variants);
+    setVariants(newVariants);
     setActiveIndex(0);
+    setInstagramPost(data?.social?.instagram || "");
+    setLinkedinPost(data?.social?.linkedin || "");
   } catch (error) {
     console.error("FRONTEND GENERATE ERROR:", error);
     alert("Fehler beim Generieren.");
+  } finally {
+    setLoading(false);
   }
 }
 
@@ -403,7 +409,6 @@ await navigator.clipboard.writeText(fullText);
   style={{
     flex: 1,
     overflowY: "auto",
-    overflow: "visible",
     paddingRight: "6px",
   }}
 >
@@ -428,7 +433,81 @@ await navigator.clipboard.writeText(fullText);
   </div>
 
   <div className="outputMeta">
-    
+    {(instagramPost || linkedinPost) && (
+  <div
+    style={{
+      marginTop: "24px",
+      display: "grid",
+      gap: "16px",
+    }}
+  >
+    {instagramPost && (
+      <div
+        style={{
+          background: "#ffffff",
+          borderRadius: "18px",
+          border: "1px solid #f0e3c1",
+          padding: "18px",
+        }}
+      >
+        <div
+          style={{
+            fontWeight: 800,
+            fontSize: "16px",
+            marginBottom: "10px",
+            color: "#1f2937",
+          }}
+        >
+          Instagram Post
+        </div>
+        <p
+          style={{
+            margin: 0,
+            whiteSpace: "pre-line",
+            color: "#445066",
+            lineHeight: 1.8,
+            fontSize: "15px",
+          }}
+        >
+          {instagramPost}
+        </p>
+      </div>
+    )}
+
+    {linkedinPost && (
+      <div
+        style={{
+          background: "#ffffff",
+          borderRadius: "18px",
+          border: "1px solid #f0e3c1",
+          padding: "18px",
+        }}
+      >
+        <div
+          style={{
+            fontWeight: 800,
+            fontSize: "16px",
+            marginBottom: "10px",
+            color: "#1f2937",
+          }}
+        >
+          LinkedIn Post
+        </div>
+        <p
+          style={{
+            margin: 0,
+            whiteSpace: "pre-line",
+            color: "#445066",
+            lineHeight: 1.8,
+            fontSize: "15px",
+          }}
+        >
+          {linkedinPost}
+        </p>
+      </div>
+    )}
+  </div>
+)}
     <div className="metaBlock">
       <div className="metaTitle">
         Du hast {variants.length > 0 ? 1 : 0} Inserate erstellt
