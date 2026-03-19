@@ -453,12 +453,15 @@ await navigator.clipboard.writeText(fullText);
     <style jsx>{`
 .page {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: linear-gradient(180deg, #07111e 0%, #0a1627 45%, #0d1b2e 100%);
   color: #ffffff;
   padding: 28px 16px 40px;
 }
 
 .shell {
+flex: 1;
   max-width: 1280px;
   margin: 0 auto;
 }
@@ -543,7 +546,8 @@ await navigator.clipboard.writeText(fullText);
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
-  margin-top: 18px;
+  margin-top: 24px;
+  margin-bottom: 18px;
 }
 
 .btn {
@@ -578,6 +582,13 @@ await navigator.clipboard.writeText(fullText);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+  margin-top: 10px;
+}
+  .miniStats div {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 12px;
 }
 
 /* ---------- RIGHT CARD ---------- */
