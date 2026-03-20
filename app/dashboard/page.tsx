@@ -294,87 +294,84 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          <section className="rightCard">
-            <div className="outputTop">
-              <div>
-                <div className="outputBadge">Output</div>
-                <div className="outputState">
-                  {variants.length > 0
-                    ? `Variante ${activeIndex + 1} aktiv`
-                    : "Noch nichts generiert"}
-                </div>
-              </div>
+     <section className="rightCard">
+  <div className="outputTop">
+    <div>
+      <div className="outputBadge">Output</div>
+      <div className="outputState">
+        {variants.length > 0
+          ? `Variante ${activeIndex + 1} aktiv`
+          : "Noch nichts generiert"}
+      </div>
+    </div>
 
-              <div className="tabs">
-                {variants.length > 0 &&
-                  variants.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setActiveIndex(i)}
-                      className={`tab ${i === activeIndex ? "active" : ""}`}
-                    >
-                      Variante {i + 1}
-                    </button>
-                  ))}
-              </div>
-            </div>
+    <div className="tabs">
+      {variants.length > 0 &&
+        variants.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setActiveIndex(i)}
+            className={`tab ${i === activeIndex ? "active" : ""}`}
+          >
+            Variante {i + 1}
+          </button>
+        ))}
+    </div>
+  </div>
 
-            <div className="outputCard">
-              {variants.length === 0 ? (
-                <div className="emptyState">
-                  <div className="emptyTitle">Noch keine Variante vorhanden</div>
-                  <div className="emptyText">
-                    Gib links die Objektdaten ein und klicke auf „Generieren (3
-                    Varianten)“.
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <h2 className="outputTitle">{variants[activeIndex]?.title}</h2>
-                  <p className="outputText">{variants[activeIndex]?.text}</p>
-                </>
-              )}
-            </div>
+  <div className="outputCard">
+    {variants.length === 0 ? (
+      <div className="emptyState">
+        <div className="emptyTitle">Noch keine Variante vorhanden</div>
+        <div className="emptyText">
+          Gib links die Objektdaten ein und klicke auf „Generieren (3 Varianten)“.
+        </div>
+      </div>
+    ) : (
+      <>
+        <h2 className="outputTitle">{variants[activeIndex]?.title}</h2>
+        <p className="outputText">{variants[activeIndex]?.text}</p>
+      </>
+    )}
+  </div>
 
-            <div className="outputMeta">
-              <div className="metaBlock">
-                <div className="metaTitle">
-                  Du hast {variants.length > 0 ? 1 : 0} Inserate erstellt
-                </div>
-                <div className="metaLine">≈ 0 Stunden Arbeit gespart</div>
-                <div className="metaLine">
-                  Noch 50 kostenlose Inserate übrig
-                </div>
-              </div>
+  <div className="outputMeta">
+    <div className="metaBlock">
+      <div className="metaTitle">
+        Du hast {variants.length > 0 ? 1 : 0} Inserate erstellt
+      </div>
+      <div className="metaLine">≈ 0 Stunden Arbeit gespart</div>
+      <div className="metaLine">Noch 50 kostenlose Inserate übrig</div>
+    </div>
 
-              <div className="bonusBlock">
-                <div className="bonusTitle">🎁 Bonus</div>
-                <div className="bonusText">
-                  Empfehle InseratAI einem Maklerkollegen und erhalte 5
-                  zusätzliche Inserate kostenlos.
-                </div>
-                <button className="bonusBtn">Empfehlungslink kopieren</button>
-              </div>
-            </div>
+    <div className="bonusBlock">
+      <div className="bonusTitle">🎁 Bonus</div>
+      <div className="bonusText">
+        Empfehle InseratAI einem Maklerkollegen und erhalte 5 zusätzliche
+        Inserate kostenlos.
+      </div>
+      <button className="bonusBtn">Empfehlungslink kopieren</button>
+    </div>
+  </div>
 
-            {(instagramPost || linkedinPost) && (
-              <div className="socialWrap">
-                {instagramPost && (
-                  <div className="socialCard">
-                    <div className="socialTitle">Instagram Post</div>
-                    <p className="socialText">{instagramPost}</p>
-                  </div>
-                )}
+  {(instagramPost || linkedinPost) && (
+    <div className="socialWrap">
+      {instagramPost && (
+        <div className="socialCard">
+          <div className="socialTitle">Instagram Post</div>
+          <p className="socialText">{instagramPost}</p>
+        </div>
+      )}
 
-                {linkedinPost && (
-                  <div className="socialCard">
-                    <div className="socialTitle">LinkedIn Post</div>
-                    <p className="socialText">{linkedinPost}</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </section>
+      {linkedinPost && (
+        <div className="socialCard">
+          <div className="socialTitle">LinkedIn Post</div>
+          <p className="socialText">{linkedinPost}</p>
+        </div>
+      )}
+    </div>
+  )}
+</section>   
         </div>
       </div>
 
