@@ -19,24 +19,24 @@ export async function POST(req: Request) {
       styleText,
     } = body;
 
-   const prompt = `
+    const prompt = `
 Du bist ein professioneller Schweizer Immobilien-Texter.
 
 Erstelle 3 hochwertige und deutlich unterschiedliche Inserat-Varianten für eine Immobilie in der Schweiz.
 
 WICHTIG:
-- Antworte AUSSCHLIESSLICH im JSON Format
+- Antworte AUSSCHLIESSLICH im JSON-Format
 - KEIN zusätzlicher Text
-- KEINE Erklärungen
 - KEIN Markdown
+- KEINE Erklärungen
+- Die Antwort muss gültiges JSON sein
 
 Jede Variante soll:
 - ausführlicher sein
-- verkaufsstärker formuliert sein
-- hochwertig und professionell klingen
-- emotionaler und attraktiver wirken
-- nicht einfach nur Daten aufzählen
-- sich sprachlich klar von den anderen Varianten unterscheiden
+- professionell klingen
+- verkaufsstark formuliert sein
+- hochwertig wirken
+- sich klar von den anderen Varianten unterscheiden
 
 Variante 1:
 - elegant
@@ -46,47 +46,42 @@ Variante 1:
 
 Variante 2:
 - modern
-- verkaufsstark
-- klar strukturiert
 - professionell
+- klar strukturiert
+- verkaufsstark
 
 Variante 3:
 - wohnlich
-- einladend
 - charmant
-- lebendig beschrieben
+- einladend
+- lebendig
 
-Wenn passend, integriere Vorteile wie:
-- Lage
-- Licht
-- Ruhe
-- Aussicht
-- Komfort
-- Alltagstauglichkeit
-- Exklusivität
-- Lebensqualität
-
-Format:
+Gib exakt dieses JSON zurück:
 
 {
   "variants": [
     {
       "title": "Titel 1",
-      "text": "Beschreibung 1"
+      "text": "Beschreibung 1",
+      "highlights": ["Highlight 1", "Highlight 2", "Highlight 3"],
+      "cta": "Call to Action"
     },
     {
       "title": "Titel 2",
-      "text": "Beschreibung 2"
+      "text": "Beschreibung 2",
+      "highlights": ["Highlight 1", "Highlight 2", "Highlight 3"],
+      "cta": "Call to Action"
     },
     {
       "title": "Titel 3",
-      "text": "Beschreibung 3"
+      "text": "Beschreibung 3",
+      "highlights": ["Highlight 1", "Highlight 2", "Highlight 3"],
+      "cta": "Call to Action"
     }
   ],
   "social": {
     "instagram": "Instagram Post",
-    "linkedin": "LinkedIn Post",
-    "facebook": "Facebook Post"
+    "linkedin": "LinkedIn Post"
   }
 }
 
@@ -102,20 +97,18 @@ Stil: ${styleText}
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      messages: [
-        { role: "user", content: prompt }
-      ],
+      messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
+      response_format: { type: "json_object" },
     });
 
-    const text = completion.choices[0].message.content;
-
+    const text = completion.choices[0].message.content || "{}";
     console.log("AI RAW:", text);
 
     let parsed;
 
     try {
-      parsed = JSON.parse(text || "{}");
+      parsed = JSON.parse(text);
     } catch (err) {
       console.error("JSON PARSE ERROR:", err);
       return NextResponse.json(
@@ -124,11 +117,16 @@ Stil: ${styleText}
       );
     }
 
-    return NextResponse.json(parsed);
+    if (!parsed?.variants || !Array.isArray(parsed.variants) || parsed.variants.length === 0) {
+      return NextResponse.json(
+        { error: "Keine Varianten erhalten" },
+        { status: 500 }
+      );
+    }
 
+    return NextResponse.json(parsed);
   } catch (error) {
     console.error("API ERROR:", error);
-
     return NextResponse.json(
       { error: "Fehler beim Generieren" },
       { status: 500 }
