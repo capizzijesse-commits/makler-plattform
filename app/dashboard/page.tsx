@@ -57,7 +57,7 @@ async function analyzeImage() {
   const [propertyType, setPropertyType] = useState("Wohnung");
   const [rooms, setRooms] = useState("4.5");
   const [livingArea, setLivingArea] = useState("110");
-  const [price, setPrice] = useState("1090000");
+  const [price, setPrice] = useState("1095000");
   const [styleText, setStyleText] = useState("Luxus / Premium");
   const [highlights, setHighlights] = useState(
     "Balkon, Lift, Garage, ruhige Lage"
@@ -330,78 +330,78 @@ setFacebookPost(data?.social?.facebook || "");
       />
     </Field>
 
-    <div className="full">
-      <div
+   <div className="full">
+  <div
+    style={{
+      fontSize: "13px",
+      color: "rgba(255,255,255,0.72)",
+      marginBottom: "8px",
+      fontWeight: 700,
+      letterSpacing: "0.01em",
+    }}
+  >
+    Immobilienfoto
+  </div>
+
+  <label className="uploadBox">
+    <input
+      type="file"
+      accept="image/*"
+      onChange={(e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setSelectedImage(file);
+        setImagePreview(URL.createObjectURL(file));
+      }}
+    />
+    <span>{selectedImage ? selectedImage.name : "📸 Foto auswählen"}</span>
+  </label>
+
+  {imagePreview && (
+    <div style={{ marginTop: "12px" }}>
+      <img
+        src={imagePreview}
+        alt="Vorschau"
         style={{
-          fontSize: "13px",
-          color: "rgba(255,255,255,0.72)",
-          marginBottom: "8px",
-          fontWeight: 700,
-          letterSpacing: "0.01em",
+          width: "100%",
+          maxHeight: "180px",
+          objectFit: "cover",
+          borderRadius: "14px",
+          border: "1px solid rgba(255,255,255,0.12)",
         }}
-      >
-        Immobilienfoto
-      </div>
-
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (!file) return;
-
-          setSelectedImage(file);
-          setImagePreview(URL.createObjectURL(file));
-        }}
-        className="input"
-        style={{ padding: "10px 12px" }}
       />
-
-      {imagePreview && (
-        <div style={{ marginTop: "12px" }}>
-          <img
-            src={imagePreview}
-            alt="Vorschau"
-            style={{
-              width: "100%",
-              maxHeight: "180px",
-              objectFit: "cover",
-              borderRadius: "14px",
-              border: "1px solid rgba(255,255,255,0.12)",
-            }}
-          />
-        </div>
-      )}
-
-      <div style={{ marginTop: "12px" }}>
-        <button
-          type="button"
-          onClick={analyzeImage}
-          className="btn btn-secondary"
-          disabled={!selectedImage || analyzingImage}
-        >
-          {analyzingImage ? "Analysiere Foto..." : "Foto analysieren"}
-        </button>
-      </div>
-
-      {imageAnalysis && (
-        <div
-          style={{
-            marginTop: "12px",
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: "14px",
-            padding: "12px",
-            color: "rgba(255,255,255,0.78)",
-            lineHeight: 1.6,
-            fontSize: "14px",
-            whiteSpace: "pre-line",
-          }}
-        >
-          {imageAnalysis}
-        </div>
-      )}
     </div>
+  )}
+
+  <div style={{ marginTop: "12px" }}>
+    <button
+      type="button"
+      onClick={analyzeImage}
+      className="btn btn-secondary"
+      disabled={!selectedImage || analyzingImage}
+    >
+      {analyzingImage ? "Analysiere Foto..." : "Foto analysieren"}
+    </button>
+  </div>
+
+  {imageAnalysis && (
+    <div
+      style={{
+        marginTop: "12px",
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: "14px",
+        padding: "12px",
+        color: "rgba(255,255,255,0.78)",
+        lineHeight: 1.6,
+        fontSize: "14px",
+        whiteSpace: "pre-line",
+      }}
+    >
+      {imageAnalysis}
+    </div>
+  )}
+</div>
   </div>
 
   <div className="divider" />
@@ -547,6 +547,30 @@ setFacebookPost(data?.social?.facebook || "");
   border-radius: 14px;
   padding: 12px;
 }
+  .uploadBox {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px dashed rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.78);
+  cursor: pointer;
+  font-weight: 700;
+  transition: 0.2s ease;
+  text-align: center;
+}
+
+.uploadBox:hover {
+  border-color: rgba(200,162,77,0.7);
+  background: rgba(255,255,255,0.06);
+}
+
+.uploadBox input {
+  display: none;
+}
 
 .topStatValue {
   font-size: 22px;
@@ -642,22 +666,23 @@ setFacebookPost(data?.social?.facebook || "");
   font-size: 16px;
 }
 
-        .grid {
-          display: grid;
-          grid-template-columns: 1.05fr 1fr;
-          gap: 22px;
-          align-items: stretch;
-        }
+       .grid {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 22px;
+  align-items: stretch;
+}
 
-        .leftCard {
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 24px;
-          padding: 24px;
-
-          display: flex;
-          flex-direction: column;
-        }
+      .leftCard {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.22);
+  display: flex;
+  flex-direction: column;
+} 
+        
 
         .leftCard h2 {
           font-size: 26px;
@@ -742,13 +767,14 @@ setFacebookPost(data?.social?.facebook || "");
   background: #fff9ec;
   border: 1px solid #e9d7a8;
   border-radius: 24px;
-  padding: 24px;
+  padding: 20px;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
-  
-  height: 750px;
+  color: #1f2937;
+  height: 100%;
+  min-height: 760px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   overflow: hidden;
 }
 
