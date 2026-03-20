@@ -8,6 +8,7 @@ const openai = new OpenAI({
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+  const imageAnalysis = body.imageAnalysis || "";
 
     const {
       location,
@@ -19,70 +20,26 @@ export async function POST(req: Request) {
       styleText,
     } = body;
 
-    const prompt = `
-Du bist ein professioneller Schweizer Immobilien-Texter.
+const prompt = `
+Erstelle 3 Immobilieninserate als JSON.
 
-Erstelle 3 hochwertige und deutlich unterschiedliche Inserat-Varianten für eine Immobilie in der Schweiz.
-
-WICHTIG:
-- Antworte AUSSCHLIESSLICH im JSON-Format
-- KEIN zusätzlicher Text
-- KEIN Markdown
-- KEINE Erklärungen
-- Die Antwort muss gültiges JSON sein
-
-Jede Variante soll:
-- ausführlicher sein
-- professionell klingen
-- verkaufsstark formuliert sein
-- hochwertig wirken
-- sich klar von den anderen Varianten unterscheiden
-
-Variante 1:
-- elegant
-- luxuriös
-- emotional
-- hochwertig
-
-Variante 2:
-- modern
-- professionell
-- klar strukturiert
-- verkaufsstark
-
-Variante 3:
-- wohnlich
-- charmant
-- einladend
-- lebendig
-
-Gib exakt dieses JSON zurück:
+Format:
 
 {
   "variants": [
     {
-      "title": "Titel 1",
-      "text": "Beschreibung 1",
-      "highlights": ["Highlight 1", "Highlight 2", "Highlight 3"],
-      "cta": "Call to Action"
+      "title": "...",
+      "text": "..."
     },
     {
-      "title": "Titel 2",
-      "text": "Beschreibung 2",
-      "highlights": ["Highlight 1", "Highlight 2", "Highlight 3"],
-      "cta": "Call to Action"
+      "title": "...",
+      "text": "..."
     },
     {
-      "title": "Titel 3",
-      "text": "Beschreibung 3",
-      "highlights": ["Highlight 1", "Highlight 2", "Highlight 3"],
-      "cta": "Call to Action"
+      "title": "...",
+      "text": "..."
     }
-  ],
-  "social": {
-    "instagram": "Instagram Post",
-    "linkedin": "LinkedIn Post"
-  }
+  ]
 }
 
 Daten:
@@ -90,9 +47,10 @@ Ort: ${location}
 Zimmer: ${rooms}
 Wohnfläche: ${livingArea}
 Preis: ${price}
-Typ: ${propertyType}
+Objekt: ${propertyType}
 Highlights: ${highlights}
 Stil: ${styleText}
+Bildanalyse: ${imageAnalysis || "Keine"}
 `;
 
     const completion = await openai.chat.completions.create({
@@ -123,7 +81,10 @@ Stil: ${styleText}
         { status: 500 }
       );
     }
-
+const safeVariants = parsed.variants.map((v: any, i: number) => ({
+  title: v?.title?.trim() || `Exklusive Immobilie ${i + 1}`,
+  text: v?.text?.trim() || "",
+}));
     return NextResponse.json(parsed);
   } catch (error) {
     console.error("API ERROR:", error);

@@ -489,6 +489,7 @@ setFacebookPost(data?.social?.facebook || "");
         </div>
       ) : (
         <>
+    
           <h2 className="outputTitle">{variants[activeIndex]?.title}</h2>
           <p className="outputText">{variants[activeIndex]?.text}</p>
         </>
@@ -513,6 +514,7 @@ setFacebookPost(data?.social?.facebook || "");
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   flex-shrink: 0;
+  width: 100%
 }
 
 .topStat {
@@ -751,21 +753,23 @@ setFacebookPost(data?.social?.facebook || "");
           margin-top: 8px;
         }
 
-        .tabs {
-          display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
-        }
-
-        .tab {
-          padding: 8px 12px;
-          border-radius: 10px;
-          border: 1px solid #e8d9b5;
-          background: #fffdf7;
-          cursor: pointer;
-          font-weight: 700;
-          color: #6b5530;
-        }
+       .tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+   .tab {
+  width: 100%;
+  text-align: center;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #e8d9b5;
+  background: #fffdf7;
+  cursor: pointer;
+  font-weight: 700;
+  color: #6b5530;
+}
 
         .tab.active {
           background: #f7e4b5;
