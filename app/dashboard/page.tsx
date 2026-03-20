@@ -7,6 +7,9 @@ type Variant = {
   text: string;
   highlights?: string[];
   cta?: string;
+  instagramPost?: string;
+  linkedinPost?: string;
+  facebookPost?: string;
 };
 
 export default function DashboardPage() {
@@ -492,7 +495,28 @@ setFacebookPost(data?.social?.facebook || "");
     
           <h2 className="outputTitle">{variants[activeIndex]?.title}</h2>
           <p className="outputText">{variants[activeIndex]?.text}</p>
+          {variants[activeIndex]?.instagramPost && (
+  <div className="socialBlock">
+    <div className="socialTitle">Instagram</div>
+    <p className="socialText">{variants[activeIndex]?.instagramPost}</p>
+  </div>
+)}
+
+{variants[activeIndex]?.linkedinPost && (
+  <div className="socialBlock">
+    <div className="socialTitle">LinkedIn</div>
+    <p className="socialText">{variants[activeIndex]?.linkedinPost}</p>
+  </div>
+)}
+
+{variants[activeIndex]?.facebookPost && (
+  <div className="socialBlock">
+    <div className="socialTitle">Facebook</div>
+    <p className="socialText">{variants[activeIndex]?.facebookPost}</p>
+  </div>
+)}
         </>
+        
       )}
     </div>
 

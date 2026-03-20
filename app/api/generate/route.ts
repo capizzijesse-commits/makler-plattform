@@ -21,23 +21,40 @@ export async function POST(req: Request) {
     } = body;
 
 const prompt = `
-Erstelle 3 Immobilieninserate als JSON.
+Erstelle 3 hochwertige, deutlich unterschiedliche und professionelle Immobilieninserate als JSON.
+
+WICHTIG:
+- Antworte AUSSCHLIESSLICH als gültiges JSON
+- Kein zusätzlicher Text
+- Schreibe verkaufsstark, luxuriös, strukturiert und professionell
+- Jeder Text soll ausführlich sein
+- Jeder Text soll ungefähr 180 bis 260 Wörter haben
+- Jede Variante soll stilistisch anders sein
+- Jede Variante braucht einen klaren Titel
 
 Format:
-
 {
   "variants": [
     {
       "title": "...",
-      "text": "..."
+      "text": "...",
+      "instagramPost": "...",
+      "linkedinPost": "...",
+      "facebookPost": "..."
     },
     {
       "title": "...",
-      "text": "..."
+      "text": "...",
+      "instagramPost": "...",
+      "linkedinPost": "...",
+      "facebookPost": "..."
     },
     {
       "title": "...",
-      "text": "..."
+      "text": "...",
+      "instagramPost": "...",
+      "linkedinPost": "...",
+      "facebookPost": "..."
     }
   ]
 }
@@ -84,7 +101,11 @@ Bildanalyse: ${imageAnalysis || "Keine"}
 const safeVariants = parsed.variants.map((v: any, i: number) => ({
   title: v?.title?.trim() || `Exklusive Immobilie ${i + 1}`,
   text: v?.text?.trim() || "",
+  instagramPost: v?.instagramPost?.trim() || "",
+  linkedinPost: v?.linkedinPost?.trim() || "",
+  facebookPost: v?.facebookPost?.trim() || "",
 }));
+return NextResponse.json({ variants: safeVariants });
     return NextResponse.json(parsed);
   } catch (error) {
     console.error("API ERROR:", error);
