@@ -429,23 +429,25 @@ export default function DashboardPage() {
           font-weight: 700;
           font-size: 14px;
         }
+.hero {
+  margin-bottom: 28px;
+  text-align: center;
+}
 
-        .hero {
-          margin-bottom: 22px;
-        }
+.hero h1 {
+  margin: 0 0 10px 0;
+  font-size: clamp(30px, 4vw, 44px);
+  font-weight: 800;
+  line-height: 1.08;
+}
 
-        .hero h1 {
-          margin: 0 0 8px 0;
-          font-size: 20px;
-          font-weight: 800;
-        }
-
-        .hero p {
-          margin: 0;
-          color: rgba(255, 255, 255, 0.78);
-          line-height: 1.6;
-          font-size: 14px;
-        }
+.hero p {
+  margin: 0 auto;
+  max-width: 980px;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.7;
+  font-size: 16px;
+}
 
         .grid {
           display: grid;
@@ -543,39 +545,38 @@ export default function DashboardPage() {
           gap: 12px;
           margin-top: 14px;
         }
+.rightCard {
+  background: #fff9ec;
+  border: 1px solid #e9d7a8;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+  color: #1f2937;
+  height: 750px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+}
 
-        .rightCard {
-          background: #fff9ec;
-          border: 1px solid #e9d7a8;
-          border-radius: 24px;
-          padding: 24px;
-          box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
-          color: #1f2937;
-          height: 750px;
-          display: flex;
-          flex-direction: coumn;
-          overflow-y: hidden;
-        }
+.outputTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
 
-        .outputTop {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 14px;
-          flex-wrap: wrap;
-          margin-bottom: 18px;
-        }
-
-        .outputBadge {
-          font-size: 12px;
-          font-weight: 700;
-          color: #8a6a1f;
-          background: #f7ebc8;
-          border: 1px solid #e4c97e;
-          padding: 6px 10px;
-          border-radius: 999px;
-          display: inline-block;
-        }
+.outputCard {
+  background: #ffffff;
+  border: 1px solid #f0e3c1;
+  border-radius: 18px;
+  padding: 20px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
 
         .outputState {
           font-size: 22px;
@@ -651,11 +652,11 @@ export default function DashboardPage() {
           white-space: pre-line;
         }
 
-        .outputMeta {
-          margin-top: 18px;
-          display: grid;
-          gap: 12px;
-        }
+       .outputMeta {
+  display: grid;
+  gap: 12px;
+  flex-shrink: 0;
+}
 
         .metaBlock {
           color: #777777;
