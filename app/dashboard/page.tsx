@@ -10,143 +10,70 @@ type Variant = {
 };
 
 export default function DashboardPage() {
- const [instagramPost, setInstagramPost] = useState("");
-const [linkedinPost, setLinkedinPost] = useState("");
-const [location, setLocation] = useState("Winterthur");
-const [propertyType, setPropertyType] = useState("Wohnung");
-const [rooms, setRooms] = useState("4.5");
-const [livingArea, setLivingArea] = useState("110");
-const [price, setPrice] = useState("1090000");
-const [styleText, setStyleText] = useState("Luxus / Premium");
-const [highlights, setHighlights] = useState("Balkon, Lift, Garage, ruhige Lage");
-  ;
+  const [instagramPost, setInstagramPost] = useState("");
+  const [linkedinPost, setLinkedinPost] = useState("");
+
+  const [location, setLocation] = useState("Winterthur");
+  const [propertyType, setPropertyType] = useState("Wohnung");
+  const [rooms, setRooms] = useState("4.5");
+  const [livingArea, setLivingArea] = useState("110");
+  const [price, setPrice] = useState("1090000");
+  const [styleText, setStyleText] = useState("Luxus / Premium");
+  const [highlights, setHighlights] = useState(
+    "Balkon, Lift, Garage, ruhige Lage"
+  );
 
   const [loading, setLoading] = useState(false);
   const [variants, setVariants] = useState<Variant[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
-  {(instagramPost || linkedinPost) && (
-  <div
-    style={{
-      marginTop: "24px",
-      display: "grid",
-      gap: "16px",
-    }}
-  >
-    {instagramPost && (
-      <div
-        style={{
-          background: "#ffffff",
-          borderRadius: "18px",
-          border: "1px solid #f0e3c1",
-          padding: "18px",
-        }}
-      >
-        <div
-          style={{
-            fontWeight: 800,
-            fontSize: "16px",
-            marginBottom: "10px",
-            color: "#1f2937",
-          }}
-        >
-          Instagram Post
-        </div>
-        <p
-          style={{
-            margin: 0,
-            whiteSpace: "pre-line",
-            color: "#445066",
-            lineHeight: 1.8,
-            fontSize: "15px",
-          }}
-        >
-          {instagramPost}
-        </p>
-      </div>
-    )}
-
-    {linkedinPost && (
-      <div
-        style={{
-          background: "#ffffff",
-          borderRadius: "18px",
-          border: "1px solid #f0e3c1",
-          padding: "18px",
-        }}
-      >
-        <div
-          style={{
-            fontWeight: 800,
-            fontSize: "16px",
-            marginBottom: "10px",
-            color: "#1f2937",
-          }}
-        >
-          LinkedIn Post
-        </div>
-        <p
-          style={{
-            margin: 0,
-            whiteSpace: "pre-line",
-            color: "#445066",
-            lineHeight: 1.8,
-            fontSize: "15px",
-          }}
-        >
-          {linkedinPost}
-        </p>
-      </div>
-    )}
-  </div>
-)}
 
   const current = variants[activeIndex];
 
-async function generateText() {
-  try {
-    setLoading(true);
+  async function generateText() {
+    try {
+      setLoading(true);
 
-    const response = await fetch("/api/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        location,
-        rooms,
-        livingArea,
-        price,
-        propertyType,
-        highlights,
-        styleText,
-        imageAnalysis: "",
-      }),
-    });
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          location,
+          rooms,
+          livingArea,
+          price,
+          propertyType,
+          highlights,
+          styleText,
+          imageAnalysis: "",
+        }),
+      });
 
-    const data = await response.json();
-    console.log("GENERATE RESPONSE:", data);
+      const data = await response.json();
+      console.log("GENERATE RESPONSE:", data);
 
-    if (!response.ok) {
-      throw new Error(data?.error || "Fehler beim Generieren");
+      if (!response.ok) {
+        throw new Error(data?.error || "Fehler beim Generieren");
+      }
+
+      const newVariants = Array.isArray(data?.variants) ? data.variants : [];
+
+      if (!newVariants.length) {
+        throw new Error("Keine Varianten erhalten");
+      }
+
+      setVariants(newVariants);
+      setActiveIndex(0);
+      setInstagramPost(data?.social?.instagram || "");
+      setLinkedinPost(data?.social?.linkedin || "");
+    } catch (error) {
+      console.error("FRONTEND GENERATE ERROR:", error);
+      alert("Fehler beim Generieren.");
+    } finally {
+      setLoading(false);
     }
-
-    const newVariants = Array.isArray(data?.variants) ? data.variants : [];
-
-    if (!newVariants.length) {
-      throw new Error("Keine Varianten erhalten");
-    }
-
-    setVariants(newVariants);
-    setActiveIndex(0);
-    setInstagramPost(data?.social?.instagram || "");
-    setLinkedinPost(data?.social?.linkedin || "");
-  } catch (error) {
-    console.error("FRONTEND GENERATE ERROR:", error);
-    alert("Fehler beim Generieren.");
-  } finally {
-    setLoading(false);
   }
-}
 
   async function copyActive() {
     if (!current) {
@@ -157,13 +84,12 @@ async function generateText() {
     const bulletText =
       current.highlights && current.highlights.length > 0
         ? `\n\nHighlights\n${current.highlights.map((h) => `• ${h}`).join("\n")}`
-          : "";
+        : "";
 
-  const ctaText = current.cta ? `\n\n${current.cta}` : "";
+    const ctaText = current.cta ? `\n\n${current.cta}` : "";
+    const fullText = `${current.title}\n\n${current.text}${bulletText}${ctaText}`;
 
-const fullText = `${current.title}\n\n${current.text}${bulletText}${ctaText}`;
-
-await navigator.clipboard.writeText(fullText);
+    await navigator.clipboard.writeText(fullText);
   }
 
   function exportPdf() {
@@ -248,625 +174,593 @@ await navigator.clipboard.writeText(fullText);
     <main className="page">
       <div className="shell">
         <div className="topbar">
-          <div className="hero">
-            <h1>Premium Inserat Generator</h1>
-            <p>
-              Hochwertige Immobilientexte für Homegate, ImmoScout24, Exposé und
-              Social Media – strukturiert, verkaufsstark und professionell.
-            </p>
-          </div>
+          <div className="logo">INSERAT AI</div>
 
+          <div className="topbarRight">
+            <a href="/login" className="topLink">
+              Login
+            </a>
+            <a href="/" className="topCta">
+              Kostenlos testen
+            </a>
+          </div>
+        </div>
+
+        <div className="hero">
+          <h1>Premium Inserat Generator</h1>
+          <p>
+            Hochwertige Immobilientexte für Homegate, ImmoScout24, Exposé und
+            Social Media – strukturiert, verkaufsstark und professionell.
+          </p>
         </div>
 
         <div className="grid">
-          <section
-  className="leftCard"
-  style={{
-    height: "620px",
-    display: "flex",
-    flexDirection: "column",
-  }}
->
-         
+          <section className="leftCard">
             <h2>Eingabe</h2>
             <p className="sectionText">
               Erfasse die wichtigsten Eckdaten der Immobilie. Die KI erstellt
               daraus mehrere professionelle Textvarianten.
             </p>
 
-            <div className="grid">
+            <div className="formGrid">
+              <Field label="Ort / Lage">
+                <input
+                  value={location}
+                  placeholder="Winterthur"
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="input"
+                />
+              </Field>
 
-<Field label="Ort / Lage">
-  <input
-    value={location}
-    placeholder="Winterthur"
-    onChange={(e) => setLocation(e.target.value)}
-    className="input"
-  />
-</Field>
+              <Field label="Objektart">
+                <input
+                  value={propertyType}
+                  placeholder="Wohnung"
+                  onChange={(e) => setPropertyType(e.target.value)}
+                  className="input"
+                />
+              </Field>
 
-<Field label="Objektart">
-  <input
-    value={propertyType}
-    placeholder="Wohnung"
-    onChange={(e) => setPropertyType(e.target.value)}
-    className="input"
-  />
-</Field>
+              <Field label="Zimmer">
+                <input
+                  value={rooms}
+                  placeholder="4.5"
+                  onChange={(e) => setRooms(e.target.value)}
+                  className="input"
+                />
+              </Field>
 
-<Field label="Zimmer">
-  <input
-    value={rooms}
-    placeholder="4.5"
-    onChange={(e) => setRooms(e.target.value)}
-    className="input"
-  />
-</Field>
+              <Field label="Wohnfläche (m²)">
+                <input
+                  value={livingArea}
+                  placeholder="110"
+                  onChange={(e) => setLivingArea(e.target.value)}
+                  className="input"
+                />
+              </Field>
 
-<Field label="Wohnfläche (m²)">
-  <input
-    value={livingArea}
-    placeholder="110"
-    onChange={(e) => setLivingArea(e.target.value)}
-    className="input"
-  />
-</Field>
+              <Field label="Preis (CHF)">
+                <input
+                  value={price}
+                  placeholder="1090000"
+                  onChange={(e) => setPrice(e.target.value)}
+                  className="input"
+                />
+              </Field>
 
-<Field label="Preis (CHF)">
-  <input
-    value={price}
-    placeholder="1090000"
-    onChange={(e) => setPrice(e.target.value)}
-    className="input"
-  />
-</Field>
+              <Field label="Stil">
+                <input
+                  value={styleText}
+                  placeholder="Luxus / Premium"
+                  onChange={(e) => setStyleText(e.target.value)}
+                  className="input"
+                />
+              </Field>
 
-<Field label="Stil">
-  <input
-    value={styleText}
-    placeholder="Luxus / Premium"
-    onChange={(e) => setStyleText(e.target.value)}
-    className="input"
-  />
-</Field>
+              <div className="full">
+                <Field label="Highlights (mit Komma trennen)">
+                  <input
+                    value={highlights}
+                    placeholder="Balkon, Lift, Garage, ruhige Lage"
+                    onChange={(e) => setHighlights(e.target.value)}
+                    className="input"
+                  />
+                </Field>
+              </div>
+            </div>
 
-<Field label="Highlights (mit Komma trennen)">
-  <input
-    value={highlights}
-    placeholder="Balkon, Lift, Garage, ruhige Lage"
-    onChange={(e) => setHighlights(e.target.value)}
-    className="input"
-  />
-</Field>
-</div>
-            <div className="divider" />
+            <div className="actions">
+              <button
+                onClick={generateText}
+                disabled={loading}
+                className="btn btn-primary"
+              >
+                {loading ? "Generiere..." : "Generieren (3 Varianten)"}
+              </button>
 
-          <div className="actions">
-            <button
-              onClick={generateText}
-              disabled={loading}
-              className="btn btn-primary"
-            >
-              {loading ? "Generiere..." : "Generieren (3 Varianten)"}
-            </button>
+              <button
+                onClick={copyActive}
+                disabled={!current}
+                className="btn btn-secondary"
+              >
+                Copy
+              </button>
 
-            <button
-              onClick={copyActive}
-              disabled={!current}
-              className="btn btn-secondary"
-            >
-              Copy
-            </button>
+              <button
+                onClick={exportPdf}
+                disabled={!current}
+                className="btn btn-secondary"
+              >
+                PDF
+              </button>
+            </div>
 
-            <button
-              onClick={exportPdf}
-              disabled={!current}
-              className="btn btn-secondary"
-            >
-              PDF
-            </button>
-          </div>
             <div className="miniStats">
               <MiniStat title="Markt" value="Schweiz" />
               <MiniStat title="Output" value="3 Varianten" />
               <MiniStat title="Stil" value="Premium" />
             </div>
           </section>
-<section
-  className="rightCard"
-  style={{
-    height: "100%",
-    display: "flex",
-    flexDirection: "column",
-  }}
->
-  <div className="outputTop">
-    <div>
-      <div className="outputBadge">Output</div>
-      <div className="outputState">
-        {variants.length > 0
-          ? `Variante ${activeIndex + 1} aktiv`
-          : "Noch nichts generiert"}
-      </div>
-    </div>
 
-    <div className="tabs">
-      {variants.length > 0 &&
-        variants.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setActiveIndex(i)}
-            className={`tab ${i === activeIndex ? "active" : ""}`}
-          >
-            Variante {i + 1}
-          </button>
-        ))}
-    </div>
-  </div>
+          <section className="rightCard">
+            <div className="outputTop">
+              <div>
+                <div className="outputBadge">Output</div>
+                <div className="outputState">
+                  {variants.length > 0
+                    ? `Variante ${activeIndex + 1} aktiv`
+                    : "Noch nichts generiert"}
+                </div>
+              </div>
 
- <div
-  className="outputCard"
-  style={{
-    flex: 1,
-    overflowY: "auto",
-    paddingRight: "6px",
-  }}
->
-    {variants.length === 0 ? (
-      <div className="emptyState">
-        <div className="emptyTitle">Noch keine Variante vorhanden</div>
-        <div className="emptyText">
-          Gib links die Objektdaten ein und klicke auf „Generieren (3 Varianten)“.
-        </div>
-      </div>
-    ) : (
-      <>
-        <h2 className="outputTitle">
-          {variants[activeIndex]?.title}
-        </h2>
+              <div className="tabs">
+                {variants.length > 0 &&
+                  variants.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActiveIndex(i)}
+                      className={`tab ${i === activeIndex ? "active" : ""}`}
+                    >
+                      Variante {i + 1}
+                    </button>
+                  ))}
+              </div>
+            </div>
 
-        <p className="outputText">
-          {variants[activeIndex]?.text}
-        </p>
-      </>
-    )}
-  </div>
+            <div className="outputCard">
+              {variants.length === 0 ? (
+                <div className="emptyState">
+                  <div className="emptyTitle">Noch keine Variante vorhanden</div>
+                  <div className="emptyText">
+                    Gib links die Objektdaten ein und klicke auf „Generieren (3
+                    Varianten)“.
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <h2 className="outputTitle">{variants[activeIndex]?.title}</h2>
+                  <p className="outputText">{variants[activeIndex]?.text}</p>
+                </>
+              )}
+            </div>
 
-  <div className="outputMeta">
-    {(instagramPost || linkedinPost) && (
-  <div
-    style={{
-      marginTop: "24px",
-      display: "grid",
-      gap: "16px",
-    }}
-  >
-    {instagramPost && (
-      <div
-        style={{
-          background: "#ffffff",
-          borderRadius: "18px",
-          border: "1px solid #f0e3c1",
-          padding: "18px",
-        }}
-      >
-        <div
-          style={{
-            fontWeight: 800,
-            fontSize: "16px",
-            marginBottom: "10px",
-            color: "#1f2937",
-          }}
-        >
-          Instagram Post
-        </div>
-        <p
-          style={{
-            margin: 0,
-            whiteSpace: "pre-line",
-            color: "#445066",
-            lineHeight: 1.8,
-            fontSize: "15px",
-          }}
-        >
-          {instagramPost}
-        </p>
-      </div>
-    )}
+            <div className="outputMeta">
+              <div className="metaBlock">
+                <div className="metaTitle">
+                  Du hast {variants.length > 0 ? 1 : 0} Inserate erstellt
+                </div>
+                <div className="metaLine">≈ 0 Stunden Arbeit gespart</div>
+                <div className="metaLine">
+                  Noch 50 kostenlose Inserate übrig
+                </div>
+              </div>
 
-    {linkedinPost && (
-      <div
-        style={{
-          background: "#ffffff",
-          borderRadius: "18px",
-          border: "1px solid #f0e3c1",
-          padding: "18px",
-        }}
-      >
-        <div
-          style={{
-            fontWeight: 800,
-            fontSize: "16px",
-            marginBottom: "10px",
-            color: "#1f2937",
-          }}
-        >
-          LinkedIn Post
-        </div>
-        <p
-          style={{
-            margin: 0,
-            whiteSpace: "pre-line",
-            color: "#445066",
-            lineHeight: 1.8,
-            fontSize: "15px",
-          }}
-        >
-          {linkedinPost}
-        </p>
-      </div>
-    )}
-  </div>
-)}
-    <div className="metaBlock">
-      <div className="metaTitle">
-        Du hast {variants.length > 0 ? 1 : 0} Inserate erstellt
-      </div>
-      <div className="metaLine">≈ 0 Stunden Arbeit gespart</div>
-      <div className="metaLine">Noch 50 kostenlose Inserate übrig</div>
-    </div>
+              <div className="bonusBlock">
+                <div className="bonusTitle">🎁 Bonus</div>
+                <div className="bonusText">
+                  Empfehle InseratAI einem Maklerkollegen und erhalte 5
+                  zusätzliche Inserate kostenlos.
+                </div>
+                <button className="bonusBtn">Empfehlungslink kopieren</button>
+              </div>
+            </div>
 
-    <div className="bonusBlock">
-      <div className="bonusTitle">🎁 Bonus</div>
-      <div className="bonusText">
-        Empfehle InseratAI einem Maklerkollegen und erhalte 5 zusätzliche Inserate kostenlos.
-      </div>
-      <button className="bonusBtn">Empfehlungslink kopieren</button>
-    </div>
-  </div>
-  {(instagramPost || linkedinPost) && (
-  <div
-    style={{
-      marginTop: "24px",
-      display: "grid",
-      gap: "16px",
-    }}
-  >
-    {instagramPost && (
-      <div
-        style={{
-          background: "#ffffff",
-          borderRadius: "18px",
-          border: "1px solid #f0e3c1",
-          padding: "18px",
-        }}
-      >
-        <div
-          style={{
-            fontWeight: 800,
-            fontSize: "16px",
-            marginBottom: "10px",
-            color: "#1f2937",
-          }}
-        >
-          Instagram Post
-        </div>
-        <p
-          style={{
-            margin: 0,
-            whiteSpace: "pre-line",
-            color: "#445066",
-            lineHeight: 1.8,
-            fontSize: "15px",
-          }}
-        >
-          {instagramPost}
-        </p>
-      </div>
-    )}
+            {(instagramPost || linkedinPost) && (
+              <div className="socialWrap">
+                {instagramPost && (
+                  <div className="socialCard">
+                    <div className="socialTitle">Instagram Post</div>
+                    <p className="socialText">{instagramPost}</p>
+                  </div>
+                )}
 
-    {linkedinPost && (
-      <div
-        style={{
-          background: "#ffffff",
-          borderRadius: "18px",
-          border: "1px solid #f0e3c1",
-          padding: "18px",
-        }}
-      >
-        <div
-          style={{
-            fontWeight: 800,
-            fontSize: "16px",
-            marginBottom: "10px",
-            color: "#1f2937",
-          }}
-        >
-          LinkedIn Post
-        </div>
-        <p
-          style={{
-            margin: 0,
-            whiteSpace: "pre-line",
-            color: "#445066",
-            lineHeight: 1.8,
-            fontSize: "15px",
-          }}
-        >
-          {linkedinPost}
-        </p>
-      </div>
-    )}
-  </div>
-)}
-</section>
+                {linkedinPost && (
+                  <div className="socialCard">
+                    <div className="socialTitle">LinkedIn Post</div>
+                    <p className="socialText">{linkedinPost}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
         </div>
       </div>
 
-    <style jsx>{`
-.page {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: linear-gradient(180deg, #07111e 0%, #0a1627 45%, #0d1b2e 100%);
-  color: #ffffff;
-  padding: 28px 16px 40px;
-}
+      <style jsx>{`
+        .page {
+          min-height: 100vh;
+          background: linear-gradient(
+            180deg,
+            #07111e 0%,
+            #0a1627 45%,
+            #0d1b2e 100%
+          );
+          color: #ffffff;
+          padding: 28px 16px 40px;
+        }
 
-.shell {
-flex: 1;
-  max-width: 1280px;
-  margin: 0 auto;
-}
+        .shell {
+          max-width: 1280px;
+          margin: 0 auto;
+        }
 
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 28px;
-}
+        .topbar {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 24px;
+        }
 
-.logo {
-  font-weight: 800;
-  font-size: 18px;
-  letter-spacing: 0.08em;
-}
+        .logo {
+          font-weight: 800;
+          font-size: 18px;
+          letter-spacing: 0.08em;
+        }
 
-.grid {
-  display: grid;
-  grid-template-columns: 1.05fr 1fr;
-  gap: 22px;
-  align-items: stretch;
-}
+        .topbarRight {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+        }
 
-/* ---------- LEFT CARD ---------- */
+        .topLink {
+          color: #ffffff;
+          text-decoration: none;
+          font-size: 14px;
+          font-weight: 600;
+          opacity: 0.9;
+        }
 
-.leftCard {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 24px;
-  padding: 24px;
-  box-shadow: 0 18px 50px rgba(0,0,0,0.22);
-}
+        .topCta {
+          background: #c8a24d;
+          color: #111827;
+          text-decoration: none;
+          border-radius: 10px;
+          padding: 10px 14px;
+          font-weight: 700;
+          font-size: 14px;
+        }
 
-.leftCard h2 {
-  font-size: 26px;
-  font-weight: 800;
-  margin-bottom: 10px;
-}
+        .hero {
+          margin-bottom: 22px;
+        }
 
-.sectionText {
-  color: rgba(255,255,255,0.72);
-  margin-bottom: 22px;
-  line-height: 1.6;
-  font-size: 14px;
-}
+        .hero h1 {
+          margin: 0 0 8px 0;
+          font-size: 20px;
+          font-weight: 800;
+        }
 
-.formGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
+        .hero p {
+          margin: 0;
+          color: rgba(255, 255, 255, 0.78);
+          line-height: 1.6;
+          font-size: 14px;
+        }
 
-.full {
-  grid-column: 1 / -1;
-}
+        .grid {
+          display: grid;
+          grid-template-columns: 1.05fr 1fr;
+          gap: 22px;
+          align-items: stretch;
+        }
 
-.input {
-  width: 100%;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 14px;
-  padding: 14px 15px;
-  color: #fff;
-  font-size: 15px;
-  outline: none;
-}
+        .leftCard {
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 24px;
+          padding: 24px;
+          box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+          display: flex;
+          flex-direction: column;
+        }
 
-.input::placeholder {
-  color: rgba(255,255,255,0.4);
-}
+        .leftCard h2 {
+          font-size: 26px;
+          font-weight: 800;
+          margin: 0 0 10px 0;
+        }
 
-.divider {
-  height: 1px;
-  background: rgba(255,255,255,0.08);
-  margin: 22px 0;
-}
+        .sectionText {
+          color: rgba(255, 255, 255, 0.72);
+          margin-bottom: 22px;
+          line-height: 1.6;
+          font-size: 14px;
+        }
 
-/* ---------- BUTTONS ---------- */
+        .formGrid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+        }
 
-.actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 28px;
-  margin-bottom: 22px;
-}
-.btn {
-  border-radius: 12px;
-  padding: 12px 18px;
-  font-weight: 800;
-  cursor: pointer;
-  border: none;
-  transition: 0.2s ease;
-}
+        .full {
+          grid-column: 1 / -1;
+        }
 
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+        .input {
+          width: 100%;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 14px;
+          padding: 14px 15px;
+          color: #ffffff;
+          font-size: 15px;
+          outline: none;
+          box-sizing: border-box;
+        }
 
-.btn-primary {
-  background: linear-gradient(135deg, #1cb8f6 0%, #129ce0 100%);
-  color: #fff;
-  box-shadow: 0 10px 24px rgba(28,184,246,0.25);
-}
+        .input::placeholder {
+          color: rgba(255, 255, 255, 0.4);
+        }
 
-.btn-secondary {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.12);
-  color: #fff;
-}
+        .actions {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+          margin-top: 28px;
+          margin-bottom: 22px;
+        }
 
-/* ---------- MINI STATS ---------- */
+        .btn {
+          border-radius: 12px;
+          padding: 12px 18px;
+          font-weight: 800;
+          cursor: pointer;
+          border: none;
+          transition: 0.2s ease;
+        }
 
-.miniStats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-top: 14px;
-  margin-bottom: 30px;
-}
-  .miniStats div {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 14px;
-  padding: 12px;
-}
+        .btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
 
-/* ---------- RIGHT CARD ---------- */
+        .btn-primary {
+          background: linear-gradient(135deg, #1cb8f6 0%, #129ce0 100%);
+          color: #ffffff;
+          box-shadow: 0 10px 24px rgba(28, 184, 246, 0.25);
+        }
 
-.rightCard {
-  background: #fff9ec;
-  border: 1px solid #e9d7a8;
-  border-radius: 24px;
-  padding: 24px;
-  box-shadow: 0 18px 50px rgba(0,0,0,0.18);
-  color: #1f2937;
-  height: 750px;
-  overflow-y: auto;
-}
+        .btn-secondary {
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          color: #ffffff;
+        }
 
-.outputTop {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-bottom: 18px;
-}
+        .miniStats {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
+          margin-top: 14px;
+        }
 
-.outputBadge {
-  font-size: 12px;
-  font-weight: 700;
-  color: #8a6a1f;
-  background: #f7ebc8;
-  border: 1px solid #e4c97e;
-  padding: 6px 10px;
-  border-radius: 999px;
-}
+        .rightCard {
+          background: #fff9ec;
+          border: 1px solid #e9d7a8;
+          border-radius: 24px;
+          padding: 24px;
+          box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+          color: #1f2937;
+          height: 750px;
+          overflow-y: auto;
+        }
 
-.outputState {
-  font-size: 22px;
-  font-weight: 800;
-  margin-top: 8px;
-}
+        .outputTop {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 14px;
+          flex-wrap: wrap;
+          margin-bottom: 18px;
+        }
 
-.tabs {
-  display: flex;
-  gap: 8px;
-}
+        .outputBadge {
+          font-size: 12px;
+          font-weight: 700;
+          color: #8a6a1f;
+          background: #f7ebc8;
+          border: 1px solid #e4c97e;
+          padding: 6px 10px;
+          border-radius: 999px;
+          display: inline-block;
+        }
 
-.tab {
-  padding: 8px 12px;
-  border-radius: 10px;
-  border: 1px solid #e8d9b5;
-  background: #fffdf7;
-  cursor: pointer;
-  font-weight: 700;
-}
+        .outputState {
+          font-size: 22px;
+          font-weight: 800;
+          margin-top: 8px;
+        }
 
-.tab.active {
-  background: #f7e4b5;
-  border: 1px solid #c59a2d;
-}
+        .tabs {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
 
-.outputCard {
-  background: #fff;
-  border: 1px solid #f0e3c1;
-  border-radius: 18px;
-  padding: 20px;
-}
+        .tab {
+          padding: 8px 12px;
+          border-radius: 10px;
+          border: 1px solid #e8d9b5;
+          background: #fffdf7;
+          cursor: pointer;
+          font-weight: 700;
+          color: #6b5530;
+        }
 
-.outputTitle {
-  font-size: 30px;
-  font-weight: 800;
-  margin-bottom: 14px;
-}
+        .tab.active {
+          background: #f7e4b5;
+          border: 1px solid #c59a2d;
+          color: #4f3d1d;
+        }
 
-.outputText {
-  font-size: 17px;
-  line-height: 1.7;
-  color: #4b5563;
-}
+        .outputCard {
+          background: #ffffff;
+          border: 1px solid #f0e3c1;
+          border-radius: 18px;
+          padding: 20px;
+          min-height: 260px;
+          overflow-y: auto;
+        }
 
-.outputMeta {
-  margin-top: 18px;
-  display: grid;
-  gap: 12px;
-}
+        .emptyState {
+          min-height: 220px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          color: #8b8b8b;
+        }
 
-.metaBlock {
-  color: #777;
-}
+        .emptyTitle {
+          font-weight: 700;
+          font-size: 22px;
+          margin-bottom: 10px;
+          color: #6b7280;
+        }
 
-.bonusBlock {
-  border: 1px solid #f0e3c1;
-  background: #fffaf0;
-  border-radius: 14px;
-  padding: 14px;
-}
+        .emptyText {
+          line-height: 1.6;
+        }
 
-.bonusBtn {
-  margin-top: 10px;
-  border: 1px solid #ecd9a3;
-  background: #f8ebc4;
-  border-radius: 10px;
-  padding: 10px 14px;
-  cursor: pointer;
-  font-weight: 700;
-}
+        .outputTitle {
+          font-size: 30px;
+          font-weight: 800;
+          margin: 0 0 14px 0;
+          line-height: 1.15;
+        }
 
-/* ---------- MOBILE ---------- */
+        .outputText {
+          font-size: 17px;
+          line-height: 1.7;
+          color: #4b5563;
+          margin: 0;
+          white-space: pre-line;
+        }
 
-@media (max-width: 900px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
+        .outputMeta {
+          margin-top: 18px;
+          display: grid;
+          gap: 12px;
+        }
 
-  .rightCard {
-    height: auto;
-  }
+        .metaBlock {
+          color: #777777;
+          line-height: 1.7;
+        }
 
-  .formGrid {
-    grid-template-columns: 1fr;
-  }
+        .metaTitle {
+          font-weight: 700;
+          color: #5c5c5c;
+          margin-bottom: 4px;
+        }
 
-  .miniStats {
-    grid-template-columns: 1fr;
-  }
-}
-`}</style>
+        .metaLine {
+          color: #8c8c8c;
+        }
+
+        .bonusBlock {
+          border: 1px solid #f0e3c1;
+          background: #fffaf0;
+          border-radius: 14px;
+          padding: 14px;
+        }
+
+        .bonusTitle {
+          font-weight: 800;
+          margin-bottom: 8px;
+          color: #8a6a1f;
+        }
+
+        .bonusText {
+          color: #7b6a46;
+          line-height: 1.6;
+          margin-bottom: 12px;
+        }
+
+        .bonusBtn {
+          border: 1px solid #ecd9a3;
+          background: #f8ebc4;
+          border-radius: 10px;
+          padding: 10px 14px;
+          cursor: pointer;
+          font-weight: 700;
+          color: #7a6021;
+        }
+
+        .socialWrap {
+          margin-top: 24px;
+          display: grid;
+          gap: 16px;
+        }
+
+        .socialCard {
+          background: #ffffff;
+          border-radius: 18px;
+          border: 1px solid #f0e3c1;
+          padding: 18px;
+        }
+
+        .socialTitle {
+          font-weight: 800;
+          font-size: 16px;
+          margin-bottom: 10px;
+          color: #1f2937;
+        }
+
+        .socialText {
+          margin: 0;
+          white-space: pre-line;
+          color: #445066;
+          line-height: 1.8;
+          font-size: 15px;
+        }
+
+        @media (max-width: 900px) {
+          .grid {
+            grid-template-columns: 1fr;
+          }
+
+          .formGrid {
+            grid-template-columns: 1fr;
+          }
+
+          .miniStats {
+            grid-template-columns: 1fr;
+          }
+
+          .rightCard {
+            height: auto;
+          }
+
+          .topbar {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 14px;
+          }
+        }
+      `}</style>
     </main>
   );
 }
