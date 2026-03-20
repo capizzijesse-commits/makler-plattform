@@ -673,15 +673,17 @@ setFacebookPost(data?.social?.facebook || "");
   align-items: stretch;
 }
 
-      .leftCard {
+ .leftCard {
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 24px;
   padding: 24px;
   box-shadow: 0 18px 50px rgba(0,0,0,0.22);
+  min-height: 760px;
   display: flex;
   flex-direction: column;
-} 
+  justify-content: flex-start;
+}
         
 
         .leftCard h2 {
@@ -720,14 +722,14 @@ setFacebookPost(data?.social?.facebook || "");
         }
 
         .input::placeholder {
-          color: rgba(255, 255, 255, 0.28);
-        }
+  color: #8b93a1;
+}
 
         .actions {
           display: flex;
           gap: 10px;
           flex-wrap: wrap;
-          margin-top: 28px;
+          margin-top: 18px;
           margin-bottom: 22px;
         }
 
@@ -757,12 +759,14 @@ setFacebookPost(data?.social?.facebook || "");
           color: #ffffff;
         }
 
-        .miniStats {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 12px;
-          margin-top: 14px;
-        }
+        
+.miniStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+}
+
 .rightCard {
   background: #fff9ec;
   border: 1px solid #e9d7a8;
@@ -770,7 +774,6 @@ setFacebookPost(data?.social?.facebook || "");
   padding: 20px;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
   color: #1f2937;
-  height: 100%;
   min-height: 760px;
   display: flex;
   flex-direction: column;
