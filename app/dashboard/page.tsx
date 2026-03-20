@@ -12,6 +12,7 @@ type Variant = {
 export default function DashboardPage() {
   const [instagramPost, setInstagramPost] = useState("");
   const [linkedinPost, setLinkedinPost] = useState("");
+  const [facebookPost, setFacebookPost] = useState("");
 
   const [location, setLocation] = useState("Winterthur");
   const [propertyType, setPropertyType] = useState("Wohnung");
@@ -65,8 +66,9 @@ export default function DashboardPage() {
 
       setVariants(newVariants);
       setActiveIndex(0);
-      setInstagramPost(data?.social?.instagram || "");
-      setLinkedinPost(data?.social?.linkedin || "");
+     setInstagramPost(data?.social?.instagram || "");
+setLinkedinPost(data?.social?.linkedin || "");
+setFacebookPost(data?.social?.facebook || "");
     } catch (error) {
       console.error("FRONTEND GENERATE ERROR:", error);
       alert("Fehler beim Generieren.");
@@ -354,23 +356,30 @@ export default function DashboardPage() {
     </div>
   </div>
 
-  {(instagramPost || linkedinPost) && (
-    <div className="socialWrap">
-      {instagramPost && (
-        <div className="socialCard">
-          <div className="socialTitle">Instagram Post</div>
-          <p className="socialText">{instagramPost}</p>
-        </div>
-      )}
+ {(instagramPost || linkedinPost || facebookPost) && (
+  <div className="socialWrap">
+    {instagramPost && (
+      <div className="socialCard">
+        <div className="socialTitle">Instagram Post</div>
+        <p className="socialText">{instagramPost}</p>
+      </div>
+    )}
 
-      {linkedinPost && (
-        <div className="socialCard">
-          <div className="socialTitle">LinkedIn Post</div>
-          <p className="socialText">{linkedinPost}</p>
-        </div>
-      )}
-    </div>
-  )}
+    {linkedinPost && (
+      <div className="socialCard">
+        <div className="socialTitle">LinkedIn Post</div>
+        <p className="socialText">{linkedinPost}</p>
+      </div>
+    )}
+
+    {facebookPost && (
+      <div className="socialCard">
+        <div className="socialTitle">Facebook Post</div>
+        <p className="socialText">{facebookPost}</p>
+      </div>
+    )}
+  </div>
+)}
 </section>   
         </div>
       </div>
@@ -502,7 +511,7 @@ export default function DashboardPage() {
         }
 
         .input::placeholder {
-          color: rgba(255, 255, 255, 0.4);
+          color: rgba(255, 255, 255, 0.28);
         }
 
         .actions {

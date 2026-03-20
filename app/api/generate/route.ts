@@ -19,15 +19,52 @@ export async function POST(req: Request) {
       styleText,
     } = body;
 
-    const prompt = `
+   const prompt = `
 Du bist ein professioneller Schweizer Immobilien-Texter.
 
-Erstelle 3 hochwertige Inserat-Varianten.
+Erstelle 3 hochwertige und deutlich unterschiedliche Inserat-Varianten für eine Immobilie in der Schweiz.
 
 WICHTIG:
 - Antworte AUSSCHLIESSLICH im JSON Format
 - KEIN zusätzlicher Text
 - KEINE Erklärungen
+- KEIN Markdown
+
+Jede Variante soll:
+- ausführlicher sein
+- verkaufsstärker formuliert sein
+- hochwertig und professionell klingen
+- emotionaler und attraktiver wirken
+- nicht einfach nur Daten aufzählen
+- sich sprachlich klar von den anderen Varianten unterscheiden
+
+Variante 1:
+- elegant
+- luxuriös
+- emotional
+- hochwertig
+
+Variante 2:
+- modern
+- verkaufsstark
+- klar strukturiert
+- professionell
+
+Variante 3:
+- wohnlich
+- einladend
+- charmant
+- lebendig beschrieben
+
+Wenn passend, integriere Vorteile wie:
+- Lage
+- Licht
+- Ruhe
+- Aussicht
+- Komfort
+- Alltagstauglichkeit
+- Exklusivität
+- Lebensqualität
 
 Format:
 
@@ -45,7 +82,12 @@ Format:
       "title": "Titel 3",
       "text": "Beschreibung 3"
     }
-  ]
+  ],
+  "social": {
+    "instagram": "Instagram Post",
+    "linkedin": "LinkedIn Post",
+    "facebook": "Facebook Post"
+  }
 }
 
 Daten:
