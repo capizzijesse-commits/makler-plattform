@@ -296,7 +296,7 @@ setFacebookPost(data?.social?.facebook || "");
             </div>
           </section>
 
-    <section className="rightCard">
+   <section className="rightCard">
   <div className="topStats">
     <div className="topStat">
       <div className="topStatValue">{variants.length > 0 ? 1 : 0}</div>
@@ -317,23 +317,6 @@ setFacebookPost(data?.social?.facebook || "");
   <div className="outputShell">
     <div className="outputTop">
       <div>
-        <div className="outputCard">
-  {variants.length === 0 ? (
-    <div className="emptyState">
-      <div>Noch nichts generiert</div>
-    </div>
-  ) : (
-    <>
-      <h2 className="outputTitle">
-        {variants[activeIndex]?.title}
-      </h2>
-
-      <p className="outputText">
-        {variants[activeIndex]?.text}
-      </p>
-    </>
-  )}
-</div>
         <div className="outputBadge">Output</div>
         <div className="outputState">
           {variants.length > 0
@@ -380,7 +363,7 @@ setFacebookPost(data?.social?.facebook || "");
       <button className="bonusBtn">Empfehlungslink kopieren</button>
     </div>
   </div>
-</section>   
+</section>
         </div>
       </div>
 
@@ -650,14 +633,6 @@ setFacebookPost(data?.social?.facebook || "");
           color: #4f3d1d;
         }
 
-        .outputCard {
-          background: #ffffff;
-          border-radius: 18px;
-          padding: 20px;
-          min-height: 260px;
-          flex: 1;
-          overflow-y: auto;
-        }
 
         .emptyState {
           min-height: 220px;
@@ -693,27 +668,6 @@ setFacebookPost(data?.social?.facebook || "");
           color: #4b5563;
           margin: 0;
           white-space: pre-line;
-        }
-
-       .outputMeta {
-  display: grid;
-  gap: 12px;
-  flex-shrink: 0;
-}
-
-        .metaBlock {
-          color: #777777;
-          line-height: 1.7;
-        }
-
-        .metaTitle {
-          font-weight: 700;
-          color: #5c5c5c;
-          margin-bottom: 4px;
-        }
-
-        .metaLine {
-          color: #8c8c8c;
         }
 
         .bonusBlock {
