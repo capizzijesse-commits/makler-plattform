@@ -13,6 +13,42 @@ export default function DashboardPage() {
   const [instagramPost, setInstagramPost] = useState("");
   const [linkedinPost, setLinkedinPost] = useState("");
   const [facebookPost, setFacebookPost] = useState("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+const [imagePreview, setImagePreview] = useState("");
+const [imageAnalysis, setImageAnalysis] = useState("");
+const [analyzingImage, setAnalyzingImage] = useState(false);
+
+async function analyzeImage() {
+  if (!selectedImage) {
+    alert("Bitte zuerst ein Bild auswählen.");
+    return;
+  }
+
+  try {
+    setAnalyzingImage(true);
+
+    const formData = new FormData();
+    formData.append("file", selectedImage);
+
+    const res = await fetch("/api/analyze-image", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data?.error || "Fehler");
+    }
+
+    setImageAnalysis(data.analysis || "");
+  } catch (err) {
+    console.error(err);
+    alert("Fehler bei Bildanalyse");
+  } finally {
+    setAnalyzingImage(false);
+  }
+}
 
   const [location, setLocation] = useState("Winterthur");
   const [propertyType, setPropertyType] = useState("Wohnung");
@@ -31,6 +67,38 @@ export default function DashboardPage() {
   const current = variants[activeIndex];
 
   async function generateText() {
+    async function analyzeImage() {
+  if (!selectedImage) {
+    alert("Bitte zuerst ein Bild auswählen.");
+    return;
+  }
+
+  try {
+    setAnalyzingImage(true);
+
+    const formData = new FormData();
+    formData.append("file", selectedImage);
+
+    const response = await fetch("/api/analyze-image", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data?.error || "Fehler bei der Bildanalyse");
+    }
+
+    setImageAnalysis(data.analysis || "");
+    alert("Foto erfolgreich analysiert.");
+  } catch (error) {
+    console.error("IMAGE ANALYSIS ERROR:", error);
+    alert("Fehler bei der Fotoanalyse.");
+  } finally {
+    setAnalyzingImage(false);
+  }
+}
     try {
       setLoading(true);
 
@@ -40,15 +108,15 @@ export default function DashboardPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          location,
-          rooms,
-          livingArea,
-          price,
-          propertyType,
-          highlights,
-          styleText,
-          imageAnalysis: "",
-        }),
+  location,
+  rooms,
+  livingArea,
+  price,
+  propertyType,
+  highlights,
+  styleText,
+  imageAnalysis,
+}),
       });
 
       const data = await response.json();
@@ -189,112 +257,184 @@ setFacebookPost(data?.social?.facebook || "");
         </div>
 
         <div className="grid">
-          <section className="leftCard">
-            <h2>Eingabe</h2>
-            <p className="sectionText">
-              Erfasse die wichtigsten Eckdaten der Immobilie. Die KI erstellt
-              daraus mehrere professionelle Textvarianten.
-            </p>
+         <section className="leftCard">
+  <h2>Eingabe</h2>
+  <p className="sectionText">
+    Erfasse die wichtigsten Eckdaten der Immobilie. Die KI erstellt daraus mehrere professionelle Textvarianten.
+  </p>
 
-            <div className="formGrid">
-              <Field label="Ort / Lage">
-                <input
-                  value={location}
-                  placeholder="Winterthur"
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="input"
-                />
-              </Field>
+  <div className="formGrid">
+    <Field label="Ort / Lage">
+      <input
+        value={location}
+        placeholder="Winterthur"
+        onChange={(e) => setLocation(e.target.value)}
+        className="input"
+      />
+    </Field>
 
-              <Field label="Objektart">
-                <input
-                  value={propertyType}
-                  placeholder="Wohnung"
-                  onChange={(e) => setPropertyType(e.target.value)}
-                  className="input"
-                />
-              </Field>
+    <Field label="Objektart">
+      <input
+        value={propertyType}
+        placeholder="Wohnung"
+        onChange={(e) => setPropertyType(e.target.value)}
+        className="input"
+      />
+    </Field>
 
-              <Field label="Zimmer">
-                <input
-                  value={rooms}
-                  placeholder="4.5"
-                  onChange={(e) => setRooms(e.target.value)}
-                  className="input"
-                />
-              </Field>
+    <Field label="Zimmer">
+      <input
+        value={rooms}
+        placeholder="4.5"
+        onChange={(e) => setRooms(e.target.value)}
+        className="input"
+      />
+    </Field>
 
-              <Field label="Wohnfläche (m²)">
-                <input
-                  value={livingArea}
-                  placeholder="110"
-                  onChange={(e) => setLivingArea(e.target.value)}
-                  className="input"
-                />
-              </Field>
+    <Field label="Wohnfläche (m²)">
+      <input
+        value={livingArea}
+        placeholder="110"
+        onChange={(e) => setLivingArea(e.target.value)}
+        className="input"
+      />
+    </Field>
 
-              <Field label="Preis (CHF)">
-                <input
-                  value={price}
-                  placeholder="1090000"
-                  onChange={(e) => setPrice(e.target.value)}
-                  className="input"
-                />
-              </Field>
+    <Field label="Preis (CHF)">
+      <input
+        value={price}
+        placeholder="1090000"
+        onChange={(e) => setPrice(e.target.value)}
+        className="input"
+      />
+    </Field>
 
-              <Field label="Stil">
-                <input
-                  value={styleText}
-                  placeholder="Luxus / Premium"
-                  onChange={(e) => setStyleText(e.target.value)}
-                  className="input"
-                />
-              </Field>
+    <Field label="Stil">
+      <input
+        value={styleText}
+        placeholder="Luxus / Premium"
+        onChange={(e) => setStyleText(e.target.value)}
+        className="input"
+      />
+    </Field>
 
-              <div className="full">
-                <Field label="Highlights (mit Komma trennen)">
-                  <input
-                    value={highlights}
-                    placeholder="Balkon, Lift, Garage, ruhige Lage"
-                    onChange={(e) => setHighlights(e.target.value)}
-                    className="input"
-                  />
-                </Field>
-              </div>
-            </div>
+    <Field label="Highlights (mit Komma trennen)">
+      <input
+        value={highlights}
+        placeholder="Balkon, Lift, Garage, ruhige Lage"
+        onChange={(e) => setHighlights(e.target.value)}
+        className="input"
+      />
+    </Field>
 
-            <div className="actions">
-              <button
-                onClick={generateText}
-                disabled={loading}
-                className="btn btn-primary"
-              >
-                {loading ? "Generiere..." : "Generieren (3 Varianten)"}
-              </button>
+    <div className="full">
+      <div
+        style={{
+          fontSize: "13px",
+          color: "rgba(255,255,255,0.72)",
+          marginBottom: "8px",
+          fontWeight: 700,
+          letterSpacing: "0.01em",
+        }}
+      >
+        Immobilienfoto
+      </div>
 
-              <button
-                onClick={copyActive}
-                disabled={!current}
-                className="btn btn-secondary"
-              >
-                Copy
-              </button>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
 
-              <button
-                onClick={exportPdf}
-                disabled={!current}
-                className="btn btn-secondary"
-              >
-                PDF
-              </button>
-            </div>
+          setSelectedImage(file);
+          setImagePreview(URL.createObjectURL(file));
+        }}
+        className="input"
+        style={{ padding: "10px 12px" }}
+      />
 
-            <div className="miniStats">
-              <MiniStat title="Markt" value="Schweiz" />
-              <MiniStat title="Output" value="3 Varianten" />
-              <MiniStat title="Stil" value="Premium" />
-            </div>
-          </section>
+      {imagePreview && (
+        <div style={{ marginTop: "12px" }}>
+          <img
+            src={imagePreview}
+            alt="Vorschau"
+            style={{
+              width: "100%",
+              maxHeight: "180px",
+              objectFit: "cover",
+              borderRadius: "14px",
+              border: "1px solid rgba(255,255,255,0.12)",
+            }}
+          />
+        </div>
+      )}
+
+      <div style={{ marginTop: "12px" }}>
+        <button
+          type="button"
+          onClick={analyzeImage}
+          className="btn btn-secondary"
+          disabled={!selectedImage || analyzingImage}
+        >
+          {analyzingImage ? "Analysiere Foto..." : "Foto analysieren"}
+        </button>
+      </div>
+
+      {imageAnalysis && (
+        <div
+          style={{
+            marginTop: "12px",
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: "14px",
+            padding: "12px",
+            color: "rgba(255,255,255,0.78)",
+            lineHeight: 1.6,
+            fontSize: "14px",
+            whiteSpace: "pre-line",
+          }}
+        >
+          {imageAnalysis}
+        </div>
+      )}
+    </div>
+  </div>
+
+  <div className="divider" />
+
+  <div className="actions">
+    <button
+      onClick={generateText}
+      disabled={loading}
+      className="btn btn-primary"
+    >
+      {loading ? "Generiere..." : "Generieren (3 Varianten)"}
+    </button>
+
+    <button
+      onClick={copyActive}
+      disabled={!current}
+      className="btn btn-secondary"
+    >
+      Copy
+    </button>
+
+    <button
+      onClick={exportPdf}
+      disabled={!current}
+      className="btn btn-secondary"
+    >
+      PDF
+    </button>
+  </div>
+
+  <div className="miniStats">
+    <MiniStat title="Markt" value="Schweiz" />
+    <MiniStat title="Output" value="3 Varianten" />
+    <MiniStat title="Stil" value="Premium" />
+  </div>
+</section>
 
    <section className="rightCard">
   <div className="topStats">
