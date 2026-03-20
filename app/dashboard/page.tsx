@@ -173,24 +173,16 @@ export default function DashboardPage() {
   return (
     <main className="page">
       <div className="shell">
-        <div className="topbar">
-          <div className="logo">INSERAT AI</div>
-
-          <div className="topbarRight">
-            <a href="/login" className="topLink">
-              Login
-            </a>
-            <a href="/" className="topCta">
-              Kostenlos testen
-            </a>
-          </div>
-        </div>
+        
 
         <div className="hero">
-          <h1>Premium Inserat Generator</h1>
+          <h1>Inserat Generator für Immobilienmakler</h1>
           <p>
-            Hochwertige Immobilientexte für Homegate, ImmoScout24, Exposé und
-            Social Media – strukturiert, verkaufsstark und professionell.
+          <p>
+  Erstelle in Sekunden hochwertige Immobilieninserate für Homegate, ImmoScout24,
+  Exposés und Social Media. Professionell formuliert, strukturiert aufgebaut und
+  auf maximale Wirkung bei Käufern ausgelegt.
+</p>
           </p>
         </div>
 
@@ -563,7 +555,9 @@ export default function DashboardPage() {
           box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
           color: #1f2937;
           height: 750px;
-          overflow-y: auto;
+          display: flex;
+          flex-direction: coumn;
+          overflow-y: hidden;
         }
 
         .outputTop {
@@ -620,6 +614,7 @@ export default function DashboardPage() {
           border-radius: 18px;
           padding: 20px;
           min-height: 260px;
+          flex: 1;
           overflow-y: auto;
         }
 
