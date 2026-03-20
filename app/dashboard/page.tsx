@@ -296,95 +296,130 @@ setFacebookPost(data?.social?.facebook || "");
             </div>
           </section>
 
-     <section className="rightCard">
-  <div className="outputTop">
-    <div>
-      <div className="outputBadge">Output</div>
-      <div className="outputState">
-        {variants.length > 0
-          ? `Variante ${activeIndex + 1} aktiv`
-          : "Noch nichts generiert"}
-      </div>
+    <section className="rightCard">
+  <div className="topStats">
+    <div className="topStat">
+      <div className="topStatValue">{variants.length > 0 ? 1 : 0}</div>
+      <div className="topStatLabel">Inserate erstellt</div>
     </div>
 
-    <div className="tabs">
-      {variants.length > 0 &&
-        variants.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setActiveIndex(i)}
-            className={`tab ${i === activeIndex ? "active" : ""}`}
-          >
-            Variante {i + 1}
-          </button>
-        ))}
+    <div className="topStat">
+      <div className="topStatValue">0</div>
+      <div className="topStatLabel">Stunden Arbeit gespart</div>
+    </div>
+
+    <div className="topStat">
+      <div className="topStatValue">50</div>
+      <div className="topStatLabel">Kostenlose Inserate übrig</div>
     </div>
   </div>
 
-  <div className="outputCard">
-    {variants.length === 0 ? (
-      <div className="emptyState">
-        <div className="emptyTitle">Noch keine Variante vorhanden</div>
-        <div className="emptyText">
-          Gib links die Objektdaten ein und klicke auf „Generieren (3 Varianten)“.
+  <div className="outputShell">
+    <div className="outputTop">
+      <div>
+        <div className="outputCard">
+  {variants.length === 0 ? (
+    <div className="emptyState">
+      <div>Noch nichts generiert</div>
+    </div>
+  ) : (
+    <>
+      <h2 className="outputTitle">
+        {variants[activeIndex]?.title}
+      </h2>
+
+      <p className="outputText">
+        {variants[activeIndex]?.text}
+      </p>
+    </>
+  )}
+</div>
+        <div className="outputBadge">Output</div>
+        <div className="outputState">
+          {variants.length > 0
+            ? `Variante ${activeIndex + 1} aktiv`
+            : "Noch nichts generiert"}
         </div>
       </div>
-    ) : (
-      <>
-        <h2 className="outputTitle">{variants[activeIndex]?.title}</h2>
-        <p className="outputText">{variants[activeIndex]?.text}</p>
-      </>
-    )}
-  </div>
 
-  <div className="outputMeta">
-    <div className="metaBlock">
-      <div className="metaTitle">
-        Du hast {variants.length > 0 ? 1 : 0} Inserate erstellt
+      <div className="tabs">
+        {variants.length > 0 &&
+          variants.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveIndex(i)}
+              className={`tab ${i === activeIndex ? "active" : ""}`}
+            >
+              Variante {i + 1}
+            </button>
+          ))}
       </div>
-      <div className="metaLine">≈ 0 Stunden Arbeit gespart</div>
-      <div className="metaLine">Noch 50 kostenlose Inserate übrig</div>
+    </div>
+
+    <div className="outputCard">
+      {variants.length === 0 ? (
+        <div className="emptyState">
+          <div className="emptyTitle">Noch keine Variante vorhanden</div>
+          <div className="emptyText">
+            Gib links die Objektdaten ein und klicke auf „Generieren (3 Varianten)“.
+          </div>
+        </div>
+      ) : (
+        <>
+          <h2 className="outputTitle">{variants[activeIndex]?.title}</h2>
+          <p className="outputText">{variants[activeIndex]?.text}</p>
+        </>
+      )}
     </div>
 
     <div className="bonusBlock">
       <div className="bonusTitle">🎁 Bonus</div>
       <div className="bonusText">
-        Empfehle InseratAI einem Maklerkollegen und erhalte 5 zusätzliche
-        Inserate kostenlos.
+        Empfehle InseratAI einem Maklerkollegen und erhalte 5 zusätzliche Inserate kostenlos.
       </div>
       <button className="bonusBtn">Empfehlungslink kopieren</button>
     </div>
   </div>
-
- {(instagramPost || linkedinPost || facebookPost) && (
-  <div className="socialWrap">
-    {instagramPost && (
-      <div className="socialCard">
-        <div className="socialTitle">Instagram Post</div>
-        <p className="socialText">{instagramPost}</p>
-      </div>
-    )}
-
-    {linkedinPost && (
-      <div className="socialCard">
-        <div className="socialTitle">LinkedIn Post</div>
-        <p className="socialText">{linkedinPost}</p>
-      </div>
-    )}
-
-    {facebookPost && (
-      <div className="socialCard">
-        <div className="socialTitle">Facebook Post</div>
-        <p className="socialText">{facebookPost}</p>
-      </div>
-    )}
-  </div>
-)}
 </section>   
         </div>
       </div>
 
       <style jsx>{`
+      .topStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.topStat {
+  background: #fffdf7;
+  border: 1px solid #eedfb9;
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.topStatValue {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1f2937;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.topStatLabel {
+  font-size: 12px;
+  color: #7b6a46;
+  line-height: 1.4;
+}
+
+.outputShell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+}
         .page {
           min-height: 100vh;
           background: linear-gradient(
@@ -470,7 +505,7 @@ setFacebookPost(data?.social?.facebook || "");
           border: 1px solid rgba(255, 255, 255, 0.08);
           border-radius: 24px;
           padding: 24px;
-          box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+
           display: flex;
           flex-direction: column;
         }
@@ -560,7 +595,7 @@ setFacebookPost(data?.social?.facebook || "");
   border-radius: 24px;
   padding: 24px;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
-  color: #1f2937;
+  
   height: 750px;
   display: flex;
   flex-direction: column;
@@ -617,7 +652,6 @@ setFacebookPost(data?.social?.facebook || "");
 
         .outputCard {
           background: #ffffff;
-          border: 1px solid #f0e3c1;
           border-radius: 18px;
           padding: 20px;
           min-height: 260px;
