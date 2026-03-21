@@ -774,7 +774,8 @@ setFacebookPost(data?.social?.facebook || "");
   padding: 20px;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
   color: #1f2937;
-  min-height: 760px;
+
+  height: 760px; /* 👈 DAS IST DER GAMECHANGER */
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -795,11 +796,12 @@ setFacebookPost(data?.social?.facebook || "");
   border: 1px solid #f0e3c1;
   border-radius: 18px;
   padding: 20px;
+
   flex: 1;
   min-height: 0;
   overflow-y: auto;
 }
-  .outputCard::-webkit-scrollbar {
+.outputCard::-webkit-scrollbar {
   width: 8px;
 }
 
@@ -948,11 +950,19 @@ setFacebookPost(data?.social?.facebook || "");
           .miniStats {
             grid-template-columns: 1fr;
           }
-
-          .rightCard {
-            height: auto;
-          }
-
+.rightCard {
+  background: #fff9ec;
+  border: 1px solid #e9d7a8;
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+  color: #1f2937;
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+}
           .topbar {
             flex-direction: column;
             align-items: flex-start;
