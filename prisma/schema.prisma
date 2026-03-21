@@ -1,3 +1,12 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
 model Listing {
   id           String   @id @default(cuid())
   createdAt    DateTime @default(now())
@@ -14,4 +23,11 @@ model Listing {
   livingAreaM2 Float?
   features     String?
   raw          String?
+}
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
 }
