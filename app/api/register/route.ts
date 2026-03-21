@@ -1,19 +1,26 @@
 import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
-  const { name, email, password } = await req.json();
+  const { email, password } = await req.json();
 
-  if (!name || !email || !password) {
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (!user || user.password !== password) {
     return NextResponse.json(
-      { error: "Bitte alle Felder ausfüllen" },
-      { status: 400 }
+      { error: "Falsche Daten" },
+      { status: 401 }
     );
   }
 
   return NextResponse.json({
     user: {
-      name,
-      email,
+      name: user.name,
+      email: user.email,
     },
   });
 }

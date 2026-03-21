@@ -7,164 +7,83 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-async function handleLogin(e: React.FormEvent) {
-  e.preventDefault();
-  setLoading(true);
+  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
 
-  try {
-    const res = await fetch("/api/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    });
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await res.json();
+      const data = await response.json();
 
-    if (!res.ok) {
-      alert(data?.error || "Login fehlgeschlagen");
-      return;
+      if (!response.ok) {
+        alert(data.error || "Login fehlgeschlagen");
+        return;
+      }
+
+      localStorage.setItem("userName", data.user.name);
+      localStorage.setItem("userEmail", data.user.email);
+
+      window.location.href = "/dashboard";
+    } catch (error) {
+      console.error(error);
+      alert("Server Fehler beim Login");
+    } finally {
+      setLoading(false);
     }
-
-    localStorage.setItem("userName", data.user.name);
-    localStorage.setItem("userEmail", data.user.email);
-
-    window.location.href = "/dashboard";
-  } catch (error) {
-    console.error(error);
-    alert("Fehler beim Login");
-  } finally {
-    setLoading(false);
   }
-}
 
   return (
-    <main className="container-max py-16">
-      <div
-        style={{
-          maxWidth: "520px",
-          margin: "0 auto",
-          background: "#111827",
-          border: "1px solid rgba(255,255,255,0.08)",
-          borderRadius: "24px",
-          padding: "32px",
-          boxShadow: "0 12px 40px rgba(0,0,0,0.25)",
-        }}
-      >
-        <div className="badge" style={{ marginBottom: "16px" }}>
-          Login
-        </div>
-
-        <h1
-          style={{
-            fontSize: "40px",
-            fontWeight: 800,
-            marginBottom: "12px",
-            color: "#fff7ed",
-          }}
-        >
-          Willkommen zurück
-        </h1>
-
-        <p
-          style={{
-            color: "rgba(255,255,255,0.75)",
-            marginBottom: "28px",
-          }}
-        >
-          Melden Sie sich an, um den Inserat Generator zu nutzen.
+    <main className="min-h-screen bg-[#111111] text-white flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-[#1a1a1a] border border-gray-800 rounded-2xl p-8 shadow-xl">
+        <h1 className="text-3xl font-bold text-center mb-2">Willkommen zurück</h1>
+        <p className="text-gray-400 text-center mb-8">
+          Melden Sie sich an, um den Inserat Generator zu nutzen
         </p>
 
-        <form onSubmit={handleLogin} style={{ display: "grid", gap: "16px" }}>
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                color: "#fff7ed",
-                fontWeight: 600,
-              }}
-            >
-              E-Mail
-            </label>
-
+            <label className="block text-sm mb-2">E-Mail</label>
             <input
               type="email"
-              placeholder="name@firma.ch"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              style={{
-                width: "100%",
-                padding: "14px 16px",
-                borderRadius: "14px",
-                border: "1px solid rgba(255,255,255,0.08)",
-                background: "#1f2937",
-                color: "#ffffff",
-              }}
+              className="w-full rounded-lg bg-[#111111] border border-gray-700 px-4 py-3 text-white outline-none focus:border-orange-500"
+              placeholder="ihre@email.ch"
             />
           </div>
 
           <div>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                color: "#fff7ed",
-                fontWeight: 600,
-              }}
-            >
-              Passwort
-            </label>
-
+            <label className="block text-sm mb-2">Passwort</label>
             <input
               type="password"
-              placeholder="Passwort eingeben"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              style={{
-                width: "100%",
-                padding: "14px 16px",
-                borderRadius: "14px",
-                border: "1px solid rgba(255,255,255,0.08)",
-                background: "#1f2937",
-                color: "#ffffff",
-              }}
+              className="w-full rounded-lg bg-[#111111] border border-gray-700 px-4 py-3 text-white outline-none focus:border-orange-500"
+              placeholder="********"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            style={{
-              padding: "14px 18px",
-              borderRadius: "14px",
-              border: "none",
-              background: "#f59e0b",
-              color: "#111827",
-              fontWeight: 700,
-              fontSize: "16px",
-              cursor: "pointer",
-            }}
+            className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-70 text-white font-semibold py-3 rounded-lg transition"
           >
             {loading ? "Wird geladen..." : "Login"}
           </button>
         </form>
 
-        <p
-          style={{
-            marginTop: "20px",
-            color: "rgba(255,255,255,0.7)",
-            fontSize: "14px",
-          }}
-        >
+        <p className="text-sm text-gray-400 mt-6 text-center">
           Noch kein Konto?{" "}
-          <a href="/register" style={{ color: "#fbbf24" }}>
+          <a href="/register" className="text-orange-400 hover:underline">
             Account erstellen
           </a>
         </p>
