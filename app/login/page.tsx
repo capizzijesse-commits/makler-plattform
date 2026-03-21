@@ -30,11 +30,8 @@ async function handleLogin(e: React.FormEvent) {
       return;
     }
 
-    localStorage.setItem("userEmail", email);
-
-    if (data?.user?.name) {
-      localStorage.setItem("userName", data.user.name);
-    }
+    localStorage.setItem("userName", data.user.name);
+    localStorage.setItem("userEmail", data.user.email);
 
     window.location.href = "/dashboard";
   } catch (error) {
