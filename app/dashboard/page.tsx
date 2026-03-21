@@ -799,6 +799,18 @@ setFacebookPost(data?.social?.facebook || "");
   min-height: 0;
   overflow-y: auto;
 }
+  .outputCard::-webkit-scrollbar {
+  width: 8px;
+}
+
+.outputCard::-webkit-scrollbar-thumb {
+  background: #cdb88a;
+  border-radius: 10px;
+}
+
+.outputCard::-webkit-scrollbar-track {
+  background: transparent;
+}
 
         .outputState {
           font-size: 22px;
