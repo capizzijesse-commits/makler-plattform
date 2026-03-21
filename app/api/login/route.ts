@@ -3,36 +3,47 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-
 export async function POST(req: Request) {
-  const { email, password } = await req.json();
+  try {
+    const { email, password } = await req.json();
 
-  const user = await prisma.user.findUnique({
-    where: { email },
-  });
-  console.log("LOGIN EMAIL:", email);
-console.log("USER FROM DB:", user);
-console.log("PASSWORD DB:", user?.password);
-console.log("PASSWORD INPUT:", password);
+    console.log("LOGIN EMAIL:", email);
 
- if (!user) {
-  return NextResponse.json(
-    { error: "User nicht gefunden" },
-    { status: 404 }
-  );
-}
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
 
-if (user.password !== password) {
-  return NextResponse.json(
-    { error: "Passwort falsch" },
-    { status: 401 }
-  );
-}
+    console.log("USER FROM DB:", user);
 
-  return NextResponse.json({
-    user: {
-      name: user.name,
-      email: user.email,
-    },
-  });
+    // ❗ WICHTIG: zuerst prüfen ob user existiert
+    if (!user) {
+      return NextResponse.json(
+        { error: "User nicht gefunden" },
+        { status: 404 }
+      );
+    }
+
+    // ❗ DANN Passwort prüfen
+    if (user.password !== password) {
+      return NextResponse.json(
+        { error: "Passwort falsch" },
+        { status: 401 }
+      );
+    }
+
+    return NextResponse.json({
+      user: {
+        name: user.name,
+        email: user.email,
+      },
+    });
+
+  } catch (error) {
+    console.error("LOGIN ERROR:", error);
+
+    return NextResponse.json(
+      { error: "Serverfehler beim Login" },
+      { status: 500 }
+    );
+  }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 
 type Variant = {
   title: string;
@@ -20,6 +20,13 @@ export default function DashboardPage() {
 const [imagePreview, setImagePreview] = useState("");
 const [imageAnalysis, setImageAnalysis] = useState("");
 const [analyzingImage, setAnalyzingImage] = useState(false);
+const [userName, setUserName] = useState("");
+useEffect(() => {
+  const savedName = localStorage.getItem("userName");
+  if (savedName) {
+    setUserName(savedName);
+  }
+}, []);
 
 async function analyzeImage() {
   if (!selectedImage) {
@@ -243,21 +250,32 @@ setFacebookPost(data?.social?.facebook || "");
     }, 300);
   }
 
-  return (
-    <main className="page">
-      <div className="shell">
-        
+return (
+  <main className="page">
+    <div className="shell">
 
-        <div className="hero">
-          <h1>Inserat Generator für Immobilienmakler</h1>
-          <p>
-          <p>
-  Erstelle in Sekunden hochwertige Immobilieninserate für Homegate, ImmoScout24,
-  Exposés und Social Media. Professionell formuliert, strukturiert aufgebaut und
-  auf maximale Wirkung bei Käufern ausgelegt.
-</p>
-          </p>
+      <div className="topbar">
+        <div className="logo">INSERAT AI</div>
+
+        <div className="topbarRight">
+          {userName ? (
+            <span>{userName}</span>
+          ) : (
+            <a href="/login">Login</a>
+          )}
+
+          <a href="/register">Kostenlos testen</a>
         </div>
+      </div>
+
+    <div className="hero">
+        <h1>Inserat Generator für Immobilienmakler</h1>
+        <p>
+          Erstelle in Sekunden hochwertige Immobilieninserate für Homegate, ImmoScout24,
+          Exposés und Social Media. Professionell formuliert, strukturiert aufgebaut und
+          auf maximale Wirkung bei Käufern ausgelegt.
+        </p>
+      </div>
 
         <div className="grid">
          <section className="leftCard">
@@ -1029,3 +1047,6 @@ function MiniStat({ title, value }: { title: string; value: string }) {
     </div>
   );
 }
+   
+ 
+  
