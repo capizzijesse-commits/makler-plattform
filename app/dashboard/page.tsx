@@ -673,7 +673,7 @@ setFacebookPost(data?.social?.facebook || "");
   align-items: stretch;
 }
 
- .leftCard {
+.leftCard {
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 24px;
@@ -774,8 +774,8 @@ setFacebookPost(data?.social?.facebook || "");
   padding: 20px;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
   color: #1f2937;
-
-  height: 760px; /* 👈 DAS IST DER GAMECHANGER */
+  min-height: 760px;
+  height: 760px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -796,7 +796,6 @@ setFacebookPost(data?.social?.facebook || "");
   border: 1px solid #f0e3c1;
   border-radius: 18px;
   padding: 20px;
-
   flex: 1;
   min-height: 0;
   overflow-y: auto;
