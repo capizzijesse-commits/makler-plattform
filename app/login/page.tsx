@@ -7,18 +7,43 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
+async function handleLogin(e: React.FormEvent) {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      alert(`Login mit: ${email}`);
-    } catch (error) {
-      alert("Fehler beim Login");
-    } finally {
-      setLoading(false);
+  try {
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data?.error || "Login fehlgeschlagen");
+      return;
     }
+
+    localStorage.setItem("userEmail", email);
+
+    if (data?.user?.name) {
+      localStorage.setItem("userName", data.user.name);
+    }
+
+    window.location.href = "/dashboard";
+  } catch (error) {
+    console.error(error);
+    alert("Fehler beim Login");
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <main className="container-max py-16">
