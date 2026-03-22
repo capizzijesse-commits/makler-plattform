@@ -90,6 +90,7 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
       maxWidth: "100%",
       boxSizing: "border-box",
       textAlign: "center"
+      
     }}
   >
     Founder Zugang sichern – 19.90 CHF / Monat
@@ -137,14 +138,14 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
 
   <div
     style={{
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-      gap: "24px",
-      maxWidth: "1280px",
-margin: "0 auto",
-padding: "0 40px",
-alignItems: "stretch",
-    }}
+  display: "grid",
+  gridTemplateColumns: "1fr",
+  gap: "24px",
+  maxWidth: "1280px",
+  margin: "0 auto",
+  padding: "0 40px",
+  alignItems: "stretch",
+}}
   >
     <div className="priceCard">
       <h3>Free</h3>
@@ -153,7 +154,18 @@ alignItems: "stretch",
     </div>
 
     <div className="priceCard featuredCard">
-      <div className="badge">Founder</div>
+      <div
+  style={{
+    display: "inline-block",
+    marginBottom: "10px",
+    padding: "6px 12px",
+    borderRadius: "999px",
+    background: "#facc15",
+    fontWeight: "600"
+  }}
+>
+  Founder
+</div>
       <h3>Founder ⭐</h3>
       <p className="price">19.90 CHF</p>
       <p>für die ersten 30 Makler</p>
@@ -173,17 +185,19 @@ alignItems: "stretch",
 
 <div
   style={{
-    gridColumn: "1 / -1",
-    display: "flex",
-    justifyContent: "center",
+    display: "grid",
+    gridTemplateColumns: "1fr",
+    gap: "16px",
     marginTop: "32px"
   }}
 >
   <div
     style={{
-      width: "80%",
+  width: "100%",
+  maxWidth: "420px",
       background: "#ffffff",
       border: "1px solid #e5e7eb",
+      margin: "0 auto",
       borderRadius: "20px",
       padding: "34px 24px",
       textAlign: "center",
