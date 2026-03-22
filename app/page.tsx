@@ -182,11 +182,11 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
   <div
     style={{
   display: "grid",
-  gridTemplateColumns: "1fr",
+ gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
   gap: "24px",
   maxWidth: "1280px",
   margin: "0 auto",
-  padding: "0 40px",
+  padding: "0 20px",
   alignItems: "stretch",
 }}
   >
