@@ -978,6 +978,92 @@ return (
             align-items: flex-start;
             gap: 14px;
           }
+            @media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .leftCard,
+  .rightCard {
+    width: 100%;
+    min-height: auto;
+    height: auto;
+  }
+
+  .rightCard {
+    overflow: visible;
+  }
+
+  .outputCard {
+    max-height: none;
+    min-height: 260px;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .miniStats {
+    grid-template-columns: 1fr;
+  }
+
+  .topStats {
+    grid-template-columns: 1fr;
+  }
+
+  .tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .actions button,
+  .actions .btn,
+  .actions a {
+    width: 100%;
+  }
+
+  .outputTitle {
+    font-size: 26px;
+    line-height: 1.15;
+  }
+
+  .outputText {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .leftCard,
+  .rightCard {
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .topStat,
+  .miniStats > div {
+    padding: 10px;
+  }
+
+  .tab {
+    width: 100%;
+    text-align: center;
+  }
+
+  .input {
+    font-size: 16px;
+  }
+}
         }
       `}</style>
     </main>
