@@ -547,7 +547,7 @@ return (
     <div className="bonusBlock">
       <div className="bonusTitle">🎁 Bonus</div>
       <div className="bonusText">
-        Empfehle InseratAI einem Maklerkollegen und erhalte 5 zusätzliche Inserate kostenlos.
+        Empfehle Inserat AI einem Maklerkollegen und erhalte 5 zusätzliche Inserate kostenlos.
       </div>
       <button className="bonusBtn">Empfehlungslink kopieren</button>
     </div>
