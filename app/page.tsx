@@ -72,74 +72,31 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
 </p>
 
 <div style={{ marginTop: "24px", textAlign: "center" }}>
- <div
-  style={{
-    marginTop: "40px",
-    background: "#f9f6ee",
-    border: "1px solid #e7dcc0",
-    borderRadius: "28px",
-    padding: "32px 20px",
-    textAlign: "center",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
-  }}
->
-  <h2
-    style={{
-      fontSize: "48px",
-      fontWeight: 800,
-      marginBottom: "24px",
-      color: "#1f2937",
-      lineHeight: 1.1,
-    }}
-  >
-    50 Inserate kostenlos testen
-  </h2>
-
-  <p
-    style={{
-      fontSize: "18px",
-      color: "#6b7280",
-      lineHeight: 1.6,
-      maxWidth: "700px",
-      margin: "0 auto 24px",
-    }}
-  >
-    Founder-Angebot: Die ersten 100 Makler erhalten 50 Inserate kostenlos.
-  </p>
-
   <a
-    href="/register"
+    href="https://buy.stripe.com/test_5kQ28sdozdIk3bsduy1wY00"
+    target="_blank"
+    rel="noopener noreferrer"
     style={{
-      display: "block",
-      width: "100%",
-      maxWidth: "520px",
-      margin: "0 auto",
-      background: "#cda349",
-      color: "#ffffff",
-      borderRadius: "24px",
-      padding: "22px 20px",
-      fontWeight: 800,
-      fontSize: "20px",
-      lineHeight: 1.4,
-      textDecoration: "none",
-      boxSizing: "border-box",
-      boxShadow: "0 12px 30px rgba(205,163,73,0.28)",
-    }}
-  >
-    Founder Zugang sichern – 19.90 CHF Lifetime Preis für die ersten 30 Makler verfügbar
-  </a>
-
-  <p
-    style={{
-      marginTop: "18px",
-      fontSize: "18px",
+      display: "inline-block",
+      padding: "14px 28px",
+      background: "#D4A017",
+      color: "#FFFFFF",
+      borderRadius: "12px",
+      border: "none",
+      fontSize: "16px",
       fontWeight: 700,
-      color: "#374151",
+      textDecoration: "none",
+      minWidth: "720px",
+      maxWidth: "100%",
+      boxSizing: "border-box",
+      textAlign: "center"
+      
     }}
   >
+    Founder Zugang sichern – 19.90 CHF / Monat
+    Nur für die ersten 30 verfügbar
     regulär 39.90 CHF / Monat
-  </p>
-</div>
+  </a>
 </div>
 
 </div>
@@ -181,14 +138,14 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
 
   <div
     style={{
-  display: "grid",
- gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-  gap: "24px",
-  maxWidth: "1280px",
-  margin: "0 auto",
-  padding: "0 20px",
-  alignItems: "stretch",
-}}
+      display: "grid",
+     gridTemplateColumns: "1fr",
+      gap: "24px",
+      maxWidth: "1280px",
+margin: "0 auto",
+padding: "0 40px",
+alignItems: "stretch",
+    }}
   >
     <div className="priceCard">
       <h3>Free</h3>
@@ -197,8 +154,7 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
     </div>
 
     <div className="priceCard featuredCard">
-      
- 
+      <div className="badge">Founder</div>
       <h3>Founder ⭐</h3>
       <p className="price">19.90 CHF</p>
       <p>für die ersten 30 Makler</p>
