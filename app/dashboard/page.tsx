@@ -281,8 +281,10 @@ return (
       <input
         value={location}
         placeholder="Winterthur"
+        className="bg-transparent text-white placeholder-gray-400/60"
         onChange={(e) => setLocation(e.target.value)}
-        className="input"
+      
+
       />
     </Field>
 
