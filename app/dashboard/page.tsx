@@ -260,20 +260,6 @@ return (
   <main className="page">
     <div className="shell">
 
-      <div className="topbar">
-        <div className="logo">INSERAT AI</div>
-
-        <div className="topbarRight">
-          {userName ? (
-            <span>{userName}</span>
-          ) : (
-            <a href="/login">Login</a>
-          )}
-
-          <a href="/register">Kostenlos testen</a>
-        </div>
-      </div>
-
     <div className="hero">
         <h1>Inserat Generator für Immobilienmakler</h1>
         <p>
