@@ -72,31 +72,7 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
 </p>
 
 <div style={{ marginTop: "24px", textAlign: "center" }}>
-  <a
-    href="https://buy.stripe.com/test_5kQ28sdozdIk3bsduy1wY00"
-    target="_blank"
-    rel="noopener noreferrer"
-    style={{
-      display: "inline-block",
-      padding: "14px 28px",
-      background: "#D4A017",
-      color: "#FFFFFF",
-      borderRadius: "12px",
-      border: "none",
-      fontSize: "16px",
-      fontWeight: 700,
-      textDecoration: "none",
-      minWidth: "720px",
-      maxWidth: "100%",
-      boxSizing: "border-box",
-      textAlign: "center"
-      
-    }}
-  >
-    Founder Zugang sichern – 19.90 CHF / Monat
-    Nur für die ersten 30 verfügbar
-    regulär 39.90 CHF / Monat
-  </a>
+ 
 </div>
 
 </div>
