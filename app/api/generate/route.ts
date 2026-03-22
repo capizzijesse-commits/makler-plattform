@@ -89,8 +89,13 @@ Bildanalyse: ${imageAnalysis || "Keine"}
       return NextResponse.json(
         { error: "AI hat kein gültiges JSON geliefert" },
         { status: 500 }
+        
       );
     }
+    console.log("RAW RESPONSE:", text);
+console.log("PARSED:", parsed);
+console.log("VARIANTS:", parsed?.variants);
+console.log("COUNT:", parsed?.variants?.length);
 
     if (!parsed?.variants || !Array.isArray(parsed.variants) || parsed.variants.length === 0) {
       return NextResponse.json(
@@ -99,11 +104,13 @@ Bildanalyse: ${imageAnalysis || "Keine"}
       );
     }
 const safeVariants = parsed.variants.map((v: any, i: number) => ({
+  
   title: v?.title?.trim() || `Exklusive Immobilie ${i + 1}`,
   text: v?.text?.trim() || "",
   instagramPost: v?.instagramPost?.trim() || "",
   linkedinPost: v?.linkedinPost?.trim() || "",
   facebookPost: v?.facebookPost?.trim() || "",
+  
 }));
 return NextResponse.json({ variants: safeVariants });
     return NextResponse.json(parsed);

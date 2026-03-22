@@ -156,22 +156,28 @@ setFacebookPost(data?.social?.facebook || "");
   }
 
   async function copyActive() {
-    if (!current) {
-      alert("Bitte zuerst eine Variante generieren.");
-      return;
-    }
-
-    const bulletText =
-      current.highlights && current.highlights.length > 0
-        ? `\n\nHighlights\n${current.highlights.map((h) => `• ${h}`).join("\n")}`
-        : "";
-
-    const ctaText = current.cta ? `\n\n${current.cta}` : "";
-    const fullText = `${current.title}\n\n${current.text}${bulletText}${ctaText}`;
-
-    await navigator.clipboard.writeText(fullText);
+  if (!variants || variants.length === 0) {
+    alert("Bitte zuerst eine Variante generieren.");
+    return;
   }
 
+  const active = variants[activeIndex];
+
+  if (!active) {
+    alert("Keine Variante gefunden.");
+    return;
+  }
+
+  const fullText = `${active.title}\n\n${active.text}`;
+
+  try {
+    await navigator.clipboard.writeText(fullText);
+    alert("Kopiert ✅");
+  } catch (err) {
+    console.error(err);
+    alert("Kopieren fehlgeschlagen ❌");
+  }
+}
   function exportPdf() {
     if (!current) {
       alert("Bitte zuerst eine Variante generieren.");
