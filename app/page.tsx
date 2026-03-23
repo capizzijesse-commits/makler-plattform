@@ -521,7 +521,7 @@ Founder-Angebot: Die ersten 100 Makler erhalten 50 Inserate kostenlos.
 
         <div style={{ marginTop: "26px" }}>
             <a
-  href="https://buy.stripe.com/..."
+  href="https://buy.stripe.com/test_5kQ28sdozdIk3bsduy1wY00"
   style={{
     padding: "14px 28px",
     background: "#C8A24D",
