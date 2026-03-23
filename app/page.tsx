@@ -190,16 +190,10 @@ alignItems: "stretch",
   alignItems: "stretch",
 }}
   >
-    <h3 style={{ fontSize: "24px", marginBottom: "12px" }}>
-      Agency
-    </h3>
-
-    <div style={{ fontSize: "40px", fontWeight: "800", marginBottom: "10px" }}>
-      249.90 CHF
-    </div>
-
-    <div style={{ color: "#4b5563" }}>
-      Teams / mehrere Makler
+    <div className="priceCard">
+  <h3>Agency</h3>
+  <p className="price">249.90 CHF</p>
+  <p>Teams / mehrere Makler</p>
     </div>
   </div>
 </div>
