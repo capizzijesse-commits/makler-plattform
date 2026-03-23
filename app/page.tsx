@@ -174,7 +174,7 @@ alignItems: "stretch",
 <div
   style={{
     display: "grid",
-    gridTemplateColumns: "1fr",
+  gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
     gap: "16px",
     marginTop: "32px"
   }}
