@@ -144,44 +144,36 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
   </h2>
 
   <div className="pricingGrid">
-    <div className="priceCard">
-      <h3>Free</h3>
-      <p className="price">0 CHF</p>
-      <p>50 Inserate kostenlos testen</p>
-    </div>
-
-    <div className="priceCard featuredCard">
-      <h3>Founder ⭐</h3>
-      <p className="price">19.90 CHF</p>
-      <p>für die ersten 30 Makler</p>
-    </div>
-
-    <div className="priceCard">
-      <h3>Standard</h3>
-      <p className="price">39.90 CHF</p>
-      <p>danach</p>
-    </div>
-
-    <div className="priceCard">
-      <h3>Pro</h3>
-      <p className="price">79.90 CHF</p>
-      <p>Exposé PDF / Social Media / mehr Features</p>
-    </div>
+  <div className="priceCard">
+    <h3>Free</h3>
+    <p className="price">0 CHF</p>
+    <p>50 Inserate kostenlos testen</p>
   </div>
 
-  <div className="agencyRow"
-  style={{
-    maxWidth: "1100px",
-    margin: "20px auto 0",
-    padding: "0 40px",
-  }}
->
-    <div className="priceCard" style={{ width: "100%", textAlign: "center" }}>
-      <h3>Agency</h3>
-      <p className="price">249.90 CHF</p>
-      <p>Teams / mehrere Makler</p>
-    </div>
+  <div className="priceCard featuredCard">
+    <h3>Founder</h3>
+    <p className="price">19.90 CHF</p>
+    <p>für die ersten 30 Makler</p>
   </div>
+
+  <div className="priceCard">
+    <h3>Standard</h3>
+    <p className="price">39.90 CHF</p>
+    <p>danach</p>
+  </div>
+
+  <div className="priceCard">
+    <h3>Pro</h3>
+    <p className="price">79.90 CHF</p>
+    <p>Exposé PDF / Social Media / mehr Features</p>
+  </div>
+
+  <div className="priceCard agencyCard">
+    <h3>Agency</h3>
+    <p className="price">249.90 CHF</p>
+    <p>Teams / mehrere Makler</p>
+  </div>
+</div>
 </section>
 <div style={{ marginTop: "20px", textAlign: "center" }}>
   <div style={{ fontSize: "14px", opacity: 0.8, marginBottom: "12px" }}>
