@@ -6,14 +6,15 @@ export default function Home() {
   return (
     <>
     <Navbar />
-    <main
-      style={{
-        minHeight: "100vh",
-        background: "#F8F6F1",
-        color: "#1F2937",
-        padding: "80px 24px",
-      }}
-    >
+   <main 
+  className="landingPage"
+  style={{
+    minHeight: "100vh",
+    background: "#F8F6F1",
+    color: "#1F2937",
+    padding: "80px 24px",
+  }}
+>
       <section
         style={{
           maxWidth: "1100px",

@@ -512,6 +512,35 @@ body {
     width: 100% !important;
   }
 }
+@media (max-width: 768px) {
+  .landingPage .shell {
+    padding: 20px 16px !important;
+  }
+
+  .landingPage .topbar {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .landingPage .hero {
+    width: 100% !important;
+  }
+
+  /* 🔥 DAS HIER FEHLT BEI DIR */
+  .landingPage .pricingGrid {
+    grid-template-columns: 1fr !important;
+    padding: 0 16px !important;
+  }
+
+  .landingPage .priceCard,
+  .landingPage .featuredCard,
+  .landingPage .agencyCard {
+    width: 100% !important;
+    max-width: 100% !important;
+    transform: none !important;
+  }
+}
 
 /* =========================
    Dashboard mobile
