@@ -596,3 +596,50 @@ html, body {
     margin-top: 16px !important;
   }
 }
+/* Alles, was breiter als das Handy ist, wird eingefangen */
+* {
+    max-width: 100vw;
+    box-sizing: border-box;
+}
+
+html, body {
+    overflow-x: hidden; /* Verhindert das seitliche Wackeln/Scrollen */
+    margin: 0;
+    padding: 0;
+}
+/* Suche nach der Klasse deines gelben Buttons oder nutze dies allgemein: */
+button, .button, [class*="btn"] {
+    height: auto !important;      /* Löscht die feste Höhe */
+    min-height: 50px;             /* Mindesthöhe statt fester Höhe */
+    padding: 15px 20px !important; /* Gibt dem Text innen Platz */
+    white-space: normal !important;/* Erlaubt Zeilenumbrüche im Button */
+    display: flex;
+    flex-direction: column;       /* Stapelt den Text im Button sauber */
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+/* --- FIX FÜR MOBILE ANSICHT --- */
+
+/* 1. Alles, was aus dem Bild ragt, einfangen */
+* {
+    max-width: 100vw;
+    box-sizing: border-box;
+}
+
+/* 2. Den gelben Button und alle anderen Buttons reparieren */
+button, 
+.button, 
+[class*="btn"],
+a[class*="button"] {
+    height: auto !important;         /* Zwingt den Button, mit dem Text zu wachsen */
+    min-height: 60px !important;    
+    padding: 15px 20px !important; 
+    white-space: normal !important;  /* Erlaubt Zeilenumbrüche */
+    display: flex !important;
+    flex-direction: column !important; 
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    word-break: break-word !important; /* Bricht zu lange Wörter um */
+}
