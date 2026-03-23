@@ -131,19 +131,26 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
 </button>
 
 <section style={{ marginTop: "80px", textAlign: "center" }}>
-  <h2 style={{ fontSize: "32px", fontWeight: 700, marginBottom: "30px" }}>
+  <h2
+    style={{
+      fontSize: "32px",
+      fontWeight: 700,
+      marginBottom: "30px",
+      color: "#1f2937",
+    }}
+  >
     Preise
   </h2>
 
   <div
     style={{
       display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+      gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
       gap: "16px",
-      maxWidth: "1280px",
-margin: "0 auto",
-padding: "0 40px",
-alignItems: "stretch",
+      maxWidth: "1100px",
+      margin: "0 auto",
+      padding: "0 40px",
+      alignItems: "stretch",
     }}
   >
     <div className="priceCard">
@@ -170,42 +177,21 @@ alignItems: "stretch",
       <p className="price">79.90 CHF</p>
       <p>Exposé PDF / Social Media / mehr Features</p>
     </div>
-
-    <div className="priceCard">
-  <h3>Agency</h3>
-  <p className="price">249.90 CHF</p>
-  <p>Teams / mehrere Makler</p>
-</div>
-
-<div
-  style={{
-    display: "grid",
-  gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
-    gap: "24px",
-    marginTop: "32px"
-  }}
->
-  <div
-   style={{
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-  gap: "16px",
-  maxWidth: "1280px",
-  margin: "0 auto",
-  padding: "0 40px",
-  alignItems: "stretch",
-}}
-  >
-<div className="priceCard">Free</div>
-<div className="priceCard featuredCard">Founder</div>
-<div className="priceCard">Standard</div>
-<div className="priceCard">Pro</div>
-
   </div>
-</div>
 
-
-</div>
+  <div
+    style={{
+      maxWidth: "1100px",
+      margin: "20px auto 0",
+      padding: "0 40px",
+    }}
+  >
+    <div className="priceCard" style={{ width: "100%", textAlign: "center" }}>
+      <h3>Agency</h3>
+      <p className="price">249.90 CHF</p>
+      <p>Teams / mehrere Makler</p>
+    </div>
+  </div>
 </section>
 <div style={{ marginTop: "20px", textAlign: "center" }}>
   <div style={{ fontSize: "14px", opacity: 0.8, marginBottom: "12px" }}>
