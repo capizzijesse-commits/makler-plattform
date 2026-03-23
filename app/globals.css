@@ -569,3 +569,30 @@ html, body {
     font-size: 16px;
   }
 }
+@media (max-width: 768px) {
+
+  /* Preise Grid (oben 4 Karten) */
+  .pricingTop {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Alle Karten */
+  .priceCard,
+  .featuredCard {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Abstand zwischen Karten */
+  .priceCard {
+    margin-bottom: 16px !important;
+  }
+
+  /* Agency Block */
+  .agencyRow {
+    margin-top: 16px !important;
+  }
+}

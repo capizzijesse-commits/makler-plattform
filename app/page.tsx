@@ -142,8 +142,8 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
     Preise
   </h2>
 
-  <div
-    style={{
+  <div className="pricingTop" 
+  style={{
       display: "grid",
       gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
       gap: "16px",
@@ -178,13 +178,13 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
     </div>
   </div>
 
-  <div
-    style={{
-      maxWidth: "1100px",
-      margin: "20px auto 0",
-      padding: "0 40px",
-    }}
-  >
+  <div className="agencyRow"
+  style={{
+    maxWidth: "1100px",
+    margin: "20px auto 0",
+    padding: "0 40px",
+  }}
+>
     <div className="priceCard" style={{ width: "100%", textAlign: "center" }}>
       <h3>Agency</h3>
       <p className="price">249.90 CHF</p>
