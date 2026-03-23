@@ -504,28 +504,34 @@ Founder-Angebot: Die ersten 100 Makler erhalten 50 Inserate kostenlos.
 </p>
 
         <div style={{ marginTop: "26px" }}>
-            <a
-  href="https://buy.stripe.com/test_5kQ28sdozdIk3bsduy1wY00"
-  style={{
-    padding: "14px 28px",
-    background: "#C8A24D",
-    color: "#FFFFFF",
-    borderRadius: "10px",
-    fontWeight: 700,
-    textDecoration: "none",
-    boxShadow: "0 10px 30px rgba(200,162,77,0.25)",
-
-    width: "100%",          // 🔥 NEU
-    whiteSpace: "normal",   // 🔥 NEU
-    textAlign: "center"     // 🔥 NEU
-  }}
->
-            Founder Zugang sichern - 19.90 CHF
-            Lifetime Preis für die ersten 30 Makler verfügbar
-          </a>
-         <p style={{marginTop:"14px", fontSize:"14px", opacity:0.8}}>
-    <b>regulär 39.90 CHF / Monat</b><br/>
-</p>
+   
+ <div style={{ marginTop: "24px", textAlign: "center" }}>
+  <a
+    href="https://buy.stripe.com/test_5kQ28sdozdIk3bsduy1wY00"
+    target="_blank"
+    rel="noopener noreferrer"
+    style={{
+      display: "block",
+      padding: "14px 28px",
+      background: "#D4A017",
+      color: "#FFFFFF",
+      borderRadius: "12px",
+      border: "none",
+      fontSize: "16px",
+      fontWeight: 700,
+      textDecoration: "none",
+      width: "100%",
+      maxWidth: "100%",
+      boxSizing: "border-box",
+      textAlign: "center",
+      lineHeight: "1.5",
+    }}
+  >
+    Founder Zugang sichern – 19.90 CHF / Monat<br/>
+    Nur für die ersten 30 verfügbar<br/>
+    regulär 39.90 CHF / Monat
+  </a>
+</div>
         </div>
 
       </section>
