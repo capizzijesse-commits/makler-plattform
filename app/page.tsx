@@ -197,7 +197,7 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
     Sichere Zahlung mit
   </div>
 
-  <div style={{ display: "flex", justifyContent: "center", gap: "18px", flexWrap: "wrap", fontSize: "15px", opacity: 0.9 }}>
+  <div className="pricingGrid">
     <span>TWINT</span>
     <span>VISA</span>
     <span>MASTERCARD</span>
