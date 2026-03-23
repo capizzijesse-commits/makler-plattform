@@ -253,7 +253,7 @@ alignItems: "stretch",
   maxWidth: "600px",
   margin: "40px auto 0",
   display: "grid",
-  gridTemplateColumns: "1fr",
+  gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
   gap: "20px",
   textAlign: "center"
 }}
