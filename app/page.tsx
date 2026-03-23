@@ -139,7 +139,7 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
     style={{
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-      gap: "24px",
+      gap: "16px",
       maxWidth: "1280px",
 margin: "0 auto",
 padding: "0 40px",
@@ -175,20 +175,20 @@ alignItems: "stretch",
   style={{
     display: "grid",
   gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
-    gap: "16px",
+    gap: "24px",
     marginTop: "32px"
   }}
 >
   <div
-    style={{
-      width: "80%",
-      background: "#ffffff",
-      border: "1px solid #e5e7eb",
-      borderRadius: "20px",
-      padding: "34px 24px",
-      textAlign: "center",
-      boxShadow: "0 10px 30px rgba(0,0,0,0.08)"
-    }}
+   style={{
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+  gap: "16px",
+  maxWidth: "1280px",
+  margin: "0 auto",
+  padding: "0 40px",
+  alignItems: "stretch",
+}}
   >
     <h3 style={{ fontSize: "24px", marginBottom: "12px" }}>
       Agency
