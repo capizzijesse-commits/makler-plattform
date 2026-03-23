@@ -701,3 +701,26 @@ body {
     min-height: auto !important;
   }
 }
+@media (min-width: 769px) {
+  .pricingTop {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 16px !important;
+    max-width: 1100px !important;
+    margin: 0 auto !important;
+    padding: 0 40px !important;
+    align-items: stretch !important;
+  }
+
+  .agencyRow {
+    max-width: 1100px !important;
+    margin: 20px auto 0 !important;
+    padding: 0 40px !important;
+  }
+
+  .agencyRow .priceCard {
+    width: 100% !important;
+    max-width: 100% !important;
+    text-align: center !important;
+  }
+}
