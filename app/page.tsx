@@ -78,7 +78,7 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
     target="_blank"
     rel="noopener noreferrer"
     style={{
-      display: "inline-block",
+      display: "block",
       padding: "14px 28px",
       background: "#D4A017",
       color: "#FFFFFF",
@@ -87,14 +87,15 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
       fontSize: "16px",
       fontWeight: 700,
       textDecoration: "none",
-      minWidth: "720px",
+      width: "100%",
       maxWidth: "100%",
       boxSizing: "border-box",
-      textAlign: "center"
+      textAlign: "center",
+      lineHeight: "1.5",
     }}
   >
-    Founder Zugang sichern – 19.90 CHF / Monat
-    Nur für die ersten 30 verfügbar
+    Founder Zugang sichern – 19.90 CHF / Monat<br/>
+    Nur für die ersten 30 verfügbar<br/>
     regulär 39.90 CHF / Monat
   </a>
 </div>
