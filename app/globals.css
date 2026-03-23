@@ -6,23 +6,18 @@
    Global Theme Variables
    ========================= */
 :root {
-  /* Brand (RGB) */
-  --brand: 37 99 235; /* blau */
+  --brand: 37 99 235;
   --brand-foreground: 255 255 255;
 
-  /* Background / Text */
-  --bg: 9 9 11;        /* zinc-950 */
-  --fg: 244 244 245;   /* zinc-100 */
-  --muted: 161 161 170;/* zinc-400 */
+  --bg: 9 9 11;
+  --fg: 244 244 245;
+  --muted: 161 161 170;
 
-  /* Surfaces */
-  --card: 24 24 27;    /* zinc-900-ish */
-  --card-2: 39 39 42;  /* zinc-800-ish */
+  --card: 24 24 27;
+  --card-2: 39 39 42;
 
-  /* Borders */
-  --border: 63 63 70;  /* zinc-700 */
+  --border: 63 63 70;
 
-  /* Radius */
   --radius: 14px;
 }
 
@@ -47,9 +42,13 @@
   --brand-foreground: 9 9 11;
 }
 
-/* Base */
-html, body {
-  height: 100%;
+/* =========================
+   Base
+   ========================= */
+html,
+body {
+  min-height: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -57,7 +56,9 @@ body {
   color: rgb(var(--fg));
 }
 
-/* Small utilities / components */
+/* =========================
+   Small utilities / components
+   ========================= */
 .container-max {
   @apply mx-auto max-w-6xl px-6;
 }
@@ -100,14 +101,14 @@ body {
 
 .input {
   @apply w-full px-3 py-2 outline-none;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: calc(var(--radius) - 6px);
   color: #fff;
 }
 
 .input::placeholder {
-  color: rgba(255,255,255,0.45);
+  color: rgba(255, 255, 255, 0.45);
   opacity: 1;
 }
 
@@ -115,8 +116,12 @@ body {
   @apply inline-flex items-center gap-2 px-2 py-1 text-xs;
   border-radius: 999px;
   border: 1px solid rgb(var(--border));
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
 }
+
+/* =========================
+   Pricing cards
+   ========================= */
 .priceCard {
   background: #ffffff;
   border: 1px solid #e5e7eb;
@@ -129,12 +134,15 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  width: 100%;
+  max-width: 100%;
 }
 
 .priceCard h3 {
   font-size: 24px;
   margin-bottom: 12px;
   color: #111827;
+  line-height: 1.2;
 }
 
 .price {
@@ -142,6 +150,7 @@ body {
   font-weight: 800;
   margin: 14px 0;
   color: #0f172a;
+  line-height: 1.15;
 }
 
 .priceCard p {
@@ -160,12 +169,6 @@ body {
 .featuredCard {
   border: 2px solid #facc15;
   box-shadow: 0 14px 34px rgba(250, 204, 21, 0.22);
-  transform: scale(1.05);
-  z-index: 2;
-}
-.featuredCard {
-  border: 2px solid #facc15;
-  box-shadow: 0 14px 34px rgba(250, 204, 21, 0.22);
   z-index: 2;
 }
 
@@ -175,8 +178,9 @@ body {
   margin-bottom: 10px;
 }
 
-@media (max-width: 768px) {
-/* LANDINGPAGE ONLY */
+/* =========================
+   Landing page desktop
+   ========================= */
 .landingPage .shell {
   max-width: 1200px;
   margin: 0 auto;
@@ -244,6 +248,7 @@ body {
 
 .landingPage .pricingSection {
   padding: 32px 0;
+  width: 100%;
 }
 
 .landingPage .pricingTitle {
@@ -251,23 +256,12 @@ body {
   margin-bottom: 18px;
   text-align: center;
 }
-@media (max-width: 768px) {
-  .landingPage .pricingTitle {
-    font-size: 32px;
-  }
-}
 
 .landingPage .pricingGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 20px;
-}
-@media (max-width: 768px) {
-
-  .landingPage .pricingGrid {
-    grid-template-columns: 1fr;
-  }
-
+  width: 100%;
 }
 
 .landingPage .priceCard {
@@ -279,6 +273,7 @@ body {
   border-radius: 20px;
   background: #f8f6f0;
   color: #1b253b;
+  box-sizing: border-box;
 }
 
 .landingPage .priceCard h3 {
@@ -297,6 +292,99 @@ body {
   width: 100%;
 }
 
+/* =========================
+   Dashboard responsive base
+   ========================= */
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .leftCard,
+  .rightCard {
+    width: 100%;
+    min-height: auto;
+    height: auto;
+  }
+
+  .rightCard {
+    overflow: visible;
+  }
+
+  .outputCard {
+    max-height: none;
+    min-height: 260px;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .miniStats {
+    grid-template-columns: 1fr;
+  }
+
+  .topStats {
+    grid-template-columns: 1fr;
+  }
+
+  .tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .actions button,
+  .actions .btn,
+  .actions a {
+    width: 100%;
+  }
+
+  .outputTitle {
+    font-size: 26px;
+    line-height: 1.15;
+  }
+
+  .outputText {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .leftCard,
+  .rightCard {
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .topStat,
+  .miniStats > div {
+    padding: 10px;
+  }
+
+  .tab {
+    width: 100%;
+    text-align: center;
+  }
+
+  .input {
+    font-size: 16px;
+  }
+}
+
+/* =========================
+   Landing page mobile
+   ========================= */
 @media (max-width: 768px) {
   .landingPage .shell {
     padding: 20px 16px !important;
@@ -344,6 +432,7 @@ body {
     font-size: 18px !important;
     white-space: normal !important;
     line-height: 1.35 !important;
+    box-sizing: border-box !important;
   }
 
   .landingPage .promoBanner,
@@ -357,6 +446,17 @@ body {
     text-align: center !important;
     display: block !important;
     margin: 14px 0 0 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .landingPage .pricingTitle {
+    font-size: 32px !important;
+  }
+
+  .landingPage .pricingSection,
+  .landingPage .pricingGrid {
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   .landingPage .pricingGrid {
@@ -365,12 +465,46 @@ body {
     gap: 18px !important;
   }
 
-  .landingPage .priceCard {
+  .landingPage .pricingGrid > * {
     width: 100% !important;
     max-width: 100% !important;
-    margin: 0 auto !important;
+    min-width: 0 !important;
+  }
+
+  .landingPage .priceCard,
+  .landingPage .featuredCard,
+  .landingPage .agencyCard {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
     min-height: auto !important;
-    padding: 26px 20px !important;
+    height: auto !important;
+    padding: 24px 18px !important;
+    margin: 0 !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  .landingPage .priceCard h3,
+  .landingPage .priceCard p,
+  .landingPage .priceCard small,
+  .landingPage .priceCard .price {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    text-align: center !important;
+  }
+
+  .landingPage .priceCard a,
+  .landingPage .priceCard button {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    position: static !important;
+    box-sizing: border-box !important;
   }
 
   .landingPage .agencyCard {
@@ -379,10 +513,9 @@ body {
   }
 }
 
-  body {
-    overflow-x: hidden !important;
-  }
-}
+/* =========================
+   Dashboard mobile
+   ========================= */
 @media (max-width: 768px) {
   .dashboardPage .shell {
     padding: 16px !important;
@@ -479,133 +612,5 @@ body {
   .dashboardPage .outputBox,
   .dashboardPage .emptyBox {
     min-height: auto !important;
-  }
-
-  body {
-    overflow-x: hidden !important;
-  }
-}
-html, body {
-  overflow-x: hidden;
-}
-@media (max-width: 900px) {
-  .grid {
-    grid-template-columns: 1fr;
-    gap: 18px;
-  }
-
-  .leftCard,
-  .rightCard {
-    width: 100%;
-    min-height: auto;
-    height: auto;
-  }
-
-  .rightCard {
-    overflow: visible;
-  }
-
-  .outputCard {
-    max-height: none;
-    min-height: 260px;
-  }
-
-  .formGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .miniStats {
-    grid-template-columns: 1fr;
-  }
-
-  .topStats {
-    grid-template-columns: 1fr;
-  }
-
-  .tabs {
-    grid-template-columns: 1fr;
-  }
-
-  .actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .actions button,
-  .actions .btn,
-  .actions a {
-    width: 100%;
-  }
-
-  .outputTitle {
-    font-size: 26px;
-    line-height: 1.15;
-  }
-
-  .outputText {
-    font-size: 15px;
-    line-height: 1.6;
-  }
-}
-
-@media (max-width: 600px) {
-  .page {
-    padding-left: 14px;
-    padding-right: 14px;
-  }
-
-  .leftCard,
-  .rightCard {
-    padding: 16px;
-    border-radius: 18px;
-  }
-
-  .topStat,
-  .miniStats > div {
-    padding: 10px;
-  }
-
-  .tab {
-    width: 100%;
-    text-align: center;
-  }
-
-  .input {
-    font-size: 16px;
-  }
-}
-@media (max-width: 768px) {
-  .landingPage .priceCard,
-  .landingPage .featuredCard,
-  .landingPage .agencyCard {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-height: auto !important;
-    height: auto !important;
-    padding: 24px 18px !important;
-    overflow: hidden !important;
-    transform: none !important;
-  }
-
-  .landingPage .priceCard h3,
-  .landingPage .priceCard p,
-  .landingPage .priceCard small,
-  .landingPage .priceCard .price {
-    display: block;
-    width: 100%;
-    text-align: center;
-    word-break: break-word;
-  }
-
-  .landingPage .priceCard a,
-  .landingPage .priceCard button {
-    display: block !important;
-    width: 100% !important;
-    position: static !important;
-    margin-top: 14px !important;
-  }
-
-  .landingPage .featuredCard {
-    transform: none !important;
   }
 }
