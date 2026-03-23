@@ -160,7 +160,6 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
     </div>
 
     <div className="priceCard featuredCard">
-      <div className="badge">Founder</div>
       <h3>Founder ⭐</h3>
       <p className="price">19.90 CHF</p>
       <p>für die ersten 30 Makler</p>
