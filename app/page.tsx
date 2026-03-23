@@ -142,17 +142,7 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
     Preise
   </h2>
 
-  <div className="pricingTop" 
-  style={{
-      display: "grid",
-      gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-      gap: "16px",
-      maxWidth: "1100px",
-      margin: "0 auto",
-      padding: "0 40px",
-      alignItems: "stretch",
-    }}
-  >
+  <div className="pricingGrid">
     <div className="priceCard">
       <h3>Free</h3>
       <p className="price">0 CHF</p>
