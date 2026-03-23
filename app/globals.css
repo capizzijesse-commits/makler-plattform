@@ -596,9 +596,17 @@ body {
    Dashboard mobile
    ========================= */
 @media (max-width: 768px) {
-  .dashboardPage .shell {
-    padding: 16px !important;
+  .landingPage .promoBanner,
+  .landingPage .heroBanner {
+    width: 92% !important;
+    max-width: 92% !important;
+    margin: 12px auto 0 auto !important;
+    padding: 12px 14px !important;
+    font-size: 15px !important;
+    line-height: 1.25 !important;
+    border-radius: 14px !important;
   }
+
 
   .dashboardPage .topbar {
     flex-direction: column !important;
