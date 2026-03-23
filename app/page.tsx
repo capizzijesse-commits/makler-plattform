@@ -171,6 +171,12 @@ alignItems: "stretch",
       <p>Exposé PDF / Social Media / mehr Features</p>
     </div>
 
+    <div className="priceCard">
+  <h3>Agency</h3>
+  <p className="price">249.90 CHF</p>
+  <p>Teams / mehrere Makler</p>
+</div>
+
 <div
   style={{
     display: "grid",
@@ -190,11 +196,11 @@ alignItems: "stretch",
   alignItems: "stretch",
 }}
   >
-    <div className="priceCard">
-  <h3>Agency</h3>
-  <p className="price">249.90 CHF</p>
-  <p>Teams / mehrere Makler</p>
-    </div>
+<div className="priceCard">Free</div>
+<div className="priceCard featuredCard">Founder</div>
+<div className="priceCard">Standard</div>
+<div className="priceCard">Pro</div>
+
   </div>
 </div>
 
