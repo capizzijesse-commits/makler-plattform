@@ -486,17 +486,17 @@ return (
         </div>
       </div>
 
-      <div className="tabs">
-       {(variants ?? []).slice(0, 2).map((v, i) => (
-  <button
-    key={i}
-    onClick={() => setActiveIndex(i)}
-    className={`variantButton ${activeIndex === i ? "active" : ""}`}
-  >
-    Variante {i + 1}
-  </button>
-))}
-      </div>
+      <div className="variantTabs">
+  {(variants ?? []).slice(0, 2).map((v, i) => (
+    <button
+      key={i}
+      onClick={() => setActiveIndex(i)}
+      className={`variantButton ${activeIndex === i ? "active" : ""}`}
+    >
+      Variante {i + 1}
+    </button>
+  ))}
+</div>
     </div>
 
     <div className="outputCard">
