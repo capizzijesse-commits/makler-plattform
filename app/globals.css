@@ -733,9 +733,17 @@ body {
     max-width: 100% !important;
     text-align: center !important;
   }
-  input::placeholder {
+ /* Erzwingt das durchsichtige Grau für alle Browser */
+input::placeholder,
+textarea::placeholder {
   color: #94A3B8 !important;
-  opacity: 0.5 !important;
+  opacity: 0.4 !important; /* Etwas niedriger für echtes "Durchscheinen" */
+  -webkit-text-fill-color: #94A3B8 !important; /* Speziell für Safari/iOS */
+}
+
+/* Verhindert, dass der Browser den Text beim Reinklicken schwarz macht */
+input:focus::placeholder {
+  opacity: 0.2 !important;
 }
 
 
