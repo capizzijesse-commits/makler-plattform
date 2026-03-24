@@ -32,31 +32,28 @@ WICHTIG:
 - Jede Variante soll stilistisch anders sein
 - Jede Variante braucht einen klaren Titel
 
+- Titel: max 12 Wörter
+- Beschreibung: max 800–1000 Zeichen
+- Social Post: max 300 Zeichen
+
 Format:
 {
   "variants": [
-    {
-      "title": "...",
-      "text": "...",
-      "instagramPost": "...",
-      "linkedinPost": "...",
-      "facebookPost": "..."
-    },
-    {
-      "title": "...",
-      "text": "...",
-      "instagramPost": "...",
-      "linkedinPost": "...",
-      "facebookPost": "..."
-    },
-    {
-      "title": "...",
-      "text": "...",
-      "instagramPost": "...",
-      "linkedinPost": "...",
-      "facebookPost": "..."
-    }
-  ]
+  {
+    "title": "...",
+    "text": "...",
+    "instagramPost": "...",
+    "linkedinPost": "...",
+    "facebookPost": "..."
+  },
+  {
+    "title": "...",
+    "text": "...",
+    "instagramPost": "...",
+    "linkedinPost": "...",
+    "facebookPost": "..."
+  }
+]
 }
 
 Daten:
