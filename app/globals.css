@@ -717,10 +717,21 @@ body {
     margin: 20px auto 0 !important;
     padding: 0 40px !important;
   }
-
+.feedbackButton {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #00bcd4;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  z-index: 999;
+}
   .agencyRow .priceCard {
     width: 100% !important;
     max-width: 100% !important;
     text-align: center !important;
   }
+
 }

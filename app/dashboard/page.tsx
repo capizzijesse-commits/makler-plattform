@@ -450,6 +450,10 @@ return (
   </div>
 </section>
 
+<button className="feedbackButton">
+  Feedback / Support
+</button>
+
    <section className="rightCard">
   <div className="topStats">
     <div className="topStat">

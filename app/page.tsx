@@ -186,13 +186,15 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
   <h2 style={{ fontSize: "28px", fontWeight: 700, marginBottom: "30px" }}>Preise</h2>
 
   <div style={{
-    display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)", 
-    gap: "15px",
-    maxWidth: "1000px",
-    margin: "0 auto",
-    padding: "0 20px"
-  }}>
+  display: "grid",
+  // "auto-fit" sorgt dafür, dass die Boxen untereinander springen, wenn der Platz nicht reicht
+  gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", 
+  gap: "20px",
+  maxWidth: "1100px",
+  margin: "0 auto",
+  padding: "0 20px"
+}}>
+
     
        {/* Box 1: Free - Der Türöffner */}
     <div style={{...cardStyle, border: "1px solid #0A40FF", background: "#F0F4FF"}}>
