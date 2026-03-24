@@ -13,6 +13,7 @@ type Variant = {
 };
 
 export default function DashboardPage() {
+  const variantCount = 2;
   const [instagramPost, setInstagramPost] = useState("");
   const [linkedinPost, setLinkedinPost] = useState("");
   const [facebookPost, setFacebookPost] = useState("");
@@ -425,7 +426,7 @@ return (
       disabled={loading}
       className="btn btn-primary"
     >
-      {loading ? "Generiere..." : "Generieren (3 Varianten)"}
+     {loading ? "Generiere..." : `Generieren (${variantCount} Varianten)`}
     </button>
 
     <button
@@ -447,7 +448,7 @@ return (
 
   <div className="miniStats">
     <MiniStat title="Markt" value="Schweiz" />
-    <MiniStat title="Output" value="3 Varianten" />
+    <MiniStat title="Output" value="2 Varianten" />
     <MiniStat title="Stil" value="Premium" />
   </div>
 </section>
