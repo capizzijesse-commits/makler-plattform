@@ -23,6 +23,7 @@ const [imageAnalysis, setImageAnalysis] = useState("");
 const [analyzingImage, setAnalyzingImage] = useState(false);
 const [userName, setUserName] = useState("");
 useEffect(() => {
+  const [activeIndex, setActiveIndex] = useState(0);
   const savedName = localStorage.getItem("userName");
   if (savedName) {
     setUserName(savedName);
@@ -484,19 +485,16 @@ return (
             ? `Variante ${activeIndex + 1} aktiv`
             : "Noch nichts generiert"}
         </div>
-      </div>
-
-      <div className="tabs">
-        {variants.length > 0 &&
-          variants.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setActiveIndex(i)}
-              className={`tab ${i === activeIndex ? "active" : ""}`}
-            >
-              Variante {i + 1}
-            </button>
-          ))}
+      
+{variants.slice(0, 2).map((v, i) => (
+  <button
+    key={i}
+    onClick={() => setActiveIndex(i)}
+    className={`variantButton ${activeIndex === i ? "active" : ""}`}
+  >
+    Variante {i + 1}
+  </button>
+))}
       </div>
     </div>
 
@@ -505,7 +503,7 @@ return (
         <div className="emptyState">
           <div className="emptyTitle">Noch keine Variante vorhanden</div>
           <div className="emptyText">
-            Gib links die Objektdaten ein und klicke auf „Generieren (3 Varianten)“.
+            Gib links die Objektdaten ein und klicke auf „Generieren (2 Varianten)“.
           </div>
         </div>
       ) : (
