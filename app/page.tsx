@@ -181,91 +181,62 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
   für die ersten 100 Makler
 </button>
 
-    {/* --- START PREISE --- */}
-<section style={{ marginTop: "80px", textAlign: "center", width: "100%" }}>
-  <h2 style={{ fontSize: "32px", fontWeight: 700, marginBottom: "40px", color: "#1f2937" }}>
-    Preise
-  </h2>
+ <section style={{ marginTop: "60px", textAlign: "center", width: "100%" }}>
+  <h2 style={{ fontSize: "32px", fontWeight: 700, marginBottom: "40px" }}>Preise</h2>
 
-  {/* Das Grid-System: 4 Spalten Layout */}
   <div style={{
     display: "grid",
     gridTemplateColumns: "repeat(4, 1fr)", 
-    gap: "20px",
+    gap: "15px",
     maxWidth: "1100px",
     margin: "0 auto",
     padding: "0 20px"
   }}>
     
-    {/* Box 1: Free */}
+    {/* Box 1: 0 */}
     <div style={cardStyle}>
       <div style={iconCircleStyle}>0</div>
       <p style={{fontSize: "14px", color: "#6B7280"}}>Kostenlos testen</p>
     </div>
 
-    {/* Box 2: Founder */}
+    {/* Box 2: Founder 19.90 */}
     <div style={cardStyle}>
       <h3 style={{fontSize: "18px", margin: "0"}}>Founder</h3>
       <p style={priceStyle}>19.90</p>
       <p style={{fontSize: "12px", color: "#6B7280"}}>CHF / Monat</p>
     </div>
 
-    {/* Box 3: Standard (Hervorgehoben wie in der Skizze) */}
-    <div style={{...cardStyle, border: "2px solid #D4A017", background: "#FFF", position: "relative"}}>
-      <span style={{ 
-        position: "absolute", top: "-12px", background: "#D4A017", color: "white", 
-        padding: "2px 10px", borderRadius: "10px", fontSize: "12px", fontWeight: "bold" 
-      }}>Standard</span>
+    {/* Box 3: Standard 39.90 */}
+    <div style={cardStyle}>
+      <h3 style={{fontSize: "18px", margin: "0"}}>Standard</h3>
       <p style={priceStyle}>39.90</p>
       <p style={{fontSize: "12px", color: "#6B7280"}}>CHF / Monat</p>
     </div>
 
-    {/* Box 4: Social Media */}
+    {/* Box 4: Social Media 79.90 */}
     <div style={cardStyle}>
       <h3 style={{fontSize: "18px", margin: "0"}}>Social Media</h3>
       <p style={priceStyle}>79.90</p>
       <p style={{fontSize: "12px", color: "#6B7280"}}>CHF / Monat</p>
     </div>
-    
-        {/* Box 5: Agency (Ganz breit unten drunter) */}
+
+    {/* Box 5: Agency 249.90 - Die grosse Box wie auf der Zeichnung */}
     <div style={{
       ...cardStyle,
       gridColumn: "1 / -1", 
       marginTop: "10px",
-      flexDirection: "row" as "row", // Wichtig für TypeScript!
-      justifyContent: "space-between",
+      padding: "60px 20px", // Schön hoch gemacht
+      display: "flex",
+      flexDirection: "column",
       alignItems: "center",
-      padding: "30px 50px",
-      width: "100%"
+      justifyContent: "center"
     }}>
-      {/* Linke Seite: Titel und Info */}
-      <div style={{ textAlign: "left" }}>
-        <h3 style={{ margin: 0, fontSize: "24px", fontWeight: 700 }}>Agency</h3>
-        <p style={{ fontSize: "14px", color: "#6B7280", margin: "4px 0 0 0" }}>
-          Für Teams & mehrere Makler
-        </p>
+      <h3 style={{ margin: "0 0 10px 0", fontSize: "24px" }}>Agency</h3>
+      <div style={{ display: "flex", alignItems: "baseline", gap: "10px" }}>
+        <p style={{ ...priceStyle, fontSize: "64px", margin: 0 }}>249.90</p>
+        <span style={{ fontSize: "24px", fontWeight: 700 }}>CHF</span>
       </div>
-      
-      {/* Rechte Seite: Preis */}
-      <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
-        <p style={{ ...priceStyle, fontSize: "42px", margin: 0 }}>249.90</p>
-        <span style={{ fontSize: "18px", fontWeight: 600, color: "#1F2937" }}>CHF</span>
-      </div>
-    </div>
-
-
-    {/* Box 5: Agency (Ganz breit unten drunter) */}
-    <div style={{
-      ...cardStyle,
-      gridColumn: "1 / -1", // Das macht die Box breit (von Spalte 1 bis 4)
-      marginTop: "10px",
-      flexDirection: "row",
-      justifyContent: "space-between",
-      padding: "30px 50px"
-    }}>
-      <h3 style={{margin: 0, fontSize: "24px"}}>Agency</h3>
-      <p style={{...priceStyle, fontSize: "42px", margin: 0}}>249.90 <span style={{fontSize: "16px"}}>CHF</span></p>
-      <p style={{fontSize: "14px", color: "#6B7280", margin: 0}}>Teams & Büros</p>
+      <p style={{ fontSize: "16px", color: "#6B7280", marginTop: "10px" }}>Für Teams & mehrere Makler</p>
     </div>
   </div>
 
