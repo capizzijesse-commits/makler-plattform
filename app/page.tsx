@@ -194,35 +194,27 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
     padding: "0 20px"
   }}>
     
-    {/* Box 1: 0 */}
-    <div style={cardStyle}>
-      <div style={iconCircleStyle}>0</div>
-      <p style={{fontSize: "13px", color: "#6B7280"}}>Kostenlos testen</p>
+       {/* Box 1: Free - Der Türöffner */}
+    <div style={{...cardStyle, border: "1px solid #0A40FF", background: "#F0F4FF"}}>
+      <div style={{...iconCircleStyle, borderColor: "#0A40FF", color: "#0A40FF"}}>0</div>
+      <p style={{fontSize: "14px", fontWeight: "700"}}>Testzugang</p>
+      <p style={{fontSize: "11px", color: "#4B5563"}}>50 Inserate gratis<br/>(Einmalig)</p>
     </div>
 
-    {/* Box 2: Founder - HERVORGEHOBEN */}
-    <div style={{
-      ...cardStyle, 
-      position: "relative", 
-      border: "2px solid #D4A017", // Gelbe/Goldene Umrandung
-      background: "#FFFDF8",       // Ganz leichter gelber Schimmer
-      transform: "scale(1.02)"     // Minimal größer für Fokus
-    }}>
-      <div style={{
-        position: "absolute", top: "8px", right: "10px", 
-        color: "#D4A017", fontSize: "18px"
-      }}>★</div>
-      <h3 style={{fontSize: "16px", margin: "0", fontWeight: 700}}>Founder</h3>
+    {/* Box 2: Founder - Das unwiderstehliche Angebot */}
+    <div style={{...cardStyle, border: "2px solid #D4A017", background: "#FFFDF8", transform: "scale(1.05)"}}>
+      <h3 style={{fontSize: "16px", margin: "0", fontWeight: 700}}>Founder Deal</h3>
       <p style={{...priceStyle, color: "#D4A017"}}>19.90</p>
-      <p style={{fontSize: "11px", color: "#8A6A1F"}}>CHF / Monat</p>
+      <p style={{fontSize: "11px", color: "#8A6A1F", fontWeight: "bold"}}>Unbegrenzt Inserate<br/>Preis dauerhaft gesichert</p>
     </div>
 
-    {/* Box 3: Standard */}
+    {/* Box 3: Standard - Der Ankerpreis */}
     <div style={cardStyle}>
       <h3 style={{fontSize: "16px", margin: "0"}}>Standard</h3>
       <p style={priceStyle}>39.90</p>
-      <p style={{fontSize: "11px", color: "#6B7280"}}>CHF / Monat</p>
+      <p style={{fontSize: "11px", color: "#6B7280"}}>Regulärer Preis<br/>nach der Founder-Phase</p>
     </div>
+
 
     {/* Box 4: Social Media */}
     <div style={cardStyle}>
