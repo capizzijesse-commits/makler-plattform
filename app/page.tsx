@@ -181,6 +181,7 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
   für die ersten 100 Makler
 </button>
 
+
 <section style={{ marginTop: "40px", textAlign: "center", width: "100%" }}>
   <h2 style={{ fontSize: "28px", fontWeight: 700, marginBottom: "30px" }}>Preise</h2>
 
@@ -249,7 +250,24 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
       <p style={{ fontSize: "13px", color: "#6B7280", marginTop: "5px" }}>Für Teams & mehrere Makler</p>
     </div>
   </div>
+
+
+
+  {/* Zahlungsmittel Sektion */}
+  <div style={{ marginTop: "40px", textAlign: "center" }}>
+    <div style={{ fontSize: "14px", opacity: 0.6, marginBottom: "15px" }}>
+      Sichere Zahlung mit
+    </div>
+    <div style={{ display: "flex", justifyContent: "center", gap: "25px", fontWeight: "700", color: "#4B5563" }}>
+      <span>TWINT</span>
+      <span>VISA</span>
+      <span>MASTERCARD</span>
+      <span>STRIPE</span>
+    </div>
+  </div>
 </section>
+{/* --- ENDE PREISE --- */}
+
 
   <div
     style={{
