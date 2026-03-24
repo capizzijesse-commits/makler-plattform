@@ -181,14 +181,14 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
   für die ersten 100 Makler
 </button>
 
- <section style={{ marginTop: "60px", textAlign: "center", width: "100%" }}>
-  <h2 style={{ fontSize: "32px", fontWeight: 700, marginBottom: "40px" }}>Preise</h2>
+<section style={{ marginTop: "40px", textAlign: "center", width: "100%" }}>
+  <h2 style={{ fontSize: "28px", fontWeight: 700, marginBottom: "30px" }}>Preise</h2>
 
   <div style={{
     display: "grid",
     gridTemplateColumns: "repeat(4, 1fr)", 
     gap: "15px",
-    maxWidth: "1100px",
+    maxWidth: "1000px",
     margin: "0 auto",
     padding: "0 20px"
   }}>
@@ -196,67 +196,60 @@ Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Soc
     {/* Box 1: 0 */}
     <div style={cardStyle}>
       <div style={iconCircleStyle}>0</div>
-      <p style={{fontSize: "14px", color: "#6B7280"}}>Kostenlos testen</p>
+      <p style={{fontSize: "13px", color: "#6B7280"}}>Kostenlos testen</p>
     </div>
 
-    {/* Box 2: Founder 19.90 */}
-    <div style={cardStyle}>
-      <h3 style={{fontSize: "18px", margin: "0"}}>Founder</h3>
-      <p style={priceStyle}>19.90</p>
-      <p style={{fontSize: "12px", color: "#6B7280"}}>CHF / Monat</p>
+    {/* Box 2: Founder - HERVORGEHOBEN */}
+    <div style={{
+      ...cardStyle, 
+      position: "relative", 
+      border: "2px solid #D4A017", // Gelbe/Goldene Umrandung
+      background: "#FFFDF8",       // Ganz leichter gelber Schimmer
+      transform: "scale(1.02)"     // Minimal größer für Fokus
+    }}>
+      <div style={{
+        position: "absolute", top: "8px", right: "10px", 
+        color: "#D4A017", fontSize: "18px"
+      }}>★</div>
+      <h3 style={{fontSize: "16px", margin: "0", fontWeight: 700}}>Founder</h3>
+      <p style={{...priceStyle, color: "#D4A017"}}>19.90</p>
+      <p style={{fontSize: "11px", color: "#8A6A1F"}}>CHF / Monat</p>
     </div>
 
-    {/* Box 3: Standard 39.90 */}
+    {/* Box 3: Standard */}
     <div style={cardStyle}>
-      <h3 style={{fontSize: "18px", margin: "0"}}>Standard</h3>
+      <h3 style={{fontSize: "16px", margin: "0"}}>Standard</h3>
       <p style={priceStyle}>39.90</p>
-      <p style={{fontSize: "12px", color: "#6B7280"}}>CHF / Monat</p>
+      <p style={{fontSize: "11px", color: "#6B7280"}}>CHF / Monat</p>
     </div>
 
-    {/* Box 4: Social Media 79.90 */}
+    {/* Box 4: Social Media */}
     <div style={cardStyle}>
-      <h3 style={{fontSize: "18px", margin: "0"}}>Social Media</h3>
+      <h3 style={{fontSize: "16px", margin: "0"}}>Social Media</h3>
       <p style={priceStyle}>79.90</p>
-      <p style={{fontSize: "12px", color: "#6B7280"}}>CHF / Monat</p>
+      <p style={{fontSize: "11px", color: "#6B7280"}}>CHF / Monat</p>
     </div>
 
-    {/* Box 5: Agency 249.90 - Die grosse Box wie auf der Zeichnung */}
+    {/* Box 5: Agency - JETZT KOMPAKTER */}
     <div style={{
       ...cardStyle,
       gridColumn: "1 / -1", 
       marginTop: "10px",
-      padding: "60px 20px", // Schön hoch gemacht
+      padding: "30px 20px", // Weniger Padding = weniger wuchtig
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
       justifyContent: "center"
     }}>
-      <h3 style={{ margin: "0 0 10px 0", fontSize: "24px" }}>Agency</h3>
-      <div style={{ display: "flex", alignItems: "baseline", gap: "10px" }}>
-        <p style={{ ...priceStyle, fontSize: "64px", margin: 0 }}>249.90</p>
-        <span style={{ fontSize: "24px", fontWeight: 700 }}>CHF</span>
+      <h3 style={{ margin: "0 0 5px 0", fontSize: "20px" }}>Agency</h3>
+      <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
+        <p style={{ ...priceStyle, fontSize: "42px", margin: 0 }}>249.90</p>
+        <span style={{ fontSize: "18px", fontWeight: 700 }}>CHF</span>
       </div>
-      <p style={{ fontSize: "16px", color: "#6B7280", marginTop: "10px" }}>Für Teams & mehrere Makler</p>
-    </div>
-  </div>
-
-
-
-  {/* Zahlungsmittel Sektion */}
-  <div style={{ marginTop: "40px", textAlign: "center" }}>
-    <div style={{ fontSize: "14px", opacity: 0.6, marginBottom: "15px" }}>
-      Sichere Zahlung mit
-    </div>
-    <div style={{ display: "flex", justifyContent: "center", gap: "25px", fontWeight: "700", color: "#4B5563" }}>
-      <span>TWINT</span>
-      <span>VISA</span>
-      <span>MASTERCARD</span>
-      <span>STRIPE</span>
+      <p style={{ fontSize: "13px", color: "#6B7280", marginTop: "5px" }}>Für Teams & mehrere Makler</p>
     </div>
   </div>
 </section>
-{/* --- ENDE PREISE --- */}
-
 
   <div
     style={{
