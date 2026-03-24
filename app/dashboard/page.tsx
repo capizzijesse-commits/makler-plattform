@@ -21,8 +21,7 @@ export default function DashboardPage() {
 const [imagePreview, setImagePreview] = useState("");
 const [imageAnalysis, setImageAnalysis] = useState("");
 const [analyzingImage, setAnalyzingImage] = useState(false);
-const [userName, setUserName] = useState("");
-useEffect(() => {
+const [userName, setUserName] = useState(""); useEffect(() => {
   const [activeIndex, setActiveIndex] = useState(0);
   const savedName = localStorage.getItem("userName");
   if (savedName) {
