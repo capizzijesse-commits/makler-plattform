@@ -283,6 +283,7 @@ return (
         placeholder="Winterthur"
         className="input bg-transparent text-white placeholder-gray-400/60"
         onChange={(e) => setLocation(e.target.value)}
+       
   
       />
     </Field>
@@ -340,6 +341,7 @@ return (
         className="input"
       />
     </Field>
+    
 
    <div className="full">
   <div

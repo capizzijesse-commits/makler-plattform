@@ -733,5 +733,10 @@ body {
     max-width: 100% !important;
     text-align: center !important;
   }
+  input::placeholder {
+  color: #94A3B8 !important;
+  opacity: 0.5 !important;
+}
+
 
 }
