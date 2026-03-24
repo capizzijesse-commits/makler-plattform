@@ -13,7 +13,7 @@ type Variant = {
 };
 
 export default function DashboardPage() {
-  const variantCount = 2;
+  
   const [instagramPost, setInstagramPost] = useState("");
   const [linkedinPost, setLinkedinPost] = useState("");
   const [facebookPost, setFacebookPost] = useState("");
@@ -427,7 +427,7 @@ return (
       disabled={loading}
       className="btn btn-primary"
     >
-     {loading ? "Generiere..." : `Generieren (${variantCount} Varianten)`}
+      {loading ? "Generiere..." : "Generieren (2 Varianten)"}
     </button>
 
     <button
@@ -449,7 +449,7 @@ return (
 
   <div className="miniStats">
     <MiniStat title="Markt" value="Schweiz" />
-    <MiniStat title="Output" value="2 Varianten" />
+    <MiniStat title="Output" value=" Varianten" />
     <MiniStat title="Stil" value="Premium" />
   </div>
 </section>
@@ -481,12 +481,14 @@ return (
       <div>
         <div className="outputBadge">Output</div>
         <div className="outputState">
-          {variants.length > 0
-            ? `Variante ${activeIndex + 1} aktiv`
-            : "Noch nichts generiert"}
+         {(variants?.length ?? 0) > 0
+  ? `Variante ${activeIndex + 1} aktiv`
+  : "Noch nichts generiert"}
         </div>
-      
-{variants.slice(0, 2).map((v, i) => (
+      </div>
+
+      <div className="tabs">
+       {(variants ?? []).slice(0, 2).map((v, i) => (
   <button
     key={i}
     onClick={() => setActiveIndex(i)}
