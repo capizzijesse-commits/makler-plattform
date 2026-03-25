@@ -109,44 +109,18 @@ export default function Home() {
   textAlign: "center"
 }}>
 
-Immobilieninserate in Sekunden erstellen
+Immobilieninserate in 20 Sekunden erstellen
 
 </h1>
 
-<p style={{
-  fontSize: "20px",
-  color: "#4B5563",
-  marginBottom: "35px"
-}}>
-Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Social Media in wenigen Sekunden statt Stunden
+<p style={{ fontSize: "18px", color: "#A0A0A0", marginBottom: "30px" }}>
+  Für Immobilienmakler in der Schweiz – spart täglich Zeit beim Schreiben von Inseraten
 </p>
 
 <div style={{ marginTop: "24px", textAlign: "center" }}>
-  <a
-    href="https://buy.stripe.com/test_5kQ28sdozdIk3bsduy1wY00"
-    target="_blank"
-    rel="noopener noreferrer"
-    style={{
-      display: "block",
-      padding: "14px 28px",
-      background: "#D4A017",
-      color: "#FFFFFF",
-      borderRadius: "12px",
-      border: "none",
-      fontSize: "16px",
-      fontWeight: 700,
-      textDecoration: "none",
-      width: "100%",
-      maxWidth: "100%",
-      boxSizing: "border-box",
-      textAlign: "center",
-      lineHeight: "1.5",
-    }}
-  >
-    Founder Zugang sichern – 19.90 CHF / Monat<br/>
-    Nur für die ersten 30 verfügbar<br/>
-    regulär 39.90 CHF / Monat
-  </a>
+  <button onClick={() => window.location.href = "/login"}>
+  Jetzt Inserat erstellen
+</button>
 </div>
 
 </div>
