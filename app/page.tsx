@@ -113,14 +113,12 @@ Immobilieninserate in 20 Sekunden erstellen
 
 </h1>
 
-<p
-  style={{
-    fontSize: "18px",
-    color: "#A0A0A0",
-    marginBottom: "30px"
-  }}
->
-  Für Immobilienmakler in der Schweiz – spart täglich Zeit beim Schreiben von Inseraten
+<p style={{
+  fontSize: "20px",
+  color: "#4B5563",
+  marginBottom: "35px"
+}}>
+Erstellen Sie professionelle Immobilieninserate für Homegate, Immoscout und Social Media in wenigen Sekunden statt Stunden
 </p>
 
 <div style={{ marginTop: "24px", textAlign: "center" }}>
@@ -206,38 +204,12 @@ Immobilieninserate in 20 Sekunden erstellen
     </div>
 
     {/* Box 2: Founder - Das unwiderstehliche Angebot */}
-    <button className="priceButton">
-  Jetzt starten - Founder Preis sichern
-</button>
-   <div
-  style={{
-    ...cardStyle,
-    border: "2px solid #D4A017",
-    background: "#FFFDF8",
-    transform: "scale(1.05)"
-  }}
->
-  <h3 style={{ fontSize: "16px", margin: "0", fontWeight: 700 }}>
-    Founder Deal
-  </h3>
-
-  <p style={{ ...priceStyle, color: "#D4A017" }}>19.90 CHF</p>
-
-  <p style={{ fontSize: "11px", color: "#8A6A1F", fontWeight: "bold" }}>
-    Unbegrenzt Inserate
-    <br />
-    Preis dauerhaft gesichert
-  </p>
-
-  <p>Exklusiv für die ersten 30 Makler</p>
-
-  <button
-    className="priceButton"
-    onClick={() => (window.location.href = "/login")}
-  >
-    Jetzt starten – Founder Preis sichern
-  </button>
-</div>
+    <div style={{...cardStyle, border: "2px solid #D4A017", background: "#FFFDF8", transform: "scale(1.05)"}}>
+      <h3 style={{fontSize: "16px", margin: "0", fontWeight: 700}}>Founder Deal</h3>
+      <p style={{...priceStyle, color: "#D4A017"}}>19.90</p>
+      <p style={{fontSize: "11px", color: "#8A6A1F", fontWeight: "bold"}}>Unbegrenzt Inserate<br/>Preis dauerhaft gesichert</p>
+      <p>Exklusiv für die ersten 30 Makler</p>
+    </div>
 
     {/* Box 3: Standard - Der Ankerpreis */}
     <div style={cardStyle}>
