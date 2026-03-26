@@ -1,4 +1,5 @@
 import "./globals.css";
+import Navbar from "@/app/components/Footer";
 import Footer from "@/app/components/Footer";
 import type { Metadata } from "next";
 
@@ -15,26 +16,8 @@ export default function RootLayout({
   return (
     <html lang="de-CH">
       <body>
-        <header className="container-max py-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="font-semibold text-lg">INSERAT AI</div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <a href="/login" className="text-sm font-medium">
-              Login
-            </a>
-            <a
-              href="/register"
-              className="bg-yellow-500 text-black px-4 py-2 rounded-lg font-medium"
-            >
-              Kostenlos testen
-            </a>
-          </div>
-        </header>
-
+       <Navbar />
         {children}
-
         <Footer />
       </body>
     </html>
