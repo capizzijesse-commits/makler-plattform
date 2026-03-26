@@ -68,13 +68,20 @@ async function analyzeImage() {
   const [price, setPrice] = useState("1095000");
   const [styleText, setStyleText] = useState("Luxus / Premium");
   const [highlights, setHighlights] = useState(
-    "Balkon, Lift, Garage, ruhige Lage"
-  );
+  "Balkon, Lift, Garage, ruhige Lage"
+);
 
-  const [loading, setLoading] = useState(false);
-  const [variants, setVariants] = useState<Variant[]>([]);
-  const [activeIndex, setActiveIndex] = useState(0);
+const [socialLoading, setSocialLoading] = useState(false);
 
+const [socialPosts, setSocialPosts] = useState<{
+  instagramPost?: string;
+  linkedinPost?: string;
+  facebookPost?: string;
+}>({});
+
+const [loading, setLoading] = useState(false);
+const [variants, setVariants] = useState<Variant[]>([]);
+const [activeIndex, setActiveIndex] = useState(0);
   const current = variants[activeIndex];
 
   async function generateText() {
@@ -511,6 +518,26 @@ return (
         <>
     
           <h2 className="outputTitle">{variants[activeIndex]?.title}</h2>
+          {socialPosts.instagramPost && (
+  <div style={{ marginTop: "20px" }}>
+    <h4>Instagram</h4>
+    <p>{socialPosts.instagramPost}</p>
+  </div>
+)}
+
+{socialPosts.linkedinPost && (
+  <div style={{ marginTop: "20px" }}>
+    <h4>LinkedIn</h4>
+    <p>{socialPosts.linkedinPost}</p>
+  </div>
+)}
+
+{socialPosts.facebookPost && (
+  <div style={{ marginTop: "20px" }}>
+    <h4>Facebook</h4>
+    <p>{socialPosts.facebookPost}</p>
+  </div>
+)}
           <p className="outputText">{variants[activeIndex]?.text}</p>
           {variants[activeIndex]?.instagramPost && (
   <div className="socialBlock">
