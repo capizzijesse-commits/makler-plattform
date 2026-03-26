@@ -1,6 +1,5 @@
 "use client"
 
-import Navbar from "./components/Navbar";
 
 const buttonStyle: React.CSSProperties = {
   marginTop: "18px",
@@ -54,7 +53,7 @@ const iconCircleStyle: React.CSSProperties = {
 export default function Home() {
   return (
     <>
-    <Navbar />
+
    <main 
   className="landingPage"
   style={{
