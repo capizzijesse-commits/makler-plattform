@@ -1,8 +1,7 @@
-import type { Metadata } from "next";
 import "./globals.css";
-
 import Footer from "@/app/components/Footer";
-import Script from "next/script";
+import type { Metadata } from "next";
+
 export const metadata: Metadata = {
   title: "Makler Plattform",
   description: "Immobilien-Inserate Generator für die Schweiz",
@@ -11,15 +10,13 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="de-CH">
       <body>
-
         <header className="container-max py-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-           
             <div className="font-semibold text-lg">INSERAT AI</div>
           </div>
 
@@ -27,7 +24,6 @@ export default function RootLayout({
             <a href="/login" className="text-sm font-medium">
               Login
             </a>
-
             <a
               href="/register"
               className="bg-yellow-500 text-black px-4 py-2 rounded-lg font-medium"
@@ -40,7 +36,6 @@ export default function RootLayout({
         {children}
 
         <Footer />
-
       </body>
     </html>
   );
