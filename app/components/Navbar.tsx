@@ -1,35 +1,55 @@
-export default function Navbar() {
-  return (
-    <div
-      style={{
-        width: "100%",
-        display: "flex",
-        justifyContent: "center",
-        padding: "20px",
-        borderBottom: "1px solid rgba(255,255,255,0.06)"
-      }}
-    >
-      <div style={{ textAlign: "center" }}>
-        <div
-          style={{
-            fontSize: "13px",
-            letterSpacing: "3px",
-            color: "#9CA3AF"
-          }}
-        >
-        
-        </div>
+"use client";
 
-        <div
-          style={{
-            fontSize: "24px",
-            fontWeight: 700,
-            color: "#F1F5F9"
-          }}
-        >
-          Inserate Generator
-        </div>
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+export default function Navbar() {
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    const savedName = localStorage.getItem("userName");
+    if (savedName) {
+      setUserName(savedName);
+    }
+  }, []);
+
+  function handleLogout() {
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userEmail");
+    window.location.href = "/login";
+  }
+
+  return (
+    <header className="container-max py-6 flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className="font-semibold text-lg">INSERAT AI</div>
       </div>
-    </div>
+
+      <div className="flex items-center gap-4">
+        {userName ? (
+          <>
+            <span className="text-sm font-medium">Hallo {userName}</span>
+            <Link href="/dashboard" className="text-sm font-medium">
+              Dashboard
+            </Link>
+            <button onClick={handleLogout} className="text-sm font-medium">
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <Link href="/login" className="text-sm font-medium">
+              Login
+            </Link>
+            <Link
+              href="/register"
+              className="bg-yellow-500 text-black px-4 py-2 rounded-lg font-medium"
+            >
+              Kostenlos testen
+            </Link>
+          </>
+        )}
+      </div>
+    </header>
   );
 }
