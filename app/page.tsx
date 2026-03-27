@@ -5,17 +5,19 @@ import PricingSection from "./components/PricingSection";
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState("");
+  const [variants, setVariants] = useState<string[]>([]);
+const [activeVariant, setActiveVariant] = useState(0);
   const [form, setForm] = useState({
     ort: "",
     zimmer: "",
     flaeche: "",
     preis: "",
+      highlights: "",
   });
 
   async function handleGenerate() {
     setLoading(true);
-    setResult("");
+   
 
     try {
       const res = await fetch("/api/generate", {
@@ -29,13 +31,15 @@ export default function Home() {
           livingArea: form.flaeche,
           price: form.preis,
           demo: true,
+          highlights: form.highlights,
         }),
       });
 
       const data = await res.json();
-      setResult(data.text || "Kein Text generiert");
+      setVariants(data.variants || [data.text]);
+setActiveVariant(0);
     } catch (err) {
-      setResult("Fehler");
+     setVariants(["Fehler beim Generieren"]);
     }
 
     setLoading(false);
@@ -112,7 +116,12 @@ export default function Home() {
             onChange={(e) => setForm({ ...form, preis: e.target.value })}
             style={inputStyle}
           />
-
+<input
+  placeholder="Besonderheiten (z.B. Nähe Bahnhof, Spielplatz, Balkon)"
+  value={form.highlights}
+  onChange={(e) => setForm({ ...form, highlights: e.target.value })}
+  style={inputStyle}
+/>
           <button
             onClick={handleGenerate}
             style={{
@@ -131,23 +140,39 @@ export default function Home() {
           </button>
         </div>
 
-        {/* RESULT */}
-        {result && (
-          <div
-            style={{
-              background: "#ffffff",
-              borderRadius: "16px",
-              padding: "24px",
-              maxWidth: "700px",
-              margin: "0 auto 40px",
-              color: "#111827",
-              whiteSpace: "pre-wrap",
-              lineHeight: 1.6,
-            }}
-          >
-            {result}
-          </div>
-        )}
+  
+  <>
+    <div
+      style={{
+        background: "#ffffff",
+        borderRadius: "16px",
+        padding: "24px",
+        maxWidth: "700px",
+        margin: "20px auto 0",
+        color: "#111827",
+        whiteSpace: "pre-wrap",
+        lineHeight: 1.6,
+        boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+      }}
+    >
+     
+    </div>
+
+    <div
+      style={{
+        display: "flex",
+        gap: "10px",
+        marginTop: "10px",
+        justifyContent: "center",
+      }}
+    >
+      <button style={variantBtn}>Variante 1</button>
+      <button style={variantBtn}>Variante 2</button>
+    </div>
+  </>
+
+
+  
 
         {/* PRICING */}
         <PricingSection />
@@ -167,4 +192,12 @@ const inputStyle: React.CSSProperties = {
   background: "#ffffff",
   color: "#111827",
   outline: "none",
+};
+const variantBtn: React.CSSProperties = {
+  padding: "10px 14px",
+  borderRadius: "8px",
+  border: "1px solid #e5e7eb",
+  background: "#ffffff",
+  cursor: "pointer",
+  fontWeight: 600,
 };
