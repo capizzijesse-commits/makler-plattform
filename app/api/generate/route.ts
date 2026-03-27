@@ -72,6 +72,12 @@ ${imageAnalysis ? `Bildanalyse: ${imageAnalysis}` : ""}
         
       );
     }
+    // 👇 HIER EINFÜGEN
+if (body.demo) {
+  return NextResponse.json({
+    text: parsed?.variants?.[0]?.text || "Kein Text generiert",
+  });
+}
     console.log("RAW RESPONSE:", text);
 console.log("PARSED:", parsed);
 console.log("VARIANTS:", parsed?.variants);
