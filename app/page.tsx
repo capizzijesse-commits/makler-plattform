@@ -217,4 +217,6 @@ return (
   outline: "none",
   width: "100%",
   boxSizing: "border-box",
+  color: "#111827",
+background: "#ffffff",
 };

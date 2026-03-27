@@ -302,6 +302,7 @@ return (
         placeholder="Wohnung"
         onChange={(e) => setPropertyType(e.target.value)}
         className="input"
+        
       />
     </Field>
 
@@ -368,6 +369,7 @@ return (
     <input
       type="file"
       accept="image/*"
+      
       onChange={(e) => {
         const file = e.target.files?.[0];
         if (!file) return;
