@@ -6,18 +6,18 @@ import PricingSection from "./components/PricingSection";
 export default function Home() {
   const [loading, setLoading] = useState(false);
   const [variants, setVariants] = useState<string[]>([]);
-const [activeVariant, setActiveVariant] = useState(0);
+  const [activeVariant, setActiveVariant] = useState(0);
+
   const [form, setForm] = useState({
     ort: "",
     zimmer: "",
     flaeche: "",
     preis: "",
-      highlights: "",
+    highlights: "",
   });
 
   async function handleGenerate() {
     setLoading(true);
-   
 
     try {
       const res = await fetch("/api/generate", {
@@ -37,9 +37,10 @@ const [activeVariant, setActiveVariant] = useState(0);
 
       const data = await res.json();
       setVariants(data.variants || [data.text]);
-setActiveVariant(0);
+      setActiveVariant(0);
     } catch (err) {
-     setVariants(["Fehler beim Generieren"]);
+      setVariants(["Fehler beim Generieren"]);
+      setActiveVariant(0);
     }
 
     setLoading(false);
@@ -49,20 +50,19 @@ setActiveVariant(0);
     <main
       style={{
         minHeight: "100vh",
-        background: "#0f172a",
-        padding: "40px 20px",
+        background: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)",
+        padding: "60px 20px",
         fontFamily: "Inter, sans-serif",
       }}
     >
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-        
-        {/* HEADER */}
         <h1
           style={{
             color: "#ffffff",
             textAlign: "center",
-            fontSize: "2.2rem",
+            fontSize: "2.8rem",
             fontWeight: 800,
+            marginBottom: "10px",
           }}
         >
           Immobilieninserate in 20 Sekunden erstellen
@@ -70,27 +70,28 @@ setActiveVariant(0);
 
         <p
           style={{
-            color: "#94a3b8",
+            color: "#cbd5e1",
             textAlign: "center",
             marginBottom: "30px",
+            fontSize: "1.05rem",
           }}
         >
           Teste Inserat-AI direkt auf der Landingpage
         </p>
 
-        {/* FORMULAR */}
         <div
           style={{
-            background: "#ffffff",
-            borderRadius: "16px",
-            padding: "24px",
-            maxWidth: "500px",
+            maxWidth: "560px",
             margin: "0 auto 30px",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+            background: "rgba(255,255,255,0.96)",
+            padding: "30px",
+            borderRadius: "16px",
+            boxShadow: "0 20px 50px rgba(0,0,0,0.28)",
+            backdropFilter: "blur(10px)",
           }}
         >
           <input
-            placeholder="Ort (z.B. Zürich)"
+            placeholder="Ort (z.B. Winterthur)"
             value={form.ort}
             onChange={(e) => setForm({ ...form, ort: e.target.value })}
             style={inputStyle}
@@ -104,79 +105,79 @@ setActiveVariant(0);
           />
 
           <input
-            placeholder="Fläche m² (z.B. 120)"
+            placeholder="Fläche m² (z.B. 150)"
             value={form.flaeche}
             onChange={(e) => setForm({ ...form, flaeche: e.target.value })}
             style={inputStyle}
           />
 
           <input
-            placeholder="Preis CHF (z.B. 2500)"
+            placeholder="Preis CHF (z.B. 1000000)"
             value={form.preis}
             onChange={(e) => setForm({ ...form, preis: e.target.value })}
             style={inputStyle}
           />
-<input
-  placeholder="Besonderheiten (z.B. Nähe Bahnhof, Spielplatz, Balkon)"
-  value={form.highlights}
-  onChange={(e) => setForm({ ...form, highlights: e.target.value })}
-  style={inputStyle}
-/>
-          <button
-            onClick={handleGenerate}
-            style={{
-              marginTop: "10px",
-              width: "100%",
-              padding: "14px",
-              borderRadius: "10px",
-              border: "none",
-              background: "#f59e0b",
-              color: "#ffffff",
-              fontWeight: 700,
-              cursor: "pointer",
-            }}
-          >
+
+          <input
+            placeholder="Besonderheiten (z.B. Nähe Bahnhof, Spielplatz, Balkon)"
+            value={form.highlights}
+            onChange={(e) => setForm({ ...form, highlights: e.target.value })}
+            style={inputStyle}
+          />
+
+          <button onClick={handleGenerate} style={primaryBtn}>
             {loading ? "Generiere..." : "Jetzt Inserat erstellen"}
           </button>
         </div>
 
-  
-  <>
-    <div
-      style={{
-        background: "#ffffff",
-        borderRadius: "16px",
-        padding: "24px",
-        maxWidth: "700px",
-        margin: "20px auto 0",
-        color: "#111827",
-        whiteSpace: "pre-wrap",
-        lineHeight: 1.6,
-        boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
-      }}
-    >
-     
-    </div>
+        {variants.length > 0 && (
+          <>
+            <div
+              style={{
+                background: "#ffffff",
+                borderRadius: "16px",
+                padding: "24px",
+                maxWidth: "760px",
+                margin: "20px auto 0",
+                color: "#111827",
+                whiteSpace: "pre-wrap",
+                lineHeight: 1.7,
+                boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+              }}
+            >
+              <h2 style={{ marginBottom: "10px", fontSize: "22px" }}>
+                🏡 Dein Inserat
+              </h2>
+              {variants[activeVariant]}
+            </div>
 
-    <div
-      style={{
-        display: "flex",
-        gap: "10px",
-        marginTop: "10px",
-        justifyContent: "center",
-      }}
-    >
-      <button style={variantBtn}>Variante 1</button>
-      <button style={variantBtn}>Variante 2</button>
-    </div>
-  </>
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                marginTop: "10px",
+                justifyContent: "center",
+                flexWrap: "wrap",
+              }}
+            >
+              {variants.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveVariant(i)}
+                  style={{
+                    ...variantBtn,
+                    background: activeVariant === i ? "#111827" : "#ffffff",
+                    color: activeVariant === i ? "#ffffff" : "#111827",
+                  }}
+                >
+                  Variante {i + 1}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
 
-
-  
-
-        {/* PRICING */}
         <PricingSection />
-
       </div>
     </main>
   );
@@ -192,7 +193,21 @@ const inputStyle: React.CSSProperties = {
   background: "#ffffff",
   color: "#111827",
   outline: "none",
+  boxSizing: "border-box",
 };
+
+const primaryBtn: React.CSSProperties = {
+  width: "100%",
+  padding: "14px",
+  borderRadius: "10px",
+  border: "none",
+  background: "#f59e0b",
+  color: "#fff",
+  fontWeight: 700,
+  fontSize: "16px",
+  cursor: "pointer",
+};
+
 const variantBtn: React.CSSProperties = {
   padding: "10px 14px",
   borderRadius: "8px",
