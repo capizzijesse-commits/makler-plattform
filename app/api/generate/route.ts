@@ -1,107 +1,58 @@
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-  const imageAnalysis = body.imageAnalysis || "";
+  const body = await req.json();
 
-    const {
-      location,
-      rooms,
-      livingArea,
-      price,
-      propertyType,
-      highlights,
-      styleText,
-    } = body;
+  const prompt = `
+Erstelle 2 unterschiedliche Immobilieninserate.
 
-const prompt = `
-Erstelle 2 hochwertige Immobilieninserate für Immobilienmakler in der Schweiz.
+Gib die Antwort NUR als JSON im folgenden Format zurück:
 
-Gib die Antwort als JSON zurück:
 {
   "variants": [
-    { "title": "...", "text": "..." },
-    { "title": "...", "text": "..." }
+    {
+      "title": "Titel 1",
+      "text": "Text 1"
+    },
+    {
+      "title": "Titel 2",
+      "text": "Text 2"
+    }
   ]
 }
 
-WICHTIG:
-- Titel: max 10–12 Wörter, klar und verkaufsstark
-- Text: max 700–900 Zeichen
-- professionell, hochwertig und direkt nutzbar
-- natürlich formuliert, nicht generisch
-- keine Wiederholungen
-- geeignet für Homegate und ImmoScout
-
-Daten:
-Ort: ${location}
-Zimmer: ${rooms}
-Wohnfläche: ${livingArea}
-Preis: ${price}
-Objekt: ${propertyType}
-Highlights: ${highlights}
-Stil: ${styleText}
-${imageAnalysis ? `Bildanalyse: ${imageAnalysis}` : ""}
+Keine Erklärungen, kein zusätzlicher Text.
 `;
 
-    const completion = await openai.chat.completions.create({
+  const completion = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+    },
+    body: JSON.stringify({
       model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      response_format: { type: "json_object" },
-    });
-
-    const text = completion.choices[0].message.content || "{}";
-    console.log("AI RAW:", text);
-
-    let parsed;
-
-    try {
-      parsed = JSON.parse(text);
-    } catch (err) {
-      console.error("JSON PARSE ERROR:", err);
-      return NextResponse.json(
-        { error: "AI hat kein gültiges JSON geliefert" },
-        { status: 500 }
-        
-      );
-    }
-    // 👇 HIER EINFÜGEN
-if (body.demo) {
-  return NextResponse.json({
-    text: parsed?.variants?.[0]?.text || "Kein Text generiert",
+    }),
   });
-}
-    console.log("RAW RESPONSE:", text);
-console.log("PARSED:", parsed);
-console.log("VARIANTS:", parsed?.variants);
-console.log("COUNT:", parsed?.variants?.length);
 
-    if (!parsed?.variants || !Array.isArray(parsed.variants) || parsed.variants.length === 0) {
-      return NextResponse.json(
-        { error: "Keine Varianten erhalten" },
-        { status: 500 }
-      );
-    }
-const safeVariants = parsed.variants.map((v: any, i: number) => ({
-  title: v?.title?.trim() || `Exklusive Immobilie ${i + 1}`,
-  text: v?.text?.trim() || "",
-}));
-  
+  const data = await completion.json();
+  const text = data.choices?.[0]?.message?.content || "";
 
-return NextResponse.json({ variants: safeVariants });
-    return NextResponse.json(parsed);
-  } catch (error) {
-    console.error("API ERROR:", error);
-    return NextResponse.json(
-      { error: "Fehler beim Generieren" },
-      { status: 500 }
-    );
+  let parsed;
+
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    parsed = {
+      variants: [
+        { title: "Variante 1", text: text },
+        { title: "Variante 2", text: text },
+      ],
+    };
   }
+
+  return NextResponse.json({
+    variants: parsed.variants,
+  });
 }
