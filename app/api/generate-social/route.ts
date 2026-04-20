@@ -27,7 +27,7 @@ Gib die Antwort NUR als JSON im folgenden Format zurück:
       "text": "Text 1"
     },
     {
-      "title": "Titel 2",
+      "title": "Titel 2",x
       "text": "Text 2"
     }
   ]
