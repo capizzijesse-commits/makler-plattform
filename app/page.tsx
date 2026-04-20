@@ -5,8 +5,8 @@ import PricingSection from "./components/PricingSection";
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
-  const [variants, setVariants] = useState<string[]>([]);
-  const [activeVariant, setActiveVariant] = useState(0);
+ const [variants, setVariants] = useState<any[]>([]);
+const [activeVariant, setActiveVariant] = useState(0);
 
   const [form, setForm] = useState({
     ort: "",
@@ -36,10 +36,10 @@ export default function Home() {
       });
 
       const data = await res.json();
-      setVariants(data.variants || [data.text]);
+  setVariants(data.variants || []);
       setActiveVariant(0);
     } catch (err) {
-      setVariants(["Fehler beim Generieren"]);
+     setVariants([{ title: "Fehler", text: "Fehler beim Generieren" }]);
       setActiveVariant(0);
     }
 
@@ -131,51 +131,52 @@ export default function Home() {
         </div>
 
         {variants.length > 0 && (
-          <>
-            <div
-              style={{
-                background: "#ffffff",
-                borderRadius: "16px",
-                padding: "24px",
-                maxWidth: "760px",
-                margin: "20px auto 0",
-                color: "#111827",
-                whiteSpace: "pre-wrap",
-                lineHeight: 1.7,
-                boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
-              }}
-            >
-              <h2 style={{ marginBottom: "10px", fontSize: "22px" }}>
-                🏡 Dein Inserat
-              </h2>
-              {variants[activeVariant]}
-            </div>
+  <>
+    <div
+      style={{
+        background: "#ffffff",
+        borderRadius: "16px",
+        padding: "24px",
+        maxWidth: "760px",
+        margin: "20px auto 0",
+        color: "#111827",
+        whiteSpace: "pre-wrap",
+        lineHeight: 1.7,
+        boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+      }}
+    >
+      <h2 style={{ marginBottom: "10px", fontSize: "22px" }}>
+        {variants[activeVariant]?.title}
+      </h2>
 
-            <div
-              style={{
-                display: "flex",
-                gap: "10px",
-                marginTop: "10px",
-                justifyContent: "center",
-                flexWrap: "wrap",
-              }}
-            >
-              {variants.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setActiveVariant(i)}
-                  style={{
-                    ...variantBtn,
-                    background: activeVariant === i ? "#111827" : "#ffffff",
-                    color: activeVariant === i ? "#ffffff" : "#111827",
-                  }}
-                >
-                  Variante {i + 1}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
+      <div>{variants[activeVariant]?.text}</div>
+    </div>
+
+    <div
+      style={{
+        display: "flex",
+        gap: "10px",
+        marginTop: "10px",
+        justifyContent: "center",
+        flexWrap: "wrap",
+      }}
+    >
+      {variants.map((_, i) => (
+        <button
+          key={i}
+          onClick={() => setActiveVariant(i)}
+          style={{
+            ...variantBtn,
+            background: activeVariant === i ? "#111827" : "#ffffff",
+            color: activeVariant === i ? "#ffffff" : "#111827",
+          }}
+        >
+          Variante {i + 1}
+        </button>
+      ))}
+    </div>
+  </>
+)}
 
         <PricingSection />
       </div>
