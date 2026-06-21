@@ -5,8 +5,8 @@ import PricingSection from "./components/PricingSection";
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
- const [variants, setVariants] = useState<any[]>([]);
-const [activeVariant, setActiveVariant] = useState(0);
+  const [variants, setVariants] = useState<any[]>([]);
+  const [activeVariant, setActiveVariant] = useState(0);
 
   const [form, setForm] = useState({
     ort: "",
@@ -22,24 +22,21 @@ const [activeVariant, setActiveVariant] = useState(0);
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           location: form.ort,
           rooms: form.zimmer,
           livingArea: form.flaeche,
           price: form.preis,
-          demo: true,
           highlights: form.highlights,
         }),
       });
 
       const data = await res.json();
-  setVariants(data.variants || []);
+      setVariants(data.variants || []);
       setActiveVariant(0);
-    } catch (err) {
-     setVariants([{ title: "Fehler", text: "Fehler beim Generieren" }]);
+    } catch {
+      setVariants([{ title: "Fehler", text: "Fehler beim Generieren" }]);
       setActiveVariant(0);
     }
 
@@ -50,80 +47,51 @@ const [activeVariant, setActiveVariant] = useState(0);
     <main
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)",
-        padding: "60px 20px",
+        background:
+          "linear-gradient(135deg, #f8fafc 0%, #eff6ff 45%, #fff7ed 100%)",
+        padding: "70px 20px",
         fontFamily: "Inter, sans-serif",
       }}
     >
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
         <h1
           style={{
-            color: "#ffffff",
+            color: "#111827",
             textAlign: "center",
             fontSize: "2.8rem",
-            fontWeight: 800,
-            marginBottom: "10px",
+            fontWeight: 900,
+            marginBottom: "12px",
           }}
         >
-          Immobilieninserate in 20 Sekunden erstellen
+          Professionelle Immobilieninserate in 20 Sekunden erstellen
         </h1>
 
         <p
           style={{
-            color: "#cbd5e1",
+            color: "#475569",
             textAlign: "center",
-            marginBottom: "30px",
-            fontSize: "1.05rem",
+            marginBottom: "28px",
+            fontSize: "1.1rem",
           }}
         >
-          Teste Inserat-AI direkt auf der Landingpage
+          3 KI-Varianten für Homegate, ImmoScout24, Newhome und Social Media.
         </p>
 
         <div
           style={{
-            maxWidth: "560px",
-            margin: "0 auto 30px",
-            background: "rgba(255,255,255,0.96)",
+            maxWidth: "580px",
+            margin: "0 auto 25px",
+            background: "#ffffff",
             padding: "30px",
-            borderRadius: "16px",
-            boxShadow: "0 20px 50px rgba(0,0,0,0.28)",
-            backdropFilter: "blur(10px)",
+            borderRadius: "20px",
+            boxShadow: "0 20px 50px rgba(15, 23, 42, 0.16)",
           }}
         >
-          <input
-            placeholder="Ort (z.B. Winterthur)"
-            value={form.ort}
-            onChange={(e) => setForm({ ...form, ort: e.target.value })}
-            style={inputStyle}
-          />
-
-          <input
-            placeholder="Zimmer (z.B. 4.5)"
-            value={form.zimmer}
-            onChange={(e) => setForm({ ...form, zimmer: e.target.value })}
-            style={inputStyle}
-          />
-
-          <input
-            placeholder="Fläche m² (z.B. 150)"
-            value={form.flaeche}
-            onChange={(e) => setForm({ ...form, flaeche: e.target.value })}
-            style={inputStyle}
-          />
-
-          <input
-            placeholder="Preis CHF (z.B. 1000000)"
-            value={form.preis}
-            onChange={(e) => setForm({ ...form, preis: e.target.value })}
-            style={inputStyle}
-          />
-
-          <input
-            placeholder="Besonderheiten (z.B. Nähe Bahnhof, Spielplatz, Balkon)"
-            value={form.highlights}
-            onChange={(e) => setForm({ ...form, highlights: e.target.value })}
-            style={inputStyle}
-          />
+          <input placeholder="Ort (z.B. Winterthur)" value={form.ort} onChange={(e) => setForm({ ...form, ort: e.target.value })} style={inputStyle} />
+          <input placeholder="Zimmer (z.B. 4.5)" value={form.zimmer} onChange={(e) => setForm({ ...form, zimmer: e.target.value })} style={inputStyle} />
+          <input placeholder="Fläche m² (z.B. 120)" value={form.flaeche} onChange={(e) => setForm({ ...form, flaeche: e.target.value })} style={inputStyle} />
+          <input placeholder="Preis CHF (z.B. 2500)" value={form.preis} onChange={(e) => setForm({ ...form, preis: e.target.value })} style={inputStyle} />
+          <input placeholder="Highlights (z.B. Balkon, Bahnhofsnähe)" value={form.highlights} onChange={(e) => setForm({ ...form, highlights: e.target.value })} style={inputStyle} />
 
           <button onClick={handleGenerate} style={primaryBtn}>
             {loading ? "Generiere..." : "Jetzt Inserat erstellen"}
@@ -131,52 +99,32 @@ const [activeVariant, setActiveVariant] = useState(0);
         </div>
 
         {variants.length > 0 && (
-  <>
-    <div
-      style={{
-        background: "#ffffff",
-        borderRadius: "16px",
-        padding: "24px",
-        maxWidth: "760px",
-        margin: "20px auto 0",
-        color: "#111827",
-        whiteSpace: "pre-wrap",
-        lineHeight: 1.7,
-        boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
-      }}
-    >
-      <h2 style={{ marginBottom: "10px", fontSize: "22px" }}>
-        {variants[activeVariant]?.title}
-      </h2>
+          <>
+            <div style={resultBox}>
+              <h2 style={{ marginBottom: "12px", fontSize: "24px", fontWeight: 900 }}>
+                {variants[activeVariant]?.title}
+              </h2>
+              <div>{variants[activeVariant]?.text}</div>
+            </div>
 
-      <div>{variants[activeVariant]?.text}</div>
-    </div>
-
-    <div
-      style={{
-        display: "flex",
-        gap: "10px",
-        marginTop: "10px",
-        justifyContent: "center",
-        flexWrap: "wrap",
-      }}
-    >
-      {variants.map((_, i) => (
-        <button
-          key={i}
-          onClick={() => setActiveVariant(i)}
-          style={{
-            ...variantBtn,
-            background: activeVariant === i ? "#111827" : "#ffffff",
-            color: activeVariant === i ? "#ffffff" : "#111827",
-          }}
-        >
-          Variante {i + 1}
-        </button>
-      ))}
-    </div>
-  </>
-)}
+            <div style={variantWrapper}>
+              {variants.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveVariant(i)}
+                  style={{
+                    ...variantBtn,
+                    background: activeVariant === i ? "#f59e0b" : "#ffffff",
+                    color: activeVariant === i ? "#ffffff" : "#111827",
+                    border: activeVariant === i ? "1px solid #f59e0b" : "1px solid #e5e7eb",
+                  }}
+                >
+                  Variante {i + 1}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
 
         <PricingSection />
       </div>
@@ -186,7 +134,7 @@ const [activeVariant, setActiveVariant] = useState(0);
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  padding: "12px 14px",
+  padding: "13px 14px",
   borderRadius: "10px",
   border: "1px solid #d1d5db",
   fontSize: "15px",
@@ -199,21 +147,39 @@ const inputStyle: React.CSSProperties = {
 
 const primaryBtn: React.CSSProperties = {
   width: "100%",
-  padding: "14px",
+  padding: "15px",
   borderRadius: "10px",
   border: "none",
   background: "#f59e0b",
   color: "#fff",
-  fontWeight: 700,
+  fontWeight: 800,
   fontSize: "16px",
   cursor: "pointer",
 };
 
-const variantBtn: React.CSSProperties = {
-  padding: "10px 14px",
-  borderRadius: "8px",
-  border: "1px solid #e5e7eb",
+const resultBox: React.CSSProperties = {
   background: "#ffffff",
+  borderRadius: "18px",
+  padding: "28px",
+  maxWidth: "820px",
+  margin: "25px auto 0",
+  color: "#111827",
+  whiteSpace: "pre-wrap",
+  lineHeight: 1.75,
+  boxShadow: "0 16px 40px rgba(15, 23, 42, 0.15)",
+};
+
+const variantWrapper: React.CSSProperties = {
+  display: "flex",
+  gap: "10px",
+  marginTop: "14px",
+  justifyContent: "center",
+  flexWrap: "wrap",
+};
+
+const variantBtn: React.CSSProperties = {
+  padding: "10px 16px",
+  borderRadius: "999px",
   cursor: "pointer",
-  fontWeight: 600,
+  fontWeight: 700,
 };
