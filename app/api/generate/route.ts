@@ -1,21 +1,12 @@
 import { NextResponse } from "next/server";
 
-
 export async function POST(req: Request) {
-  
   const body = await req.json();
 
-  const {
-  location,
-  rooms,
-  livingArea,
-  price,
-  highlights
-} = body;
+  const { location, rooms, livingArea, price, highlights } = body;
 
-
- const prompt = `
-Erstelle GENAU 2 unterschiedliche hochwertige Immobilieninserate für Immobilienmakler in der Schweiz.
+  const prompt = `
+Erstelle GENAU 3 unterschiedliche hochwertige Immobilieninserate für Immobilienmakler in der Schweiz.
 
 Verwende AUSSCHLIESSLICH diese Angaben:
 - Ort: ${location}
@@ -26,25 +17,39 @@ Verwende AUSSCHLIESSLICH diese Angaben:
 
 WICHTIG:
 - Erfinde KEINE zusätzlichen Fakten.
-- Erfinde KEIN Haus, KEIN Grundstück, KEINE Garage, KEIN Garten, KEIN Pool, KEINE Schlafzimmerzahl, wenn es nicht in den Angaben steht.
+- Erfinde KEIN Haus, KEIN Grundstück, KEINE Garage, KEIN Garten, KEIN Pool, KEINE Schlafzimmerzahl, KEIN Lift, KEINE Aussicht, wenn es nicht ausdrücklich in den Angaben steht.
 - Wenn etwas nicht angegeben wurde, dann nicht erwähnen.
 - Verwende nur die Informationen aus den Eingaben.
-- Der Text soll länger, hochwertiger und professioneller sein.
-- Variante 1: emotional und verkaufsstark
-- Variante 2: sachlich, professionell und seriös
+- Jede Variante soll ungefähr 120 bis 180 Wörter lang sein.
 - Jede Variante braucht einen Titel und einen Text.
-- Der Text pro Variante soll ungefähr 120 bis 180 Wörter lang sein.
-- Gib NUR gültiges JSON zurück, in genau diesem Format:
+- Der Titel jeder Variante soll im Feld "title" stehen.
+- Schreibe den Titel stark, hochwertig und verkaufsorientiert.
+- Gib NUR gültiges JSON zurück, ohne Markdown, ohne Erklärung.
+
+Varianten:
+1. Emotional und einladend
+2. Sachlich, professionell und seriös
+3. Modern, verkaufsstark und digital optimiert
+
+Zusätzlicher Hinweis:
+Die Texte sollen so formuliert sein, dass sie später für Homegate, ImmoScout24, Newhome, Facebook, Instagram und LinkedIn weiterverwendet oder exportiert werden können.
+Behaupte aber NICHT, dass das Inserat automatisch hochgeladen wurde.
+
+Format:
 
 {
   "variants": [
     {
-      "title": "Titel der Variante 1",
-      "text": "Text der Variante 1"
+      "title": "Emotionaler Titel",
+      "text": "Emotionaler Text mit ungefähr 120 bis 180 Wörtern."
     },
     {
-      "title": "Titel der Variante 2",
-      "text": "Text der Variante 2"
+      "title": "Professioneller Titel",
+      "text": "Professioneller Text mit ungefähr 120 bis 180 Wörtern."
+    },
+    {
+      "title": "Moderner Titel",
+      "text": "Moderner, verkaufsstarker und digital optimierter Text mit ungefähr 120 bis 180 Wörtern."
     }
   ]
 }
@@ -59,6 +64,7 @@ WICHTIG:
     body: JSON.stringify({
       model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
+      temperature: 0.4,
     }),
   });
 
@@ -72,13 +78,15 @@ WICHTIG:
   } catch {
     parsed = {
       variants: [
-        { title: "Variante 1", text: text },
-        { title: "Variante 2", text: text },
+        {
+          title: "Fehler",
+          text: "Die Ausgabe konnte nicht korrekt gelesen werden.",
+        },
       ],
     };
   }
 
   return NextResponse.json({
-    variants: parsed.variants,
+    variants: parsed.variants || [],
   });
 }
