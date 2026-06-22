@@ -68,7 +68,7 @@ export default function Home() {
 
         <p
           style={{
-            color: "#475569",
+          color: "#caced8",
             textAlign: "center",
             marginBottom: "28px",
             fontSize: "1.1rem",
