@@ -56,7 +56,7 @@ export default function Home() {
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
         <h1
           style={{
-            color: "#111827",
+           color: "#ffffff",
             textAlign: "center",
             fontSize: "2.8rem",
             fontWeight: 900,
@@ -68,7 +68,7 @@ export default function Home() {
 
         <p
           style={{
-          color: "#caced8",
+         color: "#e2e8f0",
             textAlign: "center",
             marginBottom: "28px",
             fontSize: "1.1rem",
