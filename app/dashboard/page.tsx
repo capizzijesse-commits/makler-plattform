@@ -265,7 +265,13 @@ setFacebookPost(data?.social?.facebook || "");
   }
 
 return (
-  <main className="page">
+<main
+  className="page"
+  style={{
+    background:
+      "radial-gradient(circle at 18% 12%, rgba(37, 99, 235, 0.45), transparent 28%), radial-gradient(circle at 88% 82%, rgba(249, 115, 22, 0.75), transparent 34%), linear-gradient(135deg, #020617 0%, #0f172a 35%, #312e81 65%, #7c2d12 100%)",
+  }}
+>
     <div className="shell">
 
     <div className="hero">
@@ -431,12 +437,18 @@ return (
 
   <div className="actions">
     <button
-      onClick={generateText}
-      disabled={loading}
-      className="btn btn-primary"
-    >
-      {loading ? "Generiere..." : "Generieren (2 Varianten)"}
-    </button>
+  onClick={generateText}
+  disabled={loading}
+  className="btn btn-primary"
+  style={{
+    background: "linear-gradient(135deg, #f59e0b, #f97316)",
+    boxShadow: "0 16px 36px rgba(249, 115, 22, 0.35)",
+    color: "#ffffff",
+    border: "none",
+  }}
+>
+  {loading ? "Generiere..." : "✨ Generieren (3 Varianten)"}
+</button>
 
     <button
       onClick={copyActive}
