@@ -508,7 +508,7 @@ return (
       </div>
 
       <div className="variantTabs">
-  {(variants ?? []).slice(0, 2).map((v, i) => (
+ {(variants ?? []).map((v, i) => (
     <button
       key={i}
       onClick={() => setActiveIndex(i)}
@@ -525,7 +525,7 @@ return (
         <div className="emptyState">
           <div className="emptyTitle">Noch keine Variante vorhanden</div>
           <div className="emptyText">
-            Gib links die Objektdaten ein und klicke auf „Generieren (2 Varianten)“.
+           Gib links die Objektdaten ein und klicke auf „Generieren (3 Varianten)“.
           </div>
         </div>
       ) : (
