@@ -112,7 +112,7 @@ export default function PricingSection() {
       >
         <h3 style={{ margin: 0, fontSize: "1.3rem" }}>Agency</h3>
         <p style={{ fontSize: "3rem", fontWeight: 800, margin: "12px 0 8px" }}>
-          249.90 CHF
+          149.90 CHF
         </p>
         <p style={{ color: "#6b7280", fontSize: "1rem", margin: 0 }}>
           Teams / mehrere Makler
