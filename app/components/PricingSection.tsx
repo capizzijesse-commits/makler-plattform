@@ -5,7 +5,7 @@ export default function PricingSection() {
     {
       name: "Free",
       price: "0 CHF",
-      text: "10 Inserate kostenlos testen",
+      text: "50 Inserate kostenlos testen",
       features: ["3 KI-Varianten", "Direkt testen", "Kein Risiko"],
     },
     {

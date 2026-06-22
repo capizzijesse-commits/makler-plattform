@@ -14,7 +14,7 @@ export default function Page() {
       <p>
   Jesse Capizzi
   <br />
-  8400 Winterthur
+  8408 Winterthur
   <br />
   Schweiz
 </p>

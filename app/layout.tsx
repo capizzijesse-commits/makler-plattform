@@ -4,7 +4,7 @@ import Footer from "@/app/components/Footer";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Makler Plattform",
+  title: "Inserat-AI",
   description: "Immobilien-Inserate Generator für die Schweiz",
 };
 
