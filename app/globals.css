@@ -746,10 +746,13 @@ input:focus::placeholder {
   opacity: 0.2 !important;
 }
 .variantTabs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: row;
   gap: 12px;
   margin: 12px 0 18px 0;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
 }
 
 .variantButton {

@@ -61,15 +61,15 @@ async function analyzeImage() {
   }
 }
 
-  const [location, setLocation] = useState("Winterthur");
-  const [propertyType, setPropertyType] = useState("Wohnung");
-  const [rooms, setRooms] = useState("4.5");
-  const [livingArea, setLivingArea] = useState("110");
-  const [price, setPrice] = useState("1095000");
-  const [styleText, setStyleText] = useState("Luxus / Premium");
-  const [highlights, setHighlights] = useState(
-  "Balkon, Lift, Garage, ruhige Lage"
-);
+const [location, setLocation] = useState("");
+const [propertyType, setPropertyType] = useState("");
+const [rooms, setRooms] = useState("");
+const [livingArea, setLivingArea] = useState("");
+const [price, setPrice] = useState("");
+const [styleText, setStyleText] = useState("");
+const [highlights, setHighlights] = useState("");
+  
+
 
 const [socialLoading, setSocialLoading] = useState(false);
 
