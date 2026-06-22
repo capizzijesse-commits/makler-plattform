@@ -4,7 +4,7 @@ export default function Page() {
       <h1>Impressum</h1>
 
       <p>
-        Makler Plattform
+       Inserat AI
       </p>
 
       <p>
@@ -12,13 +12,12 @@ export default function Page() {
       </p>
 
       <p>
-        Jesse Capizzi
-        INSERAT AI
-      </p>
-
-      <p>
-        Schweiz
-      </p>
+  Jesse Capizzi
+  <br />
+  8400 Winterthur
+  <br />
+  Schweiz
+</p>
 
       <p>
         E-Mail: info@inserat-ai.ch

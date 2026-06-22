@@ -77,7 +77,29 @@ export default function Home() {
         >
           3 KI-Varianten für Homegate, ImmoScout24, Newhome und Social Media.
         </p>
-
+<div
+  style={{
+    textAlign: "center",
+    marginBottom: "28px",
+  }}
+>
+  <span
+    style={{
+      display: "inline-block",
+      background: "rgba(255, 255, 255, 0.12)",
+      color: "#ffffff",
+      border: "1px solid rgba(255, 255, 255, 0.22)",
+      borderRadius: "999px",
+      padding: "10px 16px",
+      fontSize: "0.95rem",
+      fontWeight: 700,
+      backdropFilter: "blur(10px)",
+    }}
+  >
+    Inserat-AI wird aktuell für die ersten Schweizer Immobilienmakler geöffnet.
+    
+  </span>
+</div>
         <div
           style={{
             maxWidth: "580px",
