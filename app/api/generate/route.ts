@@ -1,9 +1,55 @@
 import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   const body = await req.json();
 
-  const { location, rooms, livingArea, price, highlights } = body;
+  const {
+    location,
+    rooms,
+    livingArea,
+    price,
+    highlights,
+    email,
+    demo,
+  } = body;
+
+  let user = null;
+
+  if (!demo) {
+    if (!email) {
+      return NextResponse.json(
+        { error: "Nicht eingeloggt. Bitte erneut anmelden." },
+        { status: 401 }
+      );
+    }
+
+    user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Benutzer wurde nicht gefunden." },
+        { status: 404 }
+      );
+    }
+
+    if (
+      user.plan === "free" &&
+      user.freeGenerationsUsed >= user.freeGenerationLimit
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Du hast deine 50 kostenlosen Inserate aufgebraucht. Bitte wechsle auf einen Plan, um weiter Inserate zu erstellen.",
+        },
+        { status: 403 }
+      );
+    }
+  }
 
   const prompt = `
 Erstelle GENAU 3 unterschiedliche hochwertige Immobilieninserate für Immobilienmakler in der Schweiz.
@@ -84,6 +130,17 @@ Format:
         },
       ],
     };
+  }
+
+  if (user && user.plan === "free") {
+    await prisma.user.update({
+      where: { email: user.email },
+      data: {
+        freeGenerationsUsed: {
+          increment: 1,
+        },
+      },
+    });
   }
 
   return NextResponse.json({

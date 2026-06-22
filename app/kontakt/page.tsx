@@ -140,7 +140,7 @@ export default function KontaktPage() {
             fontSize: "15px",
           }}
         >
-          <div><strong>Starter:</strong> 29 CHF / Monat</div>
+          <div><strong>Starter:</strong> 39 CHF / Monat</div>
           <div><strong>Inklusive:</strong> Inserate, Varianten, PDF, Copy, Portale & Social Media</div>
         </div>
       </div>

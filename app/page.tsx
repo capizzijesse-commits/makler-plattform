@@ -23,13 +23,14 @@ export default function Home() {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          location: form.ort,
-          rooms: form.zimmer,
-          livingArea: form.flaeche,
-          price: form.preis,
-          highlights: form.highlights,
-        }),
+       body: JSON.stringify({
+  location: form.ort,
+  rooms: form.zimmer,
+  livingArea: form.flaeche,
+  price: form.preis,
+  highlights: form.highlights,
+  demo: true,
+}),
       });
 
       const data = await res.json();

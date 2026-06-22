@@ -13,7 +13,7 @@ export default function Page() {
 
       <p>
         Jesse Capizzi
-        INSERO
+        INSERAT AI
       </p>
 
       <p>
@@ -21,7 +21,7 @@ export default function Page() {
       </p>
 
       <p>
-        E-Mail: info@insero-ai.ch
+        E-Mail: info@inserat-ai.ch
       </p>
     </div>
   );

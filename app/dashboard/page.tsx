@@ -134,6 +134,8 @@ const [activeIndex, setActiveIndex] = useState(0);
   highlights,
   styleText,
   imageAnalysis,
+  email: localStorage.getItem("userEmail"),
+  
 }),
       });
 

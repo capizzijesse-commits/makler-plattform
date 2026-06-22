@@ -77,7 +77,7 @@ export default function PricingSection() {
             marginBottom: "12px",
           }}
         >
-          Gründerangebot: Standard für die ersten 50 Makler nur 19.90 CHF
+       Gründerangebot: Die ersten 50 Makler sichern sich den Standard-Plan dauerhaft für 19.90 CHF statt 39.90 CHF pro Monat.
         </p>
 
         <h2
@@ -97,7 +97,7 @@ export default function PricingSection() {
             fontSize: "1rem",
           }}
         >
-          Starte kostenlos und wechsle später auf den passenden Plan.
+          Teste Inserat-AI kostenlos mit 50 Inseraten und wechsle danach auf den passenden Plan.
         </p>
       </div>
 
