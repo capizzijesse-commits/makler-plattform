@@ -48,7 +48,7 @@ export default function Home() {
       style={{
         minHeight: "100vh",
         background:
-          "linear-gradient(135deg, #f8fafc 0%, #eff6ff 45%, #fff7ed 100%)",
+  "linear-gradient(135deg, #f8fafc 0%, #eff6ff 45%, #fff7ed 100%)",
         padding: "70px 20px",
         fontFamily: "Inter, sans-serif",
       }}

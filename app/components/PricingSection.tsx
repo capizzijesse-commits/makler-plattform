@@ -1,18 +1,49 @@
 "use client";
 
 export default function PricingSection() {
-  const cardStyle: React.CSSProperties = {
-    background: "#ffffff",
-    borderRadius: "16px",
-    padding: "24px",
-    border: "1px solid #e5e7eb",
-    minHeight: "170px",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    textAlign: "center",
-    boxSizing: "border-box",
-  };
+  const plans = [
+    {
+      name: "Free",
+      price: "0 CHF",
+      text: "10 Inserate kostenlos testen",
+      features: ["3 KI-Varianten", "Direkt testen", "Kein Risiko"],
+    },
+    {
+      name: "Standard",
+      price: "39.90 CHF",
+      text: "Für einzelne Makler",
+      badge: "🔥 Meist gewählt",
+      highlighted: true,
+      features: [
+        "100 Inserate pro Monat",
+        "3 professionelle Varianten",
+        "Export für Immobilienportale",
+        "Social-Media-Texte",
+      ],
+    },
+    {
+      name: "Pro",
+      price: "79.90 CHF",
+      text: "Für aktive Makler",
+      features: [
+        "Mehr Inserate",
+        "PDF-Exposé",
+        "Facebook, Instagram & LinkedIn",
+        "Mehr Features",
+      ],
+    },
+    {
+      name: "Agency",
+      price: "149.90 CHF",
+      text: "Für Teams und Agenturen",
+      features: [
+        "Mehrere Makler",
+        "Team-Nutzung",
+        "Viele Inserate",
+        "Priorisierter Support",
+      ],
+    },
+  ];
 
   return (
     <section
@@ -20,113 +51,183 @@ export default function PricingSection() {
         background: "#ffffff",
         fontFamily: "Inter, sans-serif",
         color: "#1f2937",
-        borderRadius: "20px",
-        padding: "32px 20px 40px",
+        borderRadius: "24px",
+        padding: "36px 24px 44px",
         maxWidth: "1100px",
-        margin: "40px auto 0",
+        margin: "45px auto 0",
         boxSizing: "border-box",
+        boxShadow: "0 20px 50px rgba(15, 23, 42, 0.10)",
       }}
     >
-      <h2
+      <div
         style={{
           textAlign: "center",
-          fontSize: "2rem",
-          fontWeight: 800,
-          marginBottom: "24px",
+          marginBottom: "28px",
         }}
       >
-        Preise
-      </h2>
+        <p
+          style={{
+            display: "inline-block",
+            background: "#fff7ed",
+            color: "#c2410c",
+            padding: "8px 14px",
+            borderRadius: "999px",
+            fontWeight: 800,
+            fontSize: "0.85rem",
+            marginBottom: "12px",
+          }}
+        >
+          Gründerangebot: Standard für die ersten 30 Makler nur 19.90 CHF
+        </p>
+
+        <h2
+          style={{
+            fontSize: "2.2rem",
+            fontWeight: 900,
+            margin: "0 0 8px",
+          }}
+        >
+          Preise
+        </h2>
+
+        <p
+          style={{
+            color: "#64748b",
+            margin: 0,
+            fontSize: "1rem",
+          }}
+        >
+          Starte kostenlos und wechsle später auf den passenden Plan.
+        </p>
+      </div>
 
       <div
-        className="cardsRow"
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))",
           gap: "20px",
         }}
       >
-        <div className="priceCard" style={cardStyle}>
-          <h3 style={{ margin: 0, fontSize: "1.1rem" }}>Free</h3>
-          <p style={{ fontSize: "1.75rem", fontWeight: 800, margin: "12px 0 8px" }}>
-            0 CHF
-          </p>
-          <p style={{ color: "#6b7280", fontSize: "0.95rem", margin: 0 }}>
-            50 Inserate kostenlos testen
-          </p>
-        </div>
+        {plans.map((plan) => (
+          <div
+            key={plan.name}
+            style={{
+              background: plan.highlighted
+                ? "linear-gradient(135deg, #fff7ed, #ffffff)"
+                : "#ffffff",
+              borderRadius: "20px",
+              padding: "26px 22px",
+              border: plan.highlighted
+                ? "2px solid #f59e0b"
+                : "1px solid #e5e7eb",
+              boxShadow: plan.highlighted
+                ? "0 18px 40px rgba(245, 158, 11, 0.22)"
+                : "0 10px 24px rgba(15, 23, 42, 0.06)",
+              transform: plan.highlighted ? "translateY(-6px)" : "none",
+              minHeight: "330px",
+              display: "flex",
+              flexDirection: "column",
+              boxSizing: "border-box",
+            }}
+          >
+            {plan.badge && (
+              <div
+                style={{
+                  alignSelf: "flex-start",
+                  background: "#f59e0b",
+                  color: "#ffffff",
+                  padding: "7px 11px",
+                  borderRadius: "999px",
+                  fontSize: "0.8rem",
+                  fontWeight: 900,
+                  marginBottom: "14px",
+                }}
+              >
+                {plan.badge}
+              </div>
+            )}
 
-        <div
-          className="priceCard"
-          style={{
-            ...cardStyle,
-            border: "2px solid #f5a623",
-            transform: "scale(1.03)",
-          }}
-        >
-          <h3 style={{ margin: 0, fontSize: "1.1rem" }}>Founder ⭐</h3>
-          <p style={{ fontSize: "1.75rem", fontWeight: 800, margin: "12px 0 8px" }}>
-            19.90 CHF
-          </p>
-          <p style={{ color: "#6b7280", fontSize: "0.95rem", margin: 0 }}>
-            Für die ersten 30 Makler
-          </p>
-        </div>
+            <h3
+              style={{
+                margin: 0,
+                fontSize: "1.35rem",
+                fontWeight: 800,
+              }}
+            >
+              {plan.name}
+            </h3>
 
-        <div className="priceCard" style={cardStyle}>
-          <h3 style={{ margin: 0, fontSize: "1.1rem" }}>Standard</h3>
-          <p style={{ fontSize: "1.75rem", fontWeight: 800, margin: "12px 0 8px" }}>
-            39.90 CHF
-          </p>
-          <p style={{ color: "#6b7280", fontSize: "0.95rem", margin: 0 }}>
-            Danach
-          </p>
-        </div>
+            <p
+              style={{
+                fontSize: "2rem",
+                fontWeight: 900,
+                margin: "14px 0 6px",
+                color: "#111827",
+              }}
+            >
+              {plan.price}
+            </p>
 
-        <div className="priceCard" style={cardStyle}>
-          <h3 style={{ margin: 0, fontSize: "1.1rem" }}>Pro</h3>
-          <p style={{ fontSize: "1.75rem", fontWeight: 800, margin: "12px 0 8px" }}>
-            79.90 CHF
-          </p>
-          <p style={{ color: "#6b7280", fontSize: "0.95rem", margin: 0 }}>
-            Exposé PDF / Social Media / mehr Features
-          </p>
-        </div>
+            <p
+              style={{
+                color: "#64748b",
+                fontSize: "0.95rem",
+                margin: "0 0 18px",
+              }}
+            >
+              {plan.text}
+            </p>
+
+            <div
+              style={{
+                display: "grid",
+                gap: "10px",
+                marginTop: "auto",
+                textAlign: "left",
+              }}
+            >
+              {plan.features.map((feature) => (
+                <div
+                  key={feature}
+                  style={{
+                    color: "#334155",
+                    fontSize: "0.95rem",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  ✓ {feature}
+                </div>
+              ))}
+            </div>
+
+            <button
+              style={{
+                marginTop: "22px",
+                width: "100%",
+                padding: "13px",
+                borderRadius: "12px",
+                border: "none",
+                background: plan.highlighted ? "#f59e0b" : "#111827",
+                color: "#ffffff",
+                fontWeight: 900,
+                cursor: "pointer",
+              }}
+            >
+              {plan.highlighted ? "Jetzt starten" : "Auswählen"}
+            </button>
+          </div>
+        ))}
       </div>
 
       <div
         style={{
-          background: "#ffffff",
-          borderRadius: "16px",
-          padding: "32px",
-          border: "1px solid #e5e7eb",
-          maxWidth: "1100px",
-          margin: "20px auto 0",
-          minHeight: "180px",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          textAlign: "center",
-          boxSizing: "border-box",
-        }}
-      >
-        <h3 style={{ margin: 0, fontSize: "1.3rem" }}>Agency</h3>
-        <p style={{ fontSize: "3rem", fontWeight: 800, margin: "12px 0 8px" }}>
-          149.90 CHF
-        </p>
-        <p style={{ color: "#6b7280", fontSize: "1rem", margin: 0 }}>
-          Teams / mehrere Makler
-        </p>
-      </div>
-
-      <div
-        style={{
-          background: "#f3f4f6",
+          background: "#f8fafc",
           padding: "20px 24px",
           textAlign: "center",
           fontSize: "0.95rem",
-          borderRadius: "16px",
-          marginTop: "20px",
+          borderRadius: "18px",
+          marginTop: "26px",
+          color: "#334155",
         }}
       >
         Sichere Zahlung mit
@@ -135,7 +236,7 @@ export default function PricingSection() {
             display: "flex",
             justifyContent: "center",
             gap: "12px",
-            marginTop: "10px",
+            marginTop: "12px",
             flexWrap: "wrap",
           }}
         >
@@ -147,7 +248,7 @@ export default function PricingSection() {
                 border: "1px solid #e5e7eb",
                 borderRadius: "10px",
                 padding: "8px 12px",
-                fontWeight: 700,
+                fontWeight: 800,
               }}
             >
               {m}
