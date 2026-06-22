@@ -77,7 +77,7 @@ export default function PricingSection() {
             marginBottom: "12px",
           }}
         >
-          Gründerangebot: Standard für die ersten 30 Makler nur 19.90 CHF
+          Gründerangebot: Standard für die ersten 50 Makler nur 19.90 CHF
         </p>
 
         <h2
