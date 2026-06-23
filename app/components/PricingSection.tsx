@@ -1,12 +1,16 @@
 "use client";
 
 export default function PricingSection() {
+  const founderPaymentLink = "https://buy.stripe.com/test_5kQ28sdozdIk3bsduy1WY00";
+const proPaymentLink = "DEIN_PRO_LINK_HIER";
+const agencyPaymentLink = "DEIN_AGENCY_LINK_HIER";
   const plans = [
     {
       name: "Free",
       price: "0 CHF",
       text: "50 Inserate kostenlos testen",
       features: ["3 KI-Varianten", "Direkt testen", "Kein Risiko"],
+      
     },
     {
       name: "Standard",
@@ -199,22 +203,34 @@ export default function PricingSection() {
                 </div>
               ))}
             </div>
-
-            <button
-              style={{
-                marginTop: "22px",
-                width: "100%",
-                padding: "13px",
-                borderRadius: "12px",
-                border: "none",
-                background: plan.highlighted ? "#f59e0b" : "#111827",
-                color: "#ffffff",
-                fontWeight: 900,
-                cursor: "pointer",
-              }}
-            >
-              {plan.highlighted ? "Jetzt starten" : "Auswählen"}
-            </button>
+            
+            
+            <a
+ href={
+  plan.name === "Free"
+    ? "/register"
+    : plan.name === "Standard"
+    ? founderPaymentLink
+    : plan.name === "Pro"
+    ? proPaymentLink
+    : agencyPaymentLink
+}
+ target={plan.name === "Free" ? "_self" : "_blank"}
+  rel={plan.name === "Free" ? undefined : "noopener noreferrer"}
+  style={{
+    display: "block",
+    padding: "14px 28px",
+    background: "#f59e0b",
+    color: "#ffffff",
+    borderRadius: "12px",
+    textDecoration: "none",
+    width: "100%",
+    textAlign: "center",
+    fontWeight: 700,
+  }}
+>
+  Jetzt starten
+</a>
           </div>
         ))}
       </div>
