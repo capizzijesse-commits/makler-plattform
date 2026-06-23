@@ -147,10 +147,24 @@ setActiveVariant(0);
         {variants.length > 0 && (
           <>
             <div style={resultBox}>
-              <h2 style={{ marginBottom: "12px", fontSize: "24px", fontWeight: 900 }}>
+             <h2
+  style={{
+    marginBottom: "12px",
+    fontSize: "24px",
+    fontWeight: 900,
+    color: "rgba(15, 23, 42, 0.78)",
+  }}
+>
                 {variants[activeVariant]?.title}
               </h2>
-              <div>{variants[activeVariant]?.text}</div>
+              <div
+  style={{
+    color: "rgba(15, 23, 42, 0.62)",
+    lineHeight: 1.7,
+  }}
+>
+  {variants[activeVariant]?.text}
+</div>
             </div>
 
             <div style={variantWrapper}>
@@ -203,16 +217,18 @@ const primaryBtn: React.CSSProperties = {
   cursor: "pointer",
 };
 
-const resultBox: React.CSSProperties = {
-  background: "#ffffff",
-  borderRadius: "18px",
-  padding: "28px",
-  maxWidth: "820px",
-  margin: "25px auto 0",
-  color: "#111827",
-  whiteSpace: "pre-wrap",
-  lineHeight: 1.75,
-  boxShadow: "0 16px 40px rgba(15, 23, 42, 0.15)",
+const resultBox = {
+  background: "rgba(255, 255, 255, 0.78)",
+  backdropFilter: "blur(12px)",
+  border: "1px solid rgba(255, 255, 255, 0.35)",
+  borderRadius: "24px",
+  padding: "34px",
+  maxWidth: "900px",
+  margin: "36px auto 0",
+  color: "rgba(15, 23, 42, 0.68)",
+  boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
+userSelect: "none" as const,
+
 };
 
 const variantWrapper: React.CSSProperties = {
