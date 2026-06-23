@@ -472,7 +472,7 @@ return (
   <div className="miniStats">
     <MiniStat title="Markt" value="Schweiz" />
     <MiniStat title="Output" value=" Varianten" />
-    <MiniStat title="Stil" value="Premium" />
+    <MiniStat title="Stil" value="Hochwertig" />
   </div>
 </section>
 
@@ -583,7 +583,7 @@ return (
     <div className="bonusBlock">
       <div className="bonusTitle">🎁 Bonus</div>
       <div className="bonusText">
-        Empfehle Inserat AI einem Maklerkollegen und erhalte 5 zusätzliche Inserate kostenlos.
+        Empfehle Inserat - AI einem Maklerkollegen und erhalte 5 zusätzliche Inserate kostenlos.
       </div>
       <button className="bonusBtn">Empfehlungslink kopieren</button>
     </div>

@@ -4,7 +4,7 @@ export default function Page() {
       <h1>Impressum</h1>
 
       <p>
-       Inserat AI
+       Inserat - AI
       </p>
 
       <p>

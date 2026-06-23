@@ -97,7 +97,7 @@ export default function PricingSection() {
             fontSize: "1rem",
           }}
         >
-          Teste Inserat-AI kostenlos mit 50 Inseraten und wechsle danach auf den passenden Plan.
+          Teste Inserat - AI kostenlos mit 50 Inseraten und wechsle danach auf den passenden Plan.
         </p>
       </div>
 

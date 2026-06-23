@@ -22,7 +22,7 @@ export default function Navbar() {
   return (
     <header className="container-max py-6 flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <div className="font-semibold text-lg">INSERAT - AI</div>
+        <div className="font-semibold text-lg">Inserat - AI</div>
       </div>
 
       <div className="flex items-center gap-4">

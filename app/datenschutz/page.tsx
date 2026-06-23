@@ -15,7 +15,7 @@ export default function Page() {
         <br />
         Jesse Capizzi
         <br />
-        Inserat-AI
+        Inserat - AI
         <br />
         E-Mail: info@inserat-ai.ch
       </p>
