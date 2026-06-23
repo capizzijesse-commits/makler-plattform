@@ -249,7 +249,7 @@ setFacebookPost(data?.social?.facebook || "");
         </head>
         <body>
           <div class="container">
-            <div class="meta">Makler AI Pro – PDF Export</div>
+            <div class="meta">Inserat - AI – PDF Export</div>
             <h1>${title}</h1>
             <div class="content">${text}</div>
             ${bulletHtml}
@@ -343,11 +343,11 @@ return (
 
     <Field label="Stil">
       <input
-        value={styleText}
-        placeholder="Luxus / Premium"
-        onChange={(e) => setStyleText(e.target.value)}
-        className="input"
-      />
+  value={styleText}
+  placeholder="z.B. hochwertig, modern oder sachlich"
+  onChange={(e) => setStyleText(e.target.value)}
+  className="input"
+/>
     </Field>
 
     <Field label="Highlights (mit Komma trennen)">
