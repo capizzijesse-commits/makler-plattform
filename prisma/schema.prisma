@@ -16,5 +16,10 @@ model User {
   plan                String   @default("free")
   freeGenerationsUsed Int      @default(0)
   freeGenerationLimit Int      @default(50)
+
+  isFounder           Boolean  @default(false)
+  founderNumber       Int?
+  founderPriceCents   Int?
+
   createdAt           DateTime @default(now())
 }

@@ -64,19 +64,21 @@ export default function Home() {
             marginBottom: "12px",
           }}
         >
-          Professionelle Immobilieninserate in 20 Sekunden erstellen
+         Professionelle Inserate in 20 Sekunden erstellen
         </h1>
 
-        <p
-          style={{
-         color: "#e2e8f0",
-            textAlign: "center",
-            marginBottom: "28px",
-            fontSize: "1.1rem",
-          }}
-        >
-          3 KI-Varianten für Homegate, ImmoScout24, Newhome und Social Media.
-        </p>
+       <p
+  style={{
+    color: "#e2e8f0",
+    textAlign: "center",
+    margin: "0 auto 28px auto",
+    fontSize: "clamp(1rem, 3.8vw, 1.15rem)",
+    lineHeight: 1.55,
+    maxWidth: "760px",
+  }}
+>
+  3 KI-Varianten für Homegate, ImmoScout24, Newhome und Social Media.
+</p>
 <div
   style={{
     textAlign: "center",
