@@ -52,6 +52,7 @@ WICHTIG:
 - Der Titel jeder Variante soll im Feld "title" stehen.
 - Schreibe den Titel hochwertig, klar und verkaufsorientiert.
 - Gib NUR gültiges JSON zurück, ohne Markdown und ohne Erklärung.
+- Schreibe in Schweizer Hochdeutsch. Verwende Schweizer Rechtschreibung ohne ß.
 
 Varianten:
 1. Emotional und einladend
@@ -107,20 +108,22 @@ Format:
         { status: 500 }
       );
     }
+const toSwissGerman = (value: string) =>
+  value.replace(/ß/g, "ss").replace(/ẞ/g, "SS");
 
-    const safeVariants = parsed.variants
-      .map((v: any, i: number) => ({
-        title:
-          typeof v?.title === "string" && v.title.trim()
-            ? v.title.trim()
-            : `Variante ${i + 1}`,
-        text:
-          typeof v?.text === "string" && v.text.trim()
-            ? v.text.trim()
-            : "",
-      }))
-      .filter((v: any) => v.text)
-      .slice(0, 3);
+const safeVariants = parsed.variants
+  .map((v: any, i: number) => ({
+    title:
+      typeof v?.title === "string" && v.title.trim()
+        ? toSwissGerman(v.title.trim())
+        : `Variante ${i + 1}`,
+    text:
+      typeof v?.text === "string" && v.text.trim()
+        ? toSwissGerman(v.text.trim())
+        : "",
+  }))
+  .filter((v: any) => v.text)
+  .slice(0, 3);
 
     if (safeVariants.length === 0) {
       return NextResponse.json(
