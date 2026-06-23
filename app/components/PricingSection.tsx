@@ -1,8 +1,7 @@
 "use client";
 
 export default function PricingSection() {
-  const founderPaymentLink = "https://buy.stripe.com/test_5kQ28sdozdIk3bsduy1wY00";
-
+const founderPaymentLink = "https://buy.stripe.com/test_5kQ28sdozdIk3bsduy1wY00";
 const proPaymentLink = "https://buy.stripe.com/test_9B64gAfwHgUwbHY4Y21wY01";
 const agencyPaymentLink = "https://buy.stripe.com/test_dRm4gA5W7eMo3bs0HM1wY04";
   const plans = [
