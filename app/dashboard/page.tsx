@@ -158,11 +158,15 @@ const [activeIndex, setActiveIndex] = useState(0);
 setLinkedinPost(data?.social?.linkedin || "");
 setFacebookPost(data?.social?.facebook || "");
     } catch (error) {
-      console.error("FRONTEND GENERATE ERROR:", error);
-      alert("Fehler beim Generieren.");
-    } finally {
-      setLoading(false);
-    }
+  console.error("FRONTEND GENERATE ERROR:", error);
+
+  const message =
+    error instanceof Error ? error.message : "Fehler beim Generieren.";
+
+  alert(message);
+} finally {
+  setLoading(false);
+}
   }
 
   async function copyActive() {
