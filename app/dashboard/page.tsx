@@ -68,6 +68,41 @@ const [livingArea, setLivingArea] = useState("");
 const [price, setPrice] = useState("");
 const [styleText, setStyleText] = useState("");
 const [highlights, setHighlights] = useState("");
+const FORM_STORAGE_KEY = "inseratAiDashboardForm";
+
+useEffect(() => {
+  const savedForm = localStorage.getItem(FORM_STORAGE_KEY);
+
+  if (!savedForm) return;
+
+  try {
+    const data = JSON.parse(savedForm);
+
+    setLocation(data.location || "");
+    setPropertyType(data.propertyType || "");
+    setRooms(data.rooms || "");
+    setLivingArea(data.livingArea || "");
+    setPrice(data.price || "");
+    setStyleText(data.styleText || "");
+    setHighlights(data.highlights || "");
+  } catch {
+    localStorage.removeItem(FORM_STORAGE_KEY);
+  }
+}, []);
+
+useEffect(() => {
+  const formData = {
+    location,
+    propertyType,
+    rooms,
+    livingArea,
+    price,
+    styleText,
+    highlights,
+  };
+
+  localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(formData));
+}, [location, propertyType, rooms, livingArea, price, styleText, highlights]);
   
 
 
