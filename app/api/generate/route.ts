@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
@@ -30,45 +27,7 @@ export async function POST(req: Request) {
       highlights,
       styleText,
       imageAnalysis,
-      email,
-      demo,
     } = body;
-
-    let user: any = null;
-
-    if (!demo) {
-      if (!email) {
-        return NextResponse.json(
-          { error: "Nicht eingeloggt. Bitte erneut anmelden." },
-          { status: 401 }
-        );
-      }
-
-      user = await prisma.user.findUnique({
-        where: { email },
-      });
-
-      if (!user) {
-        return NextResponse.json(
-          { error: "Benutzer wurde nicht gefunden. Bitte neu registrieren oder neu einloggen." },
-          { status: 404 }
-        );
-      }
-
-      if (
-        user.plan === "free" &&
-        user.freeGenerationsUsed >= user.freeGenerationLimit
-      ) {
-        return NextResponse.json(
-          {
-            error: user.isFounder
-              ? "Du hast deine 50 kostenlosen Inserate aufgebraucht. Als Founder sicherst du dir den Standard-Plan dauerhaft für 19.90 CHF pro Monat. Bitte aktiviere deinen Founder-Plan, um weiter Inserate zu erstellen."
-              : "Du hast deine 50 kostenlosen Inserate aufgebraucht. Bitte wechsle auf einen Plan, um weiter Inserate zu erstellen.",
-          },
-          { status: 403 }
-        );
-      }
-    }
 
     const prompt = `
 Erstelle GENAU 3 unterschiedliche hochwertige Immobilieninserate für Immobilienmakler in der Schweiz.
@@ -168,17 +127,6 @@ Format:
         { error: "Keine Varianten erhalten." },
         { status: 500 }
       );
-    }
-
-    if (user && user.plan === "free") {
-      await prisma.user.update({
-        where: { email: user.email },
-        data: {
-          freeGenerationsUsed: {
-            increment: 1,
-          },
-        },
-      });
     }
 
     return NextResponse.json({
