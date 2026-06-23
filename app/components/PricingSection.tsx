@@ -1,9 +1,10 @@
 "use client";
 
 export default function PricingSection() {
-  const founderPaymentLink = "https://buy.stripe.com/test_5kQ28sdozdIk3bsduy1WY00";
-const proPaymentLink = "DEIN_PRO_LINK_HIER";
-const agencyPaymentLink = "DEIN_AGENCY_LINK_HIER";
+  const founderPaymentLink = "https://buy.stripe.com/test_dRm4gA5W7eMo3bs0HM1wY04";
+
+const proPaymentLink = "https://buy.stripe.com/test_9B64gAfwHgUwbHY4Y21wY01";
+const agencyPaymentLink = "https://buy.stripe.com/test_dRm4gA5W7eMo3bs0HM1wY04";
   const plans = [
     {
       name: "Free",
@@ -13,18 +14,20 @@ const agencyPaymentLink = "DEIN_AGENCY_LINK_HIER";
       
     },
     {
-      name: "Standard",
-      price: "39.90 CHF",
-      text: "Für einzelne Makler",
-      badge: "🔥 Meist gewählt",
-      highlighted: true,
-      features: [
-        "100 Inserate pro Monat",
-        "3 professionelle Varianten",
-        "Export für Immobilienportale",
-        "Social-Media-Texte",
-      ],
-    },
+        
+  name: "Standard",
+  price: "19.90 CHF",
+  text: "Founder-Preis für die ersten 50 Makler",
+  badge: "🔥 Gründerangebot",
+  highlighted: true,
+  features: [
+    "Normalpreis 39.90 CHF",
+    "100 Inserate pro Monat",
+    "3 professionelle Varianten",
+    "Export für Immobilienportale",
+    "Social-Media-Texte",
+  ],
+},
     {
       name: "Pro",
       price: "79.90 CHF",
@@ -204,32 +207,32 @@ const agencyPaymentLink = "DEIN_AGENCY_LINK_HIER";
               ))}
             </div>
             
-            
-            <a
- href={
-  plan.name === "Free"
-    ? "/register"
-    : plan.name === "Standard"
-    ? founderPaymentLink
-    : plan.name === "Pro"
-    ? proPaymentLink
-    : agencyPaymentLink
-}
- target={plan.name === "Free" ? "_self" : "_blank"}
-  rel={plan.name === "Free" ? undefined : "noopener noreferrer"}
+          <a
+  href={
+    plan.name === "Free"
+      ? "/register"
+      : plan.name === "Standard"
+      ? founderPaymentLink
+      : plan.name === "Pro"
+      ? proPaymentLink
+      : agencyPaymentLink
+  }
+ target={plan.name === "Free" || plan.name === "Agency" ? "_self" : "_blank"}
+rel={plan.name === "Free" || plan.name === "Agency" ? undefined : "noopener noreferrer"}
   style={{
     display: "block",
     padding: "14px 28px",
-    background: "#f59e0b",
+    background: plan.highlighted ? "#f59e0b" : "#111827",
     color: "#ffffff",
     borderRadius: "12px",
     textDecoration: "none",
     width: "100%",
     textAlign: "center",
     fontWeight: 700,
+    marginTop: "22px",
   }}
 >
-  Jetzt starten
+  {plan.name === "Standard" ? "Jetzt starten" : "Auswählen"}
 </a>
           </div>
         ))}
