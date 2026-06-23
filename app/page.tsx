@@ -36,6 +36,27 @@ export default function Home() {
       const data = await res.json();
       setVariants(data.variants || []);
       setActiveVariant(0);
+    
+
+const demoVariant = data?.variants?.[0];
+
+if (!demoVariant) {
+  setVariants([{ title: "Fehler", text: "Keine Demo erhalten." }]);
+  setActiveVariant(0);
+  return;
+}
+
+setVariants([
+  {
+    title: demoVariant.title || "Demo-Inserat",
+    text:
+      demoVariant.text && demoVariant.text.length > 450
+        ? demoVariant.text.slice(0, 450) + "..."
+        : demoVariant.text,
+  },
+]);
+
+setActiveVariant(0); 
     } catch {
       setVariants([{ title: "Fehler", text: "Fehler beim Generieren" }]);
       setActiveVariant(0);
