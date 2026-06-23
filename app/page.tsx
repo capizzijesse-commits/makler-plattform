@@ -87,7 +87,7 @@ export default function Home() {
     style={{
       display: "inline-block",
       background: "rgba(255, 255, 255, 0.12)",
-      color: "#ffffff",
+      color: "#fbbf24",
       border: "1px solid rgba(255, 255, 255, 0.22)",
       borderRadius: "999px",
       padding: "10px 16px",
