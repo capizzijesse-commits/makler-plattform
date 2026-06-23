@@ -1,7 +1,7 @@
 "use client";
 
 export default function PricingSection() {
-  const founderPaymentLink = "https://buy.stripe.com/test_dRm4gA5W7eMo3bs0HM1wY04";
+  const founderPaymentLink = "https://buy.stripe.com/test_5kQ28sdozdIk3bsduy1wY00";
 
 const proPaymentLink = "https://buy.stripe.com/test_9B64gAfwHgUwbHY4Y21wY01";
 const agencyPaymentLink = "https://buy.stripe.com/test_dRm4gA5W7eMo3bs0HM1wY04";
@@ -207,7 +207,7 @@ const agencyPaymentLink = "https://buy.stripe.com/test_dRm4gA5W7eMo3bs0HM1wY04";
               ))}
             </div>
             
-          <a
+         <a
   href={
     plan.name === "Free"
       ? "/register"
@@ -217,8 +217,8 @@ const agencyPaymentLink = "https://buy.stripe.com/test_dRm4gA5W7eMo3bs0HM1wY04";
       ? proPaymentLink
       : agencyPaymentLink
   }
- target={plan.name === "Free" || plan.name === "Agency" ? "_self" : "_blank"}
-rel={plan.name === "Free" || plan.name === "Agency" ? undefined : "noopener noreferrer"}
+  target={plan.name === "Free" ? "_self" : "_blank"}
+  rel={plan.name === "Free" ? undefined : "noopener noreferrer"}
   style={{
     display: "block",
     padding: "14px 28px",
