@@ -214,11 +214,11 @@ const agencyPaymentLink = "https://buy.stripe.com/test_dRm4gA5W7eMo3bs0HM1wY04";
             
          <a
   href={
-    plan.name === "Free"
+    plan.name === "Demo"
       ? "/register"
       : plan.name === "Standard"
       ? founderPaymentLink
-      : plan.name === "Pro"
+      : plan.name === "Business"
       ? proPaymentLink
       : agencyPaymentLink
   }
