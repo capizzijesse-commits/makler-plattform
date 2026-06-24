@@ -4,40 +4,46 @@ export default function PricingSection() {
 const founderPaymentLink = "https://buy.stripe.com/test_5kQ28sdozdIk3bsduy1wY00";
 const proPaymentLink = "https://buy.stripe.com/test_9B64gAfwHgUwbHY4Y21wY01";
 const agencyPaymentLink = "https://buy.stripe.com/test_dRm4gA5W7eMo3bs0HM1wY04";
+
   const plans = [
     {
-      name: "Free",
-      price: "0 CHF",
-      text: "50 Inserate kostenlos testen",
-      features: ["3 KI-Varianten", "Direkt testen", "Kein Risiko"],
-      
-    },
+  name: "Demo",
+  price: "0 CHF",
+  text: "Gekürzte Vorschau zum Ausprobieren",
+  features: [
+    "Gekürzte Demo-Vorschau",
+    "Volle Version mit 3 professionellen Varianten",
+    "Standard-Plan 30 Tage kostenlos testen",
+  ],
+},
     {
-        
   name: "Standard",
-  price: "19.90 CHF",
-  text: "Founder-Preis für die ersten 50 Makler",
+  price: "30 Tage kostenlos",
+  text: "Danach 19.90 CHF pro Monat",
   badge: "🔥 Gründerangebot",
   highlighted: true,
   features: [
-    "Normalpreis 39.90 CHF",
-    "100 Inserate pro Monat",
-    "3 professionelle Varianten",
+    "Heute 0 CHF zahlen",
+    "30 Tage kostenlos testen",
+    "Danach 19.90 CHF pro Monat",
+    "Normalpreis später 39.90 CHF",
+    "Volle Version mit 3 professionellen Varianten",
     "Export für Immobilienportale",
     "Social-Media-Texte",
   ],
 },
-    {
-      name: "Pro",
-      price: "79.90 CHF",
-      text: "Für aktive Makler",
-      features: [
-        "Mehr Inserate",
-        "PDF-Exposé",
-        "Facebook, Instagram & LinkedIn",
-        "Mehr Features",
-      ],
-    },
+   {
+  name: "Business",
+  price: "79.90 CHF",
+  text: "Für aktive Makler mit regelmässiger Objektvermarktung und höherem Volumen.",
+ features: [
+  "Bis zu 500 Inserate pro Monat",
+  "Volle Version mit 3 professionellen Varianten",
+  "Für regelmässige Objektvermarktung",
+  "Priorisierter Support",
+  "Für Immobilienportale und Social Media verwendbar",
+],
+}, 
     {
       name: "Agency",
       price: "149.90 CHF",
@@ -83,7 +89,7 @@ const agencyPaymentLink = "https://buy.stripe.com/test_dRm4gA5W7eMo3bs0HM1wY04";
             marginBottom: "12px",
           }}
         >
-       Gründerangebot: Die ersten 50 Makler sichern sich den Standard-Plan dauerhaft für 19.90 CHF statt 39.90 CHF pro Monat.
+    Gründerangebot: Starte 30 Tage kostenlos. Danach nutzt du den Standard-Plan für nur 19.90 CHF pro Monat statt später 39.90 CHF.
         </p>
 
         <h2
@@ -103,7 +109,7 @@ const agencyPaymentLink = "https://buy.stripe.com/test_dRm4gA5W7eMo3bs0HM1wY04";
             fontSize: "1rem",
           }}
         >
-          Teste Inserat - AI kostenlos mit 50 Inseraten und wechsle danach auf den passenden Plan.
+        Starte 30 Tage kostenlos mit Inserat-AI. Danach nutzt du den Standard-Plan für 19.90 CHF pro Monat.
         </p>
       </div>
 

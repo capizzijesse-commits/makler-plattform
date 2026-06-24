@@ -52,9 +52,9 @@ export async function POST(req: Request) {
       ) {
         return NextResponse.json(
           {
-            error: user.isFounder
-              ? "Du hast deine 50 kostenlosen Inserate aufgebraucht. Als Founder sicherst du dir den Standard-Plan dauerhaft für 19.90 CHF pro Monat. Bitte aktiviere deinen Founder-Plan, um weiter Inserate zu erstellen."
-              : "Du hast deine 50 kostenlosen Inserate aufgebraucht. Bitte wechsle auf einen Plan, um weiter Inserate zu erstellen.",
+           error: user.isFounder
+  ? "Dein kostenloser Testzeitraum ist abgelaufen. Dein Founder-Plan startet danach automatisch für 19.90 CHF pro Monat. Bitte stelle sicher, dass dein Abo aktiv ist, um weiter Inserate zu erstellen."
+  : "Dein kostenloser Testzeitraum ist abgelaufen. Bitte aktiviere einen Plan, um weiter Inserate zu erstellen.",
           },
           { status: 403 }
         );
