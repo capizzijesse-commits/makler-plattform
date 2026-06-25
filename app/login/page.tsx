@@ -1,103 +1,196 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginPage() {
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
-  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
+  function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
 
-    try {
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.error || "Login fehlgeschlagen");
-        return;
-      }
-
-      localStorage.setItem("userName", data.user.name);
-      localStorage.setItem("userEmail", data.user.email);
-
-      window.location.href = "/dashboard";
-    } catch (error) {
-      console.error(error);
-      alert("Server Fehler beim Login");
-    } finally {
-      setLoading(false);
+    if (!email || !password) {
+      alert("Bitte E-Mail und Passwort eingeben.");
+      return;
     }
+
+    const nameFromEmail = email.split("@")[0] || "Makler";
+    const cleanName =
+      nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1);
+
+    localStorage.setItem("userName", cleanName);
+    localStorage.setItem("userEmail", email);
+
+    router.push("/dashboard");
   }
 
   return (
-    <main className="min-h-screen bg-[#111111] text-white flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-[#1a1a1a] border border-gray-800 rounded-2xl p-8 shadow-xl">
-        <h1 className="text-3xl font-bold text-center mb-2">Willkommen zurück</h1>
-        <p className="text-gray-400 text-center mb-8">
-          Melden Sie sich an, um den Inserat Generator zu nutzen
-        </p>
+    <main
+      style={{
+        minHeight: "100vh",
+        background:
+          "radial-gradient(circle at 20% 10%, rgba(37, 99, 235, 0.35), transparent 28%), radial-gradient(circle at 90% 80%, rgba(245, 158, 11, 0.28), transparent 30%), linear-gradient(135deg, #020617 0%, #0f172a 45%, #1e3a8a 100%)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "40px 20px",
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "460px",
+          background: "rgba(255, 255, 255, 0.08)",
+          border: "1px solid rgba(255, 255, 255, 0.18)",
+          borderRadius: "28px",
+          padding: "42px",
+          boxShadow: "0 30px 80px rgba(0,0,0,0.35)",
+          backdropFilter: "blur(18px)",
+        }}
+      >
+        <div style={{ marginBottom: "30px", textAlign: "center" }}>
+          <h1
+            style={{
+              color: "#ffffff",
+              fontSize: "36px",
+              fontWeight: 900,
+              marginBottom: "12px",
+              letterSpacing: "-0.04em",
+            }}
+          >
+            Willkommen zurück
+          </h1>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-sm mb-2">E-Mail</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full rounded-lg bg-[#111111] border border-gray-700 px-4 py-3 text-white outline-none focus:border-orange-500"
-              placeholder="ihre@email.ch"
-            />
-          </div>
+          <p
+            style={{
+              color: "#cbd5e1",
+              fontSize: "16px",
+              lineHeight: 1.6,
+              margin: 0,
+            }}
+          >
+            Melden Sie sich an und erstellen Sie professionelle Immobilieninserate in Sekunden.
+          </p>
+        </div>
 
-          <div>
-            <label className="block text-sm mb-2">Passwort</label>
-           <div className="relative">
-  <input
-    type={showPassword ? "text" : "password"}
-    value={password}
-    onChange={(e) => setPassword(e.target.value)}
-    required
-    className="w-full rounded-lg bg-[#111111] border border-gray-700 px-4 py-3 pr-12 text-white outline-none focus:border-orange-500"
-    placeholder="********"
-  />
+        <form onSubmit={handleLogin}>
+          <label
+            style={{
+              display: "block",
+              color: "#e5e7eb",
+              fontWeight: 800,
+              marginBottom: "8px",
+            }}
+          >
+            E-Mail
+          </label>
 
-  <button
-    type="button"
-    onClick={() => setShowPassword(!showPassword)}
-    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-  >
-    👁️
-  </button>
-</div>
-          </div>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="name@firma.ch"
+            style={{
+              width: "100%",
+              padding: "16px 18px",
+              borderRadius: "16px",
+              border: "1px solid rgba(255,255,255,0.2)",
+              background: "rgba(255,255,255,0.1)",
+              color: "#ffffff",
+              fontSize: "16px",
+              outline: "none",
+              marginBottom: "20px",
+            }}
+          />
+
+          <label
+            style={{
+              display: "block",
+              color: "#e5e7eb",
+              fontWeight: 800,
+              marginBottom: "8px",
+            }}
+          >
+            Passwort
+          </label>
+
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Passwort eingeben"
+            style={{
+              width: "100%",
+              padding: "16px 18px",
+              borderRadius: "16px",
+              border: "1px solid rgba(255,255,255,0.2)",
+              background: "rgba(255,255,255,0.1)",
+              color: "#ffffff",
+              fontSize: "16px",
+              outline: "none",
+              marginBottom: "26px",
+            }}
+          />
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-70 text-white font-semibold py-3 rounded-lg transition"
+            style={{
+              width: "100%",
+              padding: "16px 22px",
+              borderRadius: "16px",
+              border: "none",
+              background: "linear-gradient(135deg, #f59e0b, #f97316)",
+              color: "#ffffff",
+              fontSize: "17px",
+              fontWeight: 900,
+              cursor: "pointer",
+              boxShadow: "0 18px 40px rgba(249, 115, 22, 0.35)",
+            }}
           >
-            {loading ? "Wird geladen..." : "Login"}
+            Einloggen
           </button>
         </form>
 
-        <p className="text-sm text-gray-400 mt-6 text-center">
-          Noch kein Konto?{" "}
-          <a href="/register" className="text-orange-400 hover:underline">
-            Account erstellen
-          </a>
+        <p
+          style={{
+            color: "#cbd5e1",
+            textAlign: "center",
+            marginTop: "24px",
+            fontSize: "15px",
+          }}
+        >
+          Noch keinen Account?{" "}
+          <Link
+            href="/register"
+            style={{
+              color: "#fbbf24",
+              fontWeight: 800,
+              textDecoration: "none",
+            }}
+          >
+            30 Tage kostenlos starten
+          </Link>
         </p>
+
+        <div
+          style={{
+            marginTop: "28px",
+            padding: "16px",
+            borderRadius: "18px",
+            background: "rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            color: "#cbd5e1",
+            fontSize: "14px",
+            lineHeight: 1.6,
+            textAlign: "center",
+          }}
+        >
+          Inserat-AI erstellt aus wenigen Angaben professionelle Immobilieninserate für Portale, Website und Social Media.
+        </div>
       </div>
     </main>
   );
