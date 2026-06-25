@@ -68,12 +68,20 @@ const [livingArea, setLivingArea] = useState("");
 const [price, setPrice] = useState("");
 const [styleText, setStyleText] = useState("");
 const [highlights, setHighlights] = useState("");
-const FORM_STORAGE_KEY = "inseratAiDashboardForm";
+const [formLoaded, setFormLoaded] = useState(false);
+
+const getFormStorageKey = () => {
+  const email = localStorage.getItem("userEmail") || "guest";
+  return `inseratAiDashboardForm_${email}`;
+};
 
 useEffect(() => {
-  const savedForm = localStorage.getItem(FORM_STORAGE_KEY);
+  const savedForm = localStorage.getItem(getFormStorageKey());
 
-  if (!savedForm) return;
+  if (!savedForm) {
+    setFormLoaded(true);
+    return;
+  }
 
   try {
     const data = JSON.parse(savedForm);
@@ -86,11 +94,15 @@ useEffect(() => {
     setStyleText(data.styleText || "");
     setHighlights(data.highlights || "");
   } catch {
-    localStorage.removeItem(FORM_STORAGE_KEY);
+    localStorage.removeItem(getFormStorageKey());
+  } finally {
+    setFormLoaded(true);
   }
 }, []);
 
 useEffect(() => {
+  if (!formLoaded) return;
+
   const formData = {
     location,
     propertyType,
@@ -101,9 +113,17 @@ useEffect(() => {
     highlights,
   };
 
-  localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(formData));
-}, [location, propertyType, rooms, livingArea, price, styleText, highlights]);
-  
+  localStorage.setItem(getFormStorageKey(), JSON.stringify(formData));
+}, [
+  formLoaded,
+  location,
+  propertyType,
+  rooms,
+  livingArea,
+  price,
+  styleText,
+  highlights,
+]);
 
 
 const [socialLoading, setSocialLoading] = useState(false);
