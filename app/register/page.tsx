@@ -1,188 +1,208 @@
 "use client";
-import { useRouter } from "next/navigation";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function RegisterPage() {
   const router = useRouter();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleRegister(e: React.FormEvent) {
+  function handleRegister(e: FormEvent) {
     e.preventDefault();
+
+    if (!name || !email || !password) {
+      alert("Bitte alle Felder ausfüllen.");
+      return;
+    }
+
     setLoading(true);
 
-   try {
-  // Vorläufig nur Demo
-  localStorage.setItem("userName", name);
-  localStorage.setItem("userEmail", email);
+    try {
+      localStorage.setItem("userName", name);
+      localStorage.setItem("userEmail", email);
 
-  router.push("/dashboard");
-} catch (error) {
-  alert("Fehler bei der Registrierung.");
-} finally {
-  setLoading(false);
-}
+      router.push("/dashboard");
+    } catch {
+      alert("Fehler bei der Registrierung.");
+      setLoading(false);
+    }
   }
 
   return (
-    <main className="container-max py-16">
+    <main
+      style={{
+        minHeight: "100vh",
+        background:
+          "radial-gradient(circle at 20% 10%, rgba(37, 99, 235, 0.35), transparent 28%), radial-gradient(circle at 90% 80%, rgba(245, 158, 11, 0.28), transparent 30%), linear-gradient(135deg, #020617 0%, #0f172a 45%, #1e3a8a 100%)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "60px 20px",
+      }}
+    >
       <div
         style={{
-          maxWidth: "520px",
-          margin: "0 auto",
-          background: "#111827",
-          border: "1px solid rgba(255,255,255,0.08)",
-          borderRadius: "24px",
-          padding: "32px",
-          boxShadow: "0 12px 40px rgba(0,0,0,0.25)",
+          width: "100%",
+          maxWidth: "500px",
+          background: "rgba(255, 255, 255, 0.08)",
+          border: "1px solid rgba(255, 255, 255, 0.18)",
+          borderRadius: "28px",
+          padding: "42px",
+          boxShadow: "0 30px 80px rgba(0,0,0,0.35)",
+          backdropFilter: "blur(18px)",
         }}
       >
-        <div className="badge" style={{ marginBottom: "16px" }}>
-          Kostenlos testen
+        <div style={{ marginBottom: "30px", textAlign: "center" }}>
+          <div
+            style={{
+              display: "inline-block",
+              padding: "8px 14px",
+              borderRadius: "999px",
+              border: "1px solid rgba(251, 191, 36, 0.45)",
+              color: "#fbbf24",
+              fontWeight: 800,
+              fontSize: "14px",
+              marginBottom: "18px",
+              background: "rgba(255,255,255,0.08)",
+            }}
+          >
+            30 Tage kostenlos testen
+          </div>
+
+          <h1
+            style={{
+              color: "#ffffff",
+              fontSize: "38px",
+              fontWeight: 900,
+              marginBottom: "12px",
+              letterSpacing: "-0.04em",
+            }}
+          >
+            Account erstellen
+          </h1>
+
+          <p
+            style={{
+              color: "#cbd5e1",
+              fontSize: "16px",
+              lineHeight: 1.6,
+              margin: 0,
+            }}
+          >
+            Erstellen Sie Ihren Zugang und generieren Sie professionelle Immobilieninserate in Sekunden.
+          </p>
         </div>
 
-        <h1
-          style={{
-            fontSize: "40px",
-            lineHeight: 1.1,
-            fontWeight: 800,
-            marginBottom: "12px",
-            color: "#fff7ed",
-          }}
-        >
-          Account erstellen
-        </h1>
+        <form onSubmit={handleRegister}>
+          <label style={labelStyle}>Name</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Ihr Name"
+            style={inputStyle}
+          />
 
-        <p
-          style={{
-            color: "rgba(255,255,255,0.75)",
-            marginBottom: "28px",
-            fontSize: "16px",
-          }}
-        >
-          Erstellen Sie Ihren Zugang und testen Sie den Inserat Generator.
-        </p>
+          <label style={labelStyle}>E-Mail</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="name@firma.ch"
+            style={inputStyle}
+          />
 
-        <form onSubmit={handleRegister} style={{ display: "grid", gap: "16px" }}>
-          <div>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                color: "#fff7ed",
-                fontWeight: 600,
-              }}
-            >
-              Name
-            </label>
-            <input
-              type="text"
-              placeholder="Ihr Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              style={{
-                width: "100%",
-                padding: "14px 16px",
-                borderRadius: "14px",
-                border: "1px solid rgba(255,255,255,0.08)",
-                background: "#1f2937",
-                color: "#ffffff",
-                outline: "none",
-              }}
-            />
-          </div>
-
-          <div>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                color: "#fff7ed",
-                fontWeight: 600,
-              }}
-            >
-              E-Mail
-            </label>
-            <input
-              type="email"
-              placeholder="name@firma.ch"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              style={{
-                width: "100%",
-                padding: "14px 16px",
-                borderRadius: "14px",
-                border: "1px solid rgba(255,255,255,0.08)",
-                background: "#1f2937",
-                color: "#ffffff",
-                outline: "none",
-              }}
-            />
-          </div>
-
-          <div>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                color: "#fff7ed",
-                fontWeight: 600,
-              }}
-            >
-              Passwort
-            </label>
-            <input
-              type="password"
-              placeholder="Passwort eingeben"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              style={{
-                width: "100%",
-                padding: "14px 16px",
-                borderRadius: "14px",
-                border: "1px solid rgba(255,255,255,0.08)",
-                background: "#1f2937",
-                color: "#ffffff",
-                outline: "none",
-              }}
-            />
-          </div>
+          <label style={labelStyle}>Passwort</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Passwort eingeben"
+            style={inputStyle}
+          />
 
           <button
             type="submit"
             disabled={loading}
             style={{
-              marginTop: "8px",
-              padding: "14px 18px",
-              borderRadius: "14px",
+              width: "100%",
+              padding: "16px 22px",
+              borderRadius: "16px",
               border: "none",
-              background: "#f59e0b",
-              color: "#111827",
-              fontWeight: 700,
-              fontSize: "16px",
+              background: "linear-gradient(135deg, #f59e0b, #f97316)",
+              color: "#ffffff",
+              fontSize: "17px",
+              fontWeight: 900,
               cursor: "pointer",
+              boxShadow: "0 18px 40px rgba(249, 115, 22, 0.35)",
+              marginTop: "8px",
             }}
           >
-            {loading ? "Wird erstellt..." : "Account erstellen"}
+            {loading ? "Account wird erstellt..." : "Account erstellen"}
           </button>
         </form>
 
         <p
           style={{
-            marginTop: "18px",
-            color: "rgba(255,255,255,0.7)",
-            fontSize: "14px",
+            color: "#cbd5e1",
+            textAlign: "center",
+            marginTop: "24px",
+            fontSize: "15px",
           }}
         >
-          Bereits registriert? <a href="/login" style={{ color: "#fbbf24" }}>Login</a>
+          Bereits registriert?{" "}
+          <Link
+            href="/login"
+            style={{
+              color: "#fbbf24",
+              fontWeight: 800,
+              textDecoration: "none",
+            }}
+          >
+            Einloggen
+          </Link>
         </p>
+
+        <div
+          style={{
+            marginTop: "28px",
+            padding: "16px",
+            borderRadius: "18px",
+            background: "rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            color: "#cbd5e1",
+            fontSize: "14px",
+            lineHeight: 1.6,
+            textAlign: "center",
+          }}
+        >
+          30 Tage kostenlos testen. Danach startet der Standard-Plan für 19.90 CHF pro Monat.
+        </div>
       </div>
     </main>
   );
 }
+
+const labelStyle = {
+  display: "block",
+  color: "#e5e7eb",
+  fontWeight: 800,
+  marginBottom: "8px",
+};
+
+const inputStyle = {
+  width: "100%",
+  padding: "16px 18px",
+  borderRadius: "16px",
+  border: "1px solid rgba(255,255,255,0.2)",
+  background: "rgba(255,255,255,0.1)",
+  color: "#ffffff",
+  fontSize: "16px",
+  outline: "none",
+  marginBottom: "20px",
+};
