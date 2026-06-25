@@ -1,8 +1,10 @@
 "use client";
+import { useRouter } from "next/navigation";
 
 import { useState } from "react";
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -12,14 +14,17 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      // Vorläufig nur Demo
-      alert(`Account erstellt für: ${name} (${email})`);
-    } catch (error) {
-      alert("Fehler bei der Registrierung.");
-    } finally {
-      setLoading(false);
-    }
+   try {
+  // Vorläufig nur Demo
+  localStorage.setItem("userName", name);
+  localStorage.setItem("userEmail", email);
+
+  router.push("/dashboard");
+} catch (error) {
+  alert("Fehler bei der Registrierung.");
+} finally {
+  setLoading(false);
+}
   }
 
   return (
