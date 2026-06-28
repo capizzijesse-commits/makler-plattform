@@ -136,8 +136,30 @@ const [socialPosts, setSocialPosts] = useState<{
 
 const [loading, setLoading] = useState(false);
 const [variants, setVariants] = useState<Variant[]>([]);
+const [dailyCount, setDailyCount] = useState(0);
 const [activeIndex, setActiveIndex] = useState(0);
   const current = variants[activeIndex];
+  const getTodayKey = () => {
+  const email = localStorage.getItem("userEmail") || "guest";
+  const today = new Date().toISOString().slice(0, 10);
+  return `inseratAiDailyCount_${email}_${today}`;
+};
+
+const formatSavedTime = (count: number) => {
+  const totalMinutes = count * 15;
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours > 0 && minutes > 0) {
+    return `${hours} Std. ${minutes} Min.`;
+  }
+
+  if (hours > 0) {
+    return `${hours} Std.`;
+  }
+
+  return `${totalMinutes} Min.`;
+};
 
   async function generateText() {
     async function analyzeImage() {
@@ -212,6 +234,9 @@ const [activeIndex, setActiveIndex] = useState(0);
      setInstagramPost(data?.social?.instagram || "");
 setLinkedinPost(data?.social?.linkedin || "");
 setFacebookPost(data?.social?.facebook || "");
+const newDailyCount = dailyCount + 1;
+setDailyCount(newDailyCount);
+localStorage.setItem(getTodayKey(), String(newDailyCount));
     } catch (error) {
   console.error("FRONTEND GENERATE ERROR:", error);
 
@@ -542,13 +567,13 @@ return (
   <section className="rightCard">
   <div className="topStats">
     <div className="topStat">
-      <div className="topStatValue">{variants.length > 0 ? 1 : 0}</div>
-      <div className="topStatLabel">Inserate erstellt</div>
-    </div>
+  <div className="topStatValue">{dailyCount}</div>
+  <div className="topStatLabel">Inserate heute</div>
+</div>
 
     <div className="topStat">
-  <div className="topStatValue">{variants.length > 0 ? 1 : 0}</div>
-  <div className="topStatLabel">Stunden Arbeit gespart</div>
+  <div className="topStatValue">{formatSavedTime(dailyCount)}</div>
+  <div className="topStatLabel">Geschätzte Zeitersparnis heute</div>
 </div>
 
     <div className="topStat">
