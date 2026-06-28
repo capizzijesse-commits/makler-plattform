@@ -539,7 +539,7 @@ return (
   Feedback / Support
 </button>
 
-   <section className="rightCard">
+  <section className="rightCard">
   <div className="topStats">
     <div className="topStat">
       <div className="topStatValue">{variants.length > 0 ? 1 : 0}</div>
@@ -547,16 +547,15 @@ return (
     </div>
 
     <div className="topStat">
-      <div className="topStatValue">0</div>
-      <div className="topStatLabel">Stunden Arbeit gespart</div>
-    </div>
+  <div className="topStatValue">{variants.length > 0 ? 1 : 0}</div>
+  <div className="topStatLabel">Stunden Arbeit gespart</div>
+</div>
 
     <div className="topStat">
-      <div className="topStatValue">50</div>
-      <div className="topStatLabel">Kostenlose Inserate übrig</div>
+      <div className="topStatValue">30 Tage</div>
+      <div className="topStatLabel">Kostenlos testen</div>
     </div>
   </div>
-
   <div className="outputShell">
     <div className="outputTop">
       <div>
