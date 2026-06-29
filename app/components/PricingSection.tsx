@@ -63,7 +63,7 @@ const agencyPaymentLink = "https://buy.stripe.com/test_dRm4gA5W7eMo3bs0HM1wY04";
         color: "#1f2937",
         borderRadius: "24px",
         padding: "36px 24px 44px",
-        maxWidth: "1100px",
+        maxWidth: "760px",
         margin: "45px auto 0",
         boxSizing: "border-box",
         boxShadow: "0 20px 50px rgba(15, 23, 42, 0.10)",
@@ -127,7 +127,7 @@ const agencyPaymentLink = "https://buy.stripe.com/test_dRm4gA5W7eMo3bs0HM1wY04";
                 ? "linear-gradient(135deg, #fff7ed, #ffffff)"
                 : "#ffffff",
               borderRadius: "20px",
-              padding: "26px 22px",
+              padding: "18px 16px",
               border: plan.highlighted
                 ? "2px solid #f59e0b"
                 : "1px solid #e5e7eb",
@@ -135,7 +135,7 @@ const agencyPaymentLink = "https://buy.stripe.com/test_dRm4gA5W7eMo3bs0HM1wY04";
                 ? "0 18px 40px rgba(245, 158, 11, 0.22)"
                 : "0 10px 24px rgba(15, 23, 42, 0.06)",
               transform: plan.highlighted ? "translateY(-6px)" : "none",
-              minHeight: "330px",
+              minHeight: "230px",
               display: "flex",
               flexDirection: "column",
               boxSizing: "border-box",
