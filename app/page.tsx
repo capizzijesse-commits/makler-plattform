@@ -245,7 +245,67 @@ setActiveVariant(0);
             </div>
           </>
         )}
+<section
+  style={{
+    padding: "80px 20px",
+    background:
+      "linear-gradient(135deg, #020617 0%, #0f172a 45%, #1e3a8a 100%)",
+  }}
+>
+  <div
+    style={{
+      maxWidth: "1000px",
+      margin: "0 auto",
+      textAlign: "center",
+    }}
+  >
+    <h2
+      style={{
+        color: "#ffffff",
+        fontSize: "clamp(2rem, 5vw, 3rem)",
+        fontWeight: 900,
+        marginBottom: "16px",
+        letterSpacing: "-0.04em",
+      }}
+    >
+      So einfach entsteht Ihr Immobilieninserat
+    </h2>
 
+    <p
+      style={{
+        color: "#cbd5e1",
+        fontSize: "18px",
+        lineHeight: 1.6,
+        maxWidth: "720px",
+        margin: "0 auto 36px auto",
+      }}
+    >
+      Sehen Sie, wie aus wenigen Angaben in Sekunden professionelle
+      Inserat-Varianten für Immobilienportale und Social Media entstehen.
+    </p>
+
+    <div
+      style={{
+        borderRadius: "28px",
+        overflow: "hidden",
+        border: "1px solid rgba(255,255,255,0.16)",
+        boxShadow: "0 30px 80px rgba(0,0,0,0.45)",
+        background: "#020617",
+      }}
+    >
+      <video
+        src="/inserat-ai-demo.mp4"
+        controls
+        playsInline
+        preload="metadata"
+        style={{
+          width: "100%",
+          display: "block",
+        }}
+      />
+    </div>
+  </div>
+</section>
         <PricingSection />
       </div>
     </main>
