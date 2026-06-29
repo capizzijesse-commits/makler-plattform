@@ -135,7 +135,7 @@ const agencyPaymentLink = "https://buy.stripe.com/test_dRm4gA5W7eMo3bs0HM1wY04";
                 ? "0 18px 40px rgba(245, 158, 11, 0.22)"
                 : "0 10px 24px rgba(15, 23, 42, 0.06)",
               transform: plan.highlighted ? "translateY(-6px)" : "none",
-              
+              minHeight: "330px",
               display: "flex",
               flexDirection: "column",
               boxSizing: "border-box",
