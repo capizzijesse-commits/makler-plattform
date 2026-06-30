@@ -20,8 +20,31 @@ export default function Navbar() {
   }
 
   return (
-  <header className="fixed top-0 z-50 border-b border-white/10 bg-slate-950/90 backdrop-blur">
-    <div className="container-max py-4 flex items-center justify-between">
+  <header
+  style={{
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    width: "100%",
+    zIndex: 9999,
+    background: "rgba(2, 6, 23, 0.94)",
+    borderBottom: "1px solid rgba(255,255,255,0.10)",
+    backdropFilter: "blur(16px)",
+  }}
+>
+  <div
+    style={{
+      maxWidth: "1100px",
+      margin: "0 auto",
+      padding: "16px 24px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "24px",
+      boxSizing: "border-box",
+    }}
+  >
       <div className="flex items-center gap-3">
         <div className="font-semibold text-lg">Inserat-AI</div>
       </div>
