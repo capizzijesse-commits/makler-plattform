@@ -111,14 +111,15 @@ maxWidth: "1100px",
         </p>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-gap: "16px",
-alignItems: "start",
-        }}
-      >
+     <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: "20px",
+    alignItems: "start",
+  }}
+>
+      
         {plans.map((plan) => (
           <div
             key={plan.name}
