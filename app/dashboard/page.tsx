@@ -137,7 +137,34 @@ const [socialPosts, setSocialPosts] = useState<{
 const [loading, setLoading] = useState(false);
 const [variants, setVariants] = useState<Variant[]>([]);
 const [dailyCount, setDailyCount] = useState(0);
+const [trialExpired, setTrialExpired] = useState(false);
+const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
 const [activeIndex, setActiveIndex] = useState(0);
+useEffect(() => {
+  const trialEndDate = localStorage.getItem("trialEndDate");
+
+  if (!trialEndDate) {
+    setTrialExpired(false);
+    setTrialDaysLeft(null);
+    return;
+  }
+
+  const now = new Date();
+  const end = new Date(trialEndDate);
+
+  if (now > end) {
+    setTrialExpired(true);
+    localStorage.setItem("trialStatus", "expired");
+    setTrialDaysLeft(0);
+    return;
+  }
+
+  const diffTime = end.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  setTrialExpired(false);
+  setTrialDaysLeft(diffDays);
+}, []);
   const current = variants[activeIndex];
   const getTodayKey = () => {
   const email = localStorage.getItem("userEmail") || "guest";
@@ -162,6 +189,10 @@ const formatSavedTime = (count: number) => {
 };
 
   async function generateText() {
+    if (trialExpired) {
+  alert("Ihr 30-Tage-Test ist abgelaufen. Bitte aktivieren Sie Ihr Abo, um weiterhin Inserate zu erstellen.");
+  return;
+}
     async function analyzeImage() {
   if (!selectedImage) {
     alert("Bitte zuerst ein Bild auswählen.");
@@ -375,7 +406,39 @@ return (
   <p className="sectionText">
     Erfasse die wichtigsten Eckdaten der Immobilie. Die KI erstellt daraus mehrere professionelle Textvarianten.
   </p>
+{trialDaysLeft !== null && !trialExpired && (
+  <div
+    style={{
+      marginBottom: "18px",
+      padding: "14px 16px",
+      borderRadius: "14px",
+      background: "rgba(34, 197, 94, 0.12)",
+      border: "1px solid rgba(34, 197, 94, 0.35)",
+      color: "#bbf7d0",
+      fontWeight: 700,
+      textAlign: "center",
+    }}
+  >
+    Ihr kostenloser Test läuft noch {trialDaysLeft} Tage.
+  </div>
+)}
 
+{trialExpired && (
+  <div
+    style={{
+      marginBottom: "18px",
+      padding: "18px",
+      borderRadius: "16px",
+      background: "rgba(239, 68, 68, 0.12)",
+      border: "1px solid rgba(239, 68, 68, 0.35)",
+      color: "#fecaca",
+      fontWeight: 700,
+      textAlign: "center",
+    }}
+  >
+    Ihr 30-Tage-Test ist abgelaufen. Bitte aktivieren Sie Ihr Abo, um weiterhin Inserate zu erstellen.
+  </div>
+)}
   <div className="formGrid">
     <Field label="Ort / Lage">
       <input
@@ -524,7 +587,7 @@ return (
   <div className="actions">
     <button
   onClick={generateText}
-  disabled={loading}
+  disabled={loading || trialExpired}
   className="btn btn-primary"
   style={{
     background: "linear-gradient(135deg, #f59e0b, #f97316)",
@@ -533,7 +596,11 @@ return (
     border: "none",
   }}
 >
-  {loading ? "Generiere..." : "✨ Generieren (3 Varianten)"}
+  {trialExpired
+    ? "Test abgelaufen"
+    : loading
+    ? "Generiere..."
+    : "✨ Generieren (3 Varianten)"}
 </button>
 
     <button

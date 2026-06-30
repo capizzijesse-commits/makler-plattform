@@ -24,9 +24,17 @@ export default function RegisterPage() {
 
     try {
       localStorage.setItem("userName", name);
-      localStorage.setItem("userEmail", email);
+localStorage.setItem("userEmail", email);
 
-      router.push("/dashboard");
+const trialStart = new Date();
+const trialEnd = new Date();
+trialEnd.setDate(trialEnd.getDate() + 30);
+
+localStorage.setItem("trialStartDate", trialStart.toISOString());
+localStorage.setItem("trialEndDate", trialEnd.toISOString());
+localStorage.setItem("trialStatus", "active");
+
+router.push("/dashboard");
     } catch {
       alert("Fehler bei der Registrierung.");
       setLoading(false);
