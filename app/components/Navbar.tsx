@@ -20,7 +20,7 @@ export default function Navbar() {
   }
 
   return (
-  <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/90 backdrop-blur">
+  <header className="fixed top-0 z-50 border-b border-white/10 bg-slate-950/90 backdrop-blur">
     <div className="container-max py-4 flex items-center justify-between">
       <div className="flex items-center gap-3">
         <div className="font-semibold text-lg">Inserat-AI</div>

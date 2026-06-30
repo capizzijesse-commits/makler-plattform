@@ -131,7 +131,7 @@ setActiveVariant(0);
         minHeight: "100vh",
        background:
   "linear-gradient(135deg, #0b1220 0%, #172554 50%, #92400e 100%)",
-        padding: "70px 20px",
+        padding: "100px 20px 70px",
         fontFamily: "Inter, sans-serif",
       }}
     >
