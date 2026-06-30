@@ -1,14 +1,14 @@
 "use client";
 <section
   style={{
-    padding: "80px 20px",
+    padding: "55px 20px",
     background:
       "linear-gradient(135deg, #020617 0%, #0f172a 45%, #1e3a8a 100%)",
   }}
 >
   <div
     style={{
-      maxWidth: "1000px",
+      maxWidth: "760px",
       margin: "0 auto",
       textAlign: "center",
     }}
