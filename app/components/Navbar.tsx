@@ -20,11 +20,11 @@ export default function Navbar() {
   }
 
   return (
-    <header className="container-max py-6 flex items-center justify-between">
+  <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/90 backdrop-blur">
+    <div className="container-max py-4 flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <div className="font-semibold text-lg">Inserat - AI</div>
+        <div className="font-semibold text-lg">Inserat-AI</div>
       </div>
-
       <div className="flex items-center gap-4">
         {userName ? (
           <>
@@ -49,7 +49,8 @@ export default function Navbar() {
             </Link>
           </>
         )}
-      </div>
-    </header>
-  );
+          </div>
+  </div>
+</header>
+);
 }
