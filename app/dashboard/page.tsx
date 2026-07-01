@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import PortalExportButton from "../components/PortalExportButton";
 import {
   SWISS_LOCATIONS,
@@ -120,6 +120,7 @@ const [objectTemplates, setObjectTemplates] = useState<ObjectTemplate[]>([]);
 const [postalCode, setPostalCode] = useState("");
 const [showPostalSuggestions, setShowPostalSuggestions] = useState(false);
 const [showExtraHighlights, setShowExtraHighlights] = useState(false);
+const highlightsInputRef = useRef<HTMLInputElement>(null);
 const getFormStorageKey = () => {
   const email = localStorage.getItem("userEmail") || "guest";
   return `inseratAiDashboardForm_${email}`;
@@ -292,18 +293,29 @@ const addSuggestedHighlight = (value: string) => {
 
   if (!cleanValue) return;
 
-  const currentHighlights = highlights
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
+  setHighlights((currentValue) => {
+    const currentHighlights = currentValue
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
 
-  const alreadyExists = currentHighlights.some(
-    (item) => item.toLowerCase() === cleanValue.toLowerCase()
-  );
+    const alreadyExists = currentHighlights.some(
+      (item) => item.toLowerCase() === cleanValue.toLowerCase()
+    );
 
-  if (alreadyExists) return;
+    if (alreadyExists) return currentValue;
 
-  setHighlights([...currentHighlights, cleanValue].join(", "));
+    return [...currentHighlights, cleanValue].join(", ");
+  });
+
+  setTimeout(() => {
+    highlightsInputRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+
+    highlightsInputRef.current?.focus();
+  }, 50);
 };
 const deleteObjectTemplate = (templateId: string) => {
   setObjectTemplates((currentTemplates) => {
@@ -1104,6 +1116,7 @@ return (
 
     <Field label="Highlights (mit Komma trennen)">
       <input
+      ref={highlightsInputRef}
         value={highlights}
         placeholder="Balkon, Lift, Garage, ruhige Lage"
         onChange={(e) => setHighlights(e.target.value)}
