@@ -1200,32 +1200,55 @@ return (
       />
     </Field>
 
-    <Field label="Zimmer">
-      <input
-        value={rooms}
-        placeholder="4.5"
-        onChange={(e) => setRooms(e.target.value)}
-        className="input"
-      />
-    </Field>
+ <Field label="Zimmer">
+  <div style={{ display: "grid", gap: "10px" }}>
+    <input
+      value={rooms}
+      placeholder="4.5"
+      type="number"
+      min="1"
+      max="10"
+      step="0.5"
+      className="input"
+      onChange={(e) => setRooms(e.target.value)}
+    />
 
-    <Field label="Wohnfläche (m²)">
-      <input
-        value={livingArea}
-        placeholder="110"
-        onChange={(e) => setLivingArea(e.target.value)}
-        className="input"
-      />
-    </Field>
+    <input
+      type="range"
+      min="1"
+      max="10"
+      step="0.5"
+      value={rooms || "4.5"}
+      onChange={(e) => setRooms(e.target.value)}
+      className="amberRange"
+    />
+  </div>
+</Field>
 
-    <Field label="Preis (CHF)">
-      <input
-        value={price}
-        placeholder="1090000"
-        onChange={(e) => setPrice(e.target.value)}
-        className="input"
-      />
-    </Field>
+<Field label="Wohnfläche (m²)">
+  <div style={{ display: "grid", gap: "10px" }}>
+    <input
+      value={livingArea}
+      placeholder="120"
+      type="number"
+      min="20"
+      max="500"
+      step="5"
+      className="input"
+      onChange={(e) => setLivingArea(e.target.value)}
+    />
+
+    <input
+      type="range"
+      min="20"
+      max="500"
+      step="5"
+      value={livingArea || "120"}
+      onChange={(e) => setLivingArea(e.target.value)}
+      className="amberRange"
+    />
+  </div>
+</Field>
 
     <Field label="Stil">
       <input

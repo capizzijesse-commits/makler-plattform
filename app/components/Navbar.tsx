@@ -45,9 +45,10 @@ export default function Navbar() {
       boxSizing: "border-box",
     }}
   >
-      <div className="flex items-center gap-3">
-        <div className="font-semibold text-lg">Inserat-AI</div>
-      </div>
+      <Link href="/" className="navBrand">
+  <span className="navLogoMark">AI</span>
+  <span>Inserat-AI</span>
+</Link>
       <div className="flex items-center gap-4">
         {userName ? (
           <>
@@ -61,12 +62,12 @@ export default function Navbar() {
           </>
         ) : (
           <>
-            <Link href="/login" className="text-sm font-medium">
-              Login
-            </Link>
+            <Link href="/login" className="navLogin">
+  Login
+</Link>
             <Link
               href="/register"
-              className="bg-yellow-500 text-black px-4 py-2 rounded-lg font-medium"
+              className="topGlowButton"
             >
               Kostenlos testen
             </Link>
