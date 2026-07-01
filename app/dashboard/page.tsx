@@ -276,6 +276,22 @@ const deleteObjectTemplate = (templateId: string) => {
     return nextTemplates;
   });
 };
+const clearForm = () => {
+  setLocation("");
+  setPropertyType("");
+  setRooms("");
+  setLivingArea("");
+  setPrice("");
+  setStyleText("");
+  setHighlights("");
+  setVariants([]);
+  setActiveIndex(0);
+  setInstagramPost("");
+  setLinkedinPost("");
+  setFacebookPost("");
+  setSocialPosts({});
+  setTemplateName("");
+};
 const allLocationSuggestions: string[] = Array.from(
   new Set([...locationSuggestions, ...DEFAULT_LOCATION_SUGGESTIONS])
 );
@@ -1023,7 +1039,13 @@ return (
     >
       Copy
     </button>
-
+<button
+  type="button"
+  onClick={clearForm}
+  className="btn btn-secondary"
+>
+  Neues Objekt
+</button>
     <button
       onClick={exportPdf}
       disabled={!current}
