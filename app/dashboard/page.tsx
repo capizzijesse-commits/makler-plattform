@@ -2,7 +2,7 @@
 
 import { useState, useEffect, type ReactNode } from "react";
 import PortalExportButton from "../components/PortalExportButton";
-
+import { SWISS_LOCATIONS } from "@/lib/swissLocations";
 
 type Variant = {
   title: string;
@@ -24,20 +24,8 @@ type ObjectTemplate = {
   styleText: string;
   highlights: string;
 };
-const DEFAULT_LOCATION_SUGGESTIONS = [
-  "Winterthur",
-  "Zürich",
-  "Kloten",
-  "Uster",
-  "Wetzikon",
-  "St. Gallen",
-  "Frauenfeld",
-  "Schaffhausen",
-  "Zug",
-  "Luzern",
-  "Bern",
-  "Basel",
-];
+
+
 
 export default function DashboardPage() {
   
@@ -293,7 +281,7 @@ const clearForm = () => {
   setTemplateName("");
 };
 const allLocationSuggestions: string[] = Array.from(
-  new Set([...locationSuggestions, ...DEFAULT_LOCATION_SUGGESTIONS])
+  new Set([...locationSuggestions, ...SWISS_LOCATIONS])
 );
 
 const filteredLocationSuggestions: string[] =
