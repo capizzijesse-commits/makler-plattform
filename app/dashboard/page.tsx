@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, type ReactNode } from "react";
+import PortalExportButton from "../components/PortalExportButton";
 
 type Variant = {
   title: string;
@@ -618,6 +619,21 @@ return (
     >
       PDF
     </button>
+    <PortalExportButton
+  data={{
+    ort: location,
+    objektart: propertyType,
+    zimmer: rooms,
+    wohnflaeche: livingArea,
+    preis: price,
+    titel: current?.title || "",
+    beschreibung: current?.text || "",
+    highlights:
+      current?.highlights && current.highlights.length > 0
+        ? current.highlights
+        : highlights,
+  }}
+/>
   </div>
 
   <div className="miniStats">
