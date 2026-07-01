@@ -54,8 +54,37 @@ const EXTRA_HIGHLIGHT_SUGGESTIONS = [
   "Minergie-Standard",
   "Neuwertig",
   "Renoviert",
+  
+];
+const QUICK_PROPERTY_TYPES = [
+  "Wohnung",
+  "Haus",
+  "Einfamilienhaus",
+  "Mehrfamilienhaus",
+  "Attikawohnung",
+  "Maisonette",
+  "Doppeleinfamilienhaus",
+  "Reihenhaus",
+  "Villa",
+  "Bauland",
+  "Gewerbe",
 ];
 
+const QUICK_ROOMS = ["1.5", "2.5", "3.5", "4.5", "5.5", "6.5"];
+
+const QUICK_LIVING_AREAS = ["60", "80", "100", "120", "150", "180", "200", "250"];
+
+const QUICK_STYLES = [
+  "modern",
+  "hochwertig",
+  "luxuriös",
+  "familienfreundlich",
+  "ruhig",
+  "zentral",
+  "hell",
+  "renoviert",
+  "neuwertig",
+];
 
 export default function DashboardPage() {
   
@@ -289,6 +318,7 @@ const loadObjectTemplate = (template: ObjectTemplate) => {
   setShowExtraHighlights(true);
 };
 const addSuggestedHighlight = (value: string) => {
+  
   const cleanValue = value.trim();
 
   if (!cleanValue) return;
@@ -317,6 +347,16 @@ const addSuggestedHighlight = (value: string) => {
     highlightsInputRef.current?.focus();
   }, 50);
 };
+const quickButtonStyle = {
+  border: "1px solid rgba(245, 158, 11, 0.35)",
+  background: "rgba(245, 158, 11, 0.10)",
+  color: "#fbbf24",
+  borderRadius: "999px",
+  padding: "8px 11px",
+  fontWeight: 800,
+  cursor: "pointer",
+  fontSize: "0.82rem",
+} as const;
 const deleteObjectTemplate = (templateId: string) => {
   setObjectTemplates((currentTemplates) => {
     const nextTemplates = currentTemplates.filter(
@@ -943,8 +983,90 @@ return (
       >
         Schliessen
       </button>
+      
     </div>
+<div
+  style={{
+    display: "grid",
+    gap: "14px",
+    marginTop: "14px",
+    marginBottom: "16px",
+    paddingBottom: "14px",
+    borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+  }}
+>
+  <div>
+    <div style={{ color: "#f8fafc", fontWeight: 900, marginBottom: "8px" }}>
+      Objektart
+    </div>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+      {QUICK_PROPERTY_TYPES.map((item) => (
+        <button
+          key={item}
+          type="button"
+          onClick={() => setPropertyType(item)}
+          style={quickButtonStyle}
+        >
+          {item}
+        </button>
+      ))}
+    </div>
+  </div>
 
+  <div>
+    <div style={{ color: "#f8fafc", fontWeight: 900, marginBottom: "8px" }}>
+      Zimmer
+    </div>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+      {QUICK_ROOMS.map((item) => (
+        <button
+          key={item}
+          type="button"
+          onClick={() => setRooms(item)}
+          style={quickButtonStyle}
+        >
+          {item}
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <div>
+    <div style={{ color: "#f8fafc", fontWeight: 900, marginBottom: "8px" }}>
+      Wohnfläche
+    </div>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+      {QUICK_LIVING_AREAS.map((item) => (
+        <button
+          key={item}
+          type="button"
+          onClick={() => setLivingArea(item)}
+          style={quickButtonStyle}
+        >
+          {item} m²
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <div>
+    <div style={{ color: "#f8fafc", fontWeight: 900, marginBottom: "8px" }}>
+      Stil
+    </div>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+      {QUICK_STYLES.map((item) => (
+        <button
+          key={item}
+          type="button"
+          onClick={() => setStyleText(item)}
+          style={quickButtonStyle}
+        >
+          {item}
+        </button>
+      ))}
+    </div>
+  </div>
+</div>
     <div
       style={{
         display: "flex",
