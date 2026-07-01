@@ -27,7 +27,34 @@ type ObjectTemplate = {
   styleText: string;
   highlights: string;
 };
-
+const EXTRA_HIGHLIGHT_SUGGESTIONS = [
+  "Balkon",
+  "Terrasse",
+  "Garten",
+  "Sitzplatz",
+  "Garage",
+  "Tiefgarage",
+  "Aussenparkplatz",
+  "Lift",
+  "Keller",
+  "Reduit",
+  "Cheminée",
+  "Seesicht",
+  "Bergsicht",
+  "Ruhige Lage",
+  "Zentrale Lage",
+  "Bahnhof in der Nähe",
+  "Bushaltestelle in der Nähe",
+  "Schule in der Nähe",
+  "Kindergarten in der Nähe",
+  "Einkaufsmöglichkeiten in der Nähe",
+  "Kinderfreundlich",
+  "Haustiere erlaubt",
+  "Rollstuhlgängig",
+  "Minergie-Standard",
+  "Neuwertig",
+  "Renoviert",
+];
 
 
 export default function DashboardPage() {
@@ -92,6 +119,7 @@ const [templateName, setTemplateName] = useState("");
 const [objectTemplates, setObjectTemplates] = useState<ObjectTemplate[]>([]);
 const [postalCode, setPostalCode] = useState("");
 const [showPostalSuggestions, setShowPostalSuggestions] = useState(false);
+const [showExtraHighlights, setShowExtraHighlights] = useState(false);
 const getFormStorageKey = () => {
   const email = localStorage.getItem("userEmail") || "guest";
   return `inseratAiDashboardForm_${email}`;
@@ -257,6 +285,25 @@ const loadObjectTemplate = (template: ObjectTemplate) => {
   setPrice(template.price);
   setStyleText(template.styleText);
   setHighlights(template.highlights);
+  setShowExtraHighlights(true);
+};
+const addSuggestedHighlight = (value: string) => {
+  const cleanValue = value.trim();
+
+  if (!cleanValue) return;
+
+  const currentHighlights = highlights
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  const alreadyExists = currentHighlights.some(
+    (item) => item.toLowerCase() === cleanValue.toLowerCase()
+  );
+
+  if (alreadyExists) return;
+
+  setHighlights([...currentHighlights, cleanValue].join(", "));
 };
 const deleteObjectTemplate = (templateId: string) => {
   setObjectTemplates((currentTemplates) => {
@@ -288,6 +335,7 @@ const clearForm = () => {
   setSocialPosts({});
   setTemplateName("");
   setPostalCode("");
+  setShowExtraHighlights(false);
 };
 const allLocationSuggestions: string[] = Array.from(
   new Set([...locationSuggestions, ...SWISS_LOCATIONS])
@@ -825,6 +873,95 @@ return (
       ))}
     </div>
   )}
+  {showExtraHighlights && (
+  <div
+    style={{
+      gridColumn: "1 / -1",
+      background:
+        "linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(30, 41, 59, 0.58))",
+      border: "1px solid rgba(251, 191, 36, 0.22)",
+      borderRadius: "18px",
+      padding: "16px",
+      boxShadow: "0 16px 36px rgba(2, 6, 23, 0.22)",
+    }}
+  >
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        gap: "12px",
+        alignItems: "center",
+        flexWrap: "wrap",
+        marginBottom: "12px",
+      }}
+    >
+      <div>
+        <div
+          style={{
+            color: "#fbbf24",
+            fontWeight: 900,
+            fontSize: "0.95rem",
+          }}
+        >
+          Was möchten Sie noch ergänzen?
+        </div>
+        <div
+          style={{
+            color: "rgba(226, 232, 240, 0.78)",
+            fontSize: "0.84rem",
+            marginTop: "3px",
+          }}
+        >
+          Klicken Sie passende Punkte an. Sie werden automatisch zu den Highlights hinzugefügt.
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => setShowExtraHighlights(false)}
+        style={{
+          border: "1px solid rgba(255, 255, 255, 0.12)",
+          background: "rgba(255, 255, 255, 0.06)",
+          color: "rgba(226, 232, 240, 0.86)",
+          borderRadius: "12px",
+          padding: "8px 11px",
+          fontWeight: 800,
+          cursor: "pointer",
+        }}
+      >
+        Schliessen
+      </button>
+    </div>
+
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "8px",
+      }}
+    >
+      {EXTRA_HIGHLIGHT_SUGGESTIONS.map((suggestion) => (
+        <button
+          key={suggestion}
+          type="button"
+          onClick={() => addSuggestedHighlight(suggestion)}
+          style={{
+            border: "1px solid rgba(245, 158, 11, 0.35)",
+            background: "rgba(245, 158, 11, 0.10)",
+            color: "#fbbf24",
+            borderRadius: "999px",
+            padding: "9px 12px",
+            fontWeight: 800,
+            cursor: "pointer",
+            fontSize: "0.86rem",
+          }}
+        >
+          + {suggestion}
+        </button>
+      ))}
+    </div>
+  </div>
+)}
 </div>
   <Field label="Ort / Lage">
   <div style={{ position: "relative" }}>
