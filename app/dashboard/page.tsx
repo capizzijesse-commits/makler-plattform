@@ -2,8 +2,10 @@
 
 import { useState, useEffect, type ReactNode } from "react";
 import PortalExportButton from "../components/PortalExportButton";
-import { SWISS_LOCATIONS } from "@/lib/swissLocations";
-
+import {
+  SWISS_LOCATIONS,
+  SWISS_POSTAL_LOCATIONS,
+} from "@/lib/swissLocations";
 type Variant = {
   title: string;
   text: string;
@@ -87,7 +89,7 @@ const [formLoaded, setFormLoaded] = useState(false);
 const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
 const [templateName, setTemplateName] = useState("");
 const [objectTemplates, setObjectTemplates] = useState<ObjectTemplate[]>([]);
-
+const [postalCode, setPostalCode] = useState("");
 const getFormStorageKey = () => {
   const email = localStorage.getItem("userEmail") || "guest";
   return `inseratAiDashboardForm_${email}`;
@@ -120,6 +122,7 @@ useEffect(() => {
     setPrice(data.price || "");
     setStyleText(data.styleText || "");
     setHighlights(data.highlights || "");
+    setPostalCode(data.postalCode || "");
   } catch {
     localStorage.removeItem(getFormStorageKey());
   } finally {
@@ -131,20 +134,22 @@ useEffect(() => {
   if (!formLoaded) return;
 
   const formData = {
-    location,
-    propertyType,
-    rooms,
-    livingArea,
-    price,
-    styleText,
-    highlights,
-  };
+  location,
+  postalCode,
+  propertyType,
+  rooms,
+  livingArea,
+  price,
+  styleText,
+  highlights,
+};
 
   localStorage.setItem(getFormStorageKey(), JSON.stringify(formData));
 }, [
   formLoaded,
-  location,
-  propertyType,
+location,
+postalCode,
+propertyType,
   rooms,
   livingArea,
   price,

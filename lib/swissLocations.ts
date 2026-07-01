@@ -212,3 +212,52 @@ export const SWISS_LOCATIONS = [
   "Zollikon",
   "Zumikon",
 ] as const;
+export type SwissPostalLocation = {
+  zip: string;
+  name: string;
+  canton: string;
+};
+
+export const SWISS_POSTAL_LOCATIONS: SwissPostalLocation[] = [
+  { zip: "8001", name: "Zürich", canton: "ZH" },
+  { zip: "8400", name: "Winterthur", canton: "ZH" },
+  { zip: "8625", name: "Gossau", canton: "ZH" },
+  { zip: "9200", name: "Gossau", canton: "SG" },
+  { zip: "8302", name: "Kloten", canton: "ZH" },
+  { zip: "8610", name: "Uster", canton: "ZH" },
+  { zip: "8620", name: "Wetzikon", canton: "ZH" },
+  { zip: "8600", name: "Dübendorf", canton: "ZH" },
+  { zip: "8953", name: "Dietikon", canton: "ZH" },
+  { zip: "8810", name: "Horgen", canton: "ZH" },
+  { zip: "8820", name: "Wädenswil", canton: "ZH" },
+  { zip: "8708", name: "Männedorf", canton: "ZH" },
+  { zip: "8706", name: "Meilen", canton: "ZH" },
+  { zip: "8700", name: "Küsnacht", canton: "ZH" },
+  { zip: "8127", name: "Forch", canton: "ZH" },
+  { zip: "8152", name: "Opfikon", canton: "ZH" },
+  { zip: "8304", name: "Wallisellen", canton: "ZH" },
+  { zip: "8604", name: "Volketswil", canton: "ZH" },
+  { zip: "8800", name: "Thalwil", canton: "ZH" },
+  { zip: "8802", name: "Kilchberg", canton: "ZH" },
+
+  { zip: "1201", name: "Genf", canton: "GE" },
+  { zip: "4051", name: "Basel", canton: "BS" },
+  { zip: "1003", name: "Lausanne", canton: "VD" },
+  { zip: "3000", name: "Bern", canton: "BE" },
+  { zip: "6003", name: "Luzern", canton: "LU" },
+  { zip: "9000", name: "St. Gallen", canton: "SG" },
+  { zip: "6900", name: "Lugano", canton: "TI" },
+  { zip: "2502", name: "Biel/Bienne", canton: "BE" },
+  { zip: "3600", name: "Thun", canton: "BE" },
+  { zip: "6300", name: "Zug", canton: "ZG" },
+  { zip: "5000", name: "Aarau", canton: "AG" },
+  { zip: "5400", name: "Baden", canton: "AG" },
+  { zip: "7000", name: "Chur", canton: "GR" },
+  { zip: "8200", name: "Schaffhausen", canton: "SH" },
+  { zip: "8500", name: "Frauenfeld", canton: "TG" },
+  { zip: "8640", name: "Rapperswil-Jona", canton: "SG" },
+  { zip: "4500", name: "Solothurn", canton: "SO" },
+  { zip: "4600", name: "Olten", canton: "SO" },
+  { zip: "1700", name: "Fribourg", canton: "FR" },
+  { zip: "2000", name: "Neuchâtel", canton: "NE" },
+];
