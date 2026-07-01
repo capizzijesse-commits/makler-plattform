@@ -607,6 +607,198 @@ return (
   </div>
 )}
   <div className="formGrid">
+    <div
+  style={{
+    gridColumn: "1 / -1",
+    background: "linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(30, 41, 59, 0.58))",
+    border: "1px solid rgba(251, 191, 36, 0.22)",
+    borderRadius: "18px",
+    padding: "16px",
+    boxShadow: "0 16px 36px rgba(2, 6, 23, 0.22)",
+  }}
+>
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      gap: "12px",
+      alignItems: "center",
+      flexWrap: "wrap",
+      marginBottom: "12px",
+    }}
+  >
+    <div>
+      <div
+        style={{
+          color: "#fbbf24",
+          fontWeight: 900,
+          fontSize: "0.95rem",
+        }}
+      >
+        Objekt-Vorlagen
+      </div>
+      <div
+        style={{
+          color: "rgba(226, 232, 240, 0.78)",
+          fontSize: "0.84rem",
+          marginTop: "3px",
+        }}
+      >
+        Speichere häufige Objektangaben und lade sie später mit einem Klick.
+      </div>
+    </div>
+  </div>
+
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "minmax(0, 1fr) auto",
+      gap: "10px",
+      alignItems: "center",
+    }}
+  >
+    <input
+      value={templateName}
+      placeholder={`${propertyType || "Objekt"} ${location || "ohne Ort"}`}
+      className="input bg-transparent text-white placeholder-gray-400/60"
+      onChange={(e) => setTemplateName(e.target.value)}
+    />
+
+    <button
+      type="button"
+      onClick={saveObjectTemplate}
+      disabled={
+        !location &&
+        !propertyType &&
+        !rooms &&
+        !livingArea &&
+        !price &&
+        !styleText &&
+        !highlights
+      }
+      style={{
+        border: "1px solid rgba(245, 158, 11, 0.55)",
+        background:
+          "linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(251, 191, 36, 0.15))",
+        color: "#fbbf24",
+        borderRadius: "14px",
+        padding: "12px 16px",
+        fontWeight: 900,
+        cursor:
+          location ||
+          propertyType ||
+          rooms ||
+          livingArea ||
+          price ||
+          styleText ||
+          highlights
+            ? "pointer"
+            : "not-allowed",
+        opacity:
+          location ||
+          propertyType ||
+          rooms ||
+          livingArea ||
+          price ||
+          styleText ||
+          highlights
+            ? 1
+            : 0.45,
+        whiteSpace: "nowrap",
+      }}
+    >
+      Vorlage speichern
+    </button>
+  </div>
+
+  {objectTemplates.length > 0 && (
+    <div
+      style={{
+        display: "grid",
+        gap: "8px",
+        marginTop: "14px",
+      }}
+    >
+      {objectTemplates.map((template) => (
+        <div
+          key={template.id}
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: "10px",
+            background: "rgba(15, 23, 42, 0.58)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            borderRadius: "14px",
+            padding: "10px 12px",
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                color: "#f8fafc",
+                fontWeight: 800,
+                fontSize: "0.92rem",
+              }}
+            >
+              {template.name}
+            </div>
+            <div
+              style={{
+                color: "rgba(203, 213, 225, 0.72)",
+                fontSize: "0.8rem",
+                marginTop: "2px",
+              }}
+            >
+              {template.propertyType || "Objekt"} · {template.location || "ohne Ort"}
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "8px",
+              alignItems: "center",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => loadObjectTemplate(template)}
+              style={{
+                border: "1px solid rgba(34, 197, 94, 0.35)",
+                background: "rgba(34, 197, 94, 0.12)",
+                color: "#86efac",
+                borderRadius: "12px",
+                padding: "9px 12px",
+                fontWeight: 800,
+                cursor: "pointer",
+              }}
+            >
+              Laden
+            </button>
+
+            <button
+              type="button"
+              onClick={() => deleteObjectTemplate(template.id)}
+              style={{
+                border: "1px solid rgba(248, 113, 113, 0.35)",
+                background: "rgba(248, 113, 113, 0.10)",
+                color: "#fca5a5",
+                borderRadius: "12px",
+                padding: "9px 12px",
+                fontWeight: 800,
+                cursor: "pointer",
+              }}
+            >
+              Löschen
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
   <Field label="Ort / Lage">
   <div style={{ position: "relative" }}>
     <input
