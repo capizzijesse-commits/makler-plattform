@@ -19,6 +19,7 @@ type ObjectTemplate = {
   id: string;
   name: string;
   location: string;
+  postalCode?: string;
   propertyType: string;
   rooms: string;
   livingArea: string;
@@ -216,16 +217,17 @@ const saveObjectTemplate = () => {
     `${propertyType || "Objekt"} ${location || "ohne Ort"}`.trim();
 
   const newTemplate: ObjectTemplate = {
-    id: crypto.randomUUID(),
-    name: cleanName,
-    location,
-    propertyType,
-    rooms,
-    livingArea,
-    price,
-    styleText,
-    highlights,
-  };
+  id: crypto.randomUUID(),
+  name: cleanName,
+  location,
+  postalCode,
+  propertyType,
+  rooms,
+  livingArea,
+  price,
+  styleText,
+  highlights,
+};
 
   setObjectTemplates((currentTemplates) => {
     const nextTemplates = [
@@ -248,6 +250,7 @@ const saveObjectTemplate = () => {
 
 const loadObjectTemplate = (template: ObjectTemplate) => {
   setLocation(template.location);
+  setPostalCode(template.postalCode || "");
   setPropertyType(template.propertyType);
   setRooms(template.rooms);
   setLivingArea(template.livingArea);
@@ -255,7 +258,6 @@ const loadObjectTemplate = (template: ObjectTemplate) => {
   setStyleText(template.styleText);
   setHighlights(template.highlights);
 };
-
 const deleteObjectTemplate = (templateId: string) => {
   setObjectTemplates((currentTemplates) => {
     const nextTemplates = currentTemplates.filter(
@@ -774,7 +776,9 @@ return (
                 marginTop: "2px",
               }}
             >
-              {template.propertyType || "Objekt"} · {template.location || "ohne Ort"}
+              {template.propertyType || "Objekt"} ·{" "}
+{template.postalCode ? `${template.postalCode} ` : ""}
+{template.location || "ohne Ort"}
             </div>
           </div>
 
