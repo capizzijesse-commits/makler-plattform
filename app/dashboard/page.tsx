@@ -13,6 +13,17 @@ type Variant = {
   linkedinPost?: string;
   facebookPost?: string;
 };
+type ObjectTemplate = {
+  id: string;
+  name: string;
+  location: string;
+  propertyType: string;
+  rooms: string;
+  livingArea: string;
+  price: string;
+  styleText: string;
+  highlights: string;
+};
 const DEFAULT_LOCATION_SUGGESTIONS = [
   "Winterthur",
   "Zürich",
@@ -86,7 +97,8 @@ const [styleText, setStyleText] = useState("");
 const [highlights, setHighlights] = useState("");
 const [formLoaded, setFormLoaded] = useState(false);
 const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
-
+const [templateName, setTemplateName] = useState("");
+const [objectTemplates, setObjectTemplates] = useState<ObjectTemplate[]>([]);
 
 const getFormStorageKey = () => {
   const email = localStorage.getItem("userEmail") || "guest";
@@ -96,6 +108,10 @@ const getFormStorageKey = () => {
 const getLocationSuggestionsKey = () => {
   const email = localStorage.getItem("userEmail") || "guest";
   return `inseratAiLocationSuggestions_${email}`;
+};
+const getObjectTemplatesKey = () => {
+  const email = localStorage.getItem("userEmail") || "guest";
+  return `inseratAiObjectTemplates_${email}`;
 };
 
 useEffect(() => {
@@ -182,6 +198,82 @@ const saveLocationSuggestion = (value: string) => {
     );
 
     return nextSuggestions;
+  });
+};
+useEffect(() => {
+  const savedTemplates = localStorage.getItem(getObjectTemplatesKey());
+
+  if (!savedTemplates) return;
+
+  try {
+    const data = JSON.parse(savedTemplates);
+
+    if (Array.isArray(data)) {
+      setObjectTemplates(data);
+    }
+  } catch {
+    localStorage.removeItem(getObjectTemplatesKey());
+  }
+}, []);
+
+const saveObjectTemplate = () => {
+  const cleanName =
+    templateName.trim() ||
+    `${propertyType || "Objekt"} ${location || "ohne Ort"}`.trim();
+
+  const newTemplate: ObjectTemplate = {
+    id: crypto.randomUUID(),
+    name: cleanName,
+    location,
+    propertyType,
+    rooms,
+    livingArea,
+    price,
+    styleText,
+    highlights,
+  };
+
+  setObjectTemplates((currentTemplates) => {
+    const nextTemplates = [
+      newTemplate,
+      ...currentTemplates.filter(
+        (template) => template.name.toLowerCase() !== cleanName.toLowerCase()
+      ),
+    ].slice(0, 12);
+
+    localStorage.setItem(
+      getObjectTemplatesKey(),
+      JSON.stringify(nextTemplates)
+    );
+
+    return nextTemplates;
+  });
+
+  setTemplateName("");
+};
+
+const loadObjectTemplate = (template: ObjectTemplate) => {
+  setLocation(template.location);
+  setPropertyType(template.propertyType);
+  setRooms(template.rooms);
+  setLivingArea(template.livingArea);
+  setPrice(template.price);
+  setStyleText(template.styleText);
+  setHighlights(template.highlights);
+};
+
+const deleteObjectTemplate = (templateId: string) => {
+  setObjectTemplates((currentTemplates) => {
+    const nextTemplates = currentTemplates.filter(
+      (template) => template.id !== templateId
+    );
+
+    localStorage.setItem(
+      getObjectTemplatesKey(),
+      JSON.stringify(nextTemplates)
+    );
+
+    return nextTemplates;
   });
 };
 const allLocationSuggestions: string[] = Array.from(
