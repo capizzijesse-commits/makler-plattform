@@ -90,6 +90,7 @@ const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
 const [templateName, setTemplateName] = useState("");
 const [objectTemplates, setObjectTemplates] = useState<ObjectTemplate[]>([]);
 const [postalCode, setPostalCode] = useState("");
+const [showPostalSuggestions, setShowPostalSuggestions] = useState(false);
 const getFormStorageKey = () => {
   const email = localStorage.getItem("userEmail") || "guest";
   return `inseratAiDashboardForm_${email}`;
@@ -284,6 +285,7 @@ const clearForm = () => {
   setFacebookPost("");
   setSocialPosts({});
   setTemplateName("");
+  setPostalCode("");
 };
 const allLocationSuggestions: string[] = Array.from(
   new Set([...locationSuggestions, ...SWISS_LOCATIONS])
@@ -299,7 +301,19 @@ const filteredLocationSuggestions: string[] =
         )
         .slice(0, 5)
     : [];
+const filteredPostalLocationSuggestions =
+  location.trim().length > 0 || postalCode.trim().length > 0
+    ? SWISS_POSTAL_LOCATIONS.filter((item) => {
+        const searchValue = `${item.zip} ${item.name} ${item.canton}`.toLowerCase();
+        const locationValue = location.toLowerCase().trim();
+        const postalValue = postalCode.toLowerCase().trim();
 
+        return (
+          searchValue.includes(locationValue) &&
+          item.zip.startsWith(postalValue)
+        );
+      }).slice(0, 8)
+    : [];
 
 const [socialLoading, setSocialLoading] = useState(false);
 
@@ -811,65 +825,93 @@ return (
   <Field label="Ort / Lage">
   <div style={{ position: "relative" }}>
     <input
-      value={location}
-      placeholder="Winterthur"
-      className="input bg-transparent text-white placeholder-gray-400/60"
-      onChange={(e) => setLocation(e.target.value)}
-      onBlur={() => saveLocationSuggestion(location)}
-    />
+  value={location}
+  placeholder="Winterthur"
+  className="input bg-transparent text-white placeholder-gray-400/60"
+  onChange={(e) => {
+    const value = e.target.value;
 
-    {filteredLocationSuggestions.length > 0 && (
-      <div
+    setLocation(value);
+
+    if (value.trim() === "") {
+      setPostalCode("");
+      setShowPostalSuggestions(false);
+      return;
+    }
+
+    setShowPostalSuggestions(true);
+  }}
+  onFocus={() => {
+    if (location.trim().length > 0 || postalCode.trim().length > 0) {
+      setShowPostalSuggestions(true);
+    }
+  }}
+  onBlur={() => {
+    saveLocationSuggestion(location);
+    setTimeout(() => setShowPostalSuggestions(false), 150);
+  }}
+/>
+
+   {showPostalSuggestions && filteredPostalLocationSuggestions.length > 0 && (
+  <div
+    style={{
+      position: "absolute",
+      top: "calc(100% + 8px)",
+      left: 0,
+      right: 0,
+      zIndex: 50,
+      background: "linear-gradient(180deg, #1e293b 0%, #0f172a 100%)",
+      border: "1px solid rgba(251, 191, 36, 0.22)",
+      borderRadius: "16px",
+      boxShadow: "0 18px 40px rgba(2, 6, 23, 0.35)",
+      overflow: "hidden",
+      backdropFilter: "blur(10px)",
+    }}
+  >
+    {filteredPostalLocationSuggestions.map((suggestion) => (
+      <button
+        key={`${suggestion.zip}-${suggestion.name}-${suggestion.canton}`}
+        type="button"
+       onMouseDown={() => {
+  setPostalCode(suggestion.zip);
+  setLocation(suggestion.name);
+  saveLocationSuggestion(suggestion.name);
+  setShowPostalSuggestions(false);
+}}
         style={{
-          position: "absolute",
-          top: "calc(100% + 8px)",
-          left: 0,
-          right: 0,
-          zIndex: 50,
-          background: "linear-gradient(180deg, #1e293b 0%, #0f172a 100%)",
-          border: "1px solid rgba(251, 191, 36, 0.22)",
-          borderRadius: "16px",
-          boxShadow: "0 18px 40px rgba(2, 6, 23, 0.35)",
-          overflow: "hidden",
-          backdropFilter: "blur(10px)",
+          display: "block",
+          width: "100%",
+          padding: "13px 16px",
+          border: "none",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          background: "transparent",
+          color: "#f8fafc",
+          textAlign: "left",
+          fontWeight: 700,
+          fontSize: "0.96rem",
+          cursor: "pointer",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background =
+            "linear-gradient(90deg, rgba(245, 158, 11, 0.18), rgba(251, 191, 36, 0.10))";
+          e.currentTarget.style.color = "#fbbf24";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "transparent";
+          e.currentTarget.style.color = "#f8fafc";
         }}
       >
-        {filteredLocationSuggestions.map((suggestion) => (
-          <button
-            key={suggestion}
-            type="button"
-            onMouseDown={() => {
-              setLocation(suggestion);
-              saveLocationSuggestion(suggestion);
-            }}
-            style={{
-              display: "block",
-              width: "100%",
-              padding: "13px 16px",
-              border: "none",
-              borderBottom: "1px solid rgba(255,255,255,0.06)",
-              background: "transparent",
-              color: "#f8fafc",
-              textAlign: "left",
-              fontWeight: 700,
-              fontSize: "0.96rem",
-              cursor: "pointer",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background =
-                "linear-gradient(90deg, rgba(245, 158, 11, 0.18), rgba(251, 191, 36, 0.10))";
-              e.currentTarget.style.color = "#fbbf24";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.color = "#f8fafc";
-            }}
-          >
-            {suggestion}
-          </button>
-        ))}
-      </div>
-    )}
+        <span style={{ color: "#fbbf24", fontWeight: 900 }}>
+          {suggestion.zip}
+        </span>{" "}
+        {suggestion.name}{" "}
+        <span style={{ color: "rgba(203, 213, 225, 0.72)" }}>
+          · {suggestion.canton}
+        </span>
+      </button>
+    ))}
+  </div>
+)}
   </div>
 </Field>
 
