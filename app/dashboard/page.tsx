@@ -3,6 +3,7 @@
 import { useState, useEffect, type ReactNode } from "react";
 import PortalExportButton from "../components/PortalExportButton";
 
+
 type Variant = {
   title: string;
   text: string;
@@ -12,6 +13,20 @@ type Variant = {
   linkedinPost?: string;
   facebookPost?: string;
 };
+const DEFAULT_LOCATION_SUGGESTIONS = [
+  "Winterthur",
+  "Zürich",
+  "Kloten",
+  "Uster",
+  "Wetzikon",
+  "St. Gallen",
+  "Frauenfeld",
+  "Schaffhausen",
+  "Zug",
+  "Luzern",
+  "Bern",
+  "Basel",
+];
 
 export default function DashboardPage() {
   
@@ -70,10 +85,17 @@ const [price, setPrice] = useState("");
 const [styleText, setStyleText] = useState("");
 const [highlights, setHighlights] = useState("");
 const [formLoaded, setFormLoaded] = useState(false);
+const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
+
 
 const getFormStorageKey = () => {
   const email = localStorage.getItem("userEmail") || "guest";
   return `inseratAiDashboardForm_${email}`;
+};
+
+const getLocationSuggestionsKey = () => {
+  const email = localStorage.getItem("userEmail") || "guest";
+  return `inseratAiLocationSuggestions_${email}`;
 };
 
 useEffect(() => {
@@ -125,6 +147,57 @@ useEffect(() => {
   styleText,
   highlights,
 ]);
+useEffect(() => {
+  const savedSuggestions = localStorage.getItem(getLocationSuggestionsKey());
+
+  if (!savedSuggestions) return;
+
+  try {
+    const data = JSON.parse(savedSuggestions);
+
+    if (Array.isArray(data)) {
+      setLocationSuggestions(data);
+    }
+  } catch {
+    localStorage.removeItem(getLocationSuggestionsKey());
+  }
+}, []);
+
+const saveLocationSuggestion = (value: string) => {
+  const cleanValue = value.trim();
+
+  if (cleanValue.length < 2) return;
+
+  setLocationSuggestions((currentSuggestions) => {
+    const nextSuggestions = [
+      cleanValue,
+      ...currentSuggestions.filter(
+        (item) => item.toLowerCase() !== cleanValue.toLowerCase()
+      ),
+    ].slice(0, 8);
+
+    localStorage.setItem(
+      getLocationSuggestionsKey(),
+      JSON.stringify(nextSuggestions)
+    );
+
+    return nextSuggestions;
+  });
+};
+const allLocationSuggestions: string[] = Array.from(
+  new Set([...locationSuggestions, ...DEFAULT_LOCATION_SUGGESTIONS])
+);
+
+const filteredLocationSuggestions: string[] =
+  location.trim().length > 0
+    ? allLocationSuggestions
+        .filter(
+          (suggestion: string) =>
+            suggestion.toLowerCase().startsWith(location.toLowerCase()) &&
+            suggestion.toLowerCase() !== location.toLowerCase()
+        )
+        .slice(0, 5)
+    : [];
 
 
 const [socialLoading, setSocialLoading] = useState(false);
@@ -141,6 +214,7 @@ const [dailyCount, setDailyCount] = useState(0);
 const [trialExpired, setTrialExpired] = useState(false);
 const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
 const [activeIndex, setActiveIndex] = useState(0);
+
 useEffect(() => {
   const trialEndDate = localStorage.getItem("trialEndDate");
 
@@ -441,16 +515,70 @@ return (
   </div>
 )}
   <div className="formGrid">
-    <Field label="Ort / Lage">
-      <input
-        value={location}
-        placeholder="Winterthur"
-        className="input bg-transparent text-white placeholder-gray-400/60"
-        onChange={(e) => setLocation(e.target.value)}
-       
-  
-      />
-    </Field>
+  <Field label="Ort / Lage">
+  <div style={{ position: "relative" }}>
+    <input
+      value={location}
+      placeholder="Winterthur"
+      className="input bg-transparent text-white placeholder-gray-400/60"
+      onChange={(e) => setLocation(e.target.value)}
+      onBlur={() => saveLocationSuggestion(location)}
+    />
+
+    {filteredLocationSuggestions.length > 0 && (
+      <div
+        style={{
+          position: "absolute",
+          top: "calc(100% + 8px)",
+          left: 0,
+          right: 0,
+          zIndex: 50,
+          background: "linear-gradient(180deg, #1e293b 0%, #0f172a 100%)",
+          border: "1px solid rgba(251, 191, 36, 0.22)",
+          borderRadius: "16px",
+          boxShadow: "0 18px 40px rgba(2, 6, 23, 0.35)",
+          overflow: "hidden",
+          backdropFilter: "blur(10px)",
+        }}
+      >
+        {filteredLocationSuggestions.map((suggestion) => (
+          <button
+            key={suggestion}
+            type="button"
+            onMouseDown={() => {
+              setLocation(suggestion);
+              saveLocationSuggestion(suggestion);
+            }}
+            style={{
+              display: "block",
+              width: "100%",
+              padding: "13px 16px",
+              border: "none",
+              borderBottom: "1px solid rgba(255,255,255,0.06)",
+              background: "transparent",
+              color: "#f8fafc",
+              textAlign: "left",
+              fontWeight: 700,
+              fontSize: "0.96rem",
+              cursor: "pointer",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background =
+                "linear-gradient(90deg, rgba(245, 158, 11, 0.18), rgba(251, 191, 36, 0.10))";
+              e.currentTarget.style.color = "#fbbf24";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "#f8fafc";
+            }}
+          >
+            {suggestion}
+          </button>
+        ))}
+      </div>
+    )}
+  </div>
+</Field>
 
     <Field label="Objektart">
       <input
