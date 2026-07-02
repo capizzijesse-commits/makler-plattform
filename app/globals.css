@@ -2138,3 +2138,41 @@ input:focus::placeholder {
     gap: 14px;
   }
 }
+/* Vorteile-Balken zentriert und dezenter */
+
+.landingTrustBar {
+  text-align: center;
+  justify-items: center;
+  gap: 22px;
+}
+
+.landingTrustTitle {
+  color: rgba(248, 250, 252, 0.82);
+  font-size: clamp(1.35rem, 1.8vw, 1.75rem);
+  font-weight: 850;
+  letter-spacing: -0.03em;
+  text-align: center;
+}
+
+.landingTrustItems {
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 26px 42px;
+  text-align: center;
+}
+
+.landingTrustItems span,
+.landingTrustItems strong {
+  text-align: center;
+}
+
+.landingTrustItems span {
+  color: rgba(226, 232, 240, 0.76);
+  font-size: 0.98rem;
+}
+
+.landingTrustItems strong {
+  color: rgba(248, 250, 252, 0.90);
+  font-size: 1rem;
+  font-weight: 800;
+}
