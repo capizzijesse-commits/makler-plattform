@@ -67,8 +67,8 @@ export default function HomePage() {
 
 <div id="demo" className="landingVideoArea">            <div className="landingVideoCard">
               <div className="landingVideoLabel">
-                <span /> So funktioniert Inserat-AI
-              </div>
+  <span /> Inserat-AI in 60 Sekunden erklärt
+</div>
 
               <video className="landingVideo" controls>
                 <source src="/inserat-ai-demo.mp4" type="video/mp4" />
