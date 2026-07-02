@@ -57,19 +57,18 @@ export default function PricingSection() {
 
   return (
     <section
-  className="pricingSection"
-  style={{
-    background: "#ffffff",
-    fontFamily: "Inter, sans-serif",
-    color: "#1f2937",
-    borderRadius: "24px",
-    padding: "36px 40px 44px",
-    maxWidth: "1100px",
-    margin: "45px auto 0",
-    boxSizing: "border-box",
-    boxShadow: "0 20px 50px rgba(15, 23, 42, 0.10)",
-  }}
->
+      style={{
+        background: "#ffffff",
+        fontFamily: "Inter, sans-serif",
+        color: "#1f2937",
+        borderRadius: "24px",
+        padding: "36px 40px 44px",        
+        maxWidth: "1100px",
+        margin: "45px auto 0",
+        boxSizing: "border-box",
+        boxShadow: "0 20px 50px rgba(15, 23, 42, 0.10)",
+      }}
+    >
       <div
   style={{
     display: "inline-flex",
