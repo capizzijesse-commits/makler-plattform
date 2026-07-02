@@ -2096,3 +2096,45 @@ input:focus::placeholder {
     white-space: normal;
   }
 }
+/* Vorteile-Balken mit Titel */
+
+.landingTrustBar {
+  display: grid;
+  gap: 24px;
+  align-items: stretch;
+}
+
+.landingTrustTitle {
+  color: #fbbf24;
+  font-size: clamp(1.45rem, 2vw, 2rem);
+  font-weight: 950;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+.landingTrustItems {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  width: 100%;
+}
+
+.landingTrustItems span {
+  color: rgba(226, 232, 240, 0.82);
+  font-size: 1rem;
+}
+
+.landingTrustItems strong {
+  color: #f8fafc;
+  font-size: 1.05rem;
+  font-weight: 850;
+}
+
+@media (max-width: 900px) {
+  .landingTrustItems {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+}

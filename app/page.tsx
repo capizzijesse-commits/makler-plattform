@@ -104,12 +104,18 @@ export default function HomePage() {
           </div>
         </div>
 
-       <div className="landingTrustBar">
-  <span>Entwickelt für Schweizer Immobilienprofis</span>
-  <strong>DSG-konform</strong>
-  <strong>Schweizer Markt</strong>
-  <strong>Portaltexte & Social Media</strong>
-  <strong>Keine Kreditkarte</strong>
+       <div id="benefits" className="landingTrustBar">
+  <div className="landingTrustTitle">
+    Vorteile
+  </div>
+
+  <div className="landingTrustItems">
+    <span>Entwickelt für Schweizer Immobilienprofis</span>
+    <strong>DSG-konform</strong>
+    <strong>Schweizer Markt</strong>
+    <strong>Portaltexte & Social Media</strong>
+    <strong>Keine Kreditkarte</strong>
+  </div>
 </div>
       </section>
 
