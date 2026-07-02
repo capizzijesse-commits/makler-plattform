@@ -20,7 +20,11 @@ export default function Navbar() {
 
           <span className="siteBrandText">Inserat-AI</span>
         </Link>
-
+<div className="siteNavCenter">
+  <a href="/#demo">So funktioniert’s</a>
+  <a href="/#pricing">Preise</a>
+  <a href="/#benefits">Vorteile</a>
+</div>
         <nav className="siteNavActions">
           {isDashboard ? (
             <>

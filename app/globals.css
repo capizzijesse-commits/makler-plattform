@@ -2029,3 +2029,28 @@ input:focus::placeholder {
     #050505 100%
   );
 }
+.siteNavCenter {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-left: auto;
+  margin-right: 24px;
+}
+
+.siteNavCenter a {
+  color: rgba(248, 250, 252, 0.78);
+  text-decoration: none;
+  font-size: 0.94rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.siteNavCenter a:hover {
+  color: #fbbf24;
+}
+
+@media (max-width: 920px) {
+  .siteNavCenter {
+    display: none;
+  }
+}
