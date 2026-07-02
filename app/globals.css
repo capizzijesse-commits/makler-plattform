@@ -2176,3 +2176,84 @@ input:focus::placeholder {
   font-size: 1rem;
   font-weight: 800;
 }
+/* Vorteile-Balken exakt zentrieren */
+
+.landingTrustBar {
+  text-align: center;
+  justify-items: center;
+}
+
+.landingTrustTitle {
+  width: 100%;
+  text-align: center;
+  color: rgba(248, 250, 252, 0.82);
+}
+
+.landingTrustItems {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: center;
+  justify-items: center;
+  gap: 18px;
+  text-align: center;
+}
+
+.landingTrustItems span,
+.landingTrustItems strong {
+  width: 100%;
+  text-align: center;
+  white-space: normal;
+}
+
+@media (max-width: 900px) {
+  .landingTrustItems {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+/* Vorteile-Balken final sauber zentrieren */
+
+.landingTrustBar {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  gap: 24px !important;
+  min-height: 150px;
+}
+
+.landingTrustTitle {
+  width: 100% !important;
+  display: block !important;
+  text-align: center !important;
+  margin: 0 auto !important;
+  color: rgba(248, 250, 252, 0.82);
+  font-size: clamp(1.35rem, 1.8vw, 1.75rem);
+  font-weight: 850;
+  letter-spacing: -0.03em;
+}
+
+.landingTrustItems {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(5, 1fr) !important;
+  align-items: center !important;
+  justify-items: center !important;
+  gap: 18px !important;
+  text-align: center !important;
+}
+
+.landingTrustItems span,
+.landingTrustItems strong {
+  width: 100% !important;
+  text-align: center !important;
+  white-space: normal !important;
+}
+
+@media (max-width: 900px) {
+  .landingTrustItems {
+    grid-template-columns: 1fr !important;
+  }
+}
