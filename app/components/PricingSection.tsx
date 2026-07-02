@@ -70,46 +70,28 @@ export default function PricingSection() {
       }}
     >
       <div
-        style={{
-          textAlign: "center",
-          marginBottom: "28px",
-        }}
-      >
-        <p
-          style={{
-            display: "inline-block",
-            background: "#fff7ed",
-            color: "#c2410c",
-            padding: "8px 14px",
-            borderRadius: "999px",
-            fontWeight: 800,
-            fontSize: "0.85rem",
-            marginBottom: "12px",
-          }}
-        >
-          Gründerangebot: Starte 30 Tage kostenlos. Danach nutzt du den Standard-Plan für nur 19.90 CHF pro Monat statt später 39.90 CHF.
-        </p>
-
-        <h2
-          style={{
-            fontSize: "2.2rem",
-            fontWeight: 900,
-            margin: "0 0 8px",
-          }}
-        >
-          Preise
-        </h2>
-
-        <p
-          style={{
-            color: "#64748b",
-            margin: 0,
-            fontSize: "1rem",
-          }}
-        >
-          Starte 30 Tage kostenlos mit Inserat-AI. Danach nutzt du den Standard-Plan für 19.90 CHF pro Monat.
-        </p>
-      </div>
+  style={{
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px",
+    padding: "9px 16px",
+    borderRadius: "999px",
+    background:
+      "linear-gradient(135deg, rgba(251, 191, 36, 0.16), rgba(245, 158, 11, 0.10))",
+    border: "1px solid rgba(245, 158, 11, 0.28)",
+    color: "#92400e",
+    fontWeight: 800,
+    fontSize: "0.9rem",
+    marginBottom: "16px",
+  }}
+>
+  <span>✨</span>
+  <span>
+    Gründerangebot: Starte 30 Tage kostenlos. Danach nutzt du den
+    Standard-Plan für nur 19.90 CHF pro Monat.
+  </span>
+</div>
 
       {/* Geändert: "alignItems: stretch" sorgt dafür, dass alle Boxen gleich hoch werden */}
       <div

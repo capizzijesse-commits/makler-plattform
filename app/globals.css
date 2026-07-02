@@ -2007,3 +2007,25 @@ input:focus::placeholder {
     grid-template-columns: 1fr;
   }
 }
+/* Weicher Übergang von Hero zu Preisen */
+
+.landingHero {
+  position: relative;
+  padding-bottom: 82px;
+}
+
+.landingHero::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 120px;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 36, 63, 0) 0%,
+    rgba(6, 19, 36, 0.72) 45%,
+    #050505 100%
+  );
+}
