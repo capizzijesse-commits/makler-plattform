@@ -1298,8 +1298,8 @@ input:focus::placeholder {
 }
 
 .landingFloatingCards {
-  margin-top: -42px;
-  padding: 0 24px 10px;
+  margin-top: 22px;
+  padding: 0;
   position: relative;
   z-index: 3;
   display: grid;
@@ -1308,7 +1308,7 @@ input:focus::placeholder {
 }
 
 .landingMiniCard {
-  min-height: 142px;
+ min-height: 128px;
   padding: 16px;
   border-radius: 18px;
   background:
