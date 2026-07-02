@@ -1907,3 +1907,103 @@ input:focus::placeholder {
     align-items: flex-start;
   }
 }
+/* Landingpage Feinschliff */
+
+.landingHero {
+  min-height: auto;
+  padding: 34px 20px 38px;
+}
+
+.landingHeroInner {
+  width: min(1500px, calc(100% - 80px));
+  grid-template-columns: minmax(590px, 0.9fr) minmax(640px, 1.1fr);
+  gap: 52px;
+  align-items: start;
+}
+
+.landingBadge {
+  margin-bottom: 26px;
+}
+
+.landingHeadline {
+  font-size: clamp(3rem, 4.25vw, 4.65rem);
+  line-height: 1.06;
+  letter-spacing: -0.045em;
+  font-weight: 850;
+  max-width: 720px;
+}
+
+.landingHeadline span {
+  color: #fbbf24;
+}
+
+.landingSubline {
+  max-width: 660px;
+  margin-top: 24px;
+  font-size: 1.05rem;
+  line-height: 1.62;
+}
+
+.landingHeroActions {
+  margin-top: 30px;
+}
+
+.landingBenefits {
+  margin-top: 44px;
+}
+
+.landingVideoArea {
+  margin-top: 18px;
+}
+
+.landingVideoCard {
+  padding: 16px;
+  border-radius: 22px;
+}
+
+.landingVideo {
+  border-radius: 17px;
+}
+
+.landingFloatingCards {
+  margin-top: 22px;
+  padding: 0;
+  z-index: 3;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.landingMiniCard {
+  min-height: 126px;
+  padding: 16px;
+}
+
+.landingTrustBar {
+  margin-top: 42px;
+}
+
+@media (max-width: 1180px) {
+  .landingHeroInner {
+    grid-template-columns: 1fr;
+  }
+
+  .landingVideoArea {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 780px) {
+  .landingHero {
+    padding: 28px 0 34px;
+  }
+
+  .landingHeadline {
+    font-size: clamp(2.35rem, 10vw, 3.65rem);
+    line-height: 1.08;
+  }
+
+  .landingFloatingCards {
+    margin-top: 18px;
+    grid-template-columns: 1fr;
+  }
+}
