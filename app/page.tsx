@@ -38,7 +38,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="landingBenefits">
+           <div id="benefits" className="landingBenefits">
               <div className="landingBenefit">
                 <div className="landingBenefitIcon">✦</div>
                 <div>
@@ -65,8 +65,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="landingVideoArea">
-            <div className="landingVideoCard">
+<div id="demo" className="landingVideoArea">            <div className="landingVideoCard">
               <div className="landingVideoLabel">
                 <span /> So funktioniert Inserat-AI
               </div>

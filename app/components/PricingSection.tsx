@@ -56,9 +56,11 @@ export default function PricingSection() {
   ];
 
   return (
-    <section
-      style={{
-        background: "#ffffff",
+   <section
+  id="pricing"
+  className="pricingSection"
+  style={{
+    background: "#ffffff",
         fontFamily: "Inter, sans-serif",
         color: "#1f2937",
         borderRadius: "24px",
