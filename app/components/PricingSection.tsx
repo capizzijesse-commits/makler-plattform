@@ -71,7 +71,9 @@ export default function PricingSection() {
     >
       <div
   style={{
-    display: "inline-flex",
+    display: "flex",
+width: "100%",
+boxSizing: "border-box",
     alignItems: "center",
     justifyContent: "center",
     gap: "8px",
