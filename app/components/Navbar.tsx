@@ -1,6 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
+  const pathname = usePathname();
+  const isDashboard = pathname?.startsWith("/dashboard");
+
   return (
     <header className="siteNavbar">
       <div className="siteNavbarInner">
@@ -16,14 +22,27 @@ export default function Navbar() {
         </Link>
 
         <nav className="siteNavActions">
-          <Link href="/login" className="siteLoginLink">
-            Login
-          </Link>
+          {isDashboard ? (
+            <>
+              <Link href="/dashboard" className="siteLoginLink">
+                Dashboard
+              </Link>
 
-          <Link href="/register" className="siteCtaButton">
-            Kostenlos testen
-            <span aria-hidden="true">→</span>
-          </Link>
+              <Link href="/" className="siteLoginLink">
+                Logout
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="siteLoginLink">
+                Login
+              </Link>
+
+              <Link href="/register" className="siteCtaButton">
+                Kostenlos testen <span aria-hidden="true">→</span>
+              </Link>
+            </>
+          )}
         </nav>
       </div>
     </header>

@@ -105,14 +105,13 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="landingTrustBar">
-          <span>Vertraut von Immobilienprofis in der ganzen Schweiz</span>
-          <strong>SVIT Schweiz</strong>
-          <strong>HEV Schweiz</strong>
-          <strong>USPI Genève</strong>
-          <strong>REIDA</strong>
-          <span>& viele weitere</span>
-        </div>
+       <div className="landingTrustBar">
+  <span>Entwickelt für Schweizer Immobilienprofis</span>
+  <strong>DSG-konform</strong>
+  <strong>Schweizer Markt</strong>
+  <strong>Portaltexte & Social Media</strong>
+  <strong>Keine Kreditkarte</strong>
+</div>
       </section>
 
       <PricingSection />

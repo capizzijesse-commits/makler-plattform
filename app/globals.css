@@ -1134,10 +1134,10 @@ input:focus::placeholder {
 }
 
 .landingHeadline {
-  font-size: clamp(2.6rem, 5.2vw, 5.8rem);
-  line-height: 0.98;
-  letter-spacing: -0.055em;
-  font-weight: 950;
+  font-size: clamp(3rem, 4.7vw, 5rem);
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+  font-weight: 850;
   margin: 0;
   color: #f8fafc;
 }
@@ -1396,6 +1396,500 @@ input:focus::placeholder {
 
   .landingHeadline {
     font-size: clamp(2.25rem, 12vw, 4rem);
+  }
+
+  .landingBenefits {
+    grid-template-columns: 1fr;
+  }
+
+  .landingFloatingCards {
+    margin-top: 16px;
+    padding: 0;
+    grid-template-columns: 1fr;
+  }
+
+  .landingTrustBar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+.siteNavbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(14, 165, 233, 0.14), transparent 34%),
+    linear-gradient(180deg, rgba(2, 6, 23, 0.98), rgba(2, 6, 23, 0.94));
+  border-bottom: 1px solid rgba(148, 163, 184, 0.10);
+  backdrop-filter: blur(16px);
+}
+
+.siteNavbarInner {
+  width: min(1500px, calc(100% - 80px));
+  margin: 0 auto;
+  min-height: 86px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.siteBrand {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  color: #f8fafc;
+}
+
+.siteBrandIcon {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fbbf24;
+  filter: drop-shadow(0 10px 22px rgba(245, 158, 11, 0.22));
+}
+
+.siteBrandRoof {
+  position: absolute;
+  left: 7px;
+  top: 7px;
+  width: 25px;
+  height: 25px;
+  border-left: 3px solid #fbbf24;
+  border-top: 3px solid #fbbf24;
+  transform: rotate(45deg);
+  border-radius: 3px;
+}
+
+.siteBrandLine {
+  position: absolute;
+  left: 15px;
+  height: 2px;
+  border-radius: 999px;
+  background: #fbbf24;
+}
+
+.siteBrandLineOne {
+  top: 16px;
+  width: 16px;
+}
+
+.siteBrandLineTwo {
+  top: 24px;
+  width: 21px;
+}
+
+.siteBrandLineThree {
+  top: 32px;
+  width: 13px;
+}
+
+.siteBrandText {
+  font-size: 1.65rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: #f8fafc;
+}
+
+.siteNavActions {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.siteLoginLink {
+  color: #f8fafc;
+  text-decoration: none;
+  font-weight: 750;
+  font-size: 1rem;
+  opacity: 0.92;
+  transition: all 0.2s ease;
+}
+
+.siteLoginLink:hover {
+  color: #fbbf24;
+  opacity: 1;
+}
+
+.siteCtaButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 50px;
+  padding: 0 24px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #111827;
+  text-decoration: none;
+  font-weight: 900;
+  font-size: 1rem;
+  border: 1px solid rgba(251, 191, 36, 0.82);
+  box-shadow:
+    0 0 0 1px rgba(251, 191, 36, 0.16),
+    0 10px 24px rgba(245, 158, 11, 0.28);
+  transition: all 0.2s ease;
+}
+
+.siteCtaButton:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+  box-shadow:
+    0 0 0 2px rgba(251, 191, 36, 0.20),
+    0 14px 30px rgba(245, 158, 11, 0.36);
+}
+
+/* Landingpage Master-Design */
+
+.landingHero {
+  min-height: calc(100vh - 86px);
+  padding: 58px 20px 34px;
+  background:
+    radial-gradient(circle at 75% 22%, rgba(14, 165, 233, 0.14), transparent 33%),
+    radial-gradient(circle at 20% 30%, rgba(245, 158, 11, 0.08), transparent 30%),
+    linear-gradient(135deg, #020617 0%, #07172f 48%, #08243f 100%);
+  color: #f8fafc;
+  overflow: hidden;
+}
+
+.landingHeroInner {
+  width: min(1500px, calc(100% - 80px));
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(480px, 0.92fr) minmax(620px, 1.08fr);
+  gap: 58px;
+  align-items: center;
+}
+
+.landingHeroContent {
+  position: relative;
+  z-index: 2;
+}
+
+.landingBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.58);
+  color: rgba(226, 232, 240, 0.92);
+  font-size: 0.92rem;
+  margin-bottom: 32px;
+  box-shadow: 0 12px 30px rgba(2, 6, 23, 0.22);
+}
+
+.landingBadge span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #111827;
+  font-weight: 950;
+  font-size: 0.78rem;
+}
+
+.landingHeadline {
+  font-size: clamp(3.2rem, 5vw, 5.45rem);
+  line-height: 1.02;
+  letter-spacing: -0.06em;
+  font-weight: 950;
+  margin: 0;
+  color: #f8fafc;
+}
+
+.landingHeadline span {
+  color: #fbbf24;
+  text-shadow: 0 0 28px rgba(251, 191, 36, 0.16);
+}
+
+.landingSubline {
+  max-width: 650px;
+  margin-top: 28px;
+  color: rgba(226, 232, 240, 0.80);
+  font-size: 1.12rem;
+  line-height: 1.62;
+}
+
+.landingHeroActions {
+  margin-top: 34px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.landingPrimaryButton {
+  min-height: 58px;
+  padding: 0 30px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 24px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #111827;
+  text-decoration: none;
+  font-weight: 950;
+  font-size: 1.08rem;
+  border: 1px solid rgba(251, 191, 36, 0.75);
+  box-shadow:
+    0 0 0 1px rgba(251, 191, 36, 0.18),
+    0 14px 34px rgba(245, 158, 11, 0.34);
+  transition: all 0.2s ease;
+}
+
+.landingPrimaryButton:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+  box-shadow:
+    0 0 0 2px rgba(251, 191, 36, 0.22),
+    0 18px 42px rgba(245, 158, 11, 0.42);
+}
+
+.landingCheck {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(226, 232, 240, 0.84);
+  font-weight: 650;
+}
+
+.landingCheck span {
+  width: 31px;
+  height: 31px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(226, 232, 240, 0.42);
+  color: #f8fafc;
+}
+
+.landingBenefits {
+  margin-top: 50px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.landingBenefit {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+}
+
+.landingBenefitIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fbbf24;
+  background: rgba(15, 23, 42, 0.74);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 14px 30px rgba(2, 6, 23, 0.22);
+  font-weight: 900;
+  font-size: 1.22rem;
+  flex: 0 0 auto;
+}
+
+.landingBenefit strong {
+  display: block;
+  color: #f8fafc;
+  font-size: 0.96rem;
+  margin-bottom: 3px;
+}
+
+.landingBenefit p {
+  margin: 0;
+  color: rgba(203, 213, 225, 0.70);
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
+.landingVideoArea {
+  position: relative;
+  z-index: 2;
+}
+
+.landingVideoCard {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  padding: 16px;
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.88), rgba(30, 41, 59, 0.62));
+  border: 1px solid rgba(251, 191, 36, 0.26);
+  box-shadow:
+    0 28px 80px rgba(2, 6, 23, 0.46),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.landingVideoLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #f8fafc;
+  font-weight: 850;
+  margin-bottom: 14px;
+}
+
+.landingVideoLabel span {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #fbbf24;
+  box-shadow: 0 0 18px rgba(251, 191, 36, 0.55);
+}
+
+.landingVideo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 18px;
+  background: #020617;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.landingFloatingCards {
+  margin-top: -74px;
+  padding: 0 18px;
+  position: relative;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.landingMiniCard {
+  min-height: 142px;
+  padding: 18px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.80));
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 18px 40px rgba(2, 6, 23, 0.34);
+  backdrop-filter: blur(14px);
+}
+
+.landingMiniCard strong {
+  display: block;
+  color: #f8fafc;
+  margin-bottom: 11px;
+  font-size: 0.98rem;
+}
+
+.landingMiniCard p {
+  margin: 0;
+  color: rgba(203, 213, 225, 0.76);
+  line-height: 1.5;
+  font-size: 0.86rem;
+}
+
+.landingMiniCard ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.landingMiniCard li {
+  color: rgba(226, 232, 240, 0.82);
+  font-size: 0.88rem;
+}
+
+.landingMiniCard li::before {
+  content: "✓";
+  color: #fbbf24;
+  font-weight: 950;
+  margin-right: 8px;
+}
+
+.landingTrustBar {
+  width: min(1500px, calc(100% - 80px));
+  margin: 58px auto 0;
+  min-height: 92px;
+  padding: 20px 34px;
+  border-radius: 22px;
+  background: rgba(15, 23, 42, 0.42);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.landingTrustBar strong {
+  color: rgba(248, 250, 252, 0.82);
+  font-size: 1.08rem;
+  letter-spacing: -0.02em;
+}
+
+@media (max-width: 1180px) {
+  .landingHeroInner {
+    grid-template-columns: 1fr;
+    gap: 46px;
+  }
+
+  .landingVideoArea {
+    max-width: 900px;
+  }
+}
+
+@media (max-width: 780px) {
+  .siteNavbarInner {
+    width: min(100% - 32px, 1500px);
+    min-height: 74px;
+  }
+
+  .siteBrandText {
+    font-size: 1.25rem;
+  }
+
+  .siteBrandIcon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .siteNavActions {
+    gap: 14px;
+  }
+
+  .siteLoginLink {
+    font-size: 0.9rem;
+  }
+
+  .siteCtaButton {
+    min-height: 40px;
+    padding: 0 14px;
+    font-size: 0.86rem;
+  }
+
+  .landingHero {
+    padding: 40px 0 38px;
+  }
+
+  .landingHeroInner,
+  .landingTrustBar {
+    width: min(100% - 32px, 1500px);
+  }
+
+  .landingHeadline {
+    font-size: clamp(2.35rem, 11vw, 4rem);
   }
 
   .landingBenefits {
