@@ -14,18 +14,18 @@ export default function HomePage() {
             </div>
 
             <h1 className="landingHeadline">
-              Mehr Anfragen.
-              <br />
-              Weniger Aufwand.
-              <br />
-              <span>Inserate, die überzeugen.</span>
-            </h1>
+  Aus wenigen Angaben
+  <br />
+  wird ein Inserat,
+  <br />
+  <span>das überzeugt.</span>
+</h1>
 
-            <p className="landingSubline">
-              Inserat-AI erstellt und optimiert Immobilieninserate in Sekunden –
-              inklusive Texten, Highlights und Varianten. Für mehr Sichtbarkeit
-              und qualifizierte Anfragen.
-            </p>
+<p className="landingSubline">
+  Inserat-AI erstellt hochwertige Immobilieninserate in Sekunden –
+  emotional formuliert, professionell strukturiert und bereit für
+  Homegate, ImmoScout24, Exposés und Social Media.
+</p>
 
             <div className="landingHeroActions">
               <a href="/register" className="landingPrimaryButton">
