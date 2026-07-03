@@ -42,9 +42,9 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-slate-950 px-6 py-20 text-white">
-    <video
-  className="fixed inset-0 h-full w-full object-cover opacity-100"
+    <main className="relative isolate min-h-screen overflow-hidden px-6 py-20 text-white">
+   <video
+  className="absolute inset-0 -z-30 h-full w-full object-cover"
   autoPlay
   muted
   loop
@@ -54,9 +54,9 @@ export default function RegisterPage() {
   <source src="/zurich-skyline-loop.mp4" type="video/mp4" />
 </video>
 
-<div className="fixed inset-0 bg-slate-950/25" />
-<div className="fixed inset-0 bg-gradient-to-r from-slate-950/70 via-slate-950/35 to-slate-950/10" />
-<div className="fixed inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-slate-950/20" />
+<div className="absolute inset-0 -z-20 bg-slate-950/25" />
+<div className="absolute inset-0 -z-10 bg-gradient-to-r from-slate-950/75 via-slate-950/35 to-transparent" />
+<div className="absolute inset-0 -z-10 bg-gradient-to-t from-slate-950/60 via-transparent to-slate-950/20" />
 
       <div className="relative z-10 mx-auto grid min-h-[calc(100vh-10rem)] max-w-7xl items-center gap-12 lg:grid-cols-[1fr_0.9fr]">
         <section>
