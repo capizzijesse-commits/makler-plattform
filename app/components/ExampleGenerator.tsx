@@ -115,15 +115,59 @@ export default function ExampleGenerator() {
             </div>
 
             <button
-              onClick={generateExample}
-              className="mt-8 w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-8 py-4 text-base font-bold text-slate-950 shadow-[0_0_35px_rgba(245,158,11,0.25)] transition hover:scale-[1.01] hover:from-amber-200 hover:to-amber-400"
-            >
-              Inserat-Vorschau generieren
-            </button>
+  onClick={generateExample}
+  className="mt-8 w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-8 py-4 text-base font-bold text-slate-950 shadow-[0_0_35px_rgba(245,158,11,0.25)] transition hover:scale-[1.01] hover:from-amber-200 hover:to-amber-400"
+>
+  Inserat-Vorschau generieren
+</button>
 
-            <p className="mt-4 text-center text-sm text-slate-400">
-              Keine Anmeldung nötig – einfach ausprobieren.
-            </p>
+<p className="mt-4 text-center text-sm text-slate-400">
+  Keine Anmeldung nötig – einfach ausprobieren.
+</p>
+
+<div className="mt-8 rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+  <p className="text-xs font-bold uppercase tracking-wide text-amber-300">
+    Was Inserat-AI erstellt
+  </p>
+
+  <div className="mt-4 grid gap-3">
+    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+      <p className="font-semibold text-white">Professioneller Titel</p>
+      <p className="mt-1 text-sm text-slate-400">
+        Kurz, verkaufsstark und passend für Immobilienportale.
+      </p>
+    </div>
+
+    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+      <p className="font-semibold text-white">Emotionale Beschreibung</p>
+      <p className="mt-1 text-sm text-slate-400">
+        Hochwertig formuliert im Stil eines Maklers.
+      </p>
+    </div>
+
+    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+      <p className="font-semibold text-white">Highlights & Social Media</p>
+      <p className="mt-1 text-sm text-slate-400">
+        Inhalte für Exposé, Portaltext und Social-Media-Beiträge.
+      </p>
+    </div>
+  </div>
+
+  <div className="mt-5 flex flex-wrap gap-2">
+    <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
+      Homegate
+    </span>
+    <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
+      ImmoScout24
+    </span>
+    <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
+      Exposé
+    </span>
+    <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
+      Social Media
+    </span>
+  </div>
+</div>
           </div>
 
           <div className="rounded-[1.5rem] border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-6 md:p-8">
