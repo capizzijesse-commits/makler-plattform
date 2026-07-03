@@ -117,6 +117,76 @@ export default function HomePage() {
     <strong>Keine Kreditkarte</strong>
   </div>
 </div>
+            </section>
+
+      <section className="landingExampleSection">
+        <div className="landingExampleInner">
+          <div className="landingExampleContent">
+            <div className="landingSectionBadge">Live-Beispiel</div>
+
+            <h2>
+              So einfach entsteht dein Immobilieninserat.
+            </h2>
+
+            <p>
+              Gib wenige Eckdaten ein und Inserat-AI erstellt daraus einen
+              professionellen Titel, eine emotionale Beschreibung und passende
+              Highlights für dein Objekt.
+            </p>
+
+            <ul>
+              <li>✓ Titel automatisch generieren</li>
+              <li>✓ Beschreibung im Makler-Stil</li>
+              <li>✓ Highlights für Portale & Social Media</li>
+            </ul>
+          </div>
+
+          <div className="landingExampleCard">
+            <div className="landingExampleForm">
+              <label>
+                Objektart
+                <input value="4.5-Zimmer-Wohnung" readOnly />
+              </label>
+
+              <label>
+                Ort
+                <input value="Winterthur, ZH" readOnly />
+              </label>
+
+              <label>
+                Wohnfläche
+                <input value="112 m²" readOnly />
+              </label>
+
+              <label>
+                Highlights
+                <textarea
+                  value={"Balkon, offene Küche, Parkettboden, ruhige Lage"}
+                  readOnly
+                />
+              </label>
+
+              <button type="button">
+                Beispiel generieren
+              </button>
+            </div>
+
+            <div className="landingExampleResult">
+              <span>KI-Vorschau</span>
+
+              <h3>
+                Stilvolle 4.5-Zimmer-Wohnung mit Balkon in Winterthur
+              </h3>
+
+              <p>
+                Diese attraktive Wohnung überzeugt durch helle Räume, eine
+                moderne offene Küche und einen gemütlichen Balkon. Der
+                hochwertige Parkettboden verleiht dem Zuhause eine warme und
+                gepflegte Atmosphäre.
+              </p>
+            </div>
+          </div>
+        </div>
       </section>
 
       <PricingSection />
