@@ -132,6 +132,7 @@ async function handleGenerateSocial() {
         styleText,
         imageAnalysis,
         email: userEmail,
+        demo: true,
       }),
     });
 
@@ -1570,54 +1571,118 @@ return (
       </div>
       <button className="bonusBtn">Empfehlungslink kopieren</button>
     </div>
-    <div className="bonusBlock" style={{ marginTop: "18px" }}>
-  <div className="bonusTitle">📱 Social Media</div>
+    
+  </div>
+  
+</section>
+<section
+  style={{
+    gridColumn: "1 / -1",
+    width: "100%",
+    maxWidth: "1180px",
+    margin: "28px auto 0",
+    padding: "24px",
+    borderRadius: "28px",
+    background: "rgba(255, 248, 230, 0.96)",
+    border: "1px solid rgba(245, 158, 11, 0.28)",
+    boxShadow: "0 24px 70px rgba(0, 0, 0, 0.22)",
+  }}
+>
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      gap: "18px",
+      alignItems: "center",
+      flexWrap: "wrap",
+    }}
+  >
+    <div>
+      <h2
+        style={{
+          margin: 0,
+          color: "#0f172a",
+          fontSize: "26px",
+          fontWeight: 900,
+        }}
+      >
+        📱 Social-Media-Texte
+      </h2>
 
-  <div className="bonusText">
-    Erstelle passende Texte für Instagram, Facebook und LinkedIn – inklusive Hashtags.
+      <p
+        style={{
+          marginTop: "8px",
+          color: "#7c5f2a",
+          fontSize: "15px",
+          lineHeight: 1.6,
+        }}
+      >
+        Erstelle passende Texte für Instagram, Facebook und LinkedIn –
+        inklusive Call-to-Action und Hashtags.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      className="bonusBtn"
+      onClick={handleGenerateSocial}
+      disabled={socialLoading}
+    >
+      {socialLoading
+        ? "Social-Media-Texte werden erstellt..."
+        : "Social-Media-Texte erstellen"}
+    </button>
   </div>
 
-  <button
-    type="button"
-    className="bonusBtn"
-    onClick={handleGenerateSocial}
-    disabled={socialLoading}
-  >
-    {socialLoading
-      ? "Social-Media-Texte werden erstellt..."
-      : "Social-Media-Texte erstellen"}
-  </button>
-
   {socialError && (
-    <div style={{ marginTop: "12px", color: "#b91c1c", fontWeight: 700 }}>
+    <div style={{ marginTop: "16px", color: "#b91c1c", fontWeight: 800 }}>
       {socialError}
     </div>
   )}
 
   {socialVariants.length > 0 && (
-    <div style={{ marginTop: "18px", display: "grid", gap: "14px" }}>
+    <div
+      style={{
+        marginTop: "22px",
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+        gap: "16px",
+      }}
+    >
       {socialVariants.map((variant, index) => (
         <div
           key={index}
           style={{
-            padding: "16px",
-            borderRadius: "16px",
+            padding: "18px",
+            borderRadius: "20px",
             border: "1px solid rgba(15, 23, 42, 0.12)",
-            background: "rgba(255, 255, 255, 0.65)",
+            background: "#ffffff",
           }}
         >
-          <div style={{ fontWeight: 900, marginBottom: "8px" }}>
+          <div
+            style={{
+              fontWeight: 900,
+              marginBottom: "10px",
+              color: "#0f172a",
+            }}
+          >
             {variant.title}
           </div>
 
-          <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
+          <div
+            style={{
+              whiteSpace: "pre-wrap",
+              lineHeight: 1.65,
+              color: "#334155",
+            }}
+          >
             {variant.text}
           </div>
 
           <button
             type="button"
             className="bonusBtn"
-            style={{ marginTop: "12px" }}
+            style={{ marginTop: "14px" }}
             onClick={() => navigator.clipboard.writeText(variant.text)}
           >
             Text kopieren
@@ -1626,9 +1691,6 @@ return (
       ))}
     </div>
   )}
-</div>
-  </div>
-  
 </section>
         </div>
       </div>
