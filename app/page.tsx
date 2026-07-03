@@ -43,7 +43,7 @@ export default function HomePage() {
                 <div className="landingBenefitIcon">✦</div>
                 <div>
                   <strong>In Sekunden erstellt</strong>
-                  <p>KI generiert Texte & Titel</p>
+<p>Titel, Beschreibung und Highlights</p>
                 </div>
               </div>
 
@@ -78,7 +78,7 @@ export default function HomePage() {
 
             <div className="landingFloatingCards">
               <div className="landingMiniCard">
-                <strong>✨ KI-Texterstellung</strong>
+                <strong>✨ Inserat-Texte</strong>
                 <p>
                   Moderne 4.5-Zimmer-Wohnung mit Seesicht, Balkon und perfekter
                   Anbindung.

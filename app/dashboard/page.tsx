@@ -696,7 +696,7 @@ return (
          <section className="leftCard">
   <h2>Eingabe</h2>
   <p className="sectionText">
-    Erfasse die wichtigsten Eckdaten der Immobilie. Die KI erstellt daraus mehrere professionelle Textvarianten.
+  Erfasse die wichtigsten Eckdaten der Immobilie. Inserat-AI erstellt daraus professionelle Titel, Beschreibungen und Varianten für dein Inserat.
   </p>
 {trialDaysLeft !== null && !trialExpired && (
   <div
