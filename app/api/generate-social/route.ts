@@ -62,7 +62,9 @@ export async function POST(req: Request) {
     }
 
     const prompt = `
-Erstelle GENAU 3 unterschiedliche hochwertige Immobilieninserate für Immobilienmakler in der Schweiz.
+Du bist ein professioneller Social-Media-Texter für Schweizer Immobilienmakler.
+
+Erstelle GENAU 3 unterschiedliche Social-Media-Texte für die Vermarktung einer Immobilie.
 
 Verwende AUSSCHLIESSLICH diese Angaben:
 - Ort: ${location || "-"}
@@ -78,29 +80,40 @@ WICHTIG:
 - Erfinde KEINE zusätzlichen Fakten.
 - Erfinde KEIN Haus, KEIN Grundstück, KEINE Garage, KEIN Garten, KEIN Pool, KEINE Schlafzimmerzahl, KEIN Lift, KEINE Aussicht, wenn es nicht ausdrücklich in den Angaben steht.
 - Wenn etwas nicht angegeben wurde, dann nicht erwähnen.
-- Jede Variante soll ungefähr 120 bis 180 Wörter lang sein.
-- Jede Variante braucht einen Titel und einen Text.
+- Schreibe modern, hochwertig, seriös und verkaufsstark.
+- Die Texte sollen direkt auf Social Media kopierbar sein.
+- Verwende passende Emojis sparsam.
+- Jeder Text braucht am Ende passende Hashtags.
+- Verwende 5 bis 9 Hashtags pro Variante.
+- Hashtags sollen zum Schweizer Immobilienmarkt, zum Standort und zur Objektart passen.
+- Schreibe auf Deutsch.
 - Gib NUR gültiges JSON zurück, ohne Markdown und ohne Erklärung.
 
-Varianten:
-1. Emotional und einladend
-2. Sachlich, professionell und seriös
-3. Modern, verkaufsstark und digital optimiert
+Erstelle diese 3 Varianten:
+
+1. Instagram
+Kurz, emotional, aufmerksamkeitsstark, mit Call-to-Action und Hashtags.
+
+2. Facebook
+Etwas ausführlicher, freundlich, informativ, mit Besichtigungs- oder Kontaktaufruf und Hashtags.
+
+3. LinkedIn
+Professionell, seriös, geeignet für Immobilienmakler, Eigentümer und Geschäftskontakte, mit dezenten Hashtags.
 
 Format:
 {
   "variants": [
     {
-      "title": "Emotionaler Titel",
-      "text": "Emotionaler Text"
+      "title": "Instagram Caption",
+      "text": "Social-Media-Text mit Call-to-Action und Hashtags"
     },
     {
-      "title": "Professioneller Titel",
-      "text": "Professioneller Text"
+      "title": "Facebook Post",
+      "text": "Social-Media-Text mit Call-to-Action und Hashtags"
     },
     {
-      "title": "Moderner Titel",
-      "text": "Moderner Text"
+      "title": "LinkedIn Post",
+      "text": "Social-Media-Text mit Call-to-Action und Hashtags"
     }
   ]
 }
