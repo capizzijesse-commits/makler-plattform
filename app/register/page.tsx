@@ -51,7 +51,7 @@ export default function RegisterPage() {
   playsInline
   preload="auto"
 >
-  <source src="/zurich-skyline-loop.mp4" type="video/mp4" />
+<source src="/zurich-skyline-loop.mp4" type="video/mp4" />
 </video>
 
 <div className="absolute inset-0 -z-20 bg-slate-950/25" />
