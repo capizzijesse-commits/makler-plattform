@@ -43,15 +43,20 @@ export default function RegisterPage() {
 
   return (
     <main className="relative isolate min-h-screen overflow-hidden px-6 py-20 text-white">
-   <video
+  <video
   className="absolute inset-0 -z-30 h-full w-full object-cover"
   autoPlay
   muted
   loop
   playsInline
-  preload="auto"
+  preload="metadata"
 >
-<source src="/zurich-skyline-loop.mp4" type="video/mp4" />
+  <source
+    src="/zurich-skyline-loop-mobile.mp4"
+    media="(max-width: 768px)"
+    type="video/mp4"
+  />
+  <source src="/zurich-skyline-loop.mp4" type="video/mp4" />
 </video>
 
 <div className="absolute inset-0 -z-20 bg-slate-950/25" />
@@ -71,32 +76,32 @@ export default function RegisterPage() {
             30 Tage kostenlos testen
           </div>
 
-          <h1 className="mt-10 max-w-3xl text-5xl font-light leading-tight tracking-tight text-white drop-shadow-2xl md:text-7xl">
-            Starte mit Inserat-AI und erstelle bessere Immobilieninserate.
-          </h1>
+          <h1 className="mt-8 max-w-3xl break-words text-[2.15rem] font-light leading-[1.08] tracking-tight text-white drop-shadow-2xl sm:text-5xl md:text-6xl lg:text-7xl">
+  Starte mit Inserat-AI und erstelle bessere Inserate.
+</h1>
 
-          <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-200 drop-shadow">
+          <p className="mt-5 max-w-2xl text-base leading-7 text-slate-200 drop-shadow sm:text-lg sm:leading-8">
             Erstelle deinen Zugang und teste Inserat-AI kostenlos. Generiere
             professionelle Titel, Beschreibungen, Highlights und Inhalte für
             Immobilienportale in wenigen Sekunden.
           </p>
 
-          <div className="mt-10 grid max-w-2xl gap-4 sm:grid-cols-3">
-            <div className="rounded-3xl border border-white/10 bg-slate-950/55 p-5 backdrop-blur">
-              <p className="text-2xl font-semibold text-white">30 Tage</p>
-              <p className="mt-2 text-sm text-slate-300">kostenlos testen</p>
-            </div>
+         <div className="mt-8 grid max-w-2xl gap-3 sm:grid-cols-3">
+  <div className="rounded-3xl border border-white/10 bg-slate-950/55 p-4 backdrop-blur sm:p-5">
+    <p className="text-2xl font-semibold text-white">30 Tage</p>
+    <p className="mt-2 text-sm text-slate-300">kostenlos testen</p>
+  </div>
 
-            <div className="rounded-3xl border border-white/10 bg-slate-950/55 p-5 backdrop-blur">
-              <p className="text-2xl font-semibold text-white">Sofort</p>
-              <p className="mt-2 text-sm text-slate-300">Dashboard nutzen</p>
-            </div>
+  <div className="rounded-3xl border border-white/10 bg-slate-950/55 p-4 backdrop-blur sm:p-5">
+    <p className="text-2xl font-semibold text-white">Sofort</p>
+    <p className="mt-2 text-sm text-slate-300">Dashboard nutzen</p>
+  </div>
 
-            <div className="rounded-3xl border border-white/10 bg-slate-950/55 p-5 backdrop-blur">
-              <p className="text-2xl font-semibold text-white">Keine</p>
-              <p className="mt-2 text-sm text-slate-300">Kreditkarte nötig</p>
-            </div>
-          </div>
+  <div className="rounded-3xl border border-white/10 bg-slate-950/55 p-4 backdrop-blur sm:p-5">
+    <p className="text-2xl font-semibold text-white">Keine</p>
+    <p className="mt-2 text-sm text-slate-300">Kreditkarte nötig</p>
+  </div>
+</div>
         </section>
 
         <section className="rounded-[2rem] border border-white/10 bg-white/[0.08] p-4 shadow-2xl backdrop-blur-xl">
