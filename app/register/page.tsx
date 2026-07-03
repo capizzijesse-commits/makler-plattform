@@ -43,53 +43,64 @@ export default function RegisterPage() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-slate-950 px-6 py-20 text-white">
-      <div className="absolute left-1/2 top-0 h-[520px] w-[900px] -translate-x-1/2 rounded-full bg-amber-400/10 blur-3xl" />
-      <div className="absolute bottom-0 left-0 h-[420px] w-[420px] rounded-full bg-blue-500/10 blur-3xl" />
-      <div className="absolute right-0 top-1/3 h-[360px] w-[360px] rounded-full bg-amber-500/10 blur-3xl" />
+    <video
+  className="fixed inset-0 h-full w-full object-cover opacity-100"
+  autoPlay
+  muted
+  loop
+  playsInline
+  preload="auto"
+>
+  <source src="/zurich-skyline-loop.mp4" type="video/mp4" />
+</video>
 
-      <div className="relative mx-auto grid min-h-[calc(100vh-10rem)] max-w-7xl items-center gap-12 lg:grid-cols-[1fr_0.9fr]">
+<div className="fixed inset-0 bg-slate-950/25" />
+<div className="fixed inset-0 bg-gradient-to-r from-slate-950/70 via-slate-950/35 to-slate-950/10" />
+<div className="fixed inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-slate-950/20" />
+
+      <div className="relative z-10 mx-auto grid min-h-[calc(100vh-10rem)] max-w-7xl items-center gap-12 lg:grid-cols-[1fr_0.9fr]">
         <section>
           <Link
             href="/"
-            className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-5 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white"
+            className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.08] px-5 py-2 text-sm font-semibold text-slate-200 backdrop-blur transition hover:bg-white/15 hover:text-white"
           >
             ← Zurück zur Startseite
           </Link>
 
-          <div className="mt-10 inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-5 py-2 text-sm font-bold uppercase tracking-wide text-amber-300">
+          <div className="ml-3 mt-6 inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-5 py-2 text-sm font-bold uppercase tracking-wide text-amber-300 backdrop-blur">
             30 Tage kostenlos testen
           </div>
 
-          <h1 className="mt-8 max-w-3xl text-5xl font-light leading-tight tracking-tight text-white md:text-7xl">
+          <h1 className="mt-10 max-w-3xl text-5xl font-light leading-tight tracking-tight text-white drop-shadow-2xl md:text-7xl">
             Starte mit Inserat-AI und erstelle bessere Immobilieninserate.
           </h1>
 
-          <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-300">
+          <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-200 drop-shadow">
             Erstelle deinen Zugang und teste Inserat-AI kostenlos. Generiere
             professionelle Titel, Beschreibungen, Highlights und Inhalte für
             Immobilienportale in wenigen Sekunden.
           </p>
 
           <div className="mt-10 grid max-w-2xl gap-4 sm:grid-cols-3">
-            <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-5">
+            <div className="rounded-3xl border border-white/10 bg-slate-950/55 p-5 backdrop-blur">
               <p className="text-2xl font-semibold text-white">30 Tage</p>
-              <p className="mt-2 text-sm text-slate-400">kostenlos testen</p>
+              <p className="mt-2 text-sm text-slate-300">kostenlos testen</p>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-5">
+            <div className="rounded-3xl border border-white/10 bg-slate-950/55 p-5 backdrop-blur">
               <p className="text-2xl font-semibold text-white">Sofort</p>
-              <p className="mt-2 text-sm text-slate-400">Dashboard nutzen</p>
+              <p className="mt-2 text-sm text-slate-300">Dashboard nutzen</p>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-5">
+            <div className="rounded-3xl border border-white/10 bg-slate-950/55 p-5 backdrop-blur">
               <p className="text-2xl font-semibold text-white">Keine</p>
-              <p className="mt-2 text-sm text-slate-400">Kreditkarte nötig</p>
+              <p className="mt-2 text-sm text-slate-300">Kreditkarte nötig</p>
             </div>
           </div>
         </section>
 
-        <section className="rounded-[2rem] border border-white/10 bg-white/[0.07] p-4 shadow-2xl backdrop-blur">
-          <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/70 p-7 md:p-9">
+        <section className="rounded-[2rem] border border-white/10 bg-white/[0.08] p-4 shadow-2xl backdrop-blur-xl">
+          <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/80 p-7 md:p-9">
             <div className="mb-8 text-center">
               <p className="text-sm font-bold uppercase tracking-wide text-amber-300">
                 Inserat-AI
