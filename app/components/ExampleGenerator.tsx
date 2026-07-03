@@ -3,9 +3,11 @@
 import { useState } from "react";
 
 export default function ExampleGenerator() {
-  const [objectType, setObjectType] = useState("4.5-Zimmer-Wohnung");
+  const [rooms, setRooms] = useState("4.5");
+  const [propertyType, setPropertyType] = useState("Wohnung");
   const [location, setLocation] = useState("Winterthur, ZH");
   const [livingSpace, setLivingSpace] = useState("112 m²");
+  const [price, setPrice] = useState("CHF 1'450'000.–");
   const [highlights, setHighlights] = useState(
     "Balkon, offene Küche, Parkettboden, ruhige Lage"
   );
@@ -23,10 +25,12 @@ export default function ExampleGenerator() {
     const firstHighlight =
       highlights.split(",")[0]?.trim() || "besonderen Highlights";
 
-    setTitle(`${objectType} mit ${firstHighlight} in ${cleanLocation}`);
+    setTitle(
+      `Stilvolle ${rooms}-Zimmer-${propertyType} mit ${firstHighlight} in ${cleanLocation}`
+    );
 
     setDescription(
-      `Diese ${objectType.toLowerCase()} in ${cleanLocation} verbindet ein angenehmes Wohngefühl mit einer durchdachten Raumaufteilung. Besonders hervorzuheben sind ${highlights}. Das Objekt eignet sich ideal für Interessenten, die Wert auf Komfort, Lage und eine professionelle Präsentation legen.`
+      `Diese attraktive ${rooms}-Zimmer-${propertyType.toLowerCase()} in ${cleanLocation} verbindet ein angenehmes Wohngefühl mit einer durchdachten Raumaufteilung. Besonders hervorzuheben sind ${highlights}. Mit ${livingSpace} Wohnfläche und einem Kaufpreis von ${price} eignet sich das Objekt ideal für Interessenten, die Wert auf Komfort, Lage und eine professionelle Präsentation legen.`
     );
   };
 
@@ -71,11 +75,22 @@ export default function ExampleGenerator() {
             <div className="grid gap-5 md:grid-cols-2">
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-300">
+                  Zimmer
+                </label>
+                <input
+                  value={rooms}
+                  onChange={(e) => setRooms(e.target.value)}
+                  className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.14]"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-300">
                   Objektart
                 </label>
                 <input
-                  value={objectType}
-                  onChange={(e) => setObjectType(e.target.value)}
+                  value={propertyType}
+                  onChange={(e) => setPropertyType(e.target.value)}
                   className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.14]"
                 />
               </div>
@@ -104,6 +119,17 @@ export default function ExampleGenerator() {
 
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-300">
+                  Preis
+                </label>
+                <input
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.14]"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-300">
                   Highlights
                 </label>
                 <input
@@ -115,59 +141,65 @@ export default function ExampleGenerator() {
             </div>
 
             <button
-  onClick={generateExample}
-  className="mt-8 w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-8 py-4 text-base font-bold text-slate-950 shadow-[0_0_35px_rgba(245,158,11,0.25)] transition hover:scale-[1.01] hover:from-amber-200 hover:to-amber-400"
->
-  Inserat-Vorschau generieren
-</button>
+              onClick={generateExample}
+              className="mt-8 w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-8 py-4 text-base font-bold text-slate-950 shadow-[0_0_35px_rgba(245,158,11,0.25)] transition hover:scale-[1.01] hover:from-amber-200 hover:to-amber-400"
+            >
+              Inserat-Vorschau generieren
+            </button>
 
-<p className="mt-4 text-center text-sm text-slate-400">
-  Keine Anmeldung nötig – einfach ausprobieren.
-</p>
+            <p className="mt-4 text-center text-sm text-slate-400">
+              Keine Anmeldung nötig – einfach ausprobieren.
+            </p>
 
-<div className="mt-8 rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-  <p className="text-xs font-bold uppercase tracking-wide text-amber-300">
-    Was Inserat-AI erstellt
-  </p>
+            <div className="mt-8 rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+              <p className="text-xs font-bold uppercase tracking-wide text-amber-300">
+                Was Inserat-AI erstellt
+              </p>
 
-  <div className="mt-4 grid gap-3">
-    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-      <p className="font-semibold text-white">Professioneller Titel</p>
-      <p className="mt-1 text-sm text-slate-400">
-        Kurz, verkaufsstark und passend für Immobilienportale.
-      </p>
-    </div>
+              <div className="mt-4 grid gap-3">
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                  <p className="font-semibold text-white">
+                    Professioneller Titel
+                  </p>
+                  <p className="mt-1 text-sm text-slate-400">
+                    Kurz, verkaufsstark und passend für Immobilienportale.
+                  </p>
+                </div>
 
-    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-      <p className="font-semibold text-white">Emotionale Beschreibung</p>
-      <p className="mt-1 text-sm text-slate-400">
-        Hochwertig formuliert im Stil eines Maklers.
-      </p>
-    </div>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                  <p className="font-semibold text-white">
+                    Emotionale Beschreibung
+                  </p>
+                  <p className="mt-1 text-sm text-slate-400">
+                    Hochwertig formuliert im Stil eines Maklers.
+                  </p>
+                </div>
 
-    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-      <p className="font-semibold text-white">Highlights & Social Media</p>
-      <p className="mt-1 text-sm text-slate-400">
-        Inhalte für Exposé, Portaltext und Social-Media-Beiträge.
-      </p>
-    </div>
-  </div>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                  <p className="font-semibold text-white">
+                    Highlights & Social Media
+                  </p>
+                  <p className="mt-1 text-sm text-slate-400">
+                    Inhalte für Exposé, Portaltext und Social-Media-Beiträge.
+                  </p>
+                </div>
+              </div>
 
-  <div className="mt-5 flex flex-wrap gap-2">
-    <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
-      Homegate
-    </span>
-    <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
-      ImmoScout24
-    </span>
-    <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
-      Exposé
-    </span>
-    <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
-      Social Media
-    </span>
-  </div>
-</div>
+              <div className="mt-5 flex flex-wrap gap-2">
+                <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
+                  Homegate
+                </span>
+                <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
+                  ImmoScout24
+                </span>
+                <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
+                  Exposé
+                </span>
+                <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
+                  Social Media
+                </span>
+              </div>
+            </div>
           </div>
 
           <div className="rounded-[1.5rem] border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-6 md:p-8">
@@ -197,13 +229,19 @@ export default function ExampleGenerator() {
 
               <div className="mt-6 flex flex-wrap gap-3 text-sm text-slate-300">
                 <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
+                  {rooms} Zimmer
+                </span>
+                <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
+                  {propertyType}
+                </span>
+                <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
                   {livingSpace}
                 </span>
                 <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
                   {location}
                 </span>
                 <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
-                  Portaltext
+                  {price}
                 </span>
               </div>
 
