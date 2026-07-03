@@ -110,6 +110,47 @@ useEffect(() => {
     setUserName(savedName);
   }
 }, []);
+async function handleGenerateSocial() {
+  setSocialLoading(true);
+  setSocialError("");
+
+  try {
+    const userEmail = localStorage.getItem("userEmail");
+
+    const response = await fetch("/api/generate-social", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        location,
+        rooms,
+        livingArea,
+        price,
+        propertyType,
+        highlights,
+        styleText,
+        imageAnalysis,
+        email: userEmail,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setSocialError(
+        data.error || "Fehler beim Erstellen der Social-Media-Texte."
+      );
+      return;
+    }
+
+    setSocialVariants(data.variants || []);
+  } catch {
+    setSocialError("Fehler beim Erstellen der Social-Media-Texte.");
+  } finally {
+    setSocialLoading(false);
+  }
+}
 
 async function analyzeImage() {
   if (!selectedImage) {
@@ -1529,7 +1570,65 @@ return (
       </div>
       <button className="bonusBtn">Empfehlungslink kopieren</button>
     </div>
+    <div className="bonusBlock" style={{ marginTop: "18px" }}>
+  <div className="bonusTitle">📱 Social Media</div>
+
+  <div className="bonusText">
+    Erstelle passende Texte für Instagram, Facebook und LinkedIn – inklusive Hashtags.
   </div>
+
+  <button
+    type="button"
+    className="bonusBtn"
+    onClick={handleGenerateSocial}
+    disabled={socialLoading}
+  >
+    {socialLoading
+      ? "Social-Media-Texte werden erstellt..."
+      : "Social-Media-Texte erstellen"}
+  </button>
+
+  {socialError && (
+    <div style={{ marginTop: "12px", color: "#b91c1c", fontWeight: 700 }}>
+      {socialError}
+    </div>
+  )}
+
+  {socialVariants.length > 0 && (
+    <div style={{ marginTop: "18px", display: "grid", gap: "14px" }}>
+      {socialVariants.map((variant, index) => (
+        <div
+          key={index}
+          style={{
+            padding: "16px",
+            borderRadius: "16px",
+            border: "1px solid rgba(15, 23, 42, 0.12)",
+            background: "rgba(255, 255, 255, 0.65)",
+          }}
+        >
+          <div style={{ fontWeight: 900, marginBottom: "8px" }}>
+            {variant.title}
+          </div>
+
+          <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
+            {variant.text}
+          </div>
+
+          <button
+            type="button"
+            className="bonusBtn"
+            style={{ marginTop: "12px" }}
+            onClick={() => navigator.clipboard.writeText(variant.text)}
+          >
+            Text kopieren
+          </button>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+  </div>
+  
 </section>
         </div>
       </div>
