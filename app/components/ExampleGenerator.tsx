@@ -144,11 +144,11 @@ export default function ExampleGenerator() {
               onClick={generateExample}
               className="mt-8 w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-8 py-4 text-base font-bold text-slate-950 shadow-[0_0_35px_rgba(245,158,11,0.25)] transition hover:scale-[1.01] hover:from-amber-200 hover:to-amber-400"
             >
-              Inserat-Vorschau generieren
+              Beispiel-Inserat erstellen
             </button>
 
             <p className="mt-4 text-center text-sm text-slate-400">
-              Keine Anmeldung nötig – einfach ausprobieren.
+             Ohne Anmeldung testen – im kostenlosen Account warten weitere Funktionen.
             </p>
 
             <div className="mt-8 rounded-3xl border border-white/10 bg-white/[0.04] p-5">
@@ -206,7 +206,7 @@ export default function ExampleGenerator() {
             <div className="mb-8 flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-bold uppercase tracking-wide text-amber-300">
-                  KI-Vorschau
+                  Generiertes Inserat
                 </p>
                 <h3 className="mt-2 text-2xl font-semibold text-white">
                   Generiertes Inserat
