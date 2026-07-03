@@ -2132,6 +2132,23 @@ return (
           }
           
 }
+          .socialMediaPanel {
+  grid-column: 2 / 3;
+  width: 100%;
+  margin-top: 28px;
+  padding: 24px;
+  border-radius: 28px;
+  background: rgba(255, 248, 230, 0.96);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+}
+
+@media (max-width: 900px) {
+  .socialMediaPanel {
+    grid-column: 1 / -1;
+    margin-top: 22px;
+  }
+}
         }
       `}</style>
     </main>
