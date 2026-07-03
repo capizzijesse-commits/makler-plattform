@@ -24,17 +24,17 @@ export default function RegisterPage() {
 
     try {
       localStorage.setItem("userName", name);
-localStorage.setItem("userEmail", email);
+      localStorage.setItem("userEmail", email);
 
-const trialStart = new Date();
-const trialEnd = new Date();
-trialEnd.setDate(trialEnd.getDate() + 30);
+      const trialStart = new Date();
+      const trialEnd = new Date();
+      trialEnd.setDate(trialEnd.getDate() + 30);
 
-localStorage.setItem("trialStartDate", trialStart.toISOString());
-localStorage.setItem("trialEndDate", trialEnd.toISOString());
-localStorage.setItem("trialStatus", "active");
+      localStorage.setItem("trialStartDate", trialStart.toISOString());
+      localStorage.setItem("trialEndDate", trialEnd.toISOString());
+      localStorage.setItem("trialStatus", "active");
 
-router.push("/dashboard");
+      router.push("/dashboard");
     } catch {
       alert("Fehler bei der Registrierung.");
       setLoading(false);
@@ -42,175 +42,134 @@ router.push("/dashboard");
   }
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        background:
-          "radial-gradient(circle at 20% 10%, rgba(37, 99, 235, 0.35), transparent 28%), radial-gradient(circle at 90% 80%, rgba(245, 158, 11, 0.28), transparent 30%), linear-gradient(135deg, #020617 0%, #0f172a 45%, #1e3a8a 100%)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "60px 20px",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "500px",
-          background: "rgba(255, 255, 255, 0.08)",
-          border: "1px solid rgba(255, 255, 255, 0.18)",
-          borderRadius: "28px",
-          padding: "42px",
-          boxShadow: "0 30px 80px rgba(0,0,0,0.35)",
-          backdropFilter: "blur(18px)",
-        }}
-      >
-        <div style={{ marginBottom: "30px", textAlign: "center" }}>
-          <div
-            style={{
-              display: "inline-block",
-              padding: "8px 14px",
-              borderRadius: "999px",
-              border: "1px solid rgba(251, 191, 36, 0.45)",
-              color: "#fbbf24",
-              fontWeight: 800,
-              fontSize: "14px",
-              marginBottom: "18px",
-              background: "rgba(255,255,255,0.08)",
-            }}
+    <main className="relative min-h-screen overflow-hidden bg-slate-950 px-6 py-20 text-white">
+      <div className="absolute left-1/2 top-0 h-[520px] w-[900px] -translate-x-1/2 rounded-full bg-amber-400/10 blur-3xl" />
+      <div className="absolute bottom-0 left-0 h-[420px] w-[420px] rounded-full bg-blue-500/10 blur-3xl" />
+      <div className="absolute right-0 top-1/3 h-[360px] w-[360px] rounded-full bg-amber-500/10 blur-3xl" />
+
+      <div className="relative mx-auto grid min-h-[calc(100vh-10rem)] max-w-7xl items-center gap-12 lg:grid-cols-[1fr_0.9fr]">
+        <section>
+          <Link
+            href="/"
+            className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-5 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white"
           >
+            ← Zurück zur Startseite
+          </Link>
+
+          <div className="mt-10 inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-5 py-2 text-sm font-bold uppercase tracking-wide text-amber-300">
             30 Tage kostenlos testen
           </div>
 
-          <h1
-            style={{
-              color: "#ffffff",
-              fontSize: "38px",
-              fontWeight: 900,
-              marginBottom: "12px",
-              letterSpacing: "-0.04em",
-            }}
-          >
-            Account erstellen
+          <h1 className="mt-8 max-w-3xl text-5xl font-light leading-tight tracking-tight text-white md:text-7xl">
+            Starte mit Inserat-AI und erstelle bessere Immobilieninserate.
           </h1>
 
-          <p
-            style={{
-              color: "#cbd5e1",
-              fontSize: "16px",
-              lineHeight: 1.6,
-              margin: 0,
-            }}
-          >
-            Erstellen Sie Ihren Zugang und generieren Sie professionelle Immobilieninserate in Sekunden.
+          <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-300">
+            Erstelle deinen Zugang und teste Inserat-AI kostenlos. Generiere
+            professionelle Titel, Beschreibungen, Highlights und Inhalte für
+            Immobilienportale in wenigen Sekunden.
           </p>
-        </div>
 
-        <form onSubmit={handleRegister}>
-          <label style={labelStyle}>Name</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Ihr Name"
-            style={inputStyle}
-          />
+          <div className="mt-10 grid max-w-2xl gap-4 sm:grid-cols-3">
+            <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-5">
+              <p className="text-2xl font-semibold text-white">30 Tage</p>
+              <p className="mt-2 text-sm text-slate-400">kostenlos testen</p>
+            </div>
 
-          <label style={labelStyle}>E-Mail</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="name@firma.ch"
-            style={inputStyle}
-          />
+            <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-5">
+              <p className="text-2xl font-semibold text-white">Sofort</p>
+              <p className="mt-2 text-sm text-slate-400">Dashboard nutzen</p>
+            </div>
 
-          <label style={labelStyle}>Passwort</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Passwort eingeben"
-            style={inputStyle}
-          />
+            <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-5">
+              <p className="text-2xl font-semibold text-white">Keine</p>
+              <p className="mt-2 text-sm text-slate-400">Kreditkarte nötig</p>
+            </div>
+          </div>
+        </section>
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: "100%",
-              padding: "16px 22px",
-              borderRadius: "16px",
-              border: "none",
-              background: "linear-gradient(135deg, #f59e0b, #f97316)",
-              color: "#ffffff",
-              fontSize: "17px",
-              fontWeight: 900,
-              cursor: "pointer",
-              boxShadow: "0 18px 40px rgba(249, 115, 22, 0.35)",
-              marginTop: "8px",
-            }}
-          >
-            {loading ? "Account wird erstellt..." : "Account erstellen"}
-          </button>
-        </form>
+        <section className="rounded-[2rem] border border-white/10 bg-white/[0.07] p-4 shadow-2xl backdrop-blur">
+          <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/70 p-7 md:p-9">
+            <div className="mb-8 text-center">
+              <p className="text-sm font-bold uppercase tracking-wide text-amber-300">
+                Inserat-AI
+              </p>
 
-        <p
-          style={{
-            color: "#cbd5e1",
-            textAlign: "center",
-            marginTop: "24px",
-            fontSize: "15px",
-          }}
-        >
-          Bereits registriert?{" "}
-          <Link
-            href="/login"
-            style={{
-              color: "#fbbf24",
-              fontWeight: 800,
-              textDecoration: "none",
-            }}
-          >
-            Einloggen
-          </Link>
-        </p>
+              <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white">
+                Account erstellen
+              </h2>
 
-        <div
-          style={{
-            marginTop: "28px",
-            padding: "16px",
-            borderRadius: "18px",
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.12)",
-            color: "#cbd5e1",
-            fontSize: "14px",
-            lineHeight: 1.6,
-            textAlign: "center",
-          }}
-        >
-          30 Tage kostenlos testen. Danach startet der Standard-Plan für 19.90 CHF pro Monat.
-        </div>
+              <p className="mt-3 text-sm leading-6 text-slate-400">
+                Kostenlos starten und direkt dein erstes Inserat generieren.
+              </p>
+            </div>
+
+            <form onSubmit={handleRegister} className="space-y-5">
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-300">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Ihr Name"
+                  className="w-full rounded-2xl border border-white/10 bg-white/10 px-5 py-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.14]"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-300">
+                  E-Mail
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@firma.ch"
+                  className="w-full rounded-2xl border border-white/10 bg-white/10 px-5 py-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.14]"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-300">
+                  Passwort
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Passwort eingeben"
+                  className="w-full rounded-2xl border border-white/10 bg-white/10 px-5 py-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.14]"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-8 py-4 text-base font-bold text-slate-950 shadow-[0_0_35px_rgba(245,158,11,0.25)] transition hover:scale-[1.01] hover:from-amber-200 hover:to-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {loading ? "Account wird erstellt..." : "Kostenlos starten"}
+              </button>
+            </form>
+
+            <p className="mt-6 text-center text-sm text-slate-400">
+              Bereits registriert?{" "}
+              <Link
+                href="/login"
+                className="font-bold text-amber-300 transition hover:text-amber-200"
+              >
+                Einloggen
+              </Link>
+            </p>
+
+            <div className="mt-8 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-5 text-center text-sm leading-6 text-amber-100">
+              30 Tage kostenlos testen. Danach kannst du den passenden Plan
+              auswählen.
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   );
 }
-
-const labelStyle = {
-  display: "block",
-  color: "#e5e7eb",
-  fontWeight: 800,
-  marginBottom: "8px",
-};
-
-const inputStyle = {
-  width: "100%",
-  padding: "16px 18px",
-  borderRadius: "16px",
-  border: "1px solid rgba(255,255,255,0.2)",
-  background: "rgba(255,255,255,0.1)",
-  color: "#ffffff",
-  fontSize: "16px",
-  outline: "none",
-  marginBottom: "20px",
-};
