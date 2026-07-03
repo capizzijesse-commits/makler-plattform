@@ -56,7 +56,7 @@ export default function RegisterPage() {
     media="(max-width: 768px)"
     type="video/mp4"
   />
-  <source src="/zurich-skyline-loop.mp4" type="video/mp4" />
+  <source src="/zurich-skyline-loop1.mp4" type="video/mp4" />
 </video>
 
 <div className="absolute inset-0 -z-20 bg-slate-950/25" />
@@ -86,7 +86,7 @@ export default function RegisterPage() {
             Immobilienportale in wenigen Sekunden.
           </p>
 
-         <div className="mt-8 grid max-w-2xl gap-3 sm:grid-cols-3">
+       <div className="mt-8 hidden max-w-2xl gap-3 sm:grid sm:grid-cols-3">
   <div className="rounded-3xl border border-white/10 bg-slate-950/55 p-4 backdrop-blur sm:p-5">
     <p className="text-2xl font-semibold text-white">30 Tage</p>
     <p className="mt-2 text-sm text-slate-300">kostenlos testen</p>
@@ -104,8 +104,8 @@ export default function RegisterPage() {
 </div>
         </section>
 
-        <section className="rounded-[2rem] border border-white/10 bg-white/[0.08] p-4 shadow-2xl backdrop-blur-xl">
-          <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/80 p-7 md:p-9">
+        <section className="rounded-[2rem] border border-white/15 bg-white/[0.06] p-4 shadow-2xl backdrop-blur-xl">
+  <div className="rounded-[1.5rem] border border-white/15 bg-slate-950/65 p-7 shadow-2xl backdrop-blur-xl md:p-9">
             <div className="mb-8 text-center">
               <p className="text-sm font-bold uppercase tracking-wide text-amber-300">
                 Inserat-AI
