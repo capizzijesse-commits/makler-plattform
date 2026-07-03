@@ -89,69 +89,19 @@ const QUICK_STYLES = [
 export default function DashboardPage() {
   
   const [instagramPost, setInstagramPost] = useState("");
-const [linkedinPost, setLinkedinPost] = useState("");
-const [facebookPost, setFacebookPost] = useState("");
-const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [linkedinPost, setLinkedinPost] = useState("");
+  const [facebookPost, setFacebookPost] = useState("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
 const [imagePreview, setImagePreview] = useState("");
 const [imageAnalysis, setImageAnalysis] = useState("");
 const [analyzingImage, setAnalyzingImage] = useState(false);
-const [userName, setUserName] = useState("");
-
-const [socialLoading, setSocialLoading] = useState(false);
-const [socialVariants, setSocialVariants] = useState<
-  { title: string; text: string }[]
->([]);
-const [socialError, setSocialError] = useState("");
-
-useEffect(() => {
+const [userName, setUserName] = useState(""); useEffect(() => {
  
   const savedName = localStorage.getItem("userName");
   if (savedName) {
     setUserName(savedName);
   }
 }, []);
-async function handleGenerateSocial() {
-  setSocialLoading(true);
-  setSocialError("");
-
-  try {
-    const userEmail = localStorage.getItem("userEmail");
-
-    const response = await fetch("/api/generate-social", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        location,
-        rooms,
-        livingArea,
-        price,
-        propertyType,
-        highlights,
-        styleText,
-        imageAnalysis,
-        email: userEmail,
-        demo: true,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      setSocialError(
-        data.error || "Fehler beim Erstellen der Social-Media-Texte."
-      );
-      return;
-    }
-
-    setSocialVariants(data.variants || []);
-  } catch {
-    setSocialError("Fehler beim Erstellen der Social-Media-Texte.");
-  } finally {
-    setSocialLoading(false);
-  }
-}
 
 async function analyzeImage() {
   if (!selectedImage) {
@@ -467,7 +417,7 @@ const filteredPostalLocationSuggestions =
       }).slice(0, 8)
     : [];
 
-
+const [socialLoading, setSocialLoading] = useState(false);
 
 const [socialPosts, setSocialPosts] = useState<{
   instagramPost?: string;
@@ -1571,126 +1521,7 @@ return (
       </div>
       <button className="bonusBtn">Empfehlungslink kopieren</button>
     </div>
-    
   </div>
-  
-</section>
-<section
-  style={{
-    gridColumn: "1 / -1",
-    width: "100%",
-    maxWidth: "1180px",
-    margin: "28px auto 0",
-    padding: "24px",
-    borderRadius: "28px",
-    background: "rgba(255, 248, 230, 0.96)",
-    border: "1px solid rgba(245, 158, 11, 0.28)",
-    boxShadow: "0 24px 70px rgba(0, 0, 0, 0.22)",
-  }}
->
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "space-between",
-      gap: "18px",
-      alignItems: "center",
-      flexWrap: "wrap",
-    }}
-  >
-    <div>
-      <h2
-        style={{
-          margin: 0,
-          color: "#0f172a",
-          fontSize: "26px",
-          fontWeight: 900,
-        }}
-      >
-        📱 Social-Media-Texte
-      </h2>
-
-      <p
-        style={{
-          marginTop: "8px",
-          color: "#7c5f2a",
-          fontSize: "15px",
-          lineHeight: 1.6,
-        }}
-      >
-        Erstelle passende Texte für Instagram, Facebook und LinkedIn –
-        inklusive Call-to-Action und Hashtags.
-      </p>
-    </div>
-
-    <button
-      type="button"
-      className="bonusBtn"
-      onClick={handleGenerateSocial}
-      disabled={socialLoading}
-    >
-      {socialLoading
-        ? "Social-Media-Texte werden erstellt..."
-        : "Social-Media-Texte erstellen"}
-    </button>
-  </div>
-
-  {socialError && (
-    <div style={{ marginTop: "16px", color: "#b91c1c", fontWeight: 800 }}>
-      {socialError}
-    </div>
-  )}
-
-  {socialVariants.length > 0 && (
-    <div
-      style={{
-        marginTop: "22px",
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-        gap: "16px",
-      }}
-    >
-      {socialVariants.map((variant, index) => (
-        <div
-          key={index}
-          style={{
-            padding: "18px",
-            borderRadius: "20px",
-            border: "1px solid rgba(15, 23, 42, 0.12)",
-            background: "#ffffff",
-          }}
-        >
-          <div
-            style={{
-              fontWeight: 900,
-              marginBottom: "10px",
-              color: "#0f172a",
-            }}
-          >
-            {variant.title}
-          </div>
-
-          <div
-            style={{
-              whiteSpace: "pre-wrap",
-              lineHeight: 1.65,
-              color: "#334155",
-            }}
-          >
-            {variant.text}
-          </div>
-
-          <button
-            type="button"
-            className="bonusBtn"
-            style={{ marginTop: "14px" }}
-            onClick={() => navigator.clipboard.writeText(variant.text)}
-          >
-            Text kopieren
-          </button>
-        </div>
-      ))}
-    </div>
-  )}
 </section>
         </div>
       </div>
@@ -2131,23 +1962,6 @@ return (
             gap: 14px;
           }
           
-}
-          .socialMediaPanel {
-  grid-column: 2 / 3;
-  width: 100%;
-  margin-top: 28px;
-  padding: 24px;
-  border-radius: 28px;
-  background: rgba(255, 248, 230, 0.96);
-  border: 1px solid rgba(245, 158, 11, 0.28);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
-}
-
-@media (max-width: 900px) {
-  .socialMediaPanel {
-    grid-column: 1 / -1;
-    margin-top: 22px;
-  }
 }
         }
       `}</style>
