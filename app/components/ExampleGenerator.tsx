@@ -274,12 +274,12 @@ export default function ExampleGenerator() {
             </div>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <a
-                href="/register"
-                className="inline-flex flex-1 items-center justify-center rounded-full bg-white px-6 py-4 font-bold text-slate-950 transition hover:bg-slate-200"
-              >
-                Kostenlos testen
-              </a>
+             <a
+  href="/register"
+  className="inline-flex flex-1 items-center justify-center rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-6 py-4 font-bold text-slate-950 shadow-[0_0_35px_rgba(245,158,11,0.25)] transition hover:scale-[1.01] hover:from-amber-200 hover:to-amber-400"
+>
+  Kostenlos testen
+</a>
 
               <a
                 href="#pricing"
