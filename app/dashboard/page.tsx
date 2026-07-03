@@ -89,13 +89,21 @@ const QUICK_STYLES = [
 export default function DashboardPage() {
   
   const [instagramPost, setInstagramPost] = useState("");
-  const [linkedinPost, setLinkedinPost] = useState("");
-  const [facebookPost, setFacebookPost] = useState("");
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+const [linkedinPost, setLinkedinPost] = useState("");
+const [facebookPost, setFacebookPost] = useState("");
+const [selectedImage, setSelectedImage] = useState<File | null>(null);
 const [imagePreview, setImagePreview] = useState("");
 const [imageAnalysis, setImageAnalysis] = useState("");
 const [analyzingImage, setAnalyzingImage] = useState(false);
-const [userName, setUserName] = useState(""); useEffect(() => {
+const [userName, setUserName] = useState("");
+
+const [socialLoading, setSocialLoading] = useState(false);
+const [socialVariants, setSocialVariants] = useState<
+  { title: string; text: string }[]
+>([]);
+const [socialError, setSocialError] = useState("");
+
+useEffect(() => {
  
   const savedName = localStorage.getItem("userName");
   if (savedName) {
@@ -417,7 +425,7 @@ const filteredPostalLocationSuggestions =
       }).slice(0, 8)
     : [];
 
-const [socialLoading, setSocialLoading] = useState(false);
+
 
 const [socialPosts, setSocialPosts] = useState<{
   instagramPost?: string;
