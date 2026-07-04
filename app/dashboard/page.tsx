@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import PortalExportButton from "../components/PortalExportButton";
 import {
@@ -1347,25 +1347,72 @@ return (
 
   <div className="divider" />
 
-  <div className="actions">
+<div className="actions">
+  <div className="mainActions">
     <button
-  onClick={generateText}
-  disabled={loading || trialExpired}
-  className="btn btn-primary"
+      onClick={generateText}
+      disabled={loading || trialExpired}
+      className="btn btn-primary"
+      style={{
+        background: "linear-gradient(135deg, #f59e0b, #f97316)",
+        boxShadow: "0 16px 36px rgba(249, 115, 22, 0.35)",
+        color: "#ffffff",
+        border: "none",
+      }}
+    >
+      {trialExpired
+        ? "Test abgelaufen"
+        : loading
+        ? "Generiere..."
+        : "✨ Generieren (3 Varianten)"}
+    </button>
+
+  <Link
+  href="/dashboard/social-media"
+  aria-label="Instagram, Facebook, LinkedIn und X Posts erstellen"
   style={{
-    background: "linear-gradient(135deg, #f59e0b, #f97316)",
-    boxShadow: "0 16px 36px rgba(249, 115, 22, 0.35)",
+    minHeight: "52px",
+    display: "inline-flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "3px",
+    width: "100%",
+    borderRadius: "16px",
+    padding: "8px 18px",
+    textDecoration: "none",
     color: "#ffffff",
     border: "none",
+    background: "linear-gradient(135deg, #ec4899, #8b5cf6, #06b6d4)",
+    boxShadow: "0 16px 36px rgba(139, 92, 246, 0.38)",
   }}
 >
-  {trialExpired
-    ? "Test abgelaufen"
-    : loading
-    ? "Generiere..."
-    : "✨ Generieren (3 Varianten)"}
-</button>
+  <span
+    style={{
+      fontSize: "10px",
+      fontWeight: 900,
+      letterSpacing: "0.12em",
+      textTransform: "uppercase",
+      opacity: 0.92,
+      lineHeight: 1,
+    }}
+  >
+    Instagram · Facebook · LinkedIn · X
+  </span>
 
+  <strong
+    style={{
+      fontSize: "17px",
+      fontWeight: 950,
+      lineHeight: 1.1,
+    }}
+  >
+    📱 Social Media →
+  </strong>
+</Link>
+  </div>
+
+  <div className="secondaryActions">
     <button
       onClick={copyActive}
       disabled={!current}
@@ -1373,13 +1420,15 @@ return (
     >
       Copy
     </button>
-<button
-  type="button"
-  onClick={clearForm}
-  className="btn btn-secondary"
->
-  Neues Objekt
-</button>
+
+    <button
+      type="button"
+      onClick={clearForm}
+      className="btn btn-secondary"
+    >
+      Neues Objekt
+    </button>
+
     <button
       onClick={exportPdf}
       disabled={!current}
@@ -1387,22 +1436,24 @@ return (
     >
       PDF
     </button>
+
     <PortalExportButton
-  data={{
-    ort: location,
-    objektart: propertyType,
-    zimmer: rooms,
-    wohnflaeche: livingArea,
-    preis: price,
-    titel: current?.title || "",
-    beschreibung: current?.text || "",
-    highlights:
-      current?.highlights && current.highlights.length > 0
-        ? current.highlights
-        : highlights,
-  }}
-/>
+      data={{
+        ort: location,
+        objektart: propertyType,
+        zimmer: rooms,
+        wohnflaeche: livingArea,
+        preis: price,
+        titel: current?.title || "",
+        beschreibung: current?.text || "",
+        highlights:
+          current?.highlights && current.highlights.length > 0
+            ? current.highlights
+            : highlights,
+      }}
+    />
   </div>
+</div>
 
   <div className="miniStats">
     <MiniStat title="Markt" value="Schweiz" />
@@ -1521,12 +1572,14 @@ return (
       </div>
       <button className="bonusBtn">Empfehlungslink kopieren</button>
     </div>
+   
   </div>
 </section>
         </div>
       </div>
 
       <style jsx>{`
+     
       .topStats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1720,38 +1773,86 @@ return (
 }
 
         .actions {
-          display: flex;
-          gap: 10px;
-          flex-wrap: wrap;
-          margin-top: 18px;
-          margin-bottom: 22px;
-        }
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
+}
 
-        .btn {
-          border-radius: 12px;
-          padding: 12px 18px;
-          font-weight: 800;
-          cursor: pointer;
-          border: none;
-          transition: 0.2s ease;
-        }
+.mainActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
 
-        .btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
+.secondaryActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
 
-        .btn-primary {
-          background: linear-gradient(135deg, #1cb8f6 0%, #129ce0 100%);
-          color: #ffffff;
-          box-shadow: 0 10px 24px rgba(28, 184, 246, 0.25);
-        }
 
-        .btn-secondary {
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          color: #ffffff;
-        }
+.socialLaunchBtn {
+  min-height: 58px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 12px 20px;
+  border-radius: 18px;
+  text-decoration: none;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: linear-gradient(
+    135deg,
+    #ff006e 0%,
+    #8338ec 42%,
+    #3a86ff 72%,
+    #06b6d4 100%
+  );
+  box-shadow:
+    0 18px 42px rgba(131, 56, 236, 0.38),
+    0 0 32px rgba(6, 182, 212, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  font-weight: 950;
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    filter 0.22s ease;
+}
+
+.socialLaunchBtn:hover {
+  transform: translateY(-2px) scale(1.015);
+  filter: brightness(1.08);
+  box-shadow:
+    0 24px 58px rgba(131, 56, 236, 0.5),
+    0 0 42px rgba(6, 182, 212, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38);
+}
+
+.socialLaunchPlatforms {
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.socialLaunchBtn strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 17px;
+  line-height: 1.1;
+  color: #ffffff;
+}
+
+.socialLaunchBtn strong span {
+  font-size: 22px;
+  line-height: 1;
+}
+
 
         
 .miniStats {
@@ -1964,6 +2065,7 @@ return (
           
 }
         }
+
       `}</style>
     </main>
   );
