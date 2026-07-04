@@ -1250,14 +1250,25 @@ return (
   </div>
 </Field>
 
-    <Field label="Stil">
-      <input
-  value={styleText}
-  placeholder="z.B. hochwertig, modern oder sachlich"
-  onChange={(e) => setStyleText(e.target.value)}
-  className="input"
-/>
-    </Field>
+  
+
+<Field label="Preis">
+  <input
+    value={price}
+    placeholder="z.B. 1'450'000"
+    onChange={(e) => setPrice(e.target.value)}
+    className="input"
+  />
+</Field>
+
+<Field label="Stil">
+  <input
+    value={styleText}
+    placeholder="z.B. hochwertig, modern oder sachlich"
+    onChange={(e) => setStyleText(e.target.value)}
+    className="input"
+  />
+</Field>
 
     <Field label="Highlights (mit Komma trennen)">
       <input
@@ -1367,9 +1378,24 @@ return (
         : "✨ Generieren (3 Varianten)"}
     </button>
 
-  <Link
+ <Link
   href="/dashboard/social-media"
   aria-label="Instagram, Facebook, LinkedIn und X Posts erstellen"
+  onClick={() => {
+    localStorage.setItem(
+      "inseratAiSocialDraft",
+      JSON.stringify({
+        location,
+        propertyType,
+        rooms,
+        livingArea,
+        price,
+        highlights,
+        styleText,
+        imageAnalysis,
+      })
+    );
+  }}
   style={{
     minHeight: "52px",
     display: "inline-flex",

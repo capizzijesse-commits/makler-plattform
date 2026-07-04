@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 type SocialVariant = {
@@ -25,6 +25,26 @@ export default function SocialMediaPage() {
   const [variants, setVariants] = useState<SocialVariant[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  useEffect(() => {
+  const savedDraft = localStorage.getItem("inseratAiSocialDraft");
+
+  if (!savedDraft) return;
+
+  try {
+    const data = JSON.parse(savedDraft);
+
+    if (typeof data.location === "string") setLocation(data.location);
+    if (typeof data.propertyType === "string") setPropertyType(data.propertyType);
+    if (typeof data.rooms === "string") setRooms(data.rooms);
+    if (typeof data.livingArea === "string") setLivingArea(data.livingArea);
+    if (typeof data.price === "string") setPrice(data.price);
+    if (typeof data.highlights === "string") setHighlights(data.highlights);
+    if (typeof data.styleText === "string") setStyleText(data.styleText);
+    if (typeof data.imageAnalysis === "string") setImageAnalysis(data.imageAnalysis);
+  } catch {
+    console.log("Social-Media-Daten konnten nicht geladen werden.");
+  }
+}, []);
 
   async function handleGenerateSocial() {
     setLoading(true);
