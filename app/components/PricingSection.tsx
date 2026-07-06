@@ -1,70 +1,72 @@
 "use client";
 
 export default function PricingSection() {
-  const founderPaymentLink = "https://buy.stripe.com/test_5kQ28sdozdIk3bsduy1wY00";
-  const proPaymentLink = "https://buy.stripe.com/test_9B64gAfwHgUwbHY4Y21wY01";
-  const agencyPaymentLink = "https://buy.stripe.com/test_dRm4gA5W7eMo3bs0HM1wY04";
+  const founderPaymentLink =
+    "https://buy.stripe.com/test_5kQ28sdozdIk3bsduy1wY00";
+
+  const proPaymentLink =
+    "https://buy.stripe.com/test_9B64gAfwHgUwbHY4Y21wY01";
 
   const plans = [
     {
       name: "Demo",
       price: "0 CHF",
-      text: "Gekürzte Vorschau zum Ausprobieren",
+      text: "Kostenlos ausprobieren – ohne Risiko.",
+      button: "Kostenlos testen",
+      href: "/register",
       features: [
-        "Gekürzte Demo-Vorschau",
-        "Volle Version mit 3 professionellen Varianten",
-        "Standard-Plan 30 Tage kostenlos testen",
+        "Einfach registrieren",
+        "Inserat-AI kennenlernen",
+        "Erste Funktionen testen",
+        "Ideal zum Ausprobieren",
       ],
     },
     {
-      name: "Standard",
+      name: "Founder",
       price: "30 Tage kostenlos",
-      text: "Danach 19.90 CHF pro Monat",
+      text: "Danach nur 19.90 CHF pro Monat.",
       badge: "🔥 Gründerangebot",
       highlighted: true,
+      button: "Founder sichern",
+      href: founderPaymentLink,
       features: [
         "Heute 0 CHF zahlen",
         "30 Tage kostenlos testen",
         "Danach 19.90 CHF pro Monat",
-        "3 professionelle Inserat-Varianten",
-        "Für Portale und Social Media",
+        "Inserat-Generator",
+        "Social-Media-Posts",
+        "PDF & Copy-Funktion",
+        "Portal-Export",
       ],
     },
     {
-      name: "Business",
-      price: "79.90 CHF",
-      text: "Für aktive Makler mit regelmässiger Objektvermarktung und höherem Volumen.",
+      name: "Pro",
+      price: "30 Tage kostenlos",
+      text: "Danach 79.90 CHF pro Monat.",
+      button: "Pro starten",
+      href: proPaymentLink,
       features: [
-        "Bis zu 500 Inserate pro Monat",
-        "Volle Version mit 3 professionellen Varianten",
-        "Für regelmässige Objektvermarktung",
-        "Priorisierter Support",
-        "Für Immobilienportale und Social Media verwendbar",
-      ],
-    }, 
-    {
-      name: "Agency",
-      price: "149.90 CHF",
-      text: "Für Teams und Agenturen",
-      features: [
-        "Mehrere Makler",
-        "Team-Nutzung",
-        "Viele Inserate",
+        "Heute 0 CHF zahlen",
+        "30 Tage kostenlos testen",
+        "Alles aus Founder",
+        "Höhere Nutzungslimits",
+        "Für aktive Makler",
+        "Zugriff auf zukünftige Premium-Funktionen",
         "Priorisierter Support",
       ],
     },
   ];
 
   return (
-   <section
-  id="pricing"
-  className="pricingSection"
-  style={{
-    background: "#ffffff",
+    <section
+      id="pricing"
+      className="pricingSection"
+      style={{
+        background: "#ffffff",
         fontFamily: "Inter, sans-serif",
         color: "#1f2937",
         borderRadius: "24px",
-        padding: "36px 40px 44px",        
+        padding: "36px 40px 44px",
         maxWidth: "1100px",
         margin: "45px auto 0",
         boxSizing: "border-box",
@@ -72,38 +74,37 @@ export default function PricingSection() {
       }}
     >
       <div
-  style={{
-    display: "flex",
-width: "100%",
-boxSizing: "border-box",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "8px",
-    padding: "9px 16px",
-    borderRadius: "999px",
-    background:
-      "linear-gradient(135deg, rgba(251, 191, 36, 0.16), rgba(245, 158, 11, 0.10))",
-    border: "1px solid rgba(245, 158, 11, 0.28)",
-    color: "#92400e",
-    fontWeight: 800,
-    fontSize: "0.9rem",
-    marginBottom: "16px",
-  }}
->
-  <span>✨</span>
-  <span>
-    Gründerangebot: Starte 30 Tage kostenlos. Danach nutzt du den
-    Standard-Plan für nur 19.90 CHF pro Monat.
-  </span>
-</div>
+        style={{
+          display: "flex",
+          width: "100%",
+          boxSizing: "border-box",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "8px",
+          padding: "9px 16px",
+          borderRadius: "999px",
+          background:
+            "linear-gradient(135deg, rgba(251, 191, 36, 0.16), rgba(245, 158, 11, 0.10))",
+          border: "1px solid rgba(245, 158, 11, 0.28)",
+          color: "#92400e",
+          fontWeight: 800,
+          fontSize: "0.9rem",
+          marginBottom: "16px",
+        }}
+      >
+        <span>✨</span>
+        <span>
+          30 Tage kostenlos testen. Danach Founder für 19.90 CHF oder Pro für
+          79.90 CHF pro Monat.
+        </span>
+      </div>
 
-      {/* Geändert: "alignItems: stretch" sorgt dafür, dass alle Boxen gleich hoch werden */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
           gap: "20px",
-          alignItems: "stretch", 
+          alignItems: "stretch",
         }}
       >
         {plans.map((plan) => (
@@ -127,8 +128,13 @@ boxSizing: "border-box",
               boxSizing: "border-box",
             }}
           >
-            {/* Neuer umschliessender Box-Inhalt für alles AUSSER dem Button */}
-            <div style={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
+            <div
+              style={{
+                flexGrow: 1,
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
               {plan.badge && (
                 <div
                   style={{
@@ -146,13 +152,7 @@ boxSizing: "border-box",
                 </div>
               )}
 
-              <h3
-                style={{
-                  margin: 0,
-                  fontSize: "1.35rem",
-                  fontWeight: 800,
-                }}
-              >
+              <h3 style={{ margin: 0, fontSize: "1.35rem", fontWeight: 800 }}>
                 {plan.name}
               </h3>
 
@@ -182,7 +182,7 @@ boxSizing: "border-box",
                   display: "grid",
                   gap: "10px",
                   textAlign: "left",
-                  marginBottom: "20px", /* Abstand zum unteren Bereich gewahrt */
+                  marginBottom: "20px",
                 }}
               >
                 {plan.features.map((feature) => (
@@ -199,20 +199,11 @@ boxSizing: "border-box",
                 ))}
               </div>
             </div>
-            
-            {/* Geändert: "marginTop: 'auto'" schiebt den Button ans absolute Ende der Karte */}
+
             <a
-              href={
-                plan.name === "Demo"
-                  ? "/register"
-                  : plan.name === "Standard"
-                  ? founderPaymentLink
-                  : plan.name === "Business"
-                  ? proPaymentLink
-                  : agencyPaymentLink
-              }
-              target={plan.name === "Free" ? "_self" : "_blank"}
-              rel={plan.name === "Free" ? undefined : "noopener noreferrer"}
+              href={plan.href}
+              target={plan.name === "Demo" ? "_self" : "_blank"}
+              rel={plan.name === "Demo" ? undefined : "noopener noreferrer"}
               style={{
                 display: "block",
                 padding: "14px 28px",
@@ -224,51 +215,13 @@ boxSizing: "border-box",
                 boxSizing: "border-box",
                 textAlign: "center",
                 fontWeight: 700,
-                marginTop: "auto", 
+                marginTop: "auto",
               }}
             >
-              {plan.name === "Standard" ? "Jetzt starten" : "Auswählen"}
+              {plan.button}
             </a>
           </div>
         ))}
-      </div>
-
-      <div
-        style={{
-          background: "#f8fafc",
-          padding: "20px 24px",
-          textAlign: "center",
-          fontSize: "0.95rem",
-          borderRadius: "18px",
-          marginTop: "26px",
-          color: "#334155",
-        }}
-      >
-        Sichere Zahlung mit
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "12px",
-            marginTop: "12px",
-            flexWrap: "wrap",
-          }}
-        >
-          {["TWINT", "VISA", "MASTERCARD", "STRIPE"].map((m) => (
-            <span
-              key={m}
-              style={{
-                background: "#ffffff",
-                border: "1px solid #e5e7eb",
-                borderRadius: "10px",
-                padding: "8px 12px",
-                fontWeight: 800,
-              }}
-            >
-              {m}
-            </span>
-          ))}
-        </div>
       </div>
     </section>
   );

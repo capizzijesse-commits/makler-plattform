@@ -257,8 +257,8 @@ async function handleGenerateSocial() {
               </div>
             </div>
 
-            <div className="relative mx-auto w-full max-w-[440px]">
-              <div className="absolute -inset-6 rounded-[3rem] bg-amber-400/20 blur-3xl" />
+<div className="relative mx-auto hidden w-full max-w-[440px] lg:block">              
+  <div className="absolute -inset-6 rounded-[3rem] bg-amber-400/20 blur-3xl" />
 
               <div className="relative rounded-[2.5rem] border border-white/10 bg-white/[0.08] p-4 shadow-2xl backdrop-blur">
                 <div className="rounded-[2rem] border border-white/10 bg-slate-950/80 p-5">
@@ -330,8 +330,8 @@ async function handleGenerateSocial() {
             </div>
           </div>
 
-          <div className="mt-14 grid gap-8 lg:grid-cols-[0.85fr_1.15fr]">
-            <section className="rounded-[2rem] border border-white/10 bg-white/[0.07] p-6 shadow-2xl backdrop-blur">
+<div className="mx-auto mt-10 grid w-full max-w-6xl grid-cols-1 gap-6 px-0 sm:px-4 lg:mt-14 lg:grid-cols-[0.85fr_1.15fr] lg:gap-8">
+              <section className="rounded-[2rem] border border-white/10 bg-white/[0.07] p-6 shadow-2xl backdrop-blur">
               <div className="mb-7">
                 <p className="text-sm font-black uppercase tracking-wide text-amber-300">
                   Eingabe
@@ -414,8 +414,7 @@ async function handleGenerateSocial() {
               )}
             </section>
 
-           <section className="flex h-[760px] flex-col overflow-hidden rounded-[2rem] border border-amber-300/25 bg-amber-50 p-6 text-slate-950 shadow-2xl">
-              <div className="mb-7 flex flex-wrap items-start justify-between gap-4">
+<section className="flex max-h-[720px] flex-col overflow-hidden rounded-[2rem] border border-amber-300/25 bg-amber-50 p-5 text-slate-950 shadow-2xl sm:p-6 lg:h-[760px]">              <div className="mb-7 flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <p className="text-sm font-black uppercase tracking-wide text-amber-700">
                     Ausgabe
@@ -466,7 +465,7 @@ const activePost = variants[platformStartIndex + activeIndex];
             {platform}
           </p>
 
-          <div className="mt-4 flex flex-wrap gap-3">
+          <div className="mt-4 grid grid-cols-3 gap-2">
             {[0, 1, 2].map((index) => (
               <button
                 key={index}
@@ -478,10 +477,10 @@ const activePost = variants[platformStartIndex + activeIndex];
                   }))
                 }
                 className={
-                  activeIndex === index
-                    ? "rounded-2xl border border-amber-300 bg-amber-300 px-5 py-3 text-sm font-black text-slate-950"
-                    : "rounded-2xl border border-amber-200 bg-white px-5 py-3 text-sm font-black text-slate-700"
-                }
+  activeIndex === index
+    ? "rounded-2xl border border-amber-300 bg-amber-300 px-2 py-3 text-xs font-black text-slate-950 sm:px-5 sm:text-sm"
+    : "rounded-2xl border border-amber-200 bg-white px-2 py-3 text-xs font-black text-slate-700 sm:px-5 sm:text-sm"
+}
               >
                 Variante {index + 1}
               </button>
