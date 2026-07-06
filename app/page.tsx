@@ -120,7 +120,33 @@ export default function HomePage() {
             </section>
 
       <ExampleGenerator />
+<section className="relative mx-auto mt-24 max-w-6xl px-6">
+  <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.07] p-8 shadow-2xl backdrop-blur md:p-12">
+    <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-amber-400/20 blur-3xl" />
+    <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl" />
 
+    <div className="relative">
+      <p className="text-sm font-black uppercase tracking-[0.25em] text-amber-300">
+        Inserat-AI entwickelt sich weiter
+      </p>
+
+      <h2 className="mt-5 max-w-4xl text-4xl font-light leading-tight tracking-tight text-white md:text-6xl">
+        Die Zukunft der Immobilienvermarktung beginnt heute.
+      </h2>
+
+      <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
+        Inserat-AI wächst mit Ihren Anforderungen. Heute erstellen Sie
+        professionelle Inserate und Social-Media-Posts in Sekunden – morgen
+        profitieren Sie von weiteren intelligenten Funktionen, die Ihre
+        Vermarktung noch effizienter machen.
+      </p>
+
+      <p className="mt-6 text-xl font-black text-amber-200">
+        Ein Konto. Laufende Verbesserungen. Immer einen Schritt voraus.
+      </p>
+    </div>
+  </div>
+</section>
       <PricingSection />
     </>
   );

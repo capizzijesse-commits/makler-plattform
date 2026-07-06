@@ -14,15 +14,15 @@ export async function POST(req: Request) {
 
     const {
       location,
+      propertyType,
       rooms,
       livingArea,
       price,
-      propertyType,
       highlights,
       styleText,
       imageAnalysis,
-      email,
       demo,
+      email,
     } = body;
 
     let user = null;
@@ -52,9 +52,9 @@ export async function POST(req: Request) {
       ) {
         return NextResponse.json(
           {
-           error: user.isFounder
-  ? "Dein kostenloser Testzeitraum ist abgelaufen. Dein Founder-Plan startet danach automatisch für 19.90 CHF pro Monat. Bitte stelle sicher, dass dein Abo aktiv ist, um weiter Inserate zu erstellen."
-  : "Dein kostenloser Testzeitraum ist abgelaufen. Bitte aktiviere einen Plan, um weiter Inserate zu erstellen.",
+            error: user.isFounder
+              ? "Dein kostenloser Testzeitraum ist abgelaufen. Dein Founder-Plan startet danach automatisch für 19.90 CHF pro Monat. Bitte stelle sicher, dass dein Abo aktiv ist, um weiter Inserate zu erstellen."
+              : "Dein kostenloser Testzeitraum ist abgelaufen. Bitte aktiviere einen Plan, um weiter Inserate zu erstellen.",
           },
           { status: 403 }
         );
@@ -64,7 +64,12 @@ export async function POST(req: Request) {
     const prompt = `
 Du bist ein professioneller Social-Media-Texter für Schweizer Immobilienmakler.
 
-Erstelle GENAU 3 unterschiedliche Social-Media-Texte für die Vermarktung einer Immobilie.
+Erstelle GENAU 9 unterschiedliche Social-Media-Texte für die Vermarktung einer Immobilie.
+
+Es sollen exakt erstellt werden:
+- 3 Varianten für Instagram
+- 3 Varianten für Facebook
+- 3 Varianten für LinkedIn
 
 Verwende AUSSCHLIESSLICH diese Angaben:
 - Ort: ${location || "-"}
@@ -87,32 +92,68 @@ WICHTIG:
 - Verwende 5 bis 9 Hashtags pro Variante.
 - Hashtags sollen zum Schweizer Immobilienmarkt, zum Standort und zur Objektart passen.
 - Schreibe auf Deutsch.
+- Jede Variante muss anders formuliert sein.
 - Gib NUR gültiges JSON zurück, ohne Markdown und ohne Erklärung.
 
-Erstelle diese 3 Varianten:
+Instagram:
+- kurz
+- emotional
+- aufmerksamkeitsstark
+- mit Emojis
+- mit Call-to-Action
+- mit Hashtags
 
-1. Instagram
-Kurz, emotional, aufmerksamkeitsstark, mit Call-to-Action und Hashtags.
+Facebook:
+- etwas ausführlicher
+- freundlich
+- informativ
+- mit Besichtigungs- oder Kontaktaufruf
+- mit Hashtags
 
-2. Facebook
-Etwas ausführlicher, freundlich, informativ, mit Besichtigungs- oder Kontaktaufruf und Hashtags.
-
-3. LinkedIn
-Professionell, seriös, geeignet für Immobilienmakler, Eigentümer und Geschäftskontakte, mit dezenten Hashtags.
+LinkedIn:
+- professionell
+- seriös
+- hochwertig
+- geeignet für Immobilienmakler, Eigentümer, Investoren und Geschäftskontakte
+- mit dezenten Hashtags
 
 Format:
 {
   "variants": [
     {
-      "title": "Instagram Caption",
+      "title": "Instagram Variante 1",
       "text": "Social-Media-Text mit Call-to-Action und Hashtags"
     },
     {
-      "title": "Facebook Post",
+      "title": "Instagram Variante 2",
       "text": "Social-Media-Text mit Call-to-Action und Hashtags"
     },
     {
-      "title": "LinkedIn Post",
+      "title": "Instagram Variante 3",
+      "text": "Social-Media-Text mit Call-to-Action und Hashtags"
+    },
+    {
+      "title": "Facebook Variante 1",
+      "text": "Social-Media-Text mit Call-to-Action und Hashtags"
+    },
+    {
+      "title": "Facebook Variante 2",
+      "text": "Social-Media-Text mit Call-to-Action und Hashtags"
+    },
+    {
+      "title": "Facebook Variante 3",
+      "text": "Social-Media-Text mit Call-to-Action und Hashtags"
+    },
+    {
+      "title": "LinkedIn Variante 1",
+      "text": "Social-Media-Text mit Call-to-Action und Hashtags"
+    },
+    {
+      "title": "LinkedIn Variante 2",
+      "text": "Social-Media-Text mit Call-to-Action und Hashtags"
+    },
+    {
+      "title": "LinkedIn Variante 3",
       "text": "Social-Media-Text mit Call-to-Action und Hashtags"
     }
   ]
@@ -132,6 +173,7 @@ Format:
 
     try {
       parsed = JSON.parse(text);
+      console.log("SOCIAL VARIANTS:", parsed.variants);
     } catch {
       return NextResponse.json(
         { error: "Die KI-Ausgabe konnte nicht gelesen werden." },
@@ -158,7 +200,7 @@ Format:
             : "",
       }))
       .filter((v: any) => v.text)
-      .slice(0, 3);
+      .slice(0, 9);
 
     if (safeVariants.length === 0) {
       return NextResponse.json(
@@ -182,7 +224,7 @@ Format:
       variants: safeVariants,
     });
   } catch (error) {
-    console.error("GENERATE ERROR:", error);
+    console.error("GENERATE SOCIAL ERROR:", error);
 
     return NextResponse.json(
       { error: "Fehler beim Generieren." },
