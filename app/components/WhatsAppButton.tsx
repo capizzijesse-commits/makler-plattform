@@ -14,7 +14,7 @@ export default function WhatsAppButton() {
   const danjaWhatsappUrl = `https://wa.me/${danjaPhone}?text=${encodeURIComponent(message)}`;
 
   return (
-    <div className="fixed bottom-5 right-5 z-50">
+    <div className="fixed bottom-24 right-5 z-50">
       {open && (
         <div className="mb-3 w-72 rounded-2xl border border-white/10 bg-white p-4 text-slate-900 shadow-2xl">
           <p className="mb-3 text-sm font-black text-slate-700">
