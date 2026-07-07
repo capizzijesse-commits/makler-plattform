@@ -9,6 +9,8 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -119,23 +121,42 @@ router.push("/dashboard");
             Passwort
           </label>
 
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Passwort eingeben"
-            style={{
-              width: "100%",
-              padding: "16px 18px",
-              borderRadius: "16px",
-              border: "1px solid rgba(255,255,255,0.2)",
-              background: "rgba(255,255,255,0.1)",
-              color: "#ffffff",
-              fontSize: "16px",
-              outline: "none",
-              marginBottom: "26px",
-            }}
-          />
+         <div style={{ position: "relative" }}>
+  <input
+    type={showPassword ? "text" : "password"}
+    placeholder="Passwort"
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+    style={{
+      width: "100%",
+      padding: "14px 48px 14px 16px",
+      borderRadius: "12px",
+      border: "1px solid rgba(255,255,255,0.15)",
+      background: "rgba(255,255,255,0.08)",
+      color: "#fff",
+      outline: "none",
+      boxSizing: "border-box",
+    }}
+  />
+
+  <button
+    type="button"
+    onClick={() => setShowPassword((value) => !value)}
+    style={{
+      position: "absolute",
+      right: "14px",
+      top: "50%",
+      transform: "translateY(-50%)",
+      background: "transparent",
+      border: "none",
+      color: "#fff",
+      cursor: "pointer",
+      fontSize: "18px",
+    }}
+  >
+    {showPassword ? "🙈" : "👁️"}
+  </button>
+</div>
 
           <button
             type="submit"
