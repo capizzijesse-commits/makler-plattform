@@ -231,7 +231,7 @@ async function handleGenerateSocial() {
                 Inserat-AI Studio
               </p>
 
-              <h1 className="mt-6 max-w-4xl text-5xl font-light leading-tight tracking-tight text-white md:text-7xl">
+              <h1 className="mt-6 max-w-4xl text-4xl sm:text-5xl font-light leading-tight tracking-tight text-white md:text-7xl">
                 Social-Media-Texte, die Immobilien sichtbar machen.
               </h1>
 
@@ -330,7 +330,7 @@ async function handleGenerateSocial() {
             </div>
           </div>
 
-<div className="mx-auto mt-10 grid w-full max-w-6xl grid-cols-1 gap-6 px-0 sm:px-4 lg:mt-14 lg:grid-cols-[0.85fr_1.15fr] lg:gap-8">
+<div className="mx-auto mt-8 grid w-full max-w-6xl grid-cols-1 gap-6 px-0 sm:px-4 lg:mt-14 lg:grid-cols-[0.85fr_1.15fr] lg:gap-8">
               <section className="rounded-[2rem] border border-white/10 bg-white/[0.07] p-6 shadow-2xl backdrop-blur">
               <div className="mb-7">
                 <p className="text-sm font-black uppercase tracking-wide text-amber-300">
