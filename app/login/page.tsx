@@ -22,10 +22,11 @@ export default function LoginPage() {
     const cleanName =
       nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1);
 
-    localStorage.setItem("userName", cleanName);
-    localStorage.setItem("userEmail", email);
+   localStorage.setItem("userName", cleanName);
+localStorage.setItem("userEmail", email);
+localStorage.setItem("isLoggedIn", "true");
 
-    router.push("/dashboard");
+router.push("/dashboard");
   }
 
   return (
