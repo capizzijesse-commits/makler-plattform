@@ -2,10 +2,13 @@
 
 export default function PricingSection() {
   const founderPaymentLink =
-    "https://buy.stripe.com/test_5kQ28sdozdIk3bsduy1wY00";
+  "https://buy.stripe.com/5kQ14o93d8Du1WR74b6J201";
 
-  const proPaymentLink =
-    "https://buy.stripe.com/test_9B64gAfwHgUwbHY4Y21wY01";
+const proPaymentLink =
+  "https://buy.stripe.com/00w14o2EP5ri9pj1JR6J200";
+
+const agencyPaymentLink =
+  "https://buy.stripe.com/fZuaEYfrBaLC5933RZ6J203";
 
   const plans = [
     {
