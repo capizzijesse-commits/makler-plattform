@@ -11,6 +11,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   function handleRegister(e: FormEvent) {
     e.preventDefault();
@@ -147,18 +148,63 @@ export default function RegisterPage() {
                 />
               </div>
 
-              <div>
+            
                 <label className="mb-2 block text-sm font-semibold text-slate-300">
                   Passwort
                 </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Passwort eingeben"
-                  className="w-full rounded-2xl border border-white/10 bg-white/10 px-5 py-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.14]"
-                />
-              </div>
+             <div style={{ position: "relative" }}>
+  <input
+    type={showPassword ? "text" : "password"}
+    placeholder="Passwort"
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+    style={{
+      width: "100%",
+      padding: "14px 48px 14px 16px",
+      borderRadius: "12px",
+      border: "1px solid rgba(255,255,255,0.15)",
+      background: "rgba(255,255,255,0.08)",
+      color: "#fff",
+      outline: "none",
+      boxSizing: "border-box",
+    }}
+  />
+  <button
+  type="button"
+  onClick={() => setShowPassword(!showPassword)}
+  style={{
+    position: "absolute",
+    right: "14px",
+    top: "50%",
+    transform: "translateY(-50%)",
+    background: "transparent",
+    border: "none",
+    cursor: "pointer",
+    color: "#fff",
+    fontSize: "18px",
+  }}
+>
+  {showPassword ? "🙈" : "👁️"}
+</button>
+
+  <button
+    type="button"
+    onClick={() => setShowPassword(!showPassword)}
+    style={{
+      position: "absolute",
+      right: "14px",
+      top: "50%",
+      transform: "translateY(-50%)",
+      background: "transparent",
+      border: "none",
+      cursor: "pointer",
+      color: "#fff",
+      fontSize: "18px",
+    }}
+  >
+    {showPassword ? "🙈" : "👁️"}
+  </button>
+</div>
 
               <button
                 type="submit"
