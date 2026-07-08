@@ -42,22 +42,38 @@ const agencyPaymentLink =
         "Portal-Export",
       ],
     },
-   {
-    name: "Agency",
+     {
+    name: "Pro",
     price: "30 Tage kostenlos",
-    description: "Danach 149.90 CHF pro Monat.",
+    description: "Danach 79.90 CHF pro Monat.",
     features: [
       "Heute 0 CHF zahlen",
       "30 Tage kostenlos testen",
-      "Alles aus Pro",
-      "Für Teams und Agenturen",
-      "Mehrere Nutzer",
-      "Mehr Inserate pro Monat",
-      "Premium-Support",
+      "Alles aus Founder",
+      "Höhere Nutzungslimits",
+      "Für aktive Makler",
+      "Zugriff auf zukünftige Premium-Funktionen",
+      "Priorisierter Support",
     ],
-    button: "Agency starten",
+    button: "Pro starten",
   },
-];
+    {
+  name: "Agency",
+  price: "149.90 CHF",
+  text: "Für Teams, Agenturen und grössere Immobilienbüros.",
+  button: "Agency starten",
+  href: agencyPaymentLink,
+  features: [
+    "Alles aus Pro",
+    "Für Teams und Agenturen",
+    "Mehrere Nutzer",
+    "Mehr Inserate pro Monat",
+    "Premium-Support",
+    "Zukünftige Team-Funktionen",
+  ],
+},
+  ];
+  
 
   return (
     <section
@@ -96,8 +112,8 @@ const agencyPaymentLink =
       >
         <span>✨</span>
         <span>
-          30 Tage kostenlos testen. Danach Founder für 19.90 CHF oder Pro für
-          79.90 CHF pro Monat.
+          30 Tage kostenlos testen. ✨ Gründerangebot: 19.90 CHF statt 39.90 CHF pro Monat – nur für unsere ersten Kunden. 
+         
         </span>
       </div>
 
