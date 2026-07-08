@@ -42,23 +42,22 @@ const agencyPaymentLink =
         "Portal-Export",
       ],
     },
-    {
-      name: "Pro",
-      price: "30 Tage kostenlos",
-      text: "Danach 79.90 CHF pro Monat.",
-      button: "Pro starten",
-      href: proPaymentLink,
-      features: [
-        "Heute 0 CHF zahlen",
-        "30 Tage kostenlos testen",
-        "Alles aus Founder",
-        "Höhere Nutzungslimits",
-        "Für aktive Makler",
-        "Zugriff auf zukünftige Premium-Funktionen",
-        "Priorisierter Support",
-      ],
-    },
-  ];
+   {
+    name: "Agency",
+    price: "30 Tage kostenlos",
+    description: "Danach 149.90 CHF pro Monat.",
+    features: [
+      "Heute 0 CHF zahlen",
+      "30 Tage kostenlos testen",
+      "Alles aus Pro",
+      "Für Teams und Agenturen",
+      "Mehrere Nutzer",
+      "Mehr Inserate pro Monat",
+      "Premium-Support",
+    ],
+    button: "Agency starten",
+  },
+];
 
   return (
     <section
