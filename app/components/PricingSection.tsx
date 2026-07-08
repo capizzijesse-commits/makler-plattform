@@ -2,7 +2,7 @@
 
 export default function PricingSection() {
   const founderPaymentLink =
-  "https://buy.stripe.com/5kQ14o93d8Du1WR74b6J201";
+  "https://buy.stripe.com/test_00w14o2EP5ri9pj1JR6J200";
 
 const proPaymentLink =
   "https://buy.stripe.com/00w14o2EP5ri9pj1JR6J200";
