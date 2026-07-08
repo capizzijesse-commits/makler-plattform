@@ -46,6 +46,8 @@ const agencyPaymentLink =
     name: "Pro",
     price: "30 Tage kostenlos",
     description: "Danach 79.90 CHF pro Monat.",
+    button: "Pro starten",
+    herf: proPaymentLink,
     features: [
       "Heute 0 CHF zahlen",
       "30 Tage kostenlos testen",
@@ -55,7 +57,7 @@ const agencyPaymentLink =
       "Zugriff auf zukünftige Premium-Funktionen",
       "Priorisierter Support",
     ],
-    button: "Pro starten",
+    
   },
     {
   name: "Agency",
