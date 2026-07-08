@@ -10,6 +10,9 @@ export default function Footer() {
       }}
     >
       <p>
+  Inserat-AI ist ein Produkt der Helvetic Immobilien Capizzi.
+</p>
+      <p>
         © {new Date().getFullYear()} Inserat - AI
       </p>
 

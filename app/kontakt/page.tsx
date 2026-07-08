@@ -35,6 +35,7 @@ export default function KontaktPage() {
         </div>
 
         <h1
+        
           style={{
             fontSize: "34px",
             lineHeight: 1.15,
@@ -44,7 +45,32 @@ export default function KontaktPage() {
         >
           Testmonat oder Upgrade anfragen
         </h1>
+<div style={{ marginTop: "24px", lineHeight: 1.8 }}>
+  <p>
+    <strong>Helvetic Immobilien Capizzi</strong><br />
+    Inhaber: Jesse Capizzi
+  </p>
 
+  <p>
+    <strong>Telefon Jesse:</strong><br />
+    +41 77 232 35 67
+  </p>
+
+  <p>
+    <strong>Telefon / WhatsApp Danja:</strong><br />
+    +41 77 231 72 59
+  </p>
+
+  <p>
+    <strong>E-Mail:</strong><br />
+    info@inserat-ai.ch
+  </p>
+
+  <p>
+    <strong>Website:</strong><br />
+    https://www.inserat-ai.ch
+  </p>
+</div>
         <p
           style={{
             marginTop: "14px",
