@@ -129,7 +129,35 @@ export default function SocialMediaPage() {
     );
   }
 
-  function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
+  function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>)
+   {
+    function removeImage(indexToRemove: number) {
+  const previewToRemove = imagePreviews[indexToRemove];
+
+  if (previewToRemove) {
+    URL.revokeObjectURL(previewToRemove);
+  }
+
+  const updatedImages = selectedImages.filter(
+    (_, index) => index !== indexToRemove
+  );
+
+  const updatedPreviews = imagePreviews.filter(
+    (_, index) => index !== indexToRemove
+  );
+
+  setSelectedImages(updatedImages);
+  setImagePreviews(updatedPreviews);
+
+  if (updatedImages.length === 0) {
+    setImageAnalysis("");
+  } else {
+    setImageAnalysis(
+      `${updatedImages.length} Immobilienbilder wurden hochgeladen. Die Social-Media-Texte sollen die Bilder berücksichtigen und visuell ansprechend formuliert werden.`
+    );
+  }
+}
+
     const files = event.target.files;
 
     if (!files || files.length === 0) return;
@@ -143,7 +171,34 @@ export default function SocialMediaPage() {
     setImageAnalysis(
       `${fileArray.length} Immobilienbilder wurden hochgeladen. Die Social-Media-Texte sollen die Bilder berücksichtigen und visuell ansprechend formuliert werden.`
     );
+    
   }
+  function removeImage(indexToRemove: number) {
+  const previewToRemove = imagePreviews[indexToRemove];
+
+  if (previewToRemove) {
+    URL.revokeObjectURL(previewToRemove);
+  }
+
+  const updatedImages = selectedImages.filter(
+    (_, index) => index !== indexToRemove
+  );
+
+  const updatedPreviews = imagePreviews.filter(
+    (_, index) => index !== indexToRemove
+  );
+
+  setSelectedImages(updatedImages);
+  setImagePreviews(updatedPreviews);
+
+  if (updatedImages.length === 0) {
+    setImageAnalysis("");
+  } else {
+    setImageAnalysis(
+      `${updatedImages.length} Immobilienbilder wurden hochgeladen. Die Social-Media-Texte sollen die Bilder berücksichtigen und visuell ansprechend formuliert werden.`
+    );
+  }
+}
 
   async function copyPost(text: string) {
     await navigator.clipboard.writeText(text);
@@ -345,9 +400,16 @@ export default function SocialMediaPage() {
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   {imagePreviews.map((preview, index) => (
                     <div
-                      key={index}
-                      className="overflow-hidden rounded-2xl border border-white/10 bg-white/5"
-                    >
+  key={index}
+  className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5"
+>
+  <button
+    type="button"
+    onClick={() => removeImage(index)}
+    className="absolute right-2 top-2 z-10 rounded-full bg-slate-950/80 px-2 py-1 text-xs font-black text-white transition hover:bg-red-600"
+  >
+    ✕
+  </button>
                       <img
                         src={preview}
                         alt={`Objektfoto ${index + 1}`}
