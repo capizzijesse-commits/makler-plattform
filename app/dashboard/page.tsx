@@ -96,6 +96,20 @@ const [imagePreview, setImagePreview] = useState("");
 const [imageAnalysis, setImageAnalysis] = useState("");
 const [analyzingImage, setAnalyzingImage] = useState(false);
 const [userName, setUserName] = useState(""); useEffect(() => {
+  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+const loginExpiresAt = Number(localStorage.getItem("loginExpiresAt"));
+
+if (!isLoggedIn || !loginExpiresAt || Date.now() > loginExpiresAt) {
+  localStorage.removeItem("isLoggedIn");
+  localStorage.removeItem("userEmail");
+  localStorage.removeItem("userName");
+  localStorage.removeItem("loginExpiresAt");
+
+  window.location.href = "/login";
+  return;
+}
+const nextLoginExpiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
+localStorage.setItem("loginExpiresAt", nextLoginExpiresAt.toString());
  
   const savedName = localStorage.getItem("userName");
   if (savedName) {

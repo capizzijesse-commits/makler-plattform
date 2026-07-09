@@ -21,16 +21,18 @@ export default function LoginPage() {
     }
 
     const nameFromEmail = email.split("@")[0] || "Makler";
-    const cleanName =
-      nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1);
+   const cleanName =
+  nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1);
 
-   localStorage.setItem("userName", cleanName);
+const loginExpiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
+
+localStorage.setItem("userName", cleanName);
 localStorage.setItem("userEmail", email);
 localStorage.setItem("isLoggedIn", "true");
+localStorage.setItem("loginExpiresAt", loginExpiresAt.toString());
 
 router.push("/dashboard");
-  }
-
+}
   return (
     <main
       style={{
