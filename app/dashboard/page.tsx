@@ -156,6 +156,8 @@ const [livingArea, setLivingArea] = useState("");
 const [price, setPrice] = useState("");
 const [styleText, setStyleText] = useState("");
 const [highlights, setHighlights] = useState("");
+const [selectedImages, setSelectedImages] = useState<File[]>([]);
+const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 const [formLoaded, setFormLoaded] = useState(false);
 const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
 const [templateName, setTemplateName] = useState("");
@@ -686,7 +688,33 @@ localStorage.setItem(getTodayKey(), String(newDailyCount));
       printWindow.print();
     }, 300);
   }
+function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
+  const files = event.target.files;
 
+  if (!files || files.length === 0) return;
+
+  const fileArray = Array.from(files).slice(0, 10);
+  const previews = fileArray.map((file) => URL.createObjectURL(file));
+
+  setSelectedImages(fileArray);
+  setImagePreviews(previews);
+}
+
+function removeImage(indexToRemove: number) {
+  const previewToRemove = imagePreviews[indexToRemove];
+
+  if (previewToRemove) {
+    URL.revokeObjectURL(previewToRemove);
+  }
+
+  setSelectedImages((current) =>
+    current.filter((_, index) => index !== indexToRemove)
+  );
+
+  setImagePreviews((current) =>
+    current.filter((_, index) => index !== indexToRemove)
+  );
+}
 return (
 <main
   className="page"
