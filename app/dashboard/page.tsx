@@ -118,16 +118,18 @@ localStorage.setItem("loginExpiresAt", nextLoginExpiresAt.toString());
 }, []);
 
 async function analyzeImage() {
-  if (!selectedImage) {
+  if (selectedImages.length === 0) {
     alert("Bitte zuerst ein Bild auswählen.");
     return;
   }
+
+  const selectedImage = selectedImages[0];
 
   try {
     setAnalyzingImage(true);
 
     const formData = new FormData();
-    formData.append("file", selectedImage);
+    formData.append("image", selectedImage);
 
     const res = await fetch("/api/analyze-image", {
       method: "POST",
@@ -140,7 +142,10 @@ async function analyzeImage() {
       throw new Error(data?.error || "Fehler");
     }
 
-    setImageAnalysis(data.analysis || "");
+    const analysis = data.analysis || "";
+
+setImageAnalysis(analysis);
+localStorage.setItem("inseratAiImageAnalysis", analysis);
   } catch (err) {
     console.error(err);
     alert("Fehler bei Bildanalyse");
@@ -1401,7 +1406,7 @@ return (
       type="button"
       onClick={analyzeImage}
       className="btn btn-secondary"
-      disabled={selectedImages.length === 0 || analyzingImage}
+     disabled={selectedImages.length === 0 || analyzingImage}
     >
       {analyzingImage ? "Analysiere Foto..." : "Foto analysieren"}
     </button>

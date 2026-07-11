@@ -39,7 +39,13 @@ export default function SocialMediaPage() {
     LinkedIn: 0,
     X: 0,
   });
+useEffect(() => {
+  const savedAnalysis = localStorage.getItem("inseratAiImageAnalysis");
 
+  if (savedAnalysis) {
+    setImageAnalysis(savedAnalysis);
+  }
+}, []);
   useEffect(() => {
     const savedDraft = localStorage.getItem("inseratAiSocialDraft");
 

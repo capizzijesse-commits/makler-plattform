@@ -3,6 +3,7 @@ import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import type { Metadata } from "next";
 import WhatsAppButton from "./components/WhatsAppButton";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 export const metadata: Metadata = {
   title: "Inserat-AI",
@@ -11,16 +12,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
-    <html lang="de-CH">
+    <html lang="de">
       <body>
-        <Navbar />
         {children}
-        <WhatsAppButton />
-        <Footer />
+        <GoogleAnalytics gaId="G-8BM9S2ZME5" />
       </body>
     </html>
   );

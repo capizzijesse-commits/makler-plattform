@@ -293,7 +293,12 @@ Verwende AUSSCHLIESSLICH diese Angaben:
 - Highlights: ${highlights || "keine"}
 - Stil: ${styleText}
 - Bildanalyse: ${imageAnalysis || "keine"}
+Bildanalyse:
+${imageAnalysis || "Keine Bildanalyse vorhanden"}
 
+Verwende nur Merkmale, die in der Bildanalyse tatsächlich genannt werden.
+Erfinde keine zusätzlichen Eigenschaften.
+Nutze passende Bildmerkmale in den Beiträgen für Instagram, Facebook, LinkedIn und X.
 Qualitätsanforderungen:
 - Schreibe hochwertig, verkaufsstark, professionell und natürlich.
 - Die Texte dürfen nicht zu kurz sein.
