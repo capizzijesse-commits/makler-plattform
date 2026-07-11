@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
+import { Resend } from "resend";
 
+const resend = new Resend(process.env.re_JAKRr6cM_6fiX3GmVSTm83ePpgAC4gnAU);
 
 const prisma = new PrismaClient();
+
 
 export async function POST(req: Request) {
   const { name, email, password } = await req.json();

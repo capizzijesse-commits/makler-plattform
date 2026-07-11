@@ -1401,7 +1401,7 @@ return (
       type="button"
       onClick={analyzeImage}
       className="btn btn-secondary"
-      disabled={!selectedImages || analyzingImage}
+      disabled={selectedImages.length === 0 || analyzingImage}
     >
       {analyzingImage ? "Analysiere Foto..." : "Foto analysieren"}
     </button>

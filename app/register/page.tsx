@@ -13,38 +13,50 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  function handleRegister(e: FormEvent) {
-    e.preventDefault();
+  async function handleRegister(e: FormEvent) {
+  e.preventDefault();
 
-    if (!name || !email || !password) {
-      alert("Bitte alle Felder ausfüllen.");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      localStorage.setItem("userName", name);
-      localStorage.setItem("userEmail", email);
-      const loginExpiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
-
-localStorage.setItem("isLoggedIn", "true");
-localStorage.setItem("loginExpiresAt", loginExpiresAt.toString());
-
-      const trialStart = new Date();
-      const trialEnd = new Date();
-      trialEnd.setDate(trialEnd.getDate() + 30);
-
-      localStorage.setItem("trialStartDate", trialStart.toISOString());
-      localStorage.setItem("trialEndDate", trialEnd.toISOString());
-      localStorage.setItem("trialStatus", "active");
-
-      router.push("/dashboard");
-    } catch {
-      alert("Fehler bei der Registrierung.");
-      setLoading(false);
-    }
+  if (!name || !email || !password) {
+    alert("Bitte alle Felder ausfüllen.");
+    return;
   }
+
+  setLoading(true);
+
+  try {
+    const response = await fetch("/api/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name,
+        email,
+        password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data?.error || "Registrierung fehlgeschlagen.");
+    }
+
+    alert(
+      "Registrierung erfolgreich. Bitte prüfe deine E-Mail und bestätige dein Konto."
+    );
+
+    router.push("/login");
+  } catch (error) {
+    alert(
+      error instanceof Error
+        ? error.message
+        : "Registrierung fehlgeschlagen."
+    );
+  } finally {
+    setLoading(false);
+  }
+}
 
   return (
     <main className="relative isolate min-h-screen overflow-hidden px-6 py-20 text-white">
