@@ -1,6 +1,12 @@
 "use client";
 import Link from "next/link";
-import { useState, useEffect, useRef, type ReactNode } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  type ReactNode,
+  type ChangeEvent,
+} from "react";
 import PortalExportButton from "../components/PortalExportButton";
 import {
   SWISS_LOCATIONS,
@@ -662,7 +668,7 @@ localStorage.setItem(getTodayKey(), String(newDailyCount));
       printWindow.print();
     }, 300);
   }
-function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
+function handleImageUpload(event: ChangeEvent<HTMLInputElement>) {
   const files = event.target.files;
 
   if (!files || files.length === 0) return;
