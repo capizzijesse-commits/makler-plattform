@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import crypto from "crypto";
+
 
 const prisma = new PrismaClient();
 
@@ -24,7 +26,10 @@ export async function POST(req: Request) {
   });
 
   const getsFounderOffer = founderCount < 50;
+const emailVerificationToken = crypto.randomBytes(32).toString("hex");
 
+const emailVerificationExpires = new Date();
+emailVerificationExpires.setHours(emailVerificationExpires.getHours() + 24);
   const user = await prisma.user.create({
     data: {
       name,
@@ -36,6 +41,9 @@ export async function POST(req: Request) {
       isFounder: getsFounderOffer,
       founderNumber: getsFounderOffer ? founderCount + 1 : null,
       founderPriceCents: getsFounderOffer ? 1990 : null,
+      emailVerified: false,
+emailVerificationToken,
+emailVerificationExpires,
     },
   });
 

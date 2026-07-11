@@ -26,6 +26,10 @@ export default function RegisterPage() {
     try {
       localStorage.setItem("userName", name);
       localStorage.setItem("userEmail", email);
+      const loginExpiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
+
+localStorage.setItem("isLoggedIn", "true");
+localStorage.setItem("loginExpiresAt", loginExpiresAt.toString());
 
       const trialStart = new Date();
       const trialEnd = new Date();

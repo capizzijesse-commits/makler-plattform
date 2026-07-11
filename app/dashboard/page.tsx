@@ -1559,9 +1559,14 @@ return (
   </div>
 </section>
 
-<button className="feedbackButton">
+<a
+  href="https://wa.me/41772323567?text=Hallo%20Inserat-AI%2C%20ich%20habe%20eine%20Frage%20oder%20Feedback."
+  target="_blank"
+  rel="noopener noreferrer"
+  className="feedbackButton"
+>
   Feedback / Support
-</button>
+</a>
 
   <section className="rightCard">
   <div className="topStats">
