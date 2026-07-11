@@ -1432,6 +1432,10 @@ return (
         imageAnalysis,
       })
     );
+    sessionStorage.setItem(
+  "inseratAiSocialImages",
+  JSON.stringify(imagePreviews)
+);
   }}
   style={{
     minHeight: "52px",
