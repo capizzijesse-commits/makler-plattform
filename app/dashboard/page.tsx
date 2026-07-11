@@ -98,7 +98,7 @@ export default function DashboardPage() {
   const [linkedinPost, setLinkedinPost] = useState("");
   const [facebookPost, setFacebookPost] = useState("");
  
-const [imagePreview, setimagePreviews] = useState("");
+
 const [imageAnalysis, setImageAnalysis] = useState("");
 const [analyzingImage, setAnalyzingImage] = useState(false);
 const [userName, setUserName] = useState(""); useEffect(() => {
@@ -1360,21 +1360,7 @@ return (
   </div>
 )}
 
-  {imagePreview && (
-    <div style={{ marginTop: "12px" }}>
-      <img
-        src={imagePreview}
-        alt="Vorschau"
-        style={{
-          width: "100%",
-          maxHeight: "180px",
-          objectFit: "cover",
-          borderRadius: "14px",
-          border: "1px solid rgba(255,255,255,0.12)",
-        }}
-      />
-    </div>
-  )}
+  
 
   <div style={{ marginTop: "12px" }}>
     <button
