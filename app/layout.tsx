@@ -17,10 +17,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="de">
-      <body>
-        {children}
-        <GoogleAnalytics gaId="G-8BM9S2ZME5" />
-      </body>
+     <body>
+  <Navbar />
+  {children}
+  <Footer />
+  <WhatsAppButton />
+  <GoogleAnalytics gaId="G-8BM9S2ZME5" />
+</body>
     </html>
   );
 }

@@ -2,6 +2,7 @@
 
 import PricingSection from "./components/PricingSection";
 import ExampleGenerator from "./components/ExampleGenerator";
+import Navbar from "./components/Navbar";
 export default function HomePage() {
   return (
     <>
