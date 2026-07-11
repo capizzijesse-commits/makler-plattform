@@ -92,7 +92,7 @@ export default function DashboardPage() {
   const [linkedinPost, setLinkedinPost] = useState("");
   const [facebookPost, setFacebookPost] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-const [imagePreview, setImagePreview] = useState("");
+const [imagePreview, setimagePreviews] = useState("");
 const [imageAnalysis, setImageAnalysis] = useState("");
 const [analyzingImage, setAnalyzingImage] = useState(false);
 const [userName, setUserName] = useState(""); useEffect(() => {
@@ -1336,20 +1336,49 @@ return (
     Immobilienfoto
   </div>
 
-  <label className="uploadBox">
-    <input
-      type="file"
-      accept="image/*"
-      
-      onChange={(e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        setSelectedImage(file);
-        setImagePreview(URL.createObjectURL(file));
-      }}
-    />
-    <span>{selectedImage ? selectedImage.name : "📸 Foto auswählen"}</span>
-  </label>
+<label className="uploadBox">
+  <input
+    type="file"
+    accept="image/*"
+    multiple
+    onChange={handleImageUpload}
+  />
+
+  <span>
+    {selectedImages.length > 0
+      ? `${selectedImages.length} Fotos ausgewählt`
+      : "📷 Fotos auswählen"}
+  </span>
+</label>
+
+{imagePreviews.length > 0 && (
+  <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
+    {imagePreviews.map((preview, index) => (
+      <div
+        key={index}
+        className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5"
+      >
+        <button
+          type="button"
+          onClick={() => removeImage(index)}
+          className="absolute right-2 top-2 z-10 rounded-full bg-slate-950/80 px-2 py-1 text-xs font-black text-white transition hover:bg-red-600"
+        >
+          ✕
+        </button>
+
+        <img
+          src={preview}
+          alt={`Objektfoto ${index + 1}`}
+          className="h-32 w-full object-cover"
+        />
+
+        <div className="p-2 text-xs text-slate-300">
+          {selectedImages[index]?.name}
+        </div>
+      </div>
+    ))}
+  </div>
+)}
 
   {imagePreview && (
     <div style={{ marginTop: "12px" }}>
@@ -1372,7 +1401,7 @@ return (
       type="button"
       onClick={analyzeImage}
       className="btn btn-secondary"
-      disabled={!selectedImage || analyzingImage}
+      disabled={!selectedImages || analyzingImage}
     >
       {analyzingImage ? "Analysiere Foto..." : "Foto analysieren"}
     </button>
