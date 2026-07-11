@@ -506,38 +506,7 @@ const formatSavedTime = (count: number) => {
   alert("Ihr 30-Tage-Test ist abgelaufen. Bitte aktivieren Sie Ihr Abo, um weiterhin Inserate zu erstellen.");
   return;
 }
-    async function analyzeImage() {
-  if (!selectedImage) {
-    alert("Bitte zuerst ein Bild auswählen.");
-    return;
-  }
-
-  try {
-    setAnalyzingImage(true);
-
-    const formData = new FormData();
-    formData.append("file", selectedImage);
-
-    const response = await fetch("/api/analyze-image", {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data?.error || "Fehler bei der Bildanalyse");
-    }
-
-    setImageAnalysis(data.analysis || "");
-    alert("Foto erfolgreich analysiert.");
-  } catch (error) {
-    console.error("IMAGE ANALYSIS ERROR:", error);
-    alert("Fehler bei der Fotoanalyse.");
-  } finally {
-    setAnalyzingImage(false);
-  }
-}
+    
     try {
       setLoading(true);
 
