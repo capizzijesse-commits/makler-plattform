@@ -91,7 +91,7 @@ export default function DashboardPage() {
   const [instagramPost, setInstagramPost] = useState("");
   const [linkedinPost, setLinkedinPost] = useState("");
   const [facebookPost, setFacebookPost] = useState("");
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+ 
 const [imagePreview, setimagePreviews] = useState("");
 const [imageAnalysis, setImageAnalysis] = useState("");
 const [analyzingImage, setAnalyzingImage] = useState(false);
