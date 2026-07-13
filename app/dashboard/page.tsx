@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import Link from "next/link";
 import {
   useState,
@@ -384,7 +384,62 @@ const saveObjectTemplate = () => {
 
   setTemplateName("");
 };
+const saveListingPermanently = async () => {
+  const userEmail =
+    localStorage.getItem("userEmail")?.trim().toLowerCase() || "";
 
+  if (!userEmail) {
+    window.alert("Bitte zuerst einloggen.");
+    return;
+  }
+
+  if (!location.trim() || !propertyType.trim()) {
+    window.alert("Bitte mindestens Ort und Objektart ausfüllen.");
+    return;
+  }
+
+  try {
+    setSavingListing(true);
+
+    const response = await fetch("/api/listings", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userEmail,
+        location,
+        postalCode,
+        propertyType,
+        rooms,
+        livingArea,
+        price,
+        highlights,
+        style: styleText,
+        generatedVariants: variants,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Das Objekt konnte nicht gespeichert werden."
+      );
+    }
+
+    window.alert("Objekt wurde dauerhaft gespeichert.");
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Das Objekt konnte nicht gespeichert werden.";
+
+    window.alert(message);
+  } finally {
+    setSavingListing(false);
+  }
+};
 const loadObjectTemplate = (template: ObjectTemplate) => {
   setLocation(template.location);
   setPostalCode(template.postalCode || "");
@@ -506,6 +561,7 @@ const [socialPosts, setSocialPosts] = useState<{
 
 const [loading, setLoading] = useState(false);
 const [variants, setVariants] = useState<Variant[]>([]);
+const [savingListing, setSavingListing] = useState(false);
 const [dailyCount, setDailyCount] = useState(0);
 const [trialExpired, setTrialExpired] = useState(false);
 const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
@@ -926,7 +982,43 @@ return (
       Vorlage speichern
     </button>
   </div>
-
+<button
+  type="button"
+  onClick={saveListingPermanently}
+  disabled={
+    savingListing ||
+    !location.trim() ||
+    !propertyType.trim()
+  }
+  style={{
+    width: "100%",
+    marginTop: "12px",
+    padding: "13px 16px",
+    borderRadius: "12px",
+    border: "1px solid rgba(34, 197, 94, 0.55)",
+    background: savingListing
+      ? "rgba(34, 197, 94, 0.35)"
+      : "linear-gradient(135deg, #16a34a, #22c55e)",
+    color: "#ffffff",
+    fontWeight: 800,
+    cursor:
+      savingListing ||
+      !location.trim() ||
+      !propertyType.trim()
+        ? "not-allowed"
+        : "pointer",
+    opacity:
+      savingListing ||
+      !location.trim() ||
+      !propertyType.trim()
+        ? 0.55
+        : 1,
+  }}
+>
+  {savingListing
+    ? "Objekt wird gespeichert..."
+    : "Objekt dauerhaft speichern"}
+</button>
   {objectTemplates.length > 0 && (
     <div
       style={{

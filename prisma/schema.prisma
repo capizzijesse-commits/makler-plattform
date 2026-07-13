@@ -24,5 +24,30 @@ model User {
   emailVerificationToken   String?
   emailVerificationExpires DateTime?
 
+  listings Listing[]
+
   createdAt DateTime @default(now())
+}
+
+model Listing {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  location     String
+  postalCode   String?
+  propertyType String
+  rooms        Float?
+  livingArea   Float?
+  price        Int?
+  highlights   String?
+  style        String?
+
+  generatedVariants String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
