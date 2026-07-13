@@ -32,9 +32,28 @@ export default function Navbar() {
                 Dashboard
               </Link>
 
-              <Link href="/" className="siteLoginLink">
-                Logout
-              </Link>
+             <button
+  type="button"
+  onClick={() => {
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("userPlan");
+    localStorage.removeItem("loginExpiresAt");
+
+    window.location.href = "/login";
+  }}
+  className="siteLoginLink"
+  style={{
+    background: "transparent",
+    border: "none",
+    cursor: "pointer",
+    font: "inherit",
+  }}
+>
+  Logout
+</button>
             </>
           ) : (
             <>

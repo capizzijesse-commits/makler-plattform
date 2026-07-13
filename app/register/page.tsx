@@ -36,15 +36,31 @@ export default function RegisterPage() {
       }),
     });
 
-    const data = await response.json();
+    const responseText = await response.text();
 
-    if (!response.ok) {
-      throw new Error(data?.error || "Registrierung fehlgeschlagen.");
-    }
+let data: {
+  error?: string;
+  message?: string;
+  success?: boolean;
+};
 
-    alert(
-      "Registrierung erfolgreich. Bitte prüfe deine E-Mail und bestätige dein Konto."
-    );
+try {
+  data = responseText ? JSON.parse(responseText) : {};
+} catch {
+  data = {
+    error: responseText || "Die Registrierung hat keine gültige Antwort geliefert.",
+  };
+}
+
+if (!response.ok) {
+  throw new Error(
+    data.error ||
+      data.message ||
+      `Registrierung fehlgeschlagen – HTTP ${response.status}`
+  );
+}
+
+   router.push("/login?registered=success");
 
     router.push("/login");
   } catch (error) {
@@ -165,15 +181,19 @@ export default function RegisterPage() {
               </div>
 
             
-                <label className="mb-2 block text-sm font-semibold text-slate-300">
-                  Passwort
-                </label>
-             <div style={{ position: "relative" }}>
+              <label className="mb-2 block text-sm font-semibold text-slate-300">
+  Passwort
+</label>
+
+<div style={{ position: "relative" }}>
   <input
     type={showPassword ? "text" : "password"}
-    placeholder="Passwort"
+    placeholder="Mindestens 8 Zeichen"
     value={password}
     onChange={(e) => setPassword(e.target.value)}
+    required
+    minLength={8}
+    autoComplete="new-password"
     style={{
       width: "100%",
       padding: "14px 48px 14px 16px",
@@ -185,27 +205,10 @@ export default function RegisterPage() {
       boxSizing: "border-box",
     }}
   />
-  <button
-  type="button"
-  onClick={() => setShowPassword(!showPassword)}
-  style={{
-    position: "absolute",
-    right: "14px",
-    top: "50%",
-    transform: "translateY(-50%)",
-    background: "transparent",
-    border: "none",
-    cursor: "pointer",
-    color: "#fff",
-    fontSize: "18px",
-  }}
->
-  {showPassword ? "🙈" : "👁️"}
-</button>
 
   <button
     type="button"
-    onClick={() => setShowPassword(!showPassword)}
+    onClick={() => setShowPassword((current) => !current)}
     style={{
       position: "absolute",
       right: "14px",

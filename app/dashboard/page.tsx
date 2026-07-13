@@ -124,37 +124,89 @@ localStorage.setItem("loginExpiresAt", nextLoginExpiresAt.toString());
 }, []);
 
 async function analyzeImage() {
-  if (selectedImages.length === 0) {
-    alert("Bitte zuerst ein Bild auswählen.");
+  let imageForAnalysis: File | null = selectedImages[0] || null;
+
+  // Falls nur noch eine Vorschau vorhanden ist,
+  // versuchen wir daraus wieder eine Bilddatei zu erstellen.
+  if (!imageForAnalysis && imagePreviews[0]) {
+    try {
+      const previewResponse = await fetch(imagePreviews[0]);
+      const imageBlob = await previewResponse.blob();
+
+      imageForAnalysis = new File(
+        [imageBlob],
+        "objektfoto.jpg",
+        {
+          type: imageBlob.type || "image/jpeg",
+        }
+      );
+    } catch (error) {
+      console.error("PREVIEW CONVERSION ERROR:", error);
+    }
+  }
+
+  if (!imageForAnalysis) {
+    alert(
+      "Das Bild ist nur noch als alte Vorschau vorhanden. Bitte das Foto nochmals auswählen."
+    );
     return;
   }
 
-  const selectedImage = selectedImages[0];
-
   try {
     setAnalyzingImage(true);
+    setImageAnalysis("");
 
     const formData = new FormData();
-    formData.append("image", selectedImage);
+    formData.append("image", imageForAnalysis);
 
-    const res = await fetch("/api/analyze-image", {
+    const response = await fetch("/api/analyze-image", {
       method: "POST",
       body: formData,
     });
 
-    const data = await res.json();
+    const responseText = await response.text();
 
-    if (!res.ok) {
-      throw new Error(data?.error || "Fehler");
+    let data: {
+      success?: boolean;
+      analysis?: string;
+      error?: string;
+    };
+
+    try {
+      data = responseText ? JSON.parse(responseText) : {};
+    } catch {
+      throw new Error(
+        responseText ||
+          "Die Bildanalyse hat keine gültige Antwort geliefert."
+      );
     }
 
-    const analysis = data.analysis || "";
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+          `Bildanalyse fehlgeschlagen – HTTP ${response.status}`
+      );
+    }
 
-setImageAnalysis(analysis);
-localStorage.setItem("inseratAiImageAnalysis", analysis);
-  } catch (err) {
-    console.error(err);
-    alert("Fehler bei Bildanalyse");
+    if (!data.analysis?.trim()) {
+      throw new Error("Es wurde keine Bildanalyse zurückgegeben.");
+    }
+
+    setImageAnalysis(data.analysis);
+
+    localStorage.setItem(
+      "inseratAiImageAnalysis",
+      data.analysis
+    );
+  } catch (error) {
+    console.error("IMAGE ANALYSIS ERROR:", error);
+
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Fehler bei der Bildanalyse.";
+
+    alert(message);
   } finally {
     setAnalyzingImage(false);
   }
@@ -673,11 +725,28 @@ function handleImageUpload(event: ChangeEvent<HTMLInputElement>) {
 
   if (!files || files.length === 0) return;
 
-  const fileArray = Array.from(files).slice(0, 10);
-  const previews = fileArray.map((file) => URL.createObjectURL(file));
+  const remainingSlots = 10 - selectedImages.length;
 
-  setSelectedImages(fileArray);
-  setImagePreviews(previews);
+  if (remainingSlots <= 0) {
+    alert("Du kannst maximal 10 Fotos hochladen.");
+    event.target.value = "";
+    return;
+  }
+
+  const newFiles = Array.from(files).slice(0, remainingSlots);
+  const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
+
+  setSelectedImages((currentImages) => [
+    ...currentImages,
+    ...newFiles,
+  ]);
+
+  setImagePreviews((currentPreviews) => [
+    ...currentPreviews,
+    ...newPreviews,
+  ]);
+
+  event.target.value = "";
 }
 
 function removeImage(indexToRemove: number) {
@@ -1346,11 +1415,11 @@ return (
           ✕
         </button>
 
-        <img
-          src={preview}
-          alt={`Objektfoto ${index + 1}`}
-          className="h-32 w-full object-cover"
-        />
+          <img
+            src={preview}
+            alt={`Objektfoto ${index + 1}`}
+            className="h-32 w-full object-cover"
+          />
 
         <div className="p-2 text-xs text-slate-300">
           {selectedImages[index]?.name}
@@ -1364,13 +1433,16 @@ return (
 
   <div style={{ marginTop: "12px" }}>
     <button
-      type="button"
-      onClick={analyzeImage}
-      className="btn btn-secondary"
-     disabled={selectedImages.length === 0 || analyzingImage}
-    >
-      {analyzingImage ? "Analysiere Foto..." : "Foto analysieren"}
-    </button>
+  type="button"
+  onClick={analyzeImage}
+  className="btn btn-secondary"
+  disabled={
+    (selectedImages.length === 0 && imagePreviews.length === 0) ||
+    analyzingImage
+  }
+>
+  {analyzingImage ? "Analysiere Foto..." : "Foto analysieren"}
+</button>
   </div>
 
   {imageAnalysis && (

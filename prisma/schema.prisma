@@ -8,21 +8,21 @@ generator client {
 }
 
 model User {
-  id                  String   @id @default(cuid())
+  id                  String @id @default(cuid())
   name                String
-  email               String   @unique
+  email               String @unique
   password            String
-  role                String   @default("user")
-  plan                String   @default("free")
-  freeGenerationsUsed Int      @default(0)
-  freeGenerationLimit Int      @default(50)
+  role                String @default("user")
+  plan                String @default("free")
+  freeGenerationsUsed Int    @default(0)
+  freeGenerationLimit Int    @default(50)
 
-  isFounder           Boolean  @default(false)
-  founderNumber       Int?
-  founderPriceCents   Int?
-  emailVerified Boolean @default(false)
-emailVerificationToken String?
-emailVerificationExpires DateTime?
+  isFounder                Boolean   @default(false)
+  founderNumber            Int?
+  founderPriceCents        Int?
+  emailVerified            Boolean   @default(false)
+  emailVerificationToken   String?
+  emailVerificationExpires DateTime?
 
-  createdAt           DateTime @default(now())
+  createdAt DateTime @default(now())
 }
