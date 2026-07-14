@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     }
 
     /*
-      Optionaler Administrator-Login Ã¼ber Umgebungsvariablen.
+      Optionaler Administrator-Login über Umgebungsvariablen.
       Es steht kein Administrator-Passwort mehr direkt im Code.
     */
     const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: "UngÃ¼ltige E-Mail-Adresse oder falsches Passwort.",
+          error: "Ungültige E-Mail-Adresse oder falsches Passwort.",
         },
         { status: 401 }
       );
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: "UngÃ¼ltige E-Mail-Adresse oder falsches Passwort.",
+          error: "Ungültige E-Mail-Adresse oder falsches Passwort.",
         },
         { status: 401 }
       );
@@ -93,14 +93,14 @@ export async function POST(request: Request) {
           success: false,
           code: "EMAIL_NOT_VERIFIED",
           error:
-            "Bitte bestÃ¤tige zuerst deine E-Mail-Adresse. PrÃ¼fe auch deinen Spam-Ordner.",
+            "Bitte bestätige zuerst deine E-Mail-Adresse. Prüfe auch deinen Spam-Ordner.",
         },
         { status: 403 }
       );
     }
 
     /*
-      Bereits vorhandene Klartext-PasswÃ¶rter werden nach einem
+      Bereits vorhandene Klartext-Passwörter werden nach einem
       erfolgreichen Login automatisch sicher gespeichert.
     */
     if (!isHashedPassword(user.password)) {

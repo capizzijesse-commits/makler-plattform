@@ -75,7 +75,7 @@ export async function POST(req: Request) {
     let user;
 
     if (existingUser) {
-      // Noch nicht bestÃ¤tigter Benutzer:
+      // Noch nicht bestätigter Benutzer:
       // neuen Token erzeugen und E-Mail erneut versenden.
       user = await prisma.user.update({
         where: {
@@ -140,13 +140,13 @@ export async function POST(req: Request) {
     const { error: resendError } = await resend.emails.send({
       from: `Inserat-AI <${fromEmail}>`,
       to: email,
-      subject: "E-Mail-Adresse bestÃ¤tigen â€“ Inserat-AI",
+      subject: "E-Mail-Adresse bestätigen – Inserat-AI",
       html: `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:32px;color:#0f172a;">
           <h1 style="margin-bottom:16px;">Willkommen bei Inserat-AI</h1>
 
           <p style="font-size:16px;line-height:1.7;">
-            Bitte bestÃ¤tige deine E-Mail-Adresse, um dein Konto zu aktivieren.
+            Bitte bestätige deine E-Mail-Adresse, um dein Konto zu aktivieren.
           </p>
 
           <a
@@ -162,11 +162,11 @@ export async function POST(req: Request) {
               font-weight:700;
             "
           >
-            E-Mail-Adresse bestÃ¤tigen
+            E-Mail-Adresse bestätigen
           </a>
 
           <p style="margin-top:28px;font-size:13px;color:#64748b;line-height:1.6;">
-            Der BestÃ¤tigungslink ist 24 Stunden gÃ¼ltig.
+            Der Bestätigungslink ist 24 Stunden gültig.
           </p>
 
           <p style="font-size:13px;color:#64748b;word-break:break-all;">
@@ -175,9 +175,9 @@ export async function POST(req: Request) {
         </div>
       `,
       text:
-        `Bitte bestÃ¤tige deine E-Mail-Adresse:\n\n` +
+        `Bitte bestätige deine E-Mail-Adresse:\n\n` +
         `${verificationUrl}\n\n` +
-        `Der Link ist 24 Stunden gÃ¼ltig.`,
+        `Der Link ist 24 Stunden gültig.`,
     });
 
     if (resendError) {
@@ -186,7 +186,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error:
-            "Das Konto wurde erstellt, aber die BestÃ¤tigungs-E-Mail konnte nicht versendet werden. Versuche die Registrierung erneut.",
+            "Das Konto wurde erstellt, aber die Bestätigungs-E-Mail konnte nicht versendet werden. Versuche die Registrierung erneut.",
         },
         { status: 502 }
       );
@@ -196,7 +196,7 @@ export async function POST(req: Request) {
       {
         success: true,
         message:
-          "Registrierung erfolgreich. Bitte bestÃ¤tige deine E-Mail-Adresse.",
+          "Registrierung erfolgreich. Bitte bestätige deine E-Mail-Adresse.",
         user: {
           name: user.name,
           email: user.email,
