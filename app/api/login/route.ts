@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import {
@@ -6,6 +6,11 @@ import {
   isHashedPassword,
   verifyPassword,
 } from "@/lib/password";
+import {
+  createUserSession,
+  getSessionCookieOptions,
+  SESSION_COOKIE_NAME,
+} from "@/lib/session";
 
 export const runtime = "nodejs";
 
@@ -13,6 +18,49 @@ type LoginBody = {
   email?: string;
   password?: string;
 };
+
+type LoginUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  plan: string;
+  isFounder: boolean;
+  founderNumber: number | null;
+  founderPriceCents: number | null;
+  freeGenerationsUsed: number;
+  freeGenerationLimit: number;
+  emailVerified: boolean;
+};
+
+async function createLoginResponse(user: LoginUser) {
+  const { token, expiresAt } = await createUserSession(user.id);
+
+  const response = NextResponse.json({
+    success: true,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      plan: user.plan,
+      isFounder: user.isFounder,
+      founderNumber: user.founderNumber,
+      founderPriceCents: user.founderPriceCents,
+      freeGenerationsUsed: user.freeGenerationsUsed,
+      freeGenerationLimit: user.freeGenerationLimit,
+      emailVerified: user.emailVerified,
+    },
+  });
+
+  response.cookies.set(
+    SESSION_COOKIE_NAME,
+    token,
+    getSessionCookieOptions(expiresAt)
+  );
+
+  return response;
+}
 
 export async function POST(request: Request) {
   try {
@@ -31,10 +79,6 @@ export async function POST(request: Request) {
       );
     }
 
-    /*
-      Optionaler Administrator-Login über Umgebungsvariablen.
-      Es steht kein Administrator-Passwort mehr direkt im Code.
-    */
     const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
     const adminPassword = process.env.ADMIN_PASSWORD;
 
@@ -44,16 +88,27 @@ export async function POST(request: Request) {
       email === adminEmail &&
       password === adminPassword
     ) {
-      return NextResponse.json({
-        success: true,
-        user: {
+      const adminUser = await prisma.user.upsert({
+        where: {
+          email: adminEmail,
+        },
+        update: {
+          name: "Admin",
+          role: "admin",
+          plan: "admin",
+          emailVerified: true,
+        },
+        create: {
           name: "Admin",
           email: adminEmail,
+          password: await hashPassword(adminPassword),
           role: "admin",
           plan: "admin",
           emailVerified: true,
         },
       });
+
+      return createLoginResponse(adminUser);
     }
 
     const user = await prisma.user.findUnique({
@@ -99,10 +154,6 @@ export async function POST(request: Request) {
       );
     }
 
-    /*
-      Bereits vorhandene Klartext-Passwörter werden nach einem
-      erfolgreichen Login automatisch sicher gespeichert.
-    */
     if (!isHashedPassword(user.password)) {
       const passwordHash = await hashPassword(password);
 
@@ -116,22 +167,7 @@ export async function POST(request: Request) {
       });
     }
 
-    return NextResponse.json({
-      success: true,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        plan: user.plan,
-        isFounder: user.isFounder,
-        founderNumber: user.founderNumber,
-        founderPriceCents: user.founderPriceCents,
-        freeGenerationsUsed: user.freeGenerationsUsed,
-        freeGenerationLimit: user.freeGenerationLimit,
-        emailVerified: user.emailVerified,
-      },
-    });
+    return createLoginResponse(user);
   } catch (error) {
     console.error("LOGIN API ERROR:", error);
 

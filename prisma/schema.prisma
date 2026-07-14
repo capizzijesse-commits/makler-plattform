@@ -26,6 +26,7 @@ model User {
   emailVerificationExpires DateTime?
 
   listings Listing[]
+  sessions Session[]
 
   createdAt DateTime @default(now())
 }
@@ -34,7 +35,7 @@ model Listing {
   id String @id @default(cuid())
 
   userId String
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   location     String
   postalCode   String?
@@ -46,9 +47,25 @@ model Listing {
   style        String?
 
   generatedVariants String?
+  archivedAt        DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([userId, archivedAt])
+}
+
+model Session {
+  id        String @id @default(cuid())
+  tokenHash String @unique
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }

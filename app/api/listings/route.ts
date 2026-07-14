@@ -1,5 +1,10 @@
-﻿import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+
 import { prisma } from "@/lib/prisma";
+import { getAuthenticatedUser } from "@/lib/session";
+
+export const runtime = "nodejs";
 
 function optionalText(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -9,7 +14,9 @@ function optionalText(value: unknown): string | null {
 }
 
 function optionalNumber(value: unknown): number | null {
-  if (value === null || value === undefined || value === "") return null;
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
 
   const normalized =
     typeof value === "string"
@@ -20,14 +27,76 @@ function optionalNumber(value: unknown): number | null {
   return Number.isFinite(number) ? number : null;
 }
 
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
+function parseGeneratedVariants(value: string | null): unknown {
+  if (!value) return null;
 
-    const userEmail =
-      typeof body.userEmail === "string"
-        ? body.userEmail.trim().toLowerCase()
-        : "";
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const user = await getAuthenticatedUser(request);
+
+    if (!user) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Bitte zuerst einloggen.",
+        },
+        { status: 401 }
+      );
+    }
+
+    const listings = await prisma.listing.findMany({
+      where: {
+        userId: user.id,
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      listings: listings.map((listing) => ({
+        ...listing,
+        generatedVariants: parseGeneratedVariants(
+          listing.generatedVariants
+        ),
+      })),
+    });
+  } catch (error) {
+    console.error("Fehler beim Laden der Objekte:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Die Objekte konnten nicht geladen werden.",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const user = await getAuthenticatedUser(request);
+
+    if (!user) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Bitte zuerst einloggen.",
+        },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
 
     const location =
       typeof body.location === "string" ? body.location.trim() : "";
@@ -37,29 +106,13 @@ export async function POST(request: Request) {
         ? body.propertyType.trim()
         : "";
 
-    if (!userEmail) {
-      return NextResponse.json(
-        { error: "Benutzer-E-Mail fehlt." },
-        { status: 400 }
-      );
-    }
-
     if (!location || !propertyType) {
       return NextResponse.json(
-        { error: "Ort und Objektart sind erforderlich." },
+        {
+          success: false,
+          error: "Ort und Objektart sind erforderlich.",
+        },
         { status: 400 }
-      );
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: userEmail },
-      select: { id: true },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Benutzer wurde nicht gefunden." },
-        { status: 404 }
       );
     }
 
@@ -74,12 +127,16 @@ export async function POST(request: Request) {
         rooms: optionalNumber(body.rooms),
         livingArea: optionalNumber(body.livingArea),
         price: price === null ? null : Math.round(price),
-        highlights:
-          Array.isArray(body.highlights)
-            ? body.highlights
-                .filter((item: unknown) => typeof item === "string")
-                .join(", ")
-            : optionalText(body.highlights),
+        highlights: Array.isArray(body.highlights)
+          ? body.highlights
+              .filter(
+                (item: unknown): item is string =>
+                  typeof item === "string"
+              )
+              .map((item: string) => item.trim())
+              .filter(Boolean)
+              .join(", ")
+          : optionalText(body.highlights),
         style: optionalText(body.style),
         generatedVariants:
           body.generatedVariants === undefined
@@ -92,7 +149,12 @@ export async function POST(request: Request) {
       {
         success: true,
         message: "Objekt wurde dauerhaft gespeichert.",
-        listing,
+        listing: {
+          ...listing,
+          generatedVariants: parseGeneratedVariants(
+            listing.generatedVariants
+          ),
+        },
       },
       { status: 201 }
     );
@@ -100,7 +162,10 @@ export async function POST(request: Request) {
     console.error("Fehler beim Speichern des Objekts:", error);
 
     return NextResponse.json(
-      { error: "Das Objekt konnte nicht gespeichert werden." },
+      {
+        success: false,
+        error: "Das Objekt konnte nicht gespeichert werden.",
+      },
       { status: 500 }
     );
   }
