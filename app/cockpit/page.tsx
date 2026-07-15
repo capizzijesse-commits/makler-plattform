@@ -359,7 +359,7 @@ useEffect(() => {
           </div>
 
           <div className="topbarActions">
-            <Link href="/socialMedia">Social Media</Link>
+            <Link href="/dashboard/social-media">Social Media</Link>
 
             <div className="userBadge">
               {userName.charAt(0).toUpperCase()}
@@ -628,7 +628,7 @@ useEffect(() => {
   className="propertyCard slideshowCard"
 >
   <div className="propertyTop">
-    <span className="propertyIcon">🏠</span>
+    
 
     <span
       className={
@@ -1495,6 +1495,9 @@ useEffect(() => {
   width: 100%;
   min-height: 0;
   animation: listingSlideIn 0.3s ease;
+}
+  .slideshowCard .propertyTop {
+  justify-content: flex-end;
 }
 
 @keyframes listingSlideIn {
