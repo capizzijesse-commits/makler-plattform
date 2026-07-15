@@ -24,6 +24,9 @@ type ListingsResponse = {
   listings?: Listing[];
   error?: string;
 };
+type ListingStatusFilter = "all" | "active" | "archived";
+
+type ListingSortOrder = "updated-desc" | "updated-asc";
 
 type ChecklistItem = {
   id: string;
@@ -98,13 +101,93 @@ export default function CockpitPage() {
   const [loadingListings, setLoadingListings] = useState(true);
   const [listingsError, setListingsError] = useState("");
   const [showAllListings, setShowAllListings] = useState(false);
+  const [currentListingIndex, setCurrentListingIndex] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+const [statusFilter, setStatusFilter] =
+  useState<ListingStatusFilter>("all");
+const [sortOrder, setSortOrder] =
+  useState<ListingSortOrder>("updated-desc");
 
   const [checklist, setChecklist] =
     useState<ChecklistItem[]>(DEFAULT_CHECKLIST);
 
-  const visibleListings = showAllListings
-    ? listings
-    : listings.slice(0, 4);
+  const normalizedSearchQuery = searchQuery
+  .trim()
+  .toLocaleLowerCase("de-CH");
+
+const filteredListings = listings
+  .filter((listing) => {
+    const searchableValues = [
+      listing.location,
+      listing.postalCode,
+      listing.propertyType,
+      listing.highlights,
+    ];
+
+    const matchesSearch =
+      normalizedSearchQuery.length === 0 ||
+      searchableValues.some((value) =>
+        value
+          ?.toLocaleLowerCase("de-CH")
+          .includes(normalizedSearchQuery)
+      );
+
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "active" && !listing.archivedAt) ||
+      (statusFilter === "archived" && Boolean(listing.archivedAt));
+
+    return matchesSearch && matchesStatus;
+  })
+  .sort((firstListing, secondListing) => {
+    const firstUpdatedAt = new Date(
+      firstListing.updatedAt
+    ).getTime();
+
+    const secondUpdatedAt = new Date(
+      secondListing.updatedAt
+    ).getTime();
+
+    return sortOrder === "updated-asc"
+      ? firstUpdatedAt - secondUpdatedAt
+      : secondUpdatedAt - firstUpdatedAt;
+  });
+
+
+  const activeListingIndex =
+  filteredListings.length === 0
+    ? 0
+    : Math.min(
+        currentListingIndex,
+        filteredListings.length - 1
+      );
+
+const currentListing =
+  filteredListings[activeListingIndex] ?? null;
+
+function showPreviousListing() {
+  if (filteredListings.length <= 1) {
+    return;
+  }
+
+  setCurrentListingIndex((currentIndex) =>
+    currentIndex === 0
+      ? filteredListings.length - 1
+      : currentIndex - 1
+  );
+}
+
+function showNextListing() {
+  if (filteredListings.length <= 1) {
+    return;
+  }
+
+  setCurrentListingIndex((currentIndex) =>
+    currentIndex === filteredListings.length - 1
+      ? 0
+      : currentIndex + 1
+  );
+}
 
   const generatedListingsCount = listings.filter((listing) =>
     hasGeneratedVariants(listing.generatedVariants)
@@ -119,6 +202,9 @@ export default function CockpitPage() {
       ? 0
       : Math.round((completedTasks / checklist.length) * 100);
 
+useEffect(() => {
+  setCurrentListingIndex(0);
+}, [searchQuery, statusFilter, sortOrder]);
   useEffect(() => {
     const storedName = localStorage.getItem("userName");
 
@@ -411,26 +497,74 @@ export default function CockpitPage() {
 
             <section className="panel objectsPanel" id="objekte">
               <div className="panelHeader">
-                <div>
-                  <p className="sectionLabel">IMMOBILIEN</p>
-                  <h2>Gespeicherte Objekte</h2>
-                </div>
+               <div className="objectsHeading">
+  <p className="sectionLabel">IMMOBILIEN</p>
 
-                {listings.length > 4 && (
-                  <button
-                    type="button"
-                    className="showAllButton"
-                    onClick={() =>
-                      setShowAllListings((current) => !current)
-                    }
-                  >
-                    {showAllListings
-                      ? "Weniger anzeigen"
-                      : `Alle ${listings.length} anzeigen`}
-                  </button>
-                )}
+  <h2>
+    {listings.length}{" "}
+    {listings.length === 1
+      ? "gespeichertes Objekt"
+      : "gespeicherte Objekte"}
+  </h2>
+</div>
+
+                
               </div>
+<div className="listingControls">
+  <label className="listingSearch">
+    <span>Objekt suchen</span>
 
+    <input
+      type="search"
+      value={searchQuery}
+      placeholder="Ort, PLZ, Objektart oder Highlight"
+      onChange={(event) => {
+        setSearchQuery(event.target.value);
+        
+      }}
+    />
+  </label>
+
+  <label className="listingControl">
+    <span>Status</span>
+
+    <select
+      value={statusFilter}
+      onChange={(event) => {
+        setStatusFilter(
+          event.target.value as ListingStatusFilter
+        );
+        setShowAllListings(false);
+      }}
+    >
+      <option value="all">Alle Objekte</option>
+      <option value="active">Nur aktive</option>
+      <option value="archived">Nur archivierte</option>
+    </select>
+  </label>
+
+  <label className="listingControl">
+    <span>Sortierung</span>
+
+    <select
+      value={sortOrder}
+      onChange={(event) => {
+        setSortOrder(
+          event.target.value as ListingSortOrder
+        );
+        setShowAllListings(false);
+      }}
+    >
+      <option value="updated-desc">
+        Zuletzt bearbeitet
+      </option>
+
+      <option value="updated-asc">
+        Älteste Bearbeitung
+      </option>
+    </select>
+  </label>
+</div>
               {loadingListings ? (
                 <div className="messageBox">
                   <div className="loadingSpinner" />
@@ -445,7 +579,7 @@ export default function CockpitPage() {
                   <h3>Objekte konnten nicht geladen werden</h3>
                   <p>{listingsError}</p>
                 </div>
-              ) : visibleListings.length === 0 ? (
+              ) : currentListing === null ? (
                 <div className="messageBox">
                   <span className="messageIcon">🏡</span>
                   <h3>Noch keine Objekte vorhanden</h3>
@@ -462,91 +596,109 @@ export default function CockpitPage() {
                   </Link>
                 </div>
               ) : (
-                <div className="propertyGrid">
-                  {visibleListings.map((listing) => (
-                    <Link
-                      key={listing.id}
-                      href={`/cockpit/${listing.id}`}
-                      className="propertyCard"
-                    >
-                      <div className="propertyTop">
-                        <span className="propertyIcon">🏠</span>
+                <div className="listingSlideshow">
+ <div className="slideshowNavigation">
+  <button
+    type="button"
+    className="slideshowArrow"
+    onClick={showPreviousListing}
+    disabled={filteredListings.length <= 1}
+    aria-label="Vorheriges Objekt"
+  >
+    ‹
+  </button>
 
-                        <span
-                          className={
-                            listing.archivedAt
-                              ? "propertyStatus archived"
-                              : "propertyStatus"
-                          }
-                        >
-                          {listing.archivedAt
-                            ? "Archiviert"
-                            : "Aktiv"}
-                        </span>
-                      </div>
+  <div className="currentObjectLabel">
+    Objekt {activeListingIndex + 1}
+  </div>
 
-                      <div className="propertyHeading">
-                        <small>{listing.propertyType}</small>
+  <button
+    type="button"
+    className="slideshowArrow"
+    onClick={showNextListing}
+    disabled={filteredListings.length <= 1}
+    aria-label="Nächstes Objekt"
+  >
+    ›
+  </button>
+</div>
+<Link
+  key={currentListing.id}
+  href={`/cockpit/${currentListing.id}`}
+  className="propertyCard slideshowCard"
+>
+  <div className="propertyTop">
+    <span className="propertyIcon">🏠</span>
 
-                        <h3>
-                          {listing.propertyType} in{" "}
-                          {listing.location}
-                        </h3>
+    <span
+      className={
+        currentListing.archivedAt
+          ? "propertyStatus archived"
+          : "propertyStatus"
+      }
+    >
+      {currentListing.archivedAt ? "Archiviert" : "Aktiv"}
+    </span>
+  </div>
 
-                        <p>
-                          📍{" "}
-                          {listing.postalCode
-                            ? `${listing.postalCode} `
-                            : ""}
-                          {listing.location}
-                        </p>
-                      </div>
+  <div className="propertyHeading">
+    <small>{currentListing.propertyType}</small>
 
-                      <div className="propertyFacts">
-                        <div>
-                          <span>Zimmer</span>
-                          <strong>
-                            {listing.rooms !== null
-                              ? listing.rooms
-                              : "–"}
-                          </strong>
-                        </div>
+    <h3>
+      {currentListing.propertyType} in{" "}
+      {currentListing.location}
+    </h3>
 
-                        <div>
-                          <span>Wohnfläche</span>
-                          <strong>
-                            {listing.livingArea !== null
-                              ? `${listing.livingArea} m²`
-                              : "–"}
-                          </strong>
-                        </div>
+    <p>
+      📍{" "}
+      {currentListing.postalCode
+        ? `${currentListing.postalCode} `
+        : ""}
+      {currentListing.location}
+    </p>
+  </div>
 
-                        <div className="priceFact">
-                          <span>Verkaufspreis</span>
-                          <strong>
-                            {formatPrice(listing.price)}
-                          </strong>
-                        </div>
-                      </div>
+  <div className="propertyFacts">
+    <div>
+      <span>Zimmer</span>
+      <strong>
+        {currentListing.rooms !== null
+          ? currentListing.rooms
+          : "–"}
+      </strong>
+    </div>
 
-                      {listing.highlights && (
-                        <div className="highlightsBox">
-                          <span>Highlights</span>
-                          <p>{listing.highlights}</p>
-                        </div>
-                      )}
+    <div>
+      <span>Wohnfläche</span>
+      <strong>
+        {currentListing.livingArea !== null
+          ? `${currentListing.livingArea} m²`
+          : "–"}
+      </strong>
+    </div>
 
-                      <div className="propertyFooter">
-                        <span>
-                          Bearbeitet am{" "}
-                          {formatDate(listing.updatedAt)}
-                        </span>
+    <div className="priceFact">
+      <span>Verkaufspreis</span>
+      <strong>{formatPrice(currentListing.price)}</strong>
+    </div>
+  </div>
 
-                        <strong>Objekt öffnen →</strong>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+  {currentListing.highlights && (
+    <div className="highlightsBox">
+      <span>Highlights</span>
+      <p>{currentListing.highlights}</p>
+    </div>
+  )}
+
+  <div className="propertyFooter">
+    <span>
+      Bearbeitet am {formatDate(currentListing.updatedAt)}
+    </span>
+
+    <strong>Objekt öffnen →</strong>
+  </div>
+</Link>
+</div>
               )}
             </section>
           </div>
@@ -635,6 +787,152 @@ export default function CockpitPage() {
       </div>
 
       <style jsx>{`
+      .objectsPanel .panelHeader {
+  display: block;
+}
+
+.objectsHeading {
+  width: 100%;
+  text-align: center;
+}
+
+.objectsHeading .sectionLabel {
+  text-align: center;
+}
+
+.slideshowNavigation {
+  display: grid;
+  grid-template-columns: 56px minmax(140px, 220px) 56px;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  margin: 24px 0;
+}
+
+.slideshowArrow {
+  display: flex;
+  width: 56px;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgba(251, 191, 36, 0.55);
+  border-radius: 16px;
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+  cursor: pointer;
+  font-size: 38px;
+  line-height: 1;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.slideshowArrow:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: #fbbf24;
+  background: rgba(251, 191, 36, 0.2);
+}
+
+.slideshowArrow:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
+}
+
+.currentObjectLabel {
+  display: flex;
+  min-height: 56px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  border: 1px solid #fbbf24;
+  border-radius: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(251, 191, 36, 0.2),
+    rgba(245, 158, 11, 0.08)
+  );
+  color: #fbbf24;
+  font-size: 16px;
+  font-weight: 900;
+  text-align: center;
+  box-shadow: 0 10px 24px rgba(245, 158, 11, 0.12);
+}
+  .objectsPanel .panelHeader {
+  display: block;
+}
+
+.objectsHeading {
+  width: 100%;
+  text-align: center;
+}
+
+.objectsHeading .sectionLabel {
+  text-align: center;
+}
+
+.slideshowNavigation {
+  display: grid;
+  grid-template-columns: 56px minmax(140px, 220px) 56px;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  margin: 24px 0;
+}
+
+.slideshowArrow {
+  display: flex;
+  width: 56px;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgba(251, 191, 36, 0.55);
+  border-radius: 16px;
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+  cursor: pointer;
+  font-size: 38px;
+  line-height: 1;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.slideshowArrow:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: #fbbf24;
+  background: rgba(251, 191, 36, 0.2);
+}
+
+.slideshowArrow:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
+}
+
+.currentObjectLabel {
+  display: flex;
+  min-height: 56px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  border: 1px solid #fbbf24;
+  border-radius: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(251, 191, 36, 0.2),
+    rgba(245, 158, 11, 0.08)
+  );
+  color: #fbbf24;
+  font-size: 16px;
+  font-weight: 900;
+  text-align: center;
+  box-shadow: 0 10px 24px rgba(245, 158, 11, 0.12);
+}
         * {
           box-sizing: border-box;
         }
@@ -1013,7 +1311,269 @@ export default function CockpitPage() {
           color: #fbbf24;
           font-size: 11px;
         }
+.listingControls {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.5fr)
+    minmax(170px, 0.75fr)
+    minmax(190px, 0.9fr);
+  gap: 14px;
+  align-items: end;
+  margin: 20px 0 24px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  background: rgba(8, 21, 53, 0.72);
+}
 
+.listingSearch,
+.listingControl {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.listingSearch span,
+.listingControl span {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.listingSearch input,
+.listingControl select {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  outline: none;
+  background: rgba(19, 36, 78, 0.96);
+  color: #ffffff;
+  font: inherit;
+  font-size: 14px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.listingSearch input::placeholder {
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.listingControl select {
+  cursor: pointer;
+}
+
+.listingControl select option {
+  background: #101f48;
+  color: #ffffff;
+}
+
+.listingSearch input:hover,
+.listingControl select:hover {
+  border-color: rgba(251, 191, 36, 0.45);
+}
+
+.listingSearch input:focus,
+.listingControl select:focus {
+  border-color: rgba(251, 191, 36, 0.9);
+  background: rgba(23, 42, 88, 1);
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.12);
+  .listingSlideshow {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.slideshowNavigation {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 52px;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  margin: 20px 0;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  background: rgba(8, 21, 53, 0.62);
+}
+
+.slideshowArrow {
+  display: flex;
+  width: 52px;
+  height: 52px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  border-radius: 14px;
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.slideshowArrow span {
+  display: block;
+  margin-top: -3px;
+  font-size: 38px;
+  line-height: 1;
+}
+
+.slideshowArrow:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: #fbbf24;
+  background: rgba(251, 191, 36, 0.2);
+}
+
+.slideshowArrow:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.slideshowArrow:disabled {
+  cursor: not-allowed;
+  opacity: 0.25;
+}
+
+.slideshowTabs {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 3px;
+  scrollbar-width: none;
+}
+
+.slideshowTabs::-webkit-scrollbar {
+  display: none;
+}
+
+.slideshowTab {
+  flex: 0 0 auto;
+  min-width: 92px;
+  padding: 11px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.045);
+  color: rgba(255, 255, 255, 0.72);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.slideshowTab:hover {
+  transform: translateY(-1px);
+  border-color: rgba(251, 191, 36, 0.55);
+  color: #ffffff;
+}
+
+.slideshowTab.active {
+  border-color: #fbbf24;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #07142f;
+  box-shadow: 0 8px 22px rgba(245, 158, 11, 0.22);
+}
+
+.slideshowCard {
+  width: 100%;
+  min-height: 0;
+  animation: listingSlideIn 0.3s ease;
+}
+
+@keyframes listingSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 700px) {
+  .slideshowNavigation {
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .slideshowArrow {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+
+  .slideshowArrow span {
+    font-size: 32px;
+  }
+
+  .slideshowTabs {
+    justify-content: flex-start;
+  }
+
+  .slideshowTab {
+    min-width: 82px;
+    padding: 9px 13px;
+    font-size: 12px;
+  }
+}
+
+.slideshowArrow {
+  display: inline-flex;
+  width: 46px;
+  height: 46px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  border-radius: 50%;
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+  cursor: pointer;
+  font-size: 24px;
+  font-weight: 900;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.slideshowArrow:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: #fbbf24;
+  background: rgba(251, 191, 36, 0.18);
+}
+
+.slideshowArrow:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
+}
+
+
+
+.slideshowCard {
+  width: 100%;
+  min-height: 0;
+}
+}
         .showAllButton,
         .checklistTitle button {
           padding: 0;
@@ -1483,6 +2043,83 @@ export default function CockpitPage() {
             flex-direction: column;
           }
         }
+          /* Finale Slider-Navigation: Pfeile ganz links und rechts */
+.slideshowNavigation {
+  position: relative !important;
+  display: flex !important;
+  grid-template-columns: none !important;
+  width: 100% !important;
+  min-height: 72px;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  margin: 26px 0 24px !important;
+  padding: 0 84px !important;
+}
+
+.slideshowNavigation .slideshowArrow {
+  position: absolute !important;
+  top: 50% !important;
+  width: 58px !important;
+  height: 58px !important;
+  padding: 0 !important;
+  border: 1px solid rgba(251, 191, 36, 0.75) !important;
+  border-radius: 50% !important;
+  background: linear-gradient(
+    145deg,
+    rgba(251, 191, 36, 0.2),
+    rgba(245, 158, 11, 0.06)
+  ) !important;
+  color: #fbbf24 !important;
+  font-size: 34px !important;
+  line-height: 1 !important;
+  transform: translateY(-50%) !important;
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.28),
+    0 0 18px rgba(251, 191, 36, 0.08) !important;
+}
+
+.slideshowNavigation .slideshowArrow:first-child {
+  left: 0 !important;
+}
+
+.slideshowNavigation .slideshowArrow:last-child {
+  right: 0 !important;
+}
+
+.slideshowNavigation .slideshowArrow:hover:not(:disabled) {
+  border-color: #fbbf24 !important;
+  background: rgba(251, 191, 36, 0.22) !important;
+  transform: translateY(-50%) scale(1.07) !important;
+}
+
+.slideshowNavigation .currentObjectLabel {
+  width: min(320px, 100%) !important;
+  min-height: 58px !important;
+  margin: 0 auto !important;
+  padding: 0 28px !important;
+  border: 1px solid rgba(251, 191, 36, 0.8) !important;
+  border-radius: 18px !important;
+  background: linear-gradient(
+    135deg,
+    rgba(251, 191, 36, 0.18),
+    rgba(245, 158, 11, 0.06)
+  ) !important;
+  color: #fbbf24 !important;
+  text-align: center !important;
+}
+
+@media (max-width: 700px) {
+  .slideshowNavigation {
+    padding: 0 62px !important;
+  }
+
+  .slideshowNavigation .slideshowArrow {
+    width: 46px !important;
+    height: 46px !important;
+    font-size: 28px !important;
+  }
+}
       `}</style>
     </main>
   );
