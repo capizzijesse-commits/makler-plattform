@@ -28,6 +28,7 @@ type Listing = {
   generatedVariants: unknown;
   createdAt: string;
   updatedAt: string;
+  archivedAt: string | null;
 };
 
 function isVariant(value: unknown): value is Variant {

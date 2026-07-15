@@ -18,13 +18,15 @@ export default function ListingActions({
   const [error, setError] = useState("");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const deleteConfirmed =
+  deleteConfirmation.trim().toLocaleLowerCase("de-CH") === "löschen";
 
   async function handleArchive() {
     if (busyAction) return;
 
     const question = archived
       ? "Möchtest du dieses Objekt wieder aktivieren?"
-      : "Möchtest du dieses Objekt archivieren?";
+: "Möchtest du dieses Objekt archivieren?";
 
     if (!window.confirm(question)) {
       return;
@@ -57,7 +59,7 @@ export default function ListingActions({
 
       if (!response.ok || !data.success) {
         throw new Error(
-          data.error || "Der Objektstatus konnte nicht geändert werden."
+          data.error || "Der Objektstatus konnte nicht geÃ¤ndert werden."
         );
       }
 
@@ -66,7 +68,7 @@ export default function ListingActions({
       setError(
         archiveError instanceof Error
           ? archiveError.message
-          : "Der Objektstatus konnte nicht geändert werden."
+          : "Der Objektstatus konnte nicht geÃ¤ndert werden."
       );
 
       setBusyAction(null);
@@ -78,7 +80,7 @@ export default function ListingActions({
 
     if (!archived) {
       setError(
-        "Bitte archiviere das Objekt zuerst. Aktive Objekte können aus Sicherheitsgründen nicht gelöscht werden."
+        "Bitte archiviere das Objekt zuerst. Aktive Objekte kÃ¶nnen aus SicherheitsgrÃ¼nden nicht gelÃ¶scht werden."
       );
       return;
     }
@@ -95,9 +97,9 @@ export default function ListingActions({
   }
 
   async function handleDelete() {
-    if (busyAction || deleteConfirmation !== "LÖSCHEN") {
-      return;
-    }
+    if (busyAction || !deleteConfirmed) {
+  return;
+}
 
     try {
       setBusyAction("delete");
@@ -120,7 +122,7 @@ export default function ListingActions({
 
       if (!response.ok || !data.success) {
         throw new Error(
-          data.error || "Das Objekt konnte nicht gelöscht werden."
+          data.error || "Das Objekt konnte nicht gelÃ¶scht werden."
         );
       }
 
@@ -129,7 +131,7 @@ export default function ListingActions({
       setError(
         deleteError instanceof Error
           ? deleteError.message
-          : "Das Objekt konnte nicht gelöscht werden."
+          : "Das Objekt konnte nicht gelÃ¶scht werden."
       );
 
       setBusyAction(null);
@@ -165,7 +167,7 @@ export default function ListingActions({
           }}
         >
           {busyAction === "archive"
-            ? "Status wird geändert ..."
+            ? "Status wird geÃ¤ndert ..."
             : archived
               ? "Objekt wieder aktivieren"
               : "Objekt archivieren"}
@@ -194,7 +196,7 @@ export default function ListingActions({
           }}
         >
           {busyAction === "delete"
-            ? "Objekt wird gelöscht ..."
+            ? "Objekt wird gelÃ¶scht ..."
             : archived
               ? "Objekt dauerhaft löschen"
               : "Zum Löschen zuerst archivieren"}
@@ -260,7 +262,7 @@ export default function ListingActions({
                 letterSpacing: "0.14em",
               }}
             >
-              ENDGÜLTIG LÖSCHEN
+              ENDGÃœLTIG Löschen
             </span>
 
             <h3
@@ -283,7 +285,7 @@ export default function ListingActions({
             >
               Alle Objektdaten und gespeicherten Inseratvarianten
               werden dauerhaft entfernt. Dieser Vorgang kann nicht
-              rückgängig gemacht werden.
+              rÃ¼ckgÃ¤ngig gemacht werden.
             </p>
 
             <label
@@ -299,7 +301,7 @@ export default function ListingActions({
                   fontWeight: 800,
                 }}
               >
-                Tippe zur Bestätigung LÖSCHEN ein:
+                Tippe zur Bestätigung „löschen“ ein:
               </span>
 
               <input
@@ -308,7 +310,7 @@ export default function ListingActions({
                   setDeleteConfirmation(event.target.value)
                 }
                 autoFocus
-                placeholder="LÖSCHEN"
+               placeholder="löschen"
                 style={{
                   width: "100%",
                   minHeight: "48px",
@@ -354,10 +356,7 @@ export default function ListingActions({
               <button
                 type="button"
                 onClick={handleDelete}
-                disabled={
-                  busyAction !== null ||
-                  deleteConfirmation !== "LÖSCHEN"
-                }
+               disabled={busyAction !== null || !deleteConfirmed}
                 style={{
                   minHeight: "44px",
                   padding: "0 16px",
@@ -365,23 +364,23 @@ export default function ListingActions({
                     "1px solid rgba(248, 113, 113, 0.46)",
                   borderRadius: "11px",
                   background:
-                    deleteConfirmation === "LÖSCHEN"
+                  deleteConfirmed
                       ? "linear-gradient(135deg, #ef4444, #b91c1c)"
                       : "rgba(148, 163, 184, 0.12)",
                   color:
-                    deleteConfirmation === "LÖSCHEN"
+                   deleteConfirmed
                       ? "#ffffff"
                       : "#94a3b8",
                   fontWeight: 900,
                   cursor:
-                    deleteConfirmation === "LÖSCHEN"
+                 deleteConfirmed
                       ? "pointer"
                       : "not-allowed",
                 }}
               >
                 {busyAction === "delete"
                   ? "Wird gelöscht ..."
-                  : "Endgültig löschen"}
+: "Endgültig löschen"}
               </button>
             </div>
           </div>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -40,7 +40,7 @@ export default function LoginPage() {
 
     if (registered === "success") {
       setMessage(
-        "Registrierung erfolgreich. Bitte prüfe dein E-Mail-Postfach und bestätige dein Konto."
+        "Registrierung erfolgreich. Bitte prÃ¼fe dein E-Mail-Postfach und bestÃ¤tige dein Konto."
       );
       setMessageType("success");
       return;
@@ -48,7 +48,7 @@ export default function LoginPage() {
 
     if (verified === "success") {
       setMessage(
-        "Deine E-Mail-Adresse wurde erfolgreich bestätigt. Du kannst dich jetzt einloggen."
+        "Deine E-Mail-Adresse wurde erfolgreich bestÃ¤tigt. Du kannst dich jetzt einloggen."
       );
       setMessageType("success");
       return;
@@ -56,7 +56,7 @@ export default function LoginPage() {
 
     if (verified === "expired") {
       setMessage(
-        "Der Bestätigungslink ist abgelaufen. Bitte registriere dich erneut, um einen neuen Link zu erhalten."
+        "Der BestÃ¤tigungslink ist abgelaufen. Bitte registriere dich erneut, um einen neuen Link zu erhalten."
       );
       setMessageType("error");
       return;
@@ -64,21 +64,21 @@ export default function LoginPage() {
 
     if (verified === "invalid") {
       setMessage(
-        "Der Bestätigungslink ist ungültig oder wurde bereits verwendet."
+        "Der BestÃ¤tigungslink ist ungÃ¼ltig oder wurde bereits verwendet."
       );
       setMessageType("error");
       return;
     }
 
     if (verified === "missing") {
-      setMessage("Im Bestätigungslink fehlt der notwendige Token.");
+      setMessage("Im BestÃ¤tigungslink fehlt der notwendige Token.");
       setMessageType("error");
       return;
     }
 
     if (verified === "error") {
       setMessage(
-        "Die E-Mail-Adresse konnte nicht bestätigt werden. Bitte versuche es später erneut."
+        "Die E-Mail-Adresse konnte nicht bestÃ¤tigt werden. Bitte versuche es spÃ¤ter erneut."
       );
       setMessageType("error");
     }
@@ -117,7 +117,7 @@ export default function LoginPage() {
       } catch {
         throw new Error(
           responseText ||
-            "Die Anmeldung hat keine gültige Antwort geliefert."
+            "Die Anmeldung hat keine gÃ¼ltige Antwort geliefert."
         );
       }
 
@@ -125,13 +125,13 @@ export default function LoginPage() {
         if (data.code === "EMAIL_NOT_VERIFIED") {
           throw new Error(
             data.error ||
-              "Bitte bestätige zuerst deine E-Mail-Adresse."
+              "Bitte bestÃ¤tige zuerst deine E-Mail-Adresse."
           );
         }
 
         throw new Error(
           data.error ||
-            `Anmeldung fehlgeschlagen – HTTP ${response.status}`
+            `Anmeldung fehlgeschlagen â€“ HTTP ${response.status}`
         );
       }
 
@@ -163,7 +163,7 @@ export default function LoginPage() {
         String(loginExpiresAt)
       );
 
-      router.push("/dashboard");
+      router.push("/cockpit");
     } catch (error) {
       console.error("LOGIN PAGE ERROR:", error);
 
@@ -236,7 +236,7 @@ export default function LoginPage() {
               letterSpacing: "-0.04em",
             }}
           >
-            Willkommen zurück
+            Willkommen zurÃ¼ck
           </h1>
 
           <p
@@ -362,7 +362,7 @@ export default function LoginPage() {
                 fontSize: "18px",
               }}
             >
-              {showPassword ? "🙈" : "👁️"}
+              {showPassword ? "ðŸ™ˆ" : "ðŸ‘ï¸"}
             </button>
           </div>
 
@@ -386,7 +386,7 @@ export default function LoginPage() {
                 "0 18px 40px rgba(249, 115, 22, 0.35)",
             }}
           >
-            {loading ? "Anmeldung läuft..." : "Einloggen"}
+            {loading ? "Anmeldung lÃ¤uft..." : "Einloggen"}
           </button>
         </form>
 
@@ -426,7 +426,7 @@ export default function LoginPage() {
           }}
         >
           Inserat-AI erstellt aus wenigen Angaben professionelle
-          Immobilieninserate für Portale, Website und Social Media.
+          Immobilieninserate fÃ¼r Portale, Website und Social Media.
         </div>
       </div>
     </main>
