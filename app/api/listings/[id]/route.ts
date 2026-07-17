@@ -1,4 +1,4 @@
-﻿import type { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
@@ -28,7 +28,7 @@ function optionalNumber(value: unknown): number | null {
   return Number.isFinite(number) ? number : null;
 }
 
-function parseGeneratedVariants(value: string | null): unknown {
+function parseJsonValue(value: string | null): unknown {
   if (!value) return null;
 
   try {
@@ -86,11 +86,26 @@ export async function GET(
     }
 
     const listing = await prisma.listing.findFirst({
-      where: {
-        id,
-        userId: user.id,
-      },
-    });
+  where: {
+    id,
+    userId: user.id,
+  },
+  include: {
+    images: {
+      orderBy: [
+        {
+          isPrimary: "desc",
+        },
+        {
+          position: "asc",
+        },
+        {
+          createdAt: "asc",
+        },
+      ],
+    },
+  },
+});
 
     if (!listing) {
       return NextResponse.json(
@@ -102,15 +117,18 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      listing: {
-        ...listing,
-        generatedVariants: parseGeneratedVariants(
-          listing.generatedVariants
-        ),
-      },
-    });
+   return NextResponse.json({
+  success: true,
+  listing: {
+    ...listing,
+    generatedVariants: parseJsonValue(
+      listing.generatedVariants
+    ),
+    socialVariants: parseJsonValue(
+      listing.socialVariants
+    ),
+  },
+});
   } catch (error) {
     console.error("Fehler beim Laden des Objekts:", error);
 
@@ -207,19 +225,28 @@ export async function PATCH(
         price: price === null ? null : Math.round(price),
         highlights: normalizeHighlights(body.highlights),
         style: optionalText(body.style),
-        generatedVariants:
-          body.generatedVariants === undefined
-            ? existingListing.generatedVariants
-            : JSON.stringify(body.generatedVariants),
+generatedVariants:
+  body.generatedVariants === undefined
+    ? existingListing.generatedVariants
+    : JSON.stringify(body.generatedVariants),
+    socialVariants:
+  body.socialVariants === undefined
+    ? existingListing.socialVariants
+    : JSON.stringify(body.socialVariants),
+imageAnalysis:
+  body.imageAnalysis === undefined
+    ? existingListing.imageAnalysis
+    : optionalText(body.imageAnalysis),
       },
     });
+    
 
     return NextResponse.json({
       success: true,
       message: "Objekt wurde erfolgreich aktualisiert.",
       listing: {
         ...updatedListing,
-        generatedVariants: parseGeneratedVariants(
+        generatedVariants: parseJsonValue(
           updatedListing.generatedVariants
         ),
       },
@@ -303,7 +330,7 @@ export async function POST(
         : "Objekt wurde wieder aktiviert.",
       listing: {
         ...listing,
-        generatedVariants: parseGeneratedVariants(
+        generatedVariants: parseJsonValue(
           listing.generatedVariants
         ),
       },

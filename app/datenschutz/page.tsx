@@ -10,7 +10,7 @@ export default function Page() {
 
       <h2>1. Verantwortliche Stelle</h2>
       <p>
-        Verantwortlich für die Datenbearbeitung auf dieser Website ist:
+        Verantwortlich für die DatenbearbeitungS auf dieser Website ist:
         <br />
         <br />
         Jesse Capizzi
@@ -35,10 +35,10 @@ export default function Page() {
         generieren und die Website technisch sicher und funktionsfähig zu betreiben.
       </p>
 
-      <h2>4. KI-generierte Inhalte</h2>
+      <h2>4. AI-generierte Inhalte</h2>
       <p>
         Eingaben, die zur Erstellung von Immobilieninseraten gemacht werden, können
-        zur Generierung von Texten an einen KI-Dienst übermittelt werden. Es sollten
+        zur Generierung von Texten an einen AI-Dienst übermittelt werden. Es sollten
         keine vertraulichen oder besonders schützenswerten Daten eingegeben werden.
       </p>
 

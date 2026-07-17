@@ -9,6 +9,31 @@ type SocialVariant = {
   title: string;
   text: string;
 };
+type ListingImage = {
+  id: string;
+  url: string;
+  isPrimary: boolean;
+  position: number;
+};
+
+type SocialListing = {
+  location: string;
+  propertyType: string;
+  rooms: number | null;
+  livingArea: number | null;
+  price: number | null;
+  highlights: string | null;
+  style: string | null;
+  imageAnalysis?: string | null;
+  images?: ListingImage[];
+  socialVariants?: SocialVariant[] | null;
+};
+
+type ListingResponse = {
+  success: boolean;
+  listing?: SocialListing;
+  error?: string;
+};
 
 const PLATFORM_NAMES: PlatformName[] = ["Instagram", "Facebook", "LinkedIn", "X"];
 
@@ -26,7 +51,9 @@ export default function SocialMediaPage() {
   const [imageAnalysis, setImageAnalysis] = useState("");
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-
+const [sourceListingId, setSourceListingId] = useState<string | null>(
+  null
+);
   const [variants, setVariants] = useState<SocialVariant[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -70,7 +97,120 @@ useEffect(() => {
       console.log("Social-Media-Daten konnten nicht geladen werden.");
     }
   }, []);
+useEffect(() => {
+  const listingId = new URLSearchParams(
+    window.location.search
+  ).get("listingId");
 
+  if (!listingId) {
+    return;
+  }
+setSourceListingId(listingId);
+  const controller = new AbortController();
+
+  async function loadListingForSocialMedia() {
+    try {
+      setError("");
+
+      const response = await fetch(
+        `/api/listings/${encodeURIComponent(listingId!)}`,
+        {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+          signal: controller.signal,
+        }
+      );
+
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
+
+      const data = (await response.json()) as ListingResponse;
+
+      if (!response.ok || !data.success || !data.listing) {
+        throw new Error(
+          data.error ||
+            "Das ausgewählte Objekt konnte nicht geladen werden."
+        );
+      }
+
+      const listing = data.listing;
+      if (Array.isArray(listing.socialVariants)) {
+  setVariants(listing.socialVariants);
+}
+
+      setLocation(listing.location || "");
+      setPropertyType(listing.propertyType || "");
+
+      setRooms(
+        listing.rooms !== null ? String(listing.rooms) : ""
+      );
+
+      setLivingArea(
+        listing.livingArea !== null
+          ? String(listing.livingArea)
+          : ""
+      );
+
+      setPrice(
+        listing.price !== null ? String(listing.price) : ""
+      );
+
+      setHighlights(listing.highlights || "");
+      setStyleText(listing.style || "");
+      setImageAnalysis(listing.imageAnalysis || "");
+
+      const sortedImageUrls = [...(listing.images ?? [])]
+        .sort((firstImage, secondImage) => {
+          if (firstImage.isPrimary !== secondImage.isPrimary) {
+            return firstImage.isPrimary ? -1 : 1;
+          }
+
+          return firstImage.position - secondImage.position;
+        })
+        .map((image) => image.url);
+
+      setSelectedImages([]);
+
+      setImagePreviews((currentPreviews) => {
+        currentPreviews
+          .filter((preview) => preview.startsWith("blob:"))
+          .forEach((preview) => {
+            URL.revokeObjectURL(preview);
+          });
+
+        return sortedImageUrls;
+      });
+    } catch (loadError) {
+      if (
+        loadError instanceof DOMException &&
+        loadError.name === "AbortError"
+      ) {
+        return;
+      }
+
+      console.error(
+        "SOCIAL-MEDIA-OBJEKT-FEHLER:",
+        loadError
+      );
+
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : "Das ausgewählte Objekt konnte nicht geladen werden."
+      );
+    }
+  }
+
+  void loadListingForSocialMedia();
+  
+
+  return () => {
+    controller.abort();
+  };
+}, []);
   function getPlatformFromTitle(title: string): PlatformName | null {
     const value = title.toLowerCase();
 
@@ -101,24 +241,27 @@ useEffect(() => {
   }
 
   function getPlatformButtonClass(platform: PlatformName) {
-    if (platform === "Instagram") {
-      return "rounded-full bg-gradient-to-r from-pink-500 via-fuchsia-500 to-orange-400 px-5 py-3 text-sm font-black text-white transition hover:scale-105";
-    }
+  const baseClass =
+    "inline-flex items-center justify-center rounded-xl border px-5 py-3 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:scale-[1.02]";
 
-    if (platform === "Facebook") {
-      return "rounded-full bg-blue-600 px-5 py-3 text-sm font-black text-white transition hover:bg-blue-700 hover:scale-105";
-    }
-
-    if (platform === "LinkedIn") {
-      return "rounded-full bg-sky-700 px-5 py-3 text-sm font-black text-white transition hover:bg-sky-800 hover:scale-105";
-    }
-
-    if (platform === "X") {
-      return "rounded-full bg-black px-5 py-3 text-sm font-black text-white transition hover:bg-slate-800 hover:scale-105";
-    }
-
-    return "rounded-full bg-slate-950 px-5 py-3 text-sm font-black text-white";
+  if (platform === "Instagram") {
+    return `${baseClass} border-fuchsia-300/40 bg-gradient-to-r from-pink-500 via-fuchsia-500 to-orange-400 shadow-fuchsia-500/15 hover:shadow-fuchsia-500/25`;
   }
+
+  if (platform === "Facebook") {
+    return `${baseClass} border-blue-300/40 bg-gradient-to-r from-blue-600 to-blue-500 shadow-blue-500/15 hover:from-blue-500 hover:to-blue-400`;
+  }
+
+  if (platform === "LinkedIn") {
+    return `${baseClass} border-sky-300/40 bg-gradient-to-r from-sky-700 to-blue-600 shadow-sky-500/15 hover:from-sky-600 hover:to-blue-500`;
+  }
+
+  if (platform === "X") {
+    return `${baseClass} border-white/25 bg-gradient-to-r from-slate-950 to-slate-800 shadow-black/20 hover:from-slate-800 hover:to-slate-700`;
+  }
+
+  return `${baseClass} border-amber-400/40 bg-slate-900`;
+}
 
   function getPlatformUrl(platform: PlatformName) {
     if (platform === "Instagram") return "https://www.instagram.com/";
@@ -210,52 +353,102 @@ useEffect(() => {
     await navigator.clipboard.writeText(text);
     alert("Text wurde kopiert.");
   }
-
-  async function handleGenerateSocial() {
-    setLoading(true);
-    setError("");
-    setVariants([]);
-
-    try {
-      const response = await fetch("/api/generate-social", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          location,
-          propertyType,
-          rooms,
-          livingArea,
-          price,
-          highlights,
-          styleText,
-          imageAnalysis,
-          demo: true,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data?.error || "Social-Media-Texte konnten nicht erstellt werden."
-        );
-      }
-
-      setVariants(data.variants || []);
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Social-Media-Texte konnten nicht erstellt werden."
-      );
-    } finally {
-      setLoading(false);
+async function saveSocialVariants(
+  listingId: string,
+  generatedVariants: SocialVariant[]
+) {
+  const response = await fetch(
+    `/api/listings/${encodeURIComponent(listingId)}`,
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        location,
+        propertyType,
+        rooms,
+        livingArea,
+        price,
+        highlights,
+        style: styleText,
+        imageAnalysis,
+        socialVariants: generatedVariants,
+      }),
     }
-  }
+  );
 
-  return (
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data?.error ||
+        "Die Social-Media-Texte konnten nicht dauerhaft gespeichert werden."
+    );
+  }
+}
+ async function handleGenerateSocial() {
+  setLoading(true);
+  setError("");
+  setVariants([]);
+
+  try {
+    const response = await fetch("/api/generate-social", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        location,
+        propertyType,
+        rooms,
+        livingArea,
+        price,
+        highlights,
+        styleText,
+        imageAnalysis,
+        demo: true,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data?.error || "Social-Media-Texte konnten nicht erstellt werden."
+      );
+    }
+
+    const generatedSocialVariants: SocialVariant[] = Array.isArray(
+      data.variants
+    )
+      ? data.variants
+      : [];
+
+    if (generatedSocialVariants.length === 0) {
+      throw new Error("Es wurden keine Social-Media-Varianten erstellt.");
+    }
+
+    setVariants(generatedSocialVariants);
+
+    if (sourceListingId) {
+      await saveSocialVariants(
+        sourceListingId,
+        generatedSocialVariants
+      );
+    }
+  } catch (err) {
+    setError(
+      err instanceof Error
+        ? err.message
+        : "Social-Media-Texte konnten nicht erstellt werden."
+    );
+  } finally {
+    setLoading(false);
+  }
+}
+return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
@@ -275,18 +468,22 @@ useEffect(() => {
           </div>
 
           <Link
-            href="/dashboard"
-            className="rounded-full border border-white/15 bg-white/10 px-6 py-3 text-sm font-black text-white transition hover:bg-white/20"
-          >
-            Zurück zum Dashboard
-          </Link>
+  href="/dashboard"
+  className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-400/70 bg-gradient-to-r from-amber-500/20 to-yellow-400/10 px-6 py-3 text-sm font-black text-amber-300 shadow-[0_8px_20px_rgba(245,158,11,0.14)] transition hover:-translate-y-0.5 hover:border-amber-300 hover:from-amber-500 hover:to-yellow-400 hover:text-slate-950"
+>
+  <span>←</span>
+  Zurück zum Dashboard
+</Link>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-          <section className="rounded-[2rem] border border-white/10 bg-white/[0.07] p-6 shadow-2xl backdrop-blur">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">
-              Eingabe
-            </p>
+   <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+ <section className="socialFormScroll flex h-[760px] min-h-[760px] flex-col overflow-y-scroll rounded-[2rem] border border-white/10 bg-white/[0.07] p-6 pr-3 shadow-2xl backdrop-blur">
+  <div className="min-h-0 flex-1">
+
+      <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">
+        Eingabe
+      </p>
+      </div>
 
             <h2 className="mt-3 text-3xl font-black">Objektdaten</h2>
 
@@ -377,10 +574,16 @@ useEffect(() => {
 
             <div className="mt-4">
               <label className="mb-2 block text-sm font-bold text-slate-200">
-                Objektfoto
-              </label>
+  {sourceListingId
+    ? "Gespeicherte Objektbilder"
+    : "Objektbilder"}
+</label>
 
-              <label className="flex cursor-pointer items-center justify-center rounded-2xl border border-dashed border-white/15 bg-white/10 px-6 py-8 transition hover:border-amber-300 hover:bg-white/[0.14]">
+              <label
+  className={`flex cursor-pointer items-center justify-center rounded-2xl border border-dashed border-white/15 bg-white/10 transition hover:border-amber-300 hover:bg-white/[0.14] ${
+    sourceListingId ? "px-5 py-4" : "px-6 py-8"
+  }`}
+>
                 <input
                   type="file"
                   accept="image/png,image/jpeg,image/webp"
@@ -392,16 +595,25 @@ useEffect(() => {
                 <div className="text-center">
                   <div className="text-3xl">📷</div>
 
-                  <div className="mt-3 text-lg font-black text-white">
-                    Fotos hochladen
-                  </div>
+                 <div className="mt-3 text-lg font-black text-white">
+  {sourceListingId
+    ? "Weitere Bilder hinzufügen"
+    : "Fotos hochladen"}
+</div>
 
-                  <div className="mt-2 text-sm leading-6 text-slate-400">
-                    JPG, PNG oder WEBP hochladen. Maximal 10 Bilder.
-                  </div>
+<div className="mt-2 text-sm leading-6 text-slate-400">
+  {sourceListingId
+    ? "Die gespeicherten Bilder wurden bereits automatisch übernommen."
+    : "JPG, PNG oder WEBP hochladen. Maximal 10 Bilder."}
+</div>
                 </div>
               </label>
-
+{sourceListingId && imagePreviews.length > 0 && (
+  <div className="mt-4 rounded-2xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm font-bold text-amber-200">
+    ✓ Automatisch aus dem Makler-Cockpit übernommen. Das Hauptbild
+    erscheint zuerst.
+  </div>
+)}
               {imagePreviews.length > 0 && (
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   {imagePreviews.map((preview, index) => (
@@ -435,12 +647,12 @@ useEffect(() => {
                 automatisch für bessere Social-Media-Posts.
               </div>
             </div>
-
+                
             <button
               type="button"
               onClick={handleGenerateSocial}
               disabled={loading}
-              className="mt-6 w-full rounded-full bg-gradient-to-r from-yellow-300 to-orange-500 px-8 py-5 text-base font-black text-slate-950 shadow-2xl transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
+           className="sticky bottom-0 z-20 mt-6 w-full flex-shrink-0 rounded-full border border-amber-200/50 bg-gradient-to-r from-yellow-300 to-orange-500 px-8 py-5 text-base font-black text-slate-950 shadow-[0_-12px_28px_rgba(2,6,23,0.75)] transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading
                 ? "Social-Media-Posts werden erstellt..."
@@ -454,32 +666,29 @@ useEffect(() => {
             )}
           </section>
 
-          <section className="flex max-h-[760px] min-h-[760px] flex-col overflow-hidden rounded-[2rem] border border-amber-200 bg-amber-50 p-6 text-slate-950 shadow-2xl">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-orange-700">
+          <section className="flex max-h-[760px] min-h-[760px] flex-col overflow-hidden rounded-[2rem] border border-amber-400/30 bg-gradient-to-br from-slate-950 via-slate-900 to-[#111d4a] p-6 text-white shadow-2xl">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">
               Ausgabe
             </p>
 
-            <h2 className="mt-3 text-3xl font-black">
+          <h2 className="mt-3 text-3xl font-black text-white">
               Fertige Social-Media-Posts
             </h2>
 
-            <p className="mt-2 text-sm leading-6 text-orange-900">
-              Jeder Text wird mit Plattform-Stil, Call-to-Action und passenden
-              Hashtags erstellt.
-            </p>
+           <p className="mt-2 text-sm leading-6 text-slate-300">
+  Jeder Text wird mit Plattform-Stil, Call-to-Action und passenden
+  Hashtags erstellt.
+</p>
 
-            <div className="mt-5 inline-flex w-fit rounded-full bg-slate-950 px-4 py-2 text-sm font-black text-white">
-              4 Plattformen
+<div className="mt-5 inline-flex w-fit rounded-full border border-amber-400/40 bg-amber-400/10 px-4 py-2 text-sm font-black text-amber-200">              4 Plattformen
             </div>
 
             {variants.length === 0 ? (
-              <div className="mt-8 rounded-3xl border border-amber-300 bg-white p-6">
-                <p className="text-sm font-black uppercase tracking-wide text-orange-700">
-                  Social-Media-Posts
+              <div className="mt-8 rounded-3xl border border-amber-400/30 bg-white/[0.05] p-6">
+<p className="text-sm font-black uppercase tracking-wide text-amber-300">                  Social-Media-Posts
                 </p>
 
-                <p className="mt-4 text-sm leading-7 text-slate-700">
-                  Klicke links auf Generieren. Danach erscheinen Instagram,
+<p className="mt-4 text-sm leading-7 text-slate-300">                  Klicke links auf Generieren. Danach erscheinen Instagram,
                   Facebook, LinkedIn und X mit je 3 Varianten.
                 </p>
               </div>
@@ -495,9 +704,8 @@ useEffect(() => {
   return (
     <div
       key={platform}
-      className="rounded-3xl border border-amber-300 bg-white p-6 shadow-sm"
-    >
-      <h2 className="text-xl font-black uppercase tracking-wide text-orange-700">
+className="rounded-3xl border border-amber-400/30 bg-gradient-to-br from-white/[0.07] to-white/[0.03] p-6 shadow-xl"    >
+      <h2 className="text-xl font-black uppercase tracking-wide text-amber-300">
         {platform}
       </h2>
 
@@ -517,8 +725,8 @@ useEffect(() => {
               }
               className={`rounded-2xl border px-5 py-4 text-sm font-black transition ${
                 isActive
-                  ? "border-amber-300 bg-amber-300 text-slate-950"
-                  : "border-amber-300 bg-white text-slate-800 hover:bg-amber-50"
+                  ? "border-amber-300 bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 shadow-lg shadow-amber-500/10"
+                 : "border-white/10 bg-white/[0.05] text-slate-300 hover:border-amber-400/50 hover:bg-amber-400/10 hover:text-amber-200"
               }`}
             >
               Variante {index + 1}
@@ -527,13 +735,12 @@ useEffect(() => {
         })}
       </div>
 
-      <div className="mt-6 rounded-3xl border border-amber-200 bg-amber-50 p-6">
-        <p className="text-lg font-black uppercase tracking-wide text-orange-700">
+      <div className="mt-6 rounded-3xl border border-white/10 bg-slate-950/45 p-6 shadow-inner">
+       <p className="text-lg font-black uppercase tracking-wide text-amber-300">
           {platform} Variante {activeIndex + 1}
         </p>
 
-        <p className="mt-6 whitespace-pre-line text-sm leading-7 text-slate-800">
-          {activeVariant.text}
+<p className="mt-6 whitespace-pre-line text-sm leading-7 text-slate-200">          {activeVariant.text}
         </p>
       </div>
 
@@ -541,8 +748,7 @@ useEffect(() => {
         <button
           type="button"
           onClick={() => copyPost(activeVariant.text)}
-          className="rounded-full bg-slate-950 px-6 py-3 text-sm font-black text-white transition hover:bg-slate-800"
-        >
+className="inline-flex items-center justify-center rounded-xl border border-amber-400/60 bg-amber-400/10 px-5 py-3 text-sm font-black text-amber-200 shadow-[0_8px_20px_rgba(245,158,11,0.12)] transition hover:-translate-y-0.5 hover:bg-gradient-to-r hover:from-amber-500 hover:to-yellow-400 hover:text-slate-950"        >
           📋 Text kopieren
         </button>
 
@@ -559,9 +765,46 @@ useEffect(() => {
 })}
               </div>
             )}
+                   
           </section>
         </div>
       </div>
+
+      <style jsx>{`
+  .socialFormScroll {
+    scrollbar-width: thin;
+    scrollbar-color: #f59e0b rgba(255, 255, 255, 0.08);
+  }
+
+  .socialFormScroll::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  .socialFormScroll::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+  }
+
+  .socialFormScroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+      180deg,
+      #fbbf24 0%,
+      #f59e0b 50%,
+      #f97316 100%
+    );
+    border-radius: 999px;
+    border: 2px solid rgba(15, 23, 42, 0.75);
+  }
+
+  .socialFormScroll::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(
+      180deg,
+      #fde047 0%,
+      #f59e0b 50%,
+      #ea580c 100%
+    );
+  }
+`}</style>
     </main>
   );
 }

@@ -1,5 +1,7 @@
 ﻿"use client";
 import Link from "next/link";
+
+import { upload } from "@vercel/blob/client";
 import {
   useState,
   useEffect,
@@ -384,22 +386,75 @@ const saveObjectTemplate = () => {
 
   setTemplateName("");
 };
-const saveListingPermanently = async () => {
+async function uploadListingImages(listingId: string) {
+  for (const file of selectedImages) {
+    const safeFileName = file.name
+      .normalize("NFKD")
+      .replace(/[^a-zA-Z0-9._-]+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    const blob = await upload(
+      `listing-images/${listingId}/${
+        safeFileName || "objektfoto"
+      }`,
+      file,
+      {
+        access: "public",
+        handleUploadUrl: "/api/listing-images/upload",
+        clientPayload: JSON.stringify({
+          listingId,
+        }),
+      }
+    );
+
+    const imageResponse = await fetch("/api/listing-images", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        listingId,
+        url: blob.url,
+        storageKey: blob.pathname,
+        fileName: file.name,
+        mimeType: file.type,
+        sizeBytes: file.size,
+      }),
+    });
+
+    const imageData = (await imageResponse
+      .json()
+      .catch(() => ({}))) as {
+      error?: string;
+    };
+
+    if (!imageResponse.ok) {
+      throw new Error(
+        imageData.error ||
+          `Das Bild „${file.name}“ konnte nicht gespeichert werden.`
+      );
+    }
+  }
+}
+const saveListingPermanently = async (): Promise<string | null> => {
   const userEmail =
     localStorage.getItem("userEmail")?.trim().toLowerCase() || "";
 
-  if (!userEmail) {
-    window.alert("Bitte zuerst einloggen.");
-    return;
-  }
+if (!userEmail) {
+  window.alert("Bitte zuerst einloggen.");
+  return null;
+}
 
-  if (!location.trim() || !propertyType.trim()) {
-    window.alert("Bitte mindestens Ort und Objektart ausfüllen.");
-    return;
-  }
+if (!location.trim() || !propertyType.trim()) {
+  window.alert("Bitte mindestens Ort und Objektart ausfüllen.");
+  return null;
+}
 
   try {
     setSavingListing(true);
+    setSaveProgress("Objekt wird sicher gespeichert …");
 
     const response = await fetch("/api/listings", {
       method: "POST",
@@ -417,6 +472,7 @@ const saveListingPermanently = async () => {
         highlights,
         style: styleText,
         generatedVariants: variants,
+        imageAnalysis,
       }),
     });
 
@@ -428,18 +484,70 @@ const saveListingPermanently = async () => {
       );
     }
 
-    window.alert("Objekt wurde dauerhaft gespeichert.");
+    const listingId =
+  typeof data?.listing?.id === "string"
+    ? data.listing.id
+    : "";
+
+if (!listingId) {
+  throw new Error(
+    "Das Objekt wurde gespeichert, aber es wurde keine Objekt-ID zurückgegeben."
+  );
+}
+
+if (selectedImages.length > 0) {
+  try {
+    await uploadListingImages(listingId);
+
+    setSaveProgress(
+  `✓ Objekt und ${selectedImages.length} ${
+    selectedImages.length === 1 ? "Bild" : "Bilder"
+  } erfolgreich gespeichert – Weiterleitung läuft …`
+);
+  
+  } catch (imageError) {
+    console.error("BILDER KONNTEN NICHT GESPEICHERT WERDEN:", imageError);
+
+    const imageMessage =
+      imageError instanceof Error
+        ? imageError.message
+        : "Die Bilder konnten nicht gespeichert werden.";
+
+    setSaveProgress(
+  `✕ Objekt gespeichert, aber Bilder konnten nicht gespeichert werden: ${imageMessage}`
+);
+  }
+} else {
+  setSaveProgress(
+  "✓ Objekt erfolgreich gespeichert – Weiterleitung läuft …"
+);
+}
+return listingId;
   } catch (error) {
     const message =
       error instanceof Error
         ? error.message
         : "Das Objekt konnte nicht gespeichert werden.";
 
-    window.alert(message);
+   setSaveProgress(`✕ ${message}`);
+return null;
   } finally {
     setSavingListing(false);
   }
 };
+const saveListingAndOpenCockpit = async () => {
+  const listingId = await saveListingPermanently();
+
+  if (!listingId) {
+    return;
+  }
+
+  window.setTimeout(() => {
+    window.location.href =
+      `/cockpit/${encodeURIComponent(listingId)}`;
+  }, 900);
+};
+
 const loadObjectTemplate = (template: ObjectTemplate) => {
   setLocation(template.location);
   setPostalCode(template.postalCode || "");
@@ -562,6 +670,7 @@ const [socialPosts, setSocialPosts] = useState<{
 const [loading, setLoading] = useState(false);
 const [variants, setVariants] = useState<Variant[]>([]);
 const [savingListing, setSavingListing] = useState(false);
+const [saveProgress, setSaveProgress] = useState("");
 const [dailyCount, setDailyCount] = useState(0);
 const [trialExpired, setTrialExpired] = useState(false);
 const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
@@ -841,7 +950,8 @@ return (
 
         <div className="grid">
          <section className="leftCard">
-  <h2>Eingabe</h2>
+  <div className="leftCardScroll">
+    <h2>Eingabe</h2>
   <p className="sectionText">
   Erfasse die wichtigsten Eckdaten der Immobilie. Inserat-AI erstellt daraus professionelle Titel, Beschreibungen und Varianten für dein Inserat.
   </p>
@@ -982,43 +1092,7 @@ return (
       Vorlage speichern
     </button>
   </div>
-<button
-  type="button"
-  onClick={saveListingPermanently}
-  disabled={
-    savingListing ||
-    !location.trim() ||
-    !propertyType.trim()
-  }
-  style={{
-    width: "100%",
-    marginTop: "12px",
-    padding: "13px 16px",
-    borderRadius: "12px",
-    border: "1px solid rgba(34, 197, 94, 0.55)",
-    background: savingListing
-      ? "rgba(34, 197, 94, 0.35)"
-      : "linear-gradient(135deg, #16a34a, #22c55e)",
-    color: "#ffffff",
-    fontWeight: 800,
-    cursor:
-      savingListing ||
-      !location.trim() ||
-      !propertyType.trim()
-        ? "not-allowed"
-        : "pointer",
-    opacity:
-      savingListing ||
-      !location.trim() ||
-      !propertyType.trim()
-        ? 0.55
-        : 1,
-  }}
->
-  {savingListing
-    ? "Objekt wird gespeichert..."
-    : "Objekt dauerhaft speichern"}
-</button>
+
   {objectTemplates.length > 0 && (
     <div
       style={{
@@ -1556,8 +1630,34 @@ return (
   )}
 </div>
   </div>
-
+</div>
   <div className="divider" />
+
+{saveProgress && (
+  <div
+    role="status"
+    style={{
+      marginTop: "14px",
+      padding: "12px 14px",
+      borderRadius: "12px",
+      border: saveProgress.startsWith("✕")
+        ? "1px solid rgba(248, 113, 113, 0.5)"
+        : "1px solid rgba(52, 211, 153, 0.45)",
+      background: saveProgress.startsWith("✕")
+        ? "rgba(127, 29, 29, 0.25)"
+        : "rgba(6, 78, 59, 0.3)",
+      color: saveProgress.startsWith("✕")
+        ? "#fecaca"
+        : "#a7f3d0",
+      fontSize: "13px",
+      fontWeight: 800,
+      lineHeight: 1.4,
+      textAlign: "center",
+    }}
+  >
+    {saveProgress}
+  </div>
+)}
 
 <div className="actions">
   <div className="mainActions">
@@ -1579,28 +1679,14 @@ return (
         : "✨ Generieren (3 Varianten)"}
     </button>
 
- <Link
-  href="/dashboard/social-media"
-  aria-label="Instagram, Facebook, LinkedIn und X Posts erstellen"
-  onClick={() => {
-    localStorage.setItem(
-      "inseratAiSocialDraft",
-      JSON.stringify({
-        location,
-        propertyType,
-        rooms,
-        livingArea,
-        price,
-        highlights,
-        styleText,
-        imageAnalysis,
-      })
-    );
-    sessionStorage.setItem(
-  "inseratAiSocialImages",
-  JSON.stringify(imagePreviews)
-);
-  }}
+ <button
+  type="button"
+  onClick={saveListingAndOpenCockpit}
+  disabled={
+    savingListing ||
+    !location.trim() ||
+    !propertyType.trim()
+  }
   style={{
     minHeight: "52px",
     display: "inline-flex",
@@ -1611,11 +1697,14 @@ return (
     width: "100%",
     borderRadius: "16px",
     padding: "8px 18px",
-    textDecoration: "none",
     color: "#ffffff",
-    border: "none",
-    background: "linear-gradient(135deg, #ec4899, #8b5cf6, #06b6d4)",
-    boxShadow: "0 16px 36px rgba(139, 92, 246, 0.38)",
+    cursor: savingListing ? "not-allowed" : "pointer",
+    opacity: savingListing ? 0.65 : 1,
+   background:
+  "linear-gradient(135deg, #172554 0%, #1e3a5f 55%, #0f766e 100%)",
+boxShadow:
+  "0 16px 36px rgba(15, 118, 110, 0.24)",
+border: "1px solid rgba(251, 191, 36, 0.42)",
   }}
 >
   <span
@@ -1628,19 +1717,22 @@ return (
       lineHeight: 1,
     }}
   >
-    Instagram · Facebook · LinkedIn · X
+    Makler-Cockpit
   </span>
 
-  <strong
-    style={{
-      fontSize: "17px",
-      fontWeight: 950,
-      lineHeight: 1.1,
-    }}
-  >
-    📱 Social Media →
-  </strong>
-</Link>
+ <strong
+  style={{
+    fontSize: "16px",
+    fontWeight: 950,
+    lineHeight: 1.1,
+    whiteSpace: "nowrap",
+  }}
+>
+  {savingListing
+    ? "Objekt wird gespeichert..."
+    : "Social Media →"}
+</strong>
+</button>
   </div>
 
   <div className="secondaryActions">
@@ -1801,13 +1893,7 @@ return (
       )}
     </div>
 
-    <div className="bonusBlock">
-      <div className="bonusTitle">🎁 Bonus</div>
-      <div className="bonusText">
-        Empfehle Inserat - AI einem Maklerkollegen und erhalte 5 zusätzliche Inserate kostenlos.
-      </div>
-      <button className="bonusBtn">Empfehlungslink kopieren</button>
-    </div>
+   
    
   </div>
 </section>
@@ -1963,9 +2049,38 @@ return (
   padding: 24px;
   box-shadow: 0 18px 50px rgba(0,0,0,0.22);
   min-height: 760px;
+  height: 760px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  overflow: hidden;
+}
+
+.leftCardScroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: #f59e0b rgba(255, 255, 255, 0.08);
+}
+
+.leftCardScroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.leftCardScroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+
+.leftCardScroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #fbbf24, #f97316);
+  border-radius: 999px;
+}
+
+.leftCard .divider,
+.leftCard .actions {
+  flex-shrink: 0;
 }
         
 

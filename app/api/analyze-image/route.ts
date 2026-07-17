@@ -96,7 +96,7 @@ export async function POST(request: Request) {
     if (!analysis) {
       return NextResponse.json(
         {
-          error: "Die KI hat keine Bildanalyse zurückgegeben.",
+          error: "Die AI hat keine Bildanalyse zurückgegeben.",
         },
         { status: 502 }
       );

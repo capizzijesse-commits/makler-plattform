@@ -236,7 +236,7 @@ export default function LoginPage() {
               letterSpacing: "-0.04em",
             }}
           >
-            Willkommen zurÃ¼ck
+            Willkommen zurück
           </h1>
 
           <p
@@ -362,7 +362,39 @@ export default function LoginPage() {
                 fontSize: "18px",
               }}
             >
-              {showPassword ? "ðŸ™ˆ" : "ðŸ‘ï¸"}
+              {showPassword ? (
+  <svg
+    width="22"
+    height="22"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M3 3l18 18" />
+    <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+    <path d="M9.9 4.2A10.5 10.5 0 0 1 12 4c5 0 9 4 10 8a11.8 11.8 0 0 1-2 4.2" />
+    <path d="M6.6 6.6A11.3 11.3 0 0 0 2 12c1 4 5 8 10 8a10.5 10.5 0 0 0 5.4-1.5" />
+  </svg>
+) : (
+  <svg
+    width="22"
+    height="22"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8S2 12 2 12Z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+)}
             </button>
           </div>
 

@@ -97,7 +97,7 @@ Format:
       parsed = JSON.parse(text);
     } catch {
       return NextResponse.json(
-        { error: "Die KI-Ausgabe konnte nicht korrekt gelesen werden." },
+        { error: "Die AI-Ausgabe konnte nicht korrekt gelesen werden." },
         { status: 500 }
       );
     }

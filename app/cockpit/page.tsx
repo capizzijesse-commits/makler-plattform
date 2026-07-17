@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-
+type ListingImage = {
+  id: string;
+  url: string;
+  isPrimary: boolean;
+};
 type Listing = {
   id: string;
   location: string;
@@ -17,6 +21,7 @@ type Listing = {
   archivedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  images: ListingImage[];
 };
 
 type ListingsResponse = {
@@ -102,6 +107,8 @@ export default function CockpitPage() {
   const [listingsError, setListingsError] = useState("");
   const [showAllListings, setShowAllListings] = useState(false);
   const [currentListingIndex, setCurrentListingIndex] = useState(0);
+  const [activeCockpitImageIndex, setActiveCockpitImageIndex] =
+  useState(0);
   const [searchQuery, setSearchQuery] = useState("");
 const [statusFilter, setStatusFilter] =
   useState<ListingStatusFilter>("all");
@@ -164,6 +171,59 @@ const filteredListings = listings
 
 const currentListing =
   filteredListings[activeListingIndex] ?? null;
+  const currentListingImages = currentListing?.images ?? [];
+
+const safeCockpitImageIndex =
+  currentListingImages.length === 0
+    ? 0
+    : Math.min(
+        activeCockpitImageIndex,
+        currentListingImages.length - 1
+      );
+
+const currentCockpitImage =
+  currentListingImages[safeCockpitImageIndex] ?? null;
+
+const cockpitThumbnailStart = Math.max(
+  0,
+  Math.min(
+    safeCockpitImageIndex - 1,
+    Math.max(0, currentListingImages.length - 3)
+  )
+);
+
+const visibleCockpitImages = currentListingImages.slice(
+  cockpitThumbnailStart,
+  cockpitThumbnailStart + 3
+);
+
+useEffect(() => {
+  setActiveCockpitImageIndex(0);
+}, [currentListing?.id]);
+
+function showPreviousCockpitImage() {
+  if (currentListingImages.length <= 1) {
+    return;
+  }
+
+  setActiveCockpitImageIndex((currentIndex) =>
+    currentIndex === 0
+      ? currentListingImages.length - 1
+      : currentIndex - 1
+  );
+}
+
+function showNextCockpitImage() {
+  if (currentListingImages.length <= 1) {
+    return;
+  }
+
+  setActiveCockpitImageIndex((currentIndex) =>
+    currentIndex === currentListingImages.length - 1
+      ? 0
+      : currentIndex + 1
+  );
+}
 
 function showPreviousListing() {
   if (filteredListings.length <= 1) {
@@ -346,10 +406,32 @@ useEffect(() => {
 
       <div className="cockpitContainer">
         <div className="cockpitTopbar">
-          <Link href="/dashboard" className="dashboardBackButton">
-            <span>←</span>
-            Dashboard
-          </Link>
+          <Link
+  href="/dashboard"
+  className="dashboardBackButton"
+  style={{
+    display: "inline-flex",
+    width: "fit-content",
+justifySelf: "start",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "9px",
+    minHeight: "44px",
+    padding: "0 18px",
+    border: "1px solid rgba(251, 191, 36, 0.72)",
+    borderRadius: "13px",
+    background:
+      "linear-gradient(135deg, rgba(251, 191, 36, 0.18), rgba(245, 158, 11, 0.08))",
+    color: "#fbbf24",
+    fontSize: "13px",
+    fontWeight: 900,
+    textDecoration: "none",
+    boxShadow: "0 8px 20px rgba(245, 158, 11, 0.12)",
+  }}
+>
+  <span>←</span>
+  Dashboard
+</Link>
 
           <div className="cockpitWordmark">
             <strong>
@@ -359,8 +441,6 @@ useEffect(() => {
           </div>
 
           <div className="topbarActions">
-            <Link href="/dashboard/social-media">Social Media</Link>
-
             <div className="userBadge">
               {userName.charAt(0).toUpperCase()}
             </div>
@@ -390,9 +470,7 @@ useEffect(() => {
               Neues Inserat
             </Link>
 
-            <Link href="/socialMedia" className="secondaryButton">
-              Social Media öffnen
-            </Link>
+           
           </div>
         </section>
 
@@ -461,16 +539,6 @@ useEffect(() => {
                     Varianten erstellen.
                   </p>
                   <strong>Inserat erstellen →</strong>
-                </Link>
-
-                <Link href="/socialMedia" className="quickCard">
-                  <span className="quickIcon">📱</span>
-                  <h3>Social Media</h3>
-                  <p>
-                    Texte für Instagram, Facebook und LinkedIn
-                    vorbereiten.
-                  </p>
-                  <strong>Social Media öffnen →</strong>
                 </Link>
 
                 <Link href="/dashboard" className="quickCard">
@@ -621,15 +689,13 @@ useEffect(() => {
   >
     ›
   </button>
+
 </div>
-<Link
+<article
   key={currentListing.id}
-  href={`/cockpit/${currentListing.id}`}
   className="propertyCard slideshowCard"
 >
   <div className="propertyTop">
-    
-
     <span
       className={
         currentListing.archivedAt
@@ -658,9 +724,151 @@ useEffect(() => {
     </p>
   </div>
 
+  <div className="cockpitMediaGallery">
+    <div className="cockpitMediaHeader">
+      <button
+        type="button"
+        className="cockpitMediaArrow"
+        onClick={showPreviousCockpitImage}
+        disabled={currentListingImages.length <= 1}
+        aria-label="Vorheriges Objektbild"
+      >
+        ‹
+      </button>
+
+      <div className="cockpitMediaHeaderText">
+        <span>OBJEKTBILDER</span>
+
+        <strong>
+          {currentListingImages.length === 0
+            ? "Keine Bilder gespeichert"
+            : currentListingImages.length === 1
+              ? "1 Bild gespeichert"
+              : `${currentListingImages.length} Bilder gespeichert`}
+        </strong>
+      </div>
+
+      <button
+        type="button"
+        className="cockpitMediaArrow"
+        onClick={showNextCockpitImage}
+        disabled={currentListingImages.length <= 1}
+        aria-label="Nächstes Objektbild"
+      >
+        ›
+      </button>
+    </div>
+
+<div
+  className="cockpitMediaLayout"
+  style={{
+    display: "grid",
+    gridTemplateColumns: "minmax(0, 1fr) 145px",
+    gap: "13px",
+    width: "100%",
+    minHeight: "360px",
+  }}
+>
+    <div
+  className="cockpitMediaMain"
+  style={{
+    minWidth: 0,
+    minHeight: "360px",
+  }}
+>
+        {currentCockpitImage ? (
+          <img
+            src={currentCockpitImage.url}
+            alt={`${currentListing.propertyType} in ${currentListing.location}`}
+          />
+        ) : (
+          <div className="cockpitMediaEmpty">
+            <span>📷</span>
+            <strong>Noch keine Objektbilder</strong>
+          </div>
+        )}
+      </div>
+
+      {currentListingImages.length > 0 && (
+       <div
+  className="cockpitThumbnailRail"
+  style={{
+    display: "grid",
+    gridTemplateRows: "34px minmax(0, 1fr) 34px",
+    gridTemplateColumns: "1fr",
+    gap: "8px",
+    minWidth: 0,
+  }}
+>
+          <button
+            type="button"
+            className="cockpitThumbnailNavigation"
+            onClick={showPreviousCockpitImage}
+            disabled={currentListingImages.length <= 1}
+            aria-label="Vorschaubilder nach oben"
+          >
+            ▲
+          </button>
+
+<div
+  className="cockpitThumbnails"
+  style={{
+    display: "grid",
+    gridTemplateColumns: "1fr",
+    gridTemplateRows: "repeat(3, minmax(0, 1fr))",
+    gap: "8px",
+    minHeight: 0,
+  }}
+>            {visibleCockpitImages.map((image) => {
+              const imageIndex =
+                currentListingImages.findIndex(
+                  (currentImage) =>
+                    currentImage.id === image.id
+                );
+
+              return (
+                <button
+                  type="button"
+                  key={image.id}
+                  className={
+                    imageIndex === safeCockpitImageIndex
+                      ? "cockpitThumbnail active"
+                      : "cockpitThumbnail"
+                  }
+                  onClick={() =>
+                    setActiveCockpitImageIndex(imageIndex)
+                  }
+                  aria-label={`Objektbild ${
+                    imageIndex + 1
+                  } anzeigen`}
+                >
+                  <img
+                    src={image.url}
+                    alt={`Vorschau ${imageIndex + 1}`}
+                  />
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            type="button"
+            className="cockpitThumbnailNavigation"
+            onClick={showNextCockpitImage}
+            disabled={currentListingImages.length <= 1}
+            aria-label="Vorschaubilder nach unten"
+          >
+            ▼
+          </button>
+        </div>
+      )}
+    </div>
+  </div>
+
   <div className="propertyFacts">
     <div>
       <span>Zimmer</span>
+
       <strong>
         {currentListing.rooms !== null
           ? currentListing.rooms
@@ -670,6 +878,7 @@ useEffect(() => {
 
     <div>
       <span>Wohnfläche</span>
+
       <strong>
         {currentListing.livingArea !== null
           ? `${currentListing.livingArea} m²`
@@ -695,9 +904,30 @@ useEffect(() => {
       Bearbeitet am {formatDate(currentListing.updatedAt)}
     </span>
 
-    <strong>Objekt öffnen →</strong>
-  </div>
+    <Link
+  href={`/cockpit/${currentListing.id}`}
+  className="propertyOpenLink"
+  style={{
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: "42px",
+    padding: "0 17px",
+    border: "1px solid rgba(251, 191, 36, 0.72)",
+    borderRadius: "12px",
+    background:
+      "linear-gradient(135deg, rgba(251, 191, 36, 0.18), rgba(245, 158, 11, 0.08))",
+    color: "#fbbf24",
+    fontSize: "12px",
+    fontWeight: 900,
+    textDecoration: "none",
+    boxShadow: "0 8px 20px rgba(245, 158, 11, 0.12)",
+  }}
+>
+  Objekt öffnen →
 </Link>
+  </div>
+</article>
 </div>
               )}
             </section>
@@ -787,6 +1017,195 @@ useEffect(() => {
       </div>
 
       <style jsx>{`
+      /* SAUBERE COCKPIT-BILDERGALERIE */
+
+.slideshowCard .cockpitMediaGallery {
+  width: 100% !important;
+  margin: 18px 0 20px !important;
+  padding: 18px !important;
+  border: 1px solid rgba(251, 191, 36, 0.34) !important;
+  border-radius: 20px !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(4, 14, 38, 0.98),
+      rgba(18, 33, 74, 0.96)
+    ) !important;
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+.slideshowCard .cockpitMediaHeader {
+  display: grid !important;
+  grid-template-columns: 48px minmax(0, 1fr) 48px !important;
+  align-items: center !important;
+  gap: 14px !important;
+  margin-bottom: 16px !important;
+}
+
+.slideshowCard .cockpitMediaHeaderText {
+  min-width: 0 !important;
+  text-align: center !important;
+}
+
+.slideshowCard .cockpitMediaHeaderText span,
+.slideshowCard .cockpitMediaHeaderText strong {
+  display: block !important;
+}
+
+.slideshowCard .cockpitMediaHeaderText span {
+  color: #fbbf24 !important;
+  font-size: 9px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.15em !important;
+}
+
+.slideshowCard .cockpitMediaHeaderText strong {
+  margin-top: 5px !important;
+  color: #ffffff !important;
+  font-size: 16px !important;
+  line-height: 1.2 !important;
+}
+
+.slideshowCard .cockpitMediaArrow {
+  display: grid !important;
+  place-items: center !important;
+  width: 48px !important;
+  height: 48px !important;
+  padding: 0 !important;
+  border: 1px solid rgba(251, 191, 36, 0.66) !important;
+  border-radius: 14px !important;
+  background: rgba(245, 158, 11, 0.1) !important;
+  color: #fbbf24 !important;
+  cursor: pointer !important;
+  font-size: 30px !important;
+  line-height: 1 !important;
+}
+
+.slideshowCard .cockpitMediaArrow:hover:not(:disabled) {
+  border-color: #fbbf24 !important;
+  background: rgba(245, 158, 11, 0.2) !important;
+}
+
+.slideshowCard .cockpitMediaLayout {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 165px !important;
+  gap: 14px !important;
+  width: 100% !important;
+  height: 380px !important;
+  min-height: 380px !important;
+}
+
+.slideshowCard .cockpitMediaMain {
+  display: flex !important;
+  width: 100% !important;
+  height: 380px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 16px !important;
+  background: #020617 !important;
+}
+
+.slideshowCard .cockpitMediaMain img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  object-fit: contain !important;
+}
+
+.slideshowCard .cockpitThumbnailRail {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  grid-template-rows: 34px minmax(0, 1fr) 34px !important;
+  gap: 8px !important;
+  width: 165px !important;
+  height: 380px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+.slideshowCard .cockpitThumbnailNavigation {
+  display: grid !important;
+  place-items: center !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 1px solid rgba(251, 191, 36, 0.32) !important;
+  border-radius: 9px !important;
+  background: rgba(245, 158, 11, 0.08) !important;
+  color: #fbbf24 !important;
+  cursor: pointer !important;
+  font-size: 12px !important;
+}
+
+.slideshowCard .cockpitThumbnails {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.slideshowCard .cockpitThumbnail {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 11px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  cursor: pointer !important;
+}
+
+.slideshowCard .cockpitThumbnail img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.slideshowCard .cockpitThumbnail.active {
+  border-color: #fbbf24 !important;
+  box-shadow:
+    0 0 0 2px rgba(251, 191, 36, 0.2),
+    0 8px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+@media (max-width: 800px) {
+  .slideshowCard .cockpitMediaLayout {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .slideshowCard .cockpitMediaMain {
+    height: 280px !important;
+  }
+
+  .slideshowCard .cockpitThumbnailRail {
+    grid-template-columns: 34px minmax(0, 1fr) 34px !important;
+    grid-template-rows: 78px !important;
+    width: 100% !important;
+    height: 78px !important;
+  }
+
+  .slideshowCard .cockpitThumbnails {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-rows: 78px !important;
+  }
+}
       .objectsPanel .panelHeader {
   display: block;
 }
@@ -1006,28 +1425,37 @@ useEffect(() => {
         }
 
         .dashboardBackButton {
-          display: inline-flex;
-          align-items: center;
-          justify-self: start;
-          gap: 9px;
-          min-height: 43px;
-          padding: 0 16px;
-          border: 1px solid rgba(251, 191, 36, 0.28);
-          border-radius: 12px;
-          background: rgba(245, 158, 11, 0.08);
-          color: #fbbf24;
-          font-size: 13px;
-          font-weight: 900;
-          text-decoration: none;
-          transition:
-            transform 0.2s ease,
-            background 0.2s ease;
-        }
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: start;
+  gap: 9px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid rgba(251, 191, 36, 0.72);
+  border-radius: 13px;
+  background: linear-gradient(
+    135deg,
+    rgba(251, 191, 36, 0.18),
+    rgba(245, 158, 11, 0.08)
+  );
+  color: #fbbf24 !important;
+  font-size: 13px;
+  font-weight: 900;
+  text-decoration: none;
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.12);
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease;
+}
 
-        .dashboardBackButton:hover {
-          transform: translateY(-2px);
-          background: rgba(245, 158, 11, 0.14);
-        }
+.dashboardBackButton:hover {
+  transform: translateY(-2px);
+  border-color: #fbbf24;
+  background: linear-gradient(135deg, #f59e0b, #facc15);
+  color: #10162e !important;
+}
 
         .cockpitWordmark {
           text-align: center;
@@ -1384,111 +1812,17 @@ useEffect(() => {
   border-color: rgba(251, 191, 36, 0.9);
   background: rgba(23, 42, 88, 1);
   box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.12);
-  .listingSlideshow {
+}
+
+.listingSlideshow {
   display: flex;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  align-self: stretch;
+  box-sizing: border-box;
   flex-direction: column;
   gap: 18px;
-}
-
-.slideshowNavigation {
-  display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) 52px;
-  align-items: center;
-  gap: 16px;
-  width: 100%;
-  margin: 20px 0;
-  padding: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  background: rgba(8, 21, 53, 0.62);
-}
-
-.slideshowArrow {
-  display: flex;
-  width: 52px;
-  height: 52px;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 1px solid rgba(251, 191, 36, 0.45);
-  border-radius: 14px;
-  background: rgba(251, 191, 36, 0.1);
-  color: #fbbf24;
-  cursor: pointer;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  transition:
-    transform 0.2s ease,
-    background 0.2s ease,
-    border-color 0.2s ease;
-}
-
-.slideshowArrow span {
-  display: block;
-  margin-top: -3px;
-  font-size: 38px;
-  line-height: 1;
-}
-
-.slideshowArrow:hover:not(:disabled) {
-  transform: translateY(-2px);
-  border-color: #fbbf24;
-  background: rgba(251, 191, 36, 0.2);
-}
-
-.slideshowArrow:active:not(:disabled) {
-  transform: scale(0.95);
-}
-
-.slideshowArrow:disabled {
-  cursor: not-allowed;
-  opacity: 0.25;
-}
-
-.slideshowTabs {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  overflow-x: auto;
-  padding: 3px;
-  scrollbar-width: none;
-}
-
-.slideshowTabs::-webkit-scrollbar {
-  display: none;
-}
-
-.slideshowTab {
-  flex: 0 0 auto;
-  min-width: 92px;
-  padding: 11px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.045);
-  color: rgba(255, 255, 255, 0.72);
-  cursor: pointer;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 800;
-  transition:
-    transform 0.2s ease,
-    color 0.2s ease,
-    background 0.2s ease,
-    border-color 0.2s ease;
-}
-
-.slideshowTab:hover {
-  transform: translateY(-1px);
-  border-color: rgba(251, 191, 36, 0.55);
-  color: #ffffff;
-}
-
-.slideshowTab.active {
-  border-color: #fbbf24;
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
-  color: #07142f;
-  box-shadow: 0 8px 22px rgba(245, 158, 11, 0.22);
 }
 
 .slideshowCard {
@@ -1496,7 +1830,8 @@ useEffect(() => {
   min-height: 0;
   animation: listingSlideIn 0.3s ease;
 }
-  .slideshowCard .propertyTop {
+
+.slideshowCard .propertyTop {
   justify-content: flex-end;
 }
 
@@ -1510,72 +1845,6 @@ useEffect(() => {
     opacity: 1;
     transform: translateX(0);
   }
-}
-
-@media (max-width: 700px) {
-  .slideshowNavigation {
-    grid-template-columns: 44px minmax(0, 1fr) 44px;
-    gap: 8px;
-    padding: 10px;
-  }
-
-  .slideshowArrow {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-  }
-
-  .slideshowArrow span {
-    font-size: 32px;
-  }
-
-  .slideshowTabs {
-    justify-content: flex-start;
-  }
-
-  .slideshowTab {
-    min-width: 82px;
-    padding: 9px 13px;
-    font-size: 12px;
-  }
-}
-
-.slideshowArrow {
-  display: inline-flex;
-  width: 46px;
-  height: 46px;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(251, 191, 36, 0.45);
-  border-radius: 50%;
-  background: rgba(251, 191, 36, 0.1);
-  color: #fbbf24;
-  cursor: pointer;
-  font-size: 24px;
-  font-weight: 900;
-  transition:
-    transform 0.2s ease,
-    background 0.2s ease,
-    border-color 0.2s ease;
-}
-
-.slideshowArrow:hover:not(:disabled) {
-  transform: translateY(-2px);
-  border-color: #fbbf24;
-  background: rgba(251, 191, 36, 0.18);
-}
-
-.slideshowArrow:disabled {
-  cursor: not-allowed;
-  opacity: 0.3;
-}
-
-
-
-.slideshowCard {
-  width: 100%;
-  min-height: 0;
-}
 }
         .showAllButton,
         .checklistTitle button {
@@ -1831,10 +2100,12 @@ useEffect(() => {
         }
 
         @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.checklistPanel {
 
         .checklistPanel {
           min-height: 500px;
@@ -2015,8 +2286,8 @@ useEffect(() => {
           .heroActions {
             width: 100%;
           }
-        }
-
+        
+}
         @media (max-width: 640px) {
           .topbarActions a {
             display: none;
@@ -2121,6 +2392,378 @@ useEffect(() => {
     width: 46px !important;
     height: 46px !important;
     font-size: 28px !important;
+  }
+    }
+.propertyFiles {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  min-height: 82px;
+  margin: 18px 0 22px;
+  padding: 14px 18px;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 16px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(245, 158, 11, 0.12),
+      rgba(18, 35, 76, 0.82)
+    );
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.propertyFilesIcon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 1px solid rgba(251, 191, 36, 0.32);
+  border-radius: 14px;
+  background: rgba(245, 158, 11, 0.13);
+  font-size: 23px;
+}
+
+.propertyFilesContent {
+  min-width: 0;
+}
+
+.propertyFilesContent span,
+.propertyFilesContent strong {
+  display: block;
+}
+
+.propertyFilesContent span {
+  margin-bottom: 5px;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.propertyFilesContent strong {
+  color: #ffffff;
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.propertyFilesAction {
+  color: #fbbf24;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .propertyFiles {
+    grid-template-columns: 46px minmax(0, 1fr);
+    padding: 13px;
+  }
+
+  .propertyFilesIcon {
+    width: 46px;
+    height: 46px;
+  }
+
+  .propertyFilesAction {
+    display: none;
+  }
+}
+  .cockpitMediaGallery {
+  margin: 18px 0 20px;
+  padding: 15px;
+  border: 1px solid rgba(251, 191, 36, 0.28);
+  border-radius: 20px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(5, 15, 40, 0.96),
+      rgba(19, 34, 76, 0.9)
+    );
+  box-shadow:
+    0 16px 36px rgba(2, 6, 23, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.cockpitMediaHeader {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 46px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.cockpitMediaHeaderText {
+  min-width: 0;
+  text-align: center;
+}
+
+.cockpitMediaHeaderText span,
+.cockpitMediaHeaderText strong {
+  display: block;
+}
+
+.cockpitMediaHeaderText span {
+  color: #fbbf24;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.cockpitMediaHeaderText strong {
+  margin-top: 5px;
+  color: #ffffff;
+  font-size: 15px;
+}
+
+.cockpitMediaArrow {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid rgba(251, 191, 36, 0.62);
+  border-radius: 13px;
+  background: rgba(245, 158, 11, 0.1);
+  color: #fbbf24;
+  cursor: pointer;
+  font: inherit;
+  font-size: 29px;
+  line-height: 1;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.cockpitMediaArrow:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: #fbbf24;
+  background: rgba(245, 158, 11, 0.2);
+}
+
+.cockpitMediaArrow:disabled,
+.cockpitThumbnailNavigation:disabled {
+  cursor: not-allowed;
+  opacity: 0.25;
+}
+
+.cockpitMediaLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 145px;
+  gap: 13px;
+  min-height: 360px;
+}
+
+.cockpitMediaMain {
+  display: flex;
+  min-width: 0;
+  min-height: 360px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 17px;
+  background: #020617;
+}
+
+.cockpitMediaMain img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: 410px;
+  object-fit: contain;
+}
+
+.cockpitMediaEmpty {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 10px;
+  color: rgba(226, 232, 240, 0.58);
+}
+
+.cockpitMediaEmpty span {
+  font-size: 36px;
+}
+
+.cockpitThumbnailRail {
+  display: grid;
+  grid-template-rows: 34px minmax(0, 1fr) 34px;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cockpitThumbnailNavigation {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  padding: 0;
+  border: 1px solid rgba(251, 191, 36, 0.28);
+  border-radius: 9px;
+  background: rgba(245, 158, 11, 0.08);
+  color: #fbbf24;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.cockpitThumbnailNavigation:hover:not(:disabled) {
+  border-color: rgba(251, 191, 36, 0.7);
+  background: rgba(245, 158, 11, 0.16);
+}
+
+.cockpitThumbnails {
+  display: grid;
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  min-height: 0;
+}
+
+.cockpitThumbnail {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.cockpitThumbnail:hover {
+  transform: translateY(-1px);
+  border-color: rgba(251, 191, 36, 0.55);
+}
+
+.cockpitThumbnail img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cockpitThumbnail.active {
+  border-color: #fbbf24;
+  box-shadow:
+    0 0 0 2px rgba(251, 191, 36, 0.18),
+    0 8px 20px rgba(2, 6, 23, 0.24);
+}
+
+.propertyOpenLink {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 17px;
+  border: 1px solid rgba(251, 191, 36, 0.72);
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    rgba(251, 191, 36, 0.18),
+    rgba(245, 158, 11, 0.08)
+  );
+  color: #fbbf24 !important;
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: none;
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.12);
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.propertyOpenLink:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #f59e0b, #facc15);
+  color: #10162e !important;
+  text-decoration: none;
+}
+
+@media (max-width: 700px) {
+  .cockpitMediaHeader {
+    grid-template-columns: 42px minmax(0, 1fr) 42px;
+  }
+
+  .cockpitMediaArrow {
+    width: 42px;
+    height: 42px;
+    font-size: 26px;
+  }
+
+  .cockpitMediaLayout {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .cockpitMediaMain {
+    min-height: 270px;
+  }
+
+  .cockpitThumbnailRail {
+    grid-template-columns: 34px minmax(0, 1fr) 34px;
+    grid-template-rows: auto;
+  }
+
+  .cockpitThumbnails {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: 78px;
+  }
+
+  .cockpitThumbnailNavigation {
+    min-height: 78px;
+  }
+}
+/* Desktop-Korrektur für die Cockpit-Bildergalerie */
+
+.slideshowCard {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+@media (min-width: 701px) {
+  .cockpitMediaLayout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 145px !important;
+    gap: 13px !important;
+    width: 100% !important;
+    min-height: 360px !important;
+  }
+
+  .cockpitMediaMain {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 360px !important;
+  }
+
+  .cockpitThumbnailRail {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: 34px minmax(0, 1fr) 34px !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+  }
+
+  .cockpitThumbnails {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .cockpitThumbnailNavigation {
+    width: 100% !important;
+    min-height: 0 !important;
   }
 }
       `}</style>

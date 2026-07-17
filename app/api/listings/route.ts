@@ -27,7 +27,7 @@ function optionalNumber(value: unknown): number | null {
   return Number.isFinite(number) ? number : null;
 }
 
-function parseGeneratedVariants(value: string | null): unknown {
+function parseJsonValue(value: string | null): unknown {
   if (!value) return null;
 
   try {
@@ -50,21 +50,35 @@ export async function GET(request: NextRequest) {
         { status: 401 }
       );
     }
-
-    const listings = await prisma.listing.findMany({
-      where: {
-        userId: user.id,
-      },
-      orderBy: {
-        updatedAt: "desc",
-      },
-    });
+const listings = await prisma.listing.findMany({
+  where: {
+    userId: user.id,
+  },
+  include: {
+    images: {
+      orderBy: [
+        {
+          isPrimary: "desc",
+        },
+        {
+          position: "asc",
+        },
+        {
+          createdAt: "asc",
+        },
+      ],
+    },
+  },
+  orderBy: {
+    updatedAt: "desc",
+  },
+});
 
     return NextResponse.json({
       success: true,
       listings: listings.map((listing) => ({
         ...listing,
-        generatedVariants: parseGeneratedVariants(
+        generatedVariants: parseJsonValue(
           listing.generatedVariants
         ),
       })),
@@ -151,7 +165,7 @@ export async function POST(request: NextRequest) {
         message: "Objekt wurde dauerhaft gespeichert.",
         listing: {
           ...listing,
-          generatedVariants: parseGeneratedVariants(
+          generatedVariants: parseJsonValue(
             listing.generatedVariants
           ),
         },
