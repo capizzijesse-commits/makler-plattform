@@ -1597,19 +1597,7 @@ return (
 
   
 
-  <div style={{ marginTop: "12px" }}>
-    <button
-  type="button"
-  onClick={analyzeImage}
-  className="btn btn-secondary"
-  disabled={
-    (selectedImages.length === 0 && imagePreviews.length === 0) ||
-    analyzingImage
-  }
->
-  {analyzingImage ? "Analysiere Foto..." : "Foto analysieren"}
-</button>
-  </div>
+ 
 
   {imageAnalysis && (
     <div
@@ -1687,51 +1675,17 @@ return (
     !location.trim() ||
     !propertyType.trim()
   }
-  style={{
-    minHeight: "52px",
-    display: "inline-flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "3px",
-    width: "100%",
-    borderRadius: "16px",
-    padding: "8px 18px",
-    color: "#ffffff",
-    cursor: savingListing ? "not-allowed" : "pointer",
-    opacity: savingListing ? 0.65 : 1,
-   background:
-  "linear-gradient(135deg, #172554 0%, #1e3a5f 55%, #0f766e 100%)",
-boxShadow:
-  "0 16px 36px rgba(15, 118, 110, 0.24)",
-border: "1px solid rgba(251, 191, 36, 0.42)",
-  }}
+  className="saveCockpitButton"
 >
-  <span
-    style={{
-      fontSize: "10px",
-      fontWeight: 900,
-      letterSpacing: "0.12em",
-      textTransform: "uppercase",
-      opacity: 0.92,
-      lineHeight: 1,
-    }}
-  >
-    Makler-Cockpit
+  <span className="saveCockpitButtonLabel">
+    Objekt speichern
   </span>
 
- <strong
-  style={{
-    fontSize: "16px",
-    fontWeight: 950,
-    lineHeight: 1.1,
-    whiteSpace: "nowrap",
-  }}
->
-  {savingListing
-    ? "Objekt wird gespeichert..."
-    : "Social Media →"}
-</strong>
+  <span className="saveCockpitButtonText">
+    {savingListing
+      ? "Objekt wird gespeichert..."
+      : "Speichern & Cockpit öffnen"}
+  </span>
 </button>
   </div>
 

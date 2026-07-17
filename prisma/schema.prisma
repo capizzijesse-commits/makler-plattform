@@ -24,9 +24,11 @@ model User {
   emailVerified            Boolean   @default(false)
   emailVerificationToken   String?
   emailVerificationExpires DateTime?
-
-  listings Listing[]
-  sessions Session[]
+  passwordResetTokenHash   String?   @unique
+  passwordResetExpires     DateTime?
+  passwordResetRequestedAt DateTime?
+  listings                 Listing[]
+  sessions                 Session[]
 
   createdAt DateTime @default(now())
 }
@@ -46,10 +48,10 @@ model Listing {
   highlights   String?
   style        String?
 
-generatedVariants String?
-socialVariants    String?
-imageAnalysis     String?
-archivedAt        DateTime?
+  generatedVariants String?
+  socialVariants    String?
+  imageAnalysis     String?
+  archivedAt        DateTime?
 
   images ListingImage[]
 
