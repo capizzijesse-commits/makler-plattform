@@ -1740,9 +1740,7 @@ return (
 </section>
 
 <a
-  href="https://wa.me/41772323567?text=Hallo%20Inserat-AI%2C%20ich%20habe%20eine%20Frage%20oder%20Feedback."
-  target="_blank"
-  rel="noopener noreferrer"
+  href="mailto:info@inserat-ai.ch?subject=Feedback%20zu%20Inserat-AI&body=Hallo%20Inserat-AI-Team%2C%0A%0Amein%20Feedback%3A%0A%0A"
   className="feedbackButton"
 >
   Feedback / Support
