@@ -9,6 +9,16 @@ type TourSection = {
   audioText: string;
   videoText: string;
 };
+type SessionResponse = {
+  success?: boolean;
+  authenticated?: boolean;
+  user?: {
+    plan?: string;
+    capabilities?: {
+      canUseTourGuide?: boolean;
+    };
+  };
+};
 
 const DEFAULT_ROOMS = [
   "Eingang",
@@ -38,7 +48,49 @@ export default function TourGuidePage() {
 
   const [tourSections, setTourSections] = useState<TourSection[]>([]);
   const [loading, setLoading] = useState(false);
+  const [accessStatus, setAccessStatus] = useState<
+  "checking" | "allowed" | "blocked"
+>("checking");
+useEffect(() => {
+  let cancelled = false;
 
+  async function checkAccess() {
+    try {
+      const response = await fetch("/api/session", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
+
+      const data = (await response.json()) as SessionResponse;
+
+      if (cancelled) return;
+
+      const hasAccess =
+        data.authenticated === true &&
+        data.user?.capabilities?.canUseTourGuide === true;
+
+      setAccessStatus(hasAccess ? "allowed" : "blocked");
+    } catch (error) {
+      console.error("TOUR GUIDE ACCESS ERROR:", error);
+
+      if (!cancelled) {
+        setAccessStatus("blocked");
+      }
+    }
+  }
+
+  void checkAccess();
+
+  return () => {
+    cancelled = true;
+  };
+}, []);
   useEffect(() => {
     const savedDraft = localStorage.getItem("inseratAiSocialDraft");
 
@@ -147,18 +199,93 @@ export default function TourGuidePage() {
           "Video-Intro: Starte mit einer ruhigen Aussenaufnahme oder dem Eingang. Danach kurz das Gebäude, den Zugang oder den ersten Eindruck zeigen. Die Aufnahme sollte hochwertig, ruhig und professionell wirken.",
       };
 
-      const roomSections: TourSection[] = selectedRooms.map((room, index) => {
-        const roomHighlight =
-          highlightList[index % Math.max(highlightList.length, 1)] ||
-          "die angenehme Raumwirkung";
+     const roomSections: TourSection[] = selectedRooms.map((room, index) => {
+  const roomHighlight =
+    highlightList[index % Math.max(highlightList.length, 1)] ||
+    "die angenehme Raumwirkung";
 
-        return {
-          room,
-          title: `${room} erleben`,
-          audioText: `Sie befinden sich jetzt im Bereich ${room}. Dieser Teil der Immobilie unterstreicht den ${styleText}en Charakter des Objekts. Besonders hervorzuheben ist ${roomHighlight}. Die Wohnfläche von ca. ${livingArea} m² bietet eine gute Grundlage für komfortables Wohnen. Achten Sie beim Rundgang auf Atmosphäre, Lichtverhältnisse und Nutzungsmöglichkeiten.`,
-          videoText: `Video-Szene: ${getVideoInstruction(room)}`,
-        };
-      });
+  return {
+    room,
+    title: `${room} erleben`,
+    audioText: `Sie befinden sich jetzt im Bereich ${room}. Dieser Teil der Immobilie unterstreicht den ${styleText}en Charakter des Objekts. Besonders hervorzuheben ist ${roomHighlight}. Die Wohnfläche von ca. ${livingArea} m² bietet eine gute Grundlage für komfortables Wohnen. Achten Sie beim Rundgang auf Atmosphäre, Lichtverhältnisse und Nutzungsmöglichkeiten.`,
+    videoText: `Video-Szene: ${getVideoInstruction(room)}`,
+  };
+});
+if (accessStatus === "checking") {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-indigo-950 to-orange-700 px-6 text-white">
+      <div className="w-full max-w-xl rounded-3xl border border-white/10 bg-slate-950/60 p-8 text-center shadow-2xl backdrop-blur">
+        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-white/20 border-t-amber-400" />
+
+        <h1 className="mt-6 text-2xl font-black">
+          Zugang wird geprüft
+        </h1>
+
+        <p className="mt-3 text-slate-300">
+          Inserat-AI lädt deine Pro-Berechtigungen.
+        </p>
+      </div>
+    </main>
+  );
+}
+
+if (accessStatus === "blocked") {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-indigo-950 to-orange-700 px-6 py-12 text-white">
+      <div className="w-full max-w-2xl rounded-[2rem] border border-amber-400/30 bg-slate-950/70 p-8 text-center shadow-2xl backdrop-blur sm:p-12">
+        <div className="text-5xl">🎬</div>
+
+        <p className="mt-6 text-sm font-black uppercase tracking-[0.25em] text-amber-300">
+          Inserat-AI Pro
+        </p>
+
+        <h1 className="mt-4 text-3xl font-black sm:text-5xl">
+          Virtual Tour Studio
+        </h1>
+
+        <p className="mx-auto mt-6 max-w-xl text-base leading-7 text-slate-300 sm:text-lg">
+          Das Audio- und Video-Drehbuch für digitale Immobilienbesichtigungen
+          ist im Pro-Plan für 79.90 CHF pro Monat enthalten.
+        </p>
+
+        <div className="mt-8 grid gap-3 text-left text-slate-200 sm:grid-cols-2">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+            ✓ Raum-für-Raum Audio-Guide
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+            ✓ Professioneller Video-Szenenplan
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+            ✓ Objektbezogene Tour-Texte
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+            ✓ Vollständiges Makler-Cockpit
+          </div>
+        </div>
+
+        <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
+          <Link
+            href="/"
+            className="rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-7 py-4 font-black text-slate-950 shadow-xl transition hover:scale-[1.02]"
+          >
+            Pro für 79.90 CHF ansehen
+          </Link>
+
+          <Link
+            href="/dashboard"
+            className="rounded-2xl border border-white/15 bg-white/[0.06] px-7 py-4 font-bold text-white"
+          >
+            Zurück zum Dashboard
+          </Link>
+        </div>
+      </div>
+    </main>
+  );
+}
+       
 
       const outro: TourSection = {
         room: "Abschluss",
