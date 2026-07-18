@@ -27,6 +27,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  
 
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] =
@@ -34,10 +35,17 @@ export default function LoginPage() {
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
-
-    const registered = searchParams.get("registered");
-    const verified = searchParams.get("verified");
-
+const registered = searchParams.get("registered");
+const verified = searchParams.get("verified");
+   
+const reset = searchParams.get("reset");
+if (reset === "success") {
+  setMessage(
+    "Dein Passwort wurde erfolgreich geändert. Du kannst dich jetzt anmelden."
+  );
+  setMessageType("success");
+  return;
+}
     if (registered === "success") {
       setMessage(
         "Registrierung erfolgreich. Bitte prÃ¼fe dein E-Mail-Postfach und bestÃ¤tige dein Konto."
@@ -398,7 +406,26 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <button
+          <div
+            style={{
+              marginTop: "10px",
+              textAlign: "right",
+            }}
+          >
+            <Link
+              href="/forgot-password"
+              style={{
+                color: "#fbbf24",
+                fontSize: "13px",
+                fontWeight: 800,
+                textDecoration: "none",
+              }}
+            >
+              Passwort vergessen?
+            </Link>
+          </div>
+
+                   <button
             type="submit"
             disabled={loading}
             style={{
@@ -418,7 +445,7 @@ export default function LoginPage() {
                 "0 18px 40px rgba(249, 115, 22, 0.35)",
             }}
           >
-            {loading ? "Anmeldung lÃ¤uft..." : "Einloggen"}
+            {loading ? "Anmeldung läuft..." : "Einloggen"}
           </button>
         </form>
 
