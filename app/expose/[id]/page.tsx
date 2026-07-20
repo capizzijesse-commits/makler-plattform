@@ -2714,12 +2714,26 @@ function ExposeStyles() {
         }
 
         .gallery-dashboard {
+          height: 191mm !important;
+          min-height: 0 !important;
           grid-template-columns: 1.25fr 0.75fr !important;
         }
 
+        .gallery-main,
+        .gallery-thumb {
+          height: auto !important;
+          min-height: 0 !important;
+        }
+
         .gallery-side {
+          height: 100% !important;
+          min-height: 0 !important;
           grid-template-columns: 1fr !important;
-          grid-template-rows: repeat(4, 1fr) !important;
+          grid-template-rows: repeat(4, minmax(0, 1fr)) !important;
+        }
+
+        .gallery-thumb {
+          overflow: hidden !important;
         }
 
         .gallery-info-strip {
