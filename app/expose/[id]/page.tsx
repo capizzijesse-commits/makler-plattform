@@ -37,6 +37,17 @@ type ContactDetails = {
   phone: string;
 };
 
+type SessionUser = {
+  name?: string | null;
+  email?: string | null;
+};
+
+type SessionResponse = {
+  success?: boolean;
+  authenticated?: boolean;
+  user?: SessionUser;
+};
+
 type TextVariant = {
   title?: string;
   text?: string;
@@ -360,7 +371,54 @@ export default function ExposePreviewPage() {
   const [printing, setPrinting] = useState(false);
 
   useEffect(() => {
-    setContact(getInitialContact());
+    let active = true;
+
+    async function loadContactDetails() {
+      const fallback = getInitialContact();
+
+      try {
+        const response = await fetch("/api/session", {
+          method: "GET",
+          cache: "no-store",
+          credentials: "include",
+        });
+
+        const data = (await response.json().catch(() => null)) as
+          | SessionResponse
+          | null;
+
+        if (!active) {
+          return;
+        }
+
+        const sessionName =
+          typeof data?.user?.name === "string"
+            ? data.user.name.trim()
+            : "";
+
+        const sessionEmail =
+          typeof data?.user?.email === "string"
+            ? data.user.email.trim()
+            : "";
+
+        setContact({
+          name: sessionName || fallback.name,
+          company: fallback.company,
+          email: sessionEmail || fallback.email,
+          phone: fallback.phone,
+        });
+      } catch {
+        if (active) {
+          setContact(fallback);
+        }
+      }
+    }
+
+    void loadContactDetails();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
