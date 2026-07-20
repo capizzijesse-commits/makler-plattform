@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ListingActions from "./ListingActions";
+import { useAppDialog } from "../../../components/AppDialogProvider";
 
 type Variant = {
   title: string;
@@ -673,6 +674,74 @@ function showNextImage() {
 >
   <span>📱</span>
   Social Media erstellen
+</Link>
+
+<Link
+  href={`/expose/${listing.id}`}
+  style={{
+    display: "inline-flex",
+    width: "100%",
+    minHeight: "46px",
+    marginTop: "10px",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "9px",
+    padding: "10px 16px",
+    border: "1px solid rgba(245, 189, 33, 0.58)",
+    borderRadius: "14px",
+    background:
+      "linear-gradient(135deg, rgba(245, 189, 33, 0.24), rgba(107, 92, 255, 0.22))",
+    color: "#ffffff",
+    fontWeight: 900,
+    textDecoration: "none",
+    boxSizing: "border-box",
+    boxShadow:
+      "0 12px 28px rgba(245, 189, 33, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
+  }}
+>
+  <span
+    style={{
+      display: "inline-flex",
+      width: "28px",
+      height: "28px",
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: "9px",
+      background:
+        "linear-gradient(135deg, rgba(245, 189, 33, 0.95), rgba(255, 217, 106, 0.9))",
+      color: "#081323",
+      fontSize: "15px",
+      boxShadow: "0 0 18px rgba(245, 189, 33, 0.22)",
+    }}
+  >
+    📄
+  </span>
+
+  Exposé erstellen
+</Link>
+
+<Link
+  href={`/dashboard/tour-guide?listingId=${listing.id}`}
+  style={{
+    display: "inline-flex",
+    width: "100%",
+    minHeight: "46px",
+    marginTop: "10px",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px",
+    padding: "10px 16px",
+    borderRadius: "14px",
+    border: "1px solid rgba(34, 211, 238, 0.35)",
+    background:
+      "linear-gradient(135deg, rgba(8, 145, 178, 0.28), rgba(79, 70, 229, 0.3))",
+    color: "#ffffff",
+    fontWeight: 900,
+    textDecoration: "none",
+    boxSizing: "border-box",
+  }}
+>
+  🎬 3D-Video-Tour erstellen
 </Link>
               <ListingActions
                 listingId={listing.id}
