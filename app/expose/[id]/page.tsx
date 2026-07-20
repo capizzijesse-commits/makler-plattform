@@ -2700,6 +2700,61 @@ function ExposeStyles() {
         .details-dashboard {
           min-height: 214mm;
         }
+
+        .cover-header {
+          align-items: center;
+        }
+
+        .cover-header .brand-mark__copy small {
+          display: block;
+        }
+
+        .cover-metrics {
+          grid-template-columns: repeat(3, 1fr) !important;
+        }
+
+        .gallery-dashboard {
+          grid-template-columns: 1.25fr 0.75fr !important;
+        }
+
+        .gallery-side {
+          grid-template-columns: 1fr !important;
+          grid-template-rows: repeat(4, 1fr) !important;
+        }
+
+        .gallery-info-strip {
+          grid-template-columns: repeat(3, 1fr) !important;
+        }
+
+        .gallery-info-strip > div {
+          border-right: 1px solid rgba(255, 255, 255, 0.09) !important;
+          border-bottom: 0 !important;
+        }
+
+        .gallery-info-strip > div:last-child {
+          border-right: 0 !important;
+        }
+
+        .details-dashboard {
+          grid-template-columns: 61mm 1fr !important;
+        }
+
+        .property-stat-grid {
+          grid-template-columns: 1fr !important;
+        }
+
+        .final-dashboard {
+          grid-template-columns: 1.08fr 0.92fr !important;
+        }
+
+        .contact-panel {
+          grid-template-columns: 0.9fr 1.1fr !important;
+        }
+
+        .feature-panel,
+        .location-panel {
+          min-height: 116mm !important;
+        }
       }
     `}</style>
   );
