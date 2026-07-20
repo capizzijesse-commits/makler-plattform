@@ -205,6 +205,22 @@ function formatDate(value?: string): string {
   }).format(date);
 }
 
+function sanitizeFilePart(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9äöüÄÖÜß]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 60);
+}
+
+function getPdfDocumentTitle(listing: Listing): string {
+  const propertyType = sanitizeFilePart(listing.propertyType || "Immobilie");
+  const location = sanitizeFilePart(listing.location || "Schweiz");
+
+  return `Expose_${propertyType}_${location}`;
+}
+
 function getInitialContact(): ContactDetails {
   if (typeof window === "undefined") {
     return {
@@ -444,12 +460,34 @@ export default function ExposePreviewPage() {
   }
 
   function exportPdf() {
+    if (printing || !listing) {
+      return;
+    }
+
+    const previousTitle = document.title;
+    const pdfDocumentTitle = getPdfDocumentTitle(listing);
+    let cleanedUp = false;
+
+    function cleanupPrintState() {
+      if (cleanedUp) {
+        return;
+      }
+
+      cleanedUp = true;
+      document.title = previousTitle;
+      setPrinting(false);
+      window.removeEventListener("afterprint", cleanupPrintState);
+    }
+
     setPrinting(true);
+    document.title = pdfDocumentTitle;
+    window.addEventListener("afterprint", cleanupPrintState);
 
     window.setTimeout(() => {
       window.print();
-      setPrinting(false);
-    }, 150);
+    }, 180);
+
+    window.setTimeout(cleanupPrintState, 15000);
   }
 
   if (loading) {
@@ -534,7 +572,7 @@ export default function ExposePreviewPage() {
             <span className="toolbar-button__icon" aria-hidden="true">
               ↓
             </span>
-            {printing ? "PDF wird vorbereitet" : "PDF exportieren"}
+            {printing ? "PDF wird vorbereitet …" : "PDF exportieren"}
           </button>
         </div>
       </header>
@@ -2446,6 +2484,7 @@ function ExposeStyles() {
           background: ${PAGE_BACKGROUND} !important;
           -webkit-print-color-adjust: exact;
           print-color-adjust: exact;
+          color-adjust: exact;
         }
 
         .preview-toolbar {
