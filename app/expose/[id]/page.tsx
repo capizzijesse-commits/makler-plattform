@@ -2652,6 +2652,10 @@ function ExposeStyles() {
           color-adjust: exact;
         }
 
+        .siteNavbar,
+        .appCentralNavbar,
+        .appMenuOverlay,
+        .appMenuDrawer,
         .preview-toolbar {
           display: none !important;
         }
