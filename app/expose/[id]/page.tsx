@@ -40,6 +40,8 @@ type ContactDetails = {
 type SessionUser = {
   name?: string | null;
   email?: string | null;
+  company?: string | null;
+  phone?: string | null;
 };
 
 type SessionResponse = {
@@ -401,11 +403,21 @@ export default function ExposePreviewPage() {
             ? data.user.email.trim()
             : "";
 
+        const sessionCompany =
+          typeof data?.user?.company === "string"
+            ? data.user.company.trim()
+            : "";
+
+        const sessionPhone =
+          typeof data?.user?.phone === "string"
+            ? data.user.phone.trim()
+            : "";
+
         setContact({
           name: sessionName || fallback.name,
-          company: fallback.company,
+          company: sessionCompany || fallback.company,
           email: sessionEmail || fallback.email,
-          phone: fallback.phone,
+          phone: sessionPhone || fallback.phone,
         });
       } catch {
         if (active) {
@@ -601,37 +613,48 @@ export default function ExposePreviewPage() {
   return (
     <>
       <header className="preview-toolbar">
-        <div className="preview-toolbar__middle">
-          <span className="preview-status-dot" />
-          <div>
-            <strong>Exposé-Vorschau</strong>
-            <span>
-              {listing.propertyType} · {place || listing.location}
-            </span>
+        <div className="preview-toolbar__card">
+          <div className="preview-toolbar__middle">
+            <span className="preview-status-dot" />
+
+            <div className="preview-toolbar__copy">
+              <span className="preview-toolbar__eyebrow">
+                EXPOSÉ-BEREIT
+              </span>
+              <strong>Exposé-Vorschau</strong>
+              <span className="preview-toolbar__meta">
+                {listing.propertyType} · {place || listing.location}
+              </span>
+            </div>
           </div>
-        </div>
 
-        <div className="preview-toolbar__actions">
-          <button
-            type="button"
-            className="toolbar-button toolbar-button--ghost"
-            onClick={goBack}
-          >
-            <span aria-hidden="true">←</span>
-            Zurück
-          </button>
+          <div className="preview-toolbar__actions">
+            <button
+              type="button"
+              className="toolbar-button toolbar-button--ghost"
+              onClick={goBack}
+            >
+              <span
+                className="toolbar-button__back-icon"
+                aria-hidden="true"
+              >
+                ←
+              </span>
+              Zurück
+            </button>
 
-          <button
-            type="button"
-            className="toolbar-button toolbar-button--primary"
-            onClick={exportPdf}
-            disabled={printing}
-          >
-            <span className="toolbar-button__icon" aria-hidden="true">
-              ↓
-            </span>
-            {printing ? "PDF wird vorbereitet …" : "PDF exportieren"}
-          </button>
+            <button
+              type="button"
+              className="toolbar-button toolbar-button--primary"
+              onClick={exportPdf}
+              disabled={printing}
+            >
+              <span className="toolbar-button__icon" aria-hidden="true">
+                ↓
+              </span>
+              {printing ? "PDF wird vorbereitet …" : "PDF speichern"}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -1048,24 +1071,39 @@ function ExposeStyles() {
       .preview-toolbar {
         position: relative;
         z-index: 40;
-        min-height: 72px;
-        padding: 11px clamp(18px, 4vw, 52px);
+        width: 100%;
+        padding: 22px 28px 0;
+        background: transparent;
+      }
+
+      .preview-toolbar__card {
+        width: min(1180px, 100%);
+        min-height: 84px;
+        margin: 0 auto;
+        padding: 14px 16px 14px 20px;
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
         align-items: center;
         gap: 22px;
+        overflow: hidden;
         background:
+          radial-gradient(
+            circle at 0% 50%,
+            rgba(85, 216, 255, 0.09),
+            transparent 28%
+          ),
           linear-gradient(
-            90deg,
-            rgba(5, 11, 29, 0.96),
-            rgba(11, 23, 51, 0.96)
+            135deg,
+            rgba(12, 25, 55, 0.96),
+            rgba(7, 15, 35, 0.98)
           );
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
-        border-bottom: 1px solid rgba(245, 189, 33, 0.34);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 22px;
         box-shadow:
-          0 16px 38px rgba(0, 0, 0, 0.28),
-          0 0 22px rgba(245, 189, 33, 0.06);
-        backdrop-filter: blur(20px);
+          0 22px 58px rgba(0, 0, 0, 0.32),
+          0 0 0 1px rgba(245, 189, 33, 0.04),
+          inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(22px);
       }
 
       .brand-mark {
@@ -1161,30 +1199,49 @@ function ExposeStyles() {
         display: flex;
         align-items: center;
         justify-content: flex-start;
-        gap: 10px;
+        gap: 14px;
       }
 
       .preview-status-dot {
-        width: 8px;
-        height: 8px;
+        width: 12px;
+        height: 12px;
+        flex: 0 0 auto;
         background: ${CYAN};
+        border: 3px solid rgba(85, 216, 255, 0.18);
         border-radius: 50%;
-        box-shadow: 0 0 16px ${CYAN};
+        box-shadow:
+          0 0 0 7px rgba(85, 216, 255, 0.05),
+          0 0 20px rgba(85, 216, 255, 0.72);
       }
 
-      .preview-toolbar__middle > div {
+      .preview-toolbar__copy {
+        min-width: 0;
         display: grid;
         gap: 2px;
         text-align: left;
       }
 
-      .preview-toolbar__middle strong {
-        font-size: 13px;
+      .preview-toolbar__eyebrow {
+        color: ${GOLD};
+        font-size: 7px;
+        font-weight: 950;
+        letter-spacing: 0.18em;
       }
 
-      .preview-toolbar__middle span {
+      .preview-toolbar__copy strong {
+        font-size: 15px;
+        font-weight: 950;
+        letter-spacing: -0.02em;
+      }
+
+      .preview-toolbar__meta {
+        max-width: 100%;
+        overflow: hidden;
         color: ${MUTED};
-        font-size: 9px;
+        font-size: 10px;
+        font-weight: 650;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .preview-toolbar__actions {
@@ -1195,57 +1252,101 @@ function ExposeStyles() {
 
       .toolbar-button,
       .primary-button {
-        min-height: 46px;
-        padding: 0 18px;
+        min-height: 52px;
+        padding: 0 20px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 9px;
+        gap: 10px;
         border: 1px solid transparent;
-        border-radius: 13px;
+        border-radius: 16px;
         cursor: pointer;
-        font-weight: 900;
+        font-weight: 950;
+        letter-spacing: -0.01em;
         transition:
           transform 160ms ease,
+          border-color 160ms ease,
+          background 160ms ease,
           box-shadow 160ms ease,
           opacity 160ms ease;
       }
 
       .toolbar-button:hover,
       .primary-button:hover {
-        transform: translateY(-1px);
+        transform: translateY(-2px);
       }
 
       .toolbar-button:disabled {
         cursor: wait;
         opacity: 0.65;
+        transform: none;
       }
 
       .toolbar-button--ghost {
-        color: ${TEXT};
-        background: rgba(255, 255, 255, 0.04);
-        border-color: rgba(255, 255, 255, 0.16);
+        color: #e9eef8;
+        background:
+          linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.075),
+            rgba(255, 255, 255, 0.025)
+          );
+        border-color: rgba(255, 255, 255, 0.13);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.04),
+          0 10px 24px rgba(0, 0, 0, 0.16);
+      }
+
+      .toolbar-button--ghost:hover {
+        border-color: rgba(85, 216, 255, 0.34);
+        background:
+          linear-gradient(
+            145deg,
+            rgba(85, 216, 255, 0.1),
+            rgba(255, 255, 255, 0.035)
+          );
       }
 
       .toolbar-button--primary,
       .primary-button {
-        color: #0a1020;
-        background: linear-gradient(135deg, ${GOLD}, ${GOLD_SOFT});
-        border-color: rgba(255, 255, 255, 0.22);
+        color: #08101f;
+        background:
+          linear-gradient(135deg, #f5b914 0%, #ffd45f 58%, #f7b51a 100%);
+        border-color: rgba(255, 255, 255, 0.28);
         box-shadow:
-          0 10px 26px rgba(245, 189, 33, 0.22),
-          inset 0 1px 0 rgba(255, 255, 255, 0.35);
+          0 14px 34px rgba(245, 185, 20, 0.23),
+          inset 0 1px 0 rgba(255, 255, 255, 0.46);
+      }
+
+      .toolbar-button--primary:hover,
+      .primary-button:hover {
+        box-shadow:
+          0 18px 42px rgba(245, 185, 20, 0.3),
+          inset 0 1px 0 rgba(255, 255, 255, 0.5);
+      }
+
+      .toolbar-button__back-icon,
+      .toolbar-button__icon {
+        width: 30px;
+        height: 30px;
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 950;
+      }
+
+      .toolbar-button__back-icon {
+        color: ${CYAN};
+        background: rgba(85, 216, 255, 0.08);
+        border: 1px solid rgba(85, 216, 255, 0.18);
       }
 
       .toolbar-button__icon {
-        width: 23px;
-        height: 23px;
-        display: grid;
-        place-items: center;
         color: ${GOLD};
         background: ${NAVY};
-        border-radius: 7px;
-        font-size: 13px;
+        border: 1px solid rgba(5, 11, 29, 0.62);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
       }
 
       .preview-canvas {
@@ -2414,9 +2515,14 @@ function ExposeStyles() {
 
       @media (max-width: 850px) {
         .preview-toolbar {
+          padding: 14px 10px 0;
+        }
+
+        .preview-toolbar__card {
           grid-template-columns: 1fr;
-          gap: 12px;
-          padding: 14px;
+          gap: 14px;
+          padding: 16px;
+          border-radius: 18px;
         }
 
         .preview-toolbar__middle {
@@ -2425,7 +2531,7 @@ function ExposeStyles() {
 
         .preview-toolbar__actions {
           display: grid;
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: 0.9fr 1.1fr;
         }
 
         .toolbar-button {
