@@ -601,13 +601,13 @@ export default function ExposePreviewPage() {
   return (
     <>
       <header className="preview-toolbar">
-        <BrandMark />
-
         <div className="preview-toolbar__middle">
           <span className="preview-status-dot" />
           <div>
             <strong>Exposé-Vorschau</strong>
-            <span>Phase 1 · Dynamisch aus Objektdaten</span>
+            <span>
+              {listing.propertyType} · {place || listing.location}
+            </span>
           </div>
         </div>
 
@@ -1046,26 +1046,26 @@ function ExposeStyles() {
       }
 
       .preview-toolbar {
-        position: sticky;
-        top: 0;
-        z-index: 50;
-        min-height: 84px;
-        padding: 13px clamp(18px, 4vw, 52px);
+        position: relative;
+        z-index: 40;
+        min-height: 72px;
+        padding: 11px clamp(18px, 4vw, 52px);
         display: grid;
-        grid-template-columns: 1fr auto 1fr;
+        grid-template-columns: minmax(0, 1fr) auto;
         align-items: center;
         gap: 22px;
         background:
           linear-gradient(
             90deg,
-            rgba(5, 11, 29, 0.98),
-            rgba(11, 23, 51, 0.98)
+            rgba(5, 11, 29, 0.96),
+            rgba(11, 23, 51, 0.96)
           );
-        border-bottom: 1px solid rgba(245, 189, 33, 0.42);
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid rgba(245, 189, 33, 0.34);
         box-shadow:
-          0 20px 50px rgba(0, 0, 0, 0.35),
-          0 0 26px rgba(245, 189, 33, 0.08);
-        backdrop-filter: blur(22px);
+          0 16px 38px rgba(0, 0, 0, 0.28),
+          0 0 22px rgba(245, 189, 33, 0.06);
+        backdrop-filter: blur(20px);
       }
 
       .brand-mark {
@@ -1157,9 +1157,10 @@ function ExposeStyles() {
       }
 
       .preview-toolbar__middle {
+        min-width: 0;
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         gap: 10px;
       }
 
@@ -2413,16 +2414,16 @@ function ExposeStyles() {
 
       @media (max-width: 850px) {
         .preview-toolbar {
-          position: static;
-          grid-template-columns: 1fr auto;
+          grid-template-columns: 1fr;
+          gap: 12px;
+          padding: 14px;
         }
 
         .preview-toolbar__middle {
-          display: none;
+          display: flex;
         }
 
         .preview-toolbar__actions {
-          grid-column: 1 / 3;
           display: grid;
           grid-template-columns: 1fr 1fr;
         }
