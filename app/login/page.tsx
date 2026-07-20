@@ -116,37 +116,40 @@ if (reset === "success") {
         }),
       });
 
-      const responseText = await response.text();
+          const responseText = await response.text();
 
-      let data: LoginResponse;
+      let data: LoginResponse = {};
 
       try {
         data = responseText ? JSON.parse(responseText) : {};
       } catch {
-        throw new Error(
-          responseText ||
-            "Die Anmeldung hat keine gÃ¼ltige Antwort geliefert."
+        setMessage(
+          "Die Anmeldung hat keine gültige Antwort geliefert."
         );
+        return;
       }
 
       if (!response.ok) {
         if (data.code === "EMAIL_NOT_VERIFIED") {
-          throw new Error(
+          setMessage(
             data.error ||
-              "Bitte bestÃ¤tige zuerst deine E-Mail-Adresse."
+              "Bitte bestätige zuerst deine E-Mail-Adresse."
           );
+          return;
         }
 
-        throw new Error(
+        setMessage(
           data.error ||
-            `Anmeldung fehlgeschlagen â€“ HTTP ${response.status}`
+            `Anmeldung fehlgeschlagen – HTTP ${response.status}`
         );
+        return;
       }
 
       if (!data.user?.email) {
-        throw new Error(
+        setMessage(
           "Die Benutzerdaten konnten nicht geladen werden."
         );
+        return;
       }
 
       const loginExpiresAt =
