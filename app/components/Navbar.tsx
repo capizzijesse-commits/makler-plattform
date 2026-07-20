@@ -29,15 +29,22 @@ const menuItems: MenuItem[] = [
     href: "/dashboard",
     accent: "orange",
   },
-  {
-    label: "Makler-Cockpit",
-    description: "Objekte dauerhaft verwalten",
-    icon: "🏠",
-    href: "/cockpit",
-    accent: "blue",
-  },
-  {
-    label: "Social Media",
+ {
+  label: "Makler-Cockpit",
+  description: "Objekte dauerhaft verwalten",
+  icon: "🏠",
+  href: "/cockpit",
+  accent: "blue",
+},
+{
+  label: "Mein Konto",
+  description: "Kontaktdaten für Exposés verwalten",
+  icon: "👤",
+  href: "/konto",
+  accent: "gold",
+},
+{
+  label: "Social Media",
     description: "Beiträge pro Objekt vorbereiten",
     icon: "📱",
     href: "/dashboard/social-media",
@@ -129,7 +136,8 @@ export default function Navbar() {
  const isLoggedInArea =
   pathname?.startsWith("/dashboard") ||
   pathname?.startsWith("/cockpit") ||
-  pathname?.startsWith("/expose");
+  pathname?.startsWith("/expose") ||
+  pathname?.startsWith("/konto");
 
   const moduleClass = getModuleClass(pathname);
   const planLabel = getPlanLabel(userPlan);
