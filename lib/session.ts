@@ -45,11 +45,12 @@ export async function getAuthenticatedUser(request: NextRequest) {
     include: {
       user: {
         select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          plan: true,
+         id: true,
+name: true,
+email: true,
+company: true,
+phone: true,
+role: true,
           emailVerified: true,
           isFounder: true,
           founderNumber: true,
