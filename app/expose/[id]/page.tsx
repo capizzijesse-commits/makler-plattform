@@ -1,2078 +1,1810 @@
 "use client";
 
-// TOUR_STUDIO_WORKSPACE_UPGRADE_2026_07_18
-
-import Link from "next/link";
-import type { KeyboardEvent, ReactNode } from "react";
-import {
-  ChangeEvent,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-
-type TourSection = {
-  room: string;
-  title: string;
-  audioText: string;
-  videoText: string;
-};
-
-type SessionResponse = {
-  success?: boolean;
-  authenticated?: boolean;
-  user?: {
-    plan?: string;
-    capabilities?: {
-      canUseTourGuide?: boolean;
-    };
-  };
-};
+import { useEffect, useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 
 type ListingImage = {
   id: string;
   url: string;
+  fileName?: string | null;
   position: number;
   isPrimary: boolean;
-  fileName?: string | null;
 };
 
-type TourListing = {
+type Listing = {
   id: string;
   location: string;
+  postalCode?: string | null;
   propertyType: string;
-  rooms: number | null;
-  livingArea: number | null;
-  price: number | null;
-  highlights: string | null;
-  style: string | null;
+  rooms?: number | null;
+  livingArea?: number | null;
+  price?: number | null;
+  highlights?: string | null;
+  style?: string | null;
+  generatedVariants?: unknown;
+  socialVariants?: unknown;
+  imageAnalysis?: string | null;
+  archivedAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
   images?: ListingImage[];
 };
 
-type ListingResponse = {
-  success?: boolean;
-  listing?: TourListing;
-  error?: string;
-};
-
-type VoiceId =
-  | "marin"
-  | "coral"
-  | "shimmer"
-  | "cedar"
-  | "onyx"
-  | "echo";
-
-type VoiceProfile = {
-  id: VoiceId;
+type ContactDetails = {
   name: string;
-  group: "Frauenstimmen" | "Männerstimmen";
-  tone: string;
-  description: string;
-  featured?: boolean;
+  company: string;
+  email: string;
+  phone: string;
 };
 
-type AudioStatus = "idle" | "loading" | "playing" | "paused";
-type CameraStyle = "calm" | "dynamic";
+type TextVariant = {
+  title?: string;
+  text?: string;
+  description?: string;
+  content?: string;
+};
 
-const DEFAULT_ROOMS = [
-  "Eingang",
-  "Wohnzimmer",
-  "Küche",
-  "Schlafzimmer",
-  "Badezimmer",
-  "Balkon / Terrasse",
-];
+const NAVY = "#07182f";
+const NAVY_SOFT = "#102746";
+const GOLD = "#c9a454";
+const PAPER = "#ffffff";
+const INK = "#172033";
+const MUTED = "#657187";
+const PAGE_BACKGROUND = "#e9edf3";
 
-const VOICE_PROFILES: VoiceProfile[] = [
-  {
-    id: "marin",
-    name: "Lea",
-    group: "Frauenstimmen",
-    tone: "Warm & natürlich",
-    description: "Ruhig, hochwertig und sehr angenehm für längere Touren.",
-    featured: true,
-  },
-  {
-    id: "coral",
-    name: "Nora",
-    group: "Frauenstimmen",
-    tone: "Freundlich & klar",
-    description: "Sympathisch, modern und gut verständlich.",
-  },
-  {
-    id: "shimmer",
-    name: "Sofia",
-    group: "Frauenstimmen",
-    tone: "Sanft & elegant",
-    description: "Weich, ruhig und passend für exklusive Immobilien.",
-  },
-  {
-    id: "cedar",
-    name: "Luca",
-    group: "Männerstimmen",
-    tone: "Ruhig & souverän",
-    description: "Natürlich, vertrauenswürdig und professionell.",
-    featured: true,
-  },
-  {
-    id: "onyx",
-    name: "Marco",
-    group: "Männerstimmen",
-    tone: "Tief & hochwertig",
-    description: "Kräftig, ruhig und ideal für repräsentative Objekte.",
-  },
-  {
-    id: "echo",
-    name: "Jonas",
-    group: "Männerstimmen",
-    tone: "Klar & modern",
-    description: "Direkt, freundlich und gut für kompakte Rundgänge.",
-  },
-];
-
-const SCENE_DURATIONS = [5, 8, 12];
-
-function formatPrice(value: string) {
-  const digits = value.replace(/[^0-9]/g, "");
-
-  if (!digits) {
-    return value;
-  }
-
-  return new Intl.NumberFormat("de-CH").format(Number(digits));
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }
 
-export default function TourGuidePage() {
-  const [location, setLocation] = useState("Winterthur");
-  const [propertyType, setPropertyType] = useState("Wohnung");
-  const [rooms, setRooms] = useState("4.5");
-  const [livingArea, setLivingArea] = useState("112");
-  const [price, setPrice] = useState("1'450'000");
-  const [styleText, setStyleText] = useState(
-    "hochwertig, modern und einladend"
-  );
-  const [highlights, setHighlights] = useState(
-    "Balkon, offene Küche, Parkettboden, ruhige Lage"
-  );
-  const [selectedRooms, setSelectedRooms] =
-    useState<string[]>(DEFAULT_ROOMS);
-  const [customRoom, setCustomRoom] = useState("");
-  const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [videoPreview, setVideoPreview] = useState("");
-  const [tourSections, setTourSections] = useState<TourSection[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [accessStatus, setAccessStatus] = useState<
-    "checking" | "allowed" | "blocked"
-  >("checking");
-  const [sourceListingId, setSourceListingId] =
-    useState<string | null>(null);
-  const [listingImages, setListingImages] = useState<ListingImage[]>([]);
-  const [listingLoadError, setListingLoadError] = useState("");
-  const [activeSceneIndex, setActiveSceneIndex] = useState(0);
-  const [isTourPlaying, setIsTourPlaying] = useState(false);
-  const [sceneDuration, setSceneDuration] = useState(8);
-  const [cameraStyle, setCameraStyle] = useState<CameraStyle>("calm");
-  const [showSceneOverlay, setShowSceneOverlay] = useState(true);
-  const [autoAdvance, setAutoAdvance] = useState(true);
-  const [selectedVoice, setSelectedVoice] = useState<VoiceId>("marin");
-  const [audioStatus, setAudioStatus] = useState<AudioStatus>("idle");
-  const [activeAudioKey, setActiveAudioKey] = useState<string | null>(null);
-  const [audioError, setAudioError] = useState("");
+function readText(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioCacheRef = useRef<Map<string, string>>(new Map());
-  const generatedAudioUrlsRef = useRef<Set<string>>(new Set());
-  const audioRequestIdRef = useRef(0);
-  const videoPreviewRef = useRef("");
+function collectTextVariants(value: unknown): TextVariant[] {
+  if (Array.isArray(value)) {
+    return value
+      .filter(isRecord)
+      .map((item) => ({
+        title: readText(item.title),
+        text: readText(item.text),
+        description: readText(item.description),
+        content: readText(item.content),
+      }));
+  }
+
+  if (!isRecord(value)) {
+    return [];
+  }
+
+  const directVariant: TextVariant = {
+    title: readText(value.title),
+    text: readText(value.text),
+    description: readText(value.description),
+    content: readText(value.content),
+  };
+
+  const nestedCandidates = [
+    value.variants,
+    value.generatedVariants,
+    value.results,
+    value.items,
+  ];
+
+  const nestedVariants = nestedCandidates.flatMap((candidate) =>
+    collectTextVariants(candidate)
+  );
+
+  const hasDirectText = Object.values(directVariant).some(Boolean);
+
+  return hasDirectText ? [directVariant, ...nestedVariants] : nestedVariants;
+}
+
+function getExposeTitle(listing: Listing): string {
+  const variants = collectTextVariants(listing.generatedVariants);
+  const generatedTitle = variants.find((variant) => variant.title)?.title;
+
+  if (generatedTitle) {
+    return generatedTitle;
+  }
+
+  const place = [listing.postalCode, listing.location]
+    .filter(Boolean)
+    .join(" ");
+
+  return `${listing.propertyType} in ${place || listing.location}`.trim();
+}
+
+function getDescription(listing: Listing): string {
+  if (typeof listing.generatedVariants === "string") {
+    const text = listing.generatedVariants.trim();
+
+    if (text) {
+      return text;
+    }
+  }
+
+  const variants = collectTextVariants(listing.generatedVariants);
+
+  for (const variant of variants) {
+    const text =
+      variant.text || variant.description || variant.content || "";
+
+    if (text) {
+      return text;
+    }
+  }
+
+  return [
+    `Dieses ${listing.propertyType.toLowerCase()} befindet sich in ${
+      listing.location
+    }.`,
+    listing.rooms
+      ? `Die Immobilie verfügt über ${formatNumber(listing.rooms)} Zimmer.`
+      : "",
+    listing.livingArea
+      ? `Die Wohnfläche beträgt rund ${formatNumber(
+          listing.livingArea
+        )} m².`
+      : "",
+    "Weitere Angaben können direkt im Objekt ergänzt und anschliessend im Exposé übernommen werden.",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function splitHighlights(value?: string | null): string[] {
+  if (!value) {
+    return [];
+  }
+
+  return Array.from(
+    new Set(
+      value
+        .split(/\r?\n|,|;|•|\|/g)
+        .map((item) => item.trim().replace(/^[-–—]\s*/, ""))
+        .filter(Boolean)
+    )
+  );
+}
+
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat("de-CH", {
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
+function formatPrice(value?: number | null): string {
+  if (value === null || value === undefined) {
+    return "Auf Anfrage";
+  }
+
+  return `CHF ${new Intl.NumberFormat("de-CH", {
+    maximumFractionDigits: 0,
+  }).format(value)}`;
+}
+
+function formatDate(value?: string): string {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("de-CH", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
+function getInitialContact(): ContactDetails {
+  if (typeof window === "undefined") {
+    return {
+      name: "",
+      company: "",
+      email: "",
+      phone: "",
+    };
+  }
+
+  return {
+    name:
+      localStorage.getItem("userName")?.trim() ||
+      localStorage.getItem("contactName")?.trim() ||
+      "",
+    company:
+      localStorage.getItem("companyName")?.trim() ||
+      localStorage.getItem("userCompany")?.trim() ||
+      "",
+    email:
+      localStorage.getItem("userEmail")?.trim() ||
+      localStorage.getItem("contactEmail")?.trim() ||
+      "",
+    phone:
+      localStorage.getItem("userPhone")?.trim() ||
+      localStorage.getItem("contactPhone")?.trim() ||
+      "",
+  };
+}
+
+function ImagePlaceholder({
+  label = "Noch kein Objektbild vorhanden",
+}: {
+  label?: string;
+}) {
+  return (
+    <div className="image-placeholder">
+      <div className="image-placeholder__mark">IA</div>
+      <span>{label}</span>
+    </div>
+  );
+}
+
+function SectionTitle({
+  eyebrow,
+  title,
+}: {
+  eyebrow: string;
+  title: string;
+}) {
+  return (
+    <div className="section-heading">
+      <span>{eyebrow}</span>
+      <h2>{title}</h2>
+      <div aria-hidden="true" />
+    </div>
+  );
+}
+
+function DataItem({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="data-item">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+export default function ExposePreviewPage() {
+  const params = useParams<{ id: string }>();
+  const router = useRouter();
+
+  const listingId = Array.isArray(params?.id) ? params.id[0] : params?.id;
+
+  const [listing, setListing] = useState<Listing | null>(null);
+  const [contact, setContact] = useState<ContactDetails>({
+    name: "",
+    company: "",
+    email: "",
+    phone: "",
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [printing, setPrinting] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function checkAccess() {
-      try {
-        const response = await fetch("/api/session", {
-          method: "GET",
-          credentials: "include",
-          cache: "no-store",
-        });
-
-        if (response.status === 401) {
-          window.location.href = "/login";
-          return;
-        }
-
-        const data = (await response.json()) as SessionResponse;
-
-        if (cancelled) {
-          return;
-        }
-
-        const hasAccess =
-          data.authenticated === true &&
-          data.user?.capabilities?.canUseTourGuide === true;
-
-        setAccessStatus(hasAccess ? "allowed" : "blocked");
-      } catch (error) {
-        console.error("TOUR GUIDE ACCESS ERROR:", error);
-
-        if (!cancelled) {
-          setAccessStatus("blocked");
-        }
-      }
-    }
-
-    void checkAccess();
-
-    return () => {
-      cancelled = true;
-    };
+    setContact(getInitialContact());
   }, []);
 
   useEffect(() => {
-    const listingIdParam = new URLSearchParams(window.location.search).get(
-      "listingId"
-    );
-
-    if (!listingIdParam) {
+    if (!listingId) {
+      setError("Es wurde keine Objekt-ID übergeben.");
+      setLoading(false);
       return;
     }
 
-    const listingId = listingIdParam;
-    setSourceListingId(listingId);
-
     const controller = new AbortController();
 
-    async function loadListingForTour() {
+    async function loadListing() {
       try {
-        setListingLoadError("");
+        setLoading(true);
+        setError("");
 
         const response = await fetch(
           `/api/listings/${encodeURIComponent(listingId)}`,
           {
             method: "GET",
-            credentials: "include",
             cache: "no-store",
+            credentials: "include",
             signal: controller.signal,
           }
         );
 
-        if (response.status === 401) {
-          window.location.href = "/login";
-          return;
-        }
+        const data = (await response.json().catch(() => null)) as
+          | {
+              success?: boolean;
+              listing?: Listing;
+              error?: string;
+            }
+          | null;
 
-        const data = (await response.json()) as ListingResponse;
-
-        if (!response.ok || !data.success || !data.listing) {
+        if (!response.ok || !data?.listing) {
           throw new Error(
-            data.error ||
-              "Das Objekt konnte nicht für die 3D-Tour geladen werden."
+            data?.error || "Das Objekt konnte nicht geladen werden."
           );
         }
 
-        const listing = data.listing;
-
-        setLocation(listing.location || "");
-        setPropertyType(listing.propertyType || "");
-        setRooms(listing.rooms !== null ? String(listing.rooms) : "");
-        setLivingArea(
-          listing.livingArea !== null ? String(listing.livingArea) : ""
-        );
-        setPrice(listing.price !== null ? String(listing.price) : "");
-        setHighlights(listing.highlights || "");
-        setStyleText(listing.style || "");
-
-        const sortedImages = [...(listing.images ?? [])].sort(
-          (firstImage, secondImage) => {
-            if (firstImage.isPrimary !== secondImage.isPrimary) {
-              return firstImage.isPrimary ? -1 : 1;
-            }
-
-            return firstImage.position - secondImage.position;
-          }
-        );
-
-        setListingImages(sortedImages);
-      } catch (error) {
-        if (error instanceof Error && error.name === "AbortError") {
+        setListing(data.listing);
+      } catch (loadError) {
+        if (
+          loadError instanceof DOMException &&
+          loadError.name === "AbortError"
+        ) {
           return;
         }
 
-        setListingLoadError(
-          error instanceof Error
-            ? error.message
+        setError(
+          loadError instanceof Error
+            ? loadError.message
             : "Das Objekt konnte nicht geladen werden."
         );
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     }
 
-    void loadListingForTour();
+    loadListing();
 
     return () => {
       controller.abort();
     };
-  }, []);
+  }, [listingId]);
 
-  useEffect(() => {
-    const listingId = new URLSearchParams(window.location.search).get(
-      "listingId"
-    );
-
-    if (listingId) {
-      return;
+  const sortedImages = useMemo(() => {
+    if (!listing?.images?.length) {
+      return [];
     }
 
-    const savedDraft = localStorage.getItem("inseratAiSocialDraft");
-
-    if (!savedDraft) {
-      return;
-    }
-
-    try {
-      const data = JSON.parse(savedDraft) as Record<string, unknown>;
-
-      if (typeof data.location === "string") setLocation(data.location);
-      if (typeof data.propertyType === "string") {
-        setPropertyType(data.propertyType);
-      }
-      if (typeof data.rooms === "string") setRooms(data.rooms);
-      if (typeof data.livingArea === "string") {
-        setLivingArea(data.livingArea);
-      }
-      if (typeof data.price === "string") setPrice(data.price);
-      if (typeof data.highlights === "string") {
-        setHighlights(data.highlights);
-      }
-      if (typeof data.styleText === "string") {
-        setStyleText(data.styleText);
-      }
-    } catch {
-      console.log("Keine gespeicherten Objektdaten gefunden.");
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!isTourPlaying || !autoAdvance || listingImages.length <= 1) {
-      return;
-    }
-
-    const intervalId = window.setInterval(() => {
-      setActiveSceneIndex((currentIndex) =>
-        currentIndex >= listingImages.length - 1 ? 0 : currentIndex + 1
-      );
-    }, sceneDuration * 1000);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, [autoAdvance, isTourPlaying, listingImages.length, sceneDuration]);
-
-  useEffect(() => {
-    if (listingImages.length === 0) {
-      setActiveSceneIndex(0);
-      setIsTourPlaying(false);
-      return;
-    }
-
-    if (activeSceneIndex >= listingImages.length) {
-      setActiveSceneIndex(0);
-    }
-  }, [activeSceneIndex, listingImages.length]);
-
-  useEffect(() => {
-    stopGeneratedAudio();
-  }, [selectedVoice]);
-
-  useEffect(() => {
-    videoPreviewRef.current = videoPreview;
-  }, [videoPreview]);
-
-  useEffect(() => {
-    return () => {
-      audioRequestIdRef.current += 1;
-      audioRef.current?.pause();
-
-      for (const url of generatedAudioUrlsRef.current) {
-        URL.revokeObjectURL(url);
+    return [...listing.images].sort((a, b) => {
+      if (a.isPrimary !== b.isPrimary) {
+        return a.isPrimary ? -1 : 1;
       }
 
-      if (videoPreviewRef.current) {
-        URL.revokeObjectURL(videoPreviewRef.current);
-      }
-    };
-  }, []);
+      return a.position - b.position;
+    });
+  }, [listing]);
 
-  const highlightList = useMemo(() => {
-    return highlights
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-  }, [highlights]);
+  const primaryImage = sortedImages[0] ?? null;
+  const galleryImages = sortedImages.slice(1, 7);
+  const highlights = useMemo(
+    () => splitHighlights(listing?.highlights),
+    [listing?.highlights]
+  );
 
-  const activeTourImage = listingImages[activeSceneIndex] ?? null;
-
-  const selectedVoiceProfile = useMemo(() => {
-    return (
-      VOICE_PROFILES.find((voice) => voice.id === selectedVoice) ??
-      VOICE_PROFILES[0]
-    );
-  }, [selectedVoice]);
-
-  const fullTourAudioText = useMemo(() => {
-    return tourSections.map((section) => section.audioText).join("\n\n");
-  }, [tourSections]);
-
-  const productionChecks = [
-    {
-      label: "Objektdaten",
-      ready: Boolean(location.trim() && propertyType.trim()),
-      detail: location.trim() && propertyType.trim()
-        ? `${propertyType} in ${location}`
-        : "Ort und Objektart ergänzen",
-    },
-    {
-      label: "Objektbilder",
-      ready: listingImages.length > 0,
-      detail: listingImages.length > 0
-        ? `${listingImages.length} Szenen bereit`
-        : "Mindestens ein Bild erforderlich",
-    },
-    {
-      label: "Räume",
-      ready: selectedRooms.length > 0,
-      detail: selectedRooms.length > 0
-        ? `${selectedRooms.length} Räume ausgewählt`
-        : "Räume für die Tour wählen",
-    },
-    {
-      label: "AI-Stimme",
-      ready: Boolean(selectedVoiceProfile),
-      detail: `${selectedVoiceProfile.name} · ${selectedVoiceProfile.tone}`,
-    },
-    {
-      label: "Drehbuch",
-      ready: tourSections.length > 0,
-      detail: tourSections.length > 0
-        ? `${tourSections.length} Szenen produziert`
-        : "Tour noch nicht erstellt",
-    },
-  ];
-
-  const completedProductionSteps = productionChecks.filter(
-    (item) => item.ready
-  ).length;
-
-  function showPreviousTourScene() {
-    if (listingImages.length <= 1) {
+  function goBack() {
+    if (window.history.length > 1) {
+      router.back();
       return;
     }
 
-    setActiveSceneIndex((currentIndex) =>
-      currentIndex === 0 ? listingImages.length - 1 : currentIndex - 1
-    );
+    router.push("/dashboard");
   }
 
-  function showNextTourScene() {
-    if (listingImages.length <= 1) {
-      return;
-    }
-
-    setActiveSceneIndex((currentIndex) =>
-      currentIndex >= listingImages.length - 1 ? 0 : currentIndex + 1
-    );
-  }
-
-  function toggleRoom(room: string) {
-    setSelectedRooms((current) =>
-      current.includes(room)
-        ? current.filter((item) => item !== room)
-        : [...current, room]
-    );
-  }
-
-  function addCustomRoom() {
-    const room = customRoom.trim();
-
-    if (!room || selectedRooms.includes(room)) {
-      return;
-    }
-
-    setSelectedRooms((current) => [...current, room]);
-    setCustomRoom("");
-  }
-
-  function handleVideoUpload(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    if (videoPreview) {
-      URL.revokeObjectURL(videoPreview);
-    }
-
-    setVideoFile(file);
-    setVideoPreview(URL.createObjectURL(file));
-  }
-
-  function getVideoInstruction(room: string) {
-    const lowerRoom = room.toLowerCase();
-
-    if (lowerRoom.includes("eingang")) {
-      return "Beginne mit einer ruhigen Aufnahme der Eingangssituation. Zeige kurz den ersten Eindruck, den Übergang in die Wohnung und führe langsam in den nächsten Raum.";
-    }
-
-    if (lowerRoom.includes("wohn")) {
-      return "Schwenke langsam vom Eingang des Wohnzimmers Richtung Fenster. Zeige danach Details wie Boden, Licht, Raumtiefe und den Übergang zu Balkon oder Essbereich.";
-    }
-
-    if (lowerRoom.includes("küche") || lowerRoom.includes("kueche")) {
-      return "Zeige zuerst die gesamte Küche. Danach langsam über Arbeitsfläche, Geräte, Stauraum und Verbindung zum Wohnbereich filmen.";
-    }
-
-    if (lowerRoom.includes("schlaf")) {
-      return "Filme ruhig vom Eingang Richtung Fenster. Zeige Stellfläche, Licht und die Rückzugsatmosphäre dieses Raumes.";
-    }
-
-    if (lowerRoom.includes("bad")) {
-      return "Zeige zuerst das Badezimmer als Ganzes. Danach Details wie Dusche, Badewanne, Armaturen, Platten oder Tageslicht aufnehmen.";
-    }
-
-    if (
-      lowerRoom.includes("balkon") ||
-      lowerRoom.includes("terrasse") ||
-      lowerRoom.includes("garten")
-    ) {
-      return "Filme den Weg von innen nach aussen. Zeige die nutzbare Fläche, Privatsphäre, Aussicht und mögliche Möblierung.";
-    }
-
-    return "Beginne mit einer ruhigen Gesamtaufnahme. Danach die wichtigsten Details aus zwei Perspektiven zeigen.";
-  }
-
-  function generateTourGuide() {
-    setLoading(true);
-    stopGeneratedAudio();
+  function exportPdf() {
+    setPrinting(true);
 
     window.setTimeout(() => {
-      const intro: TourSection = {
-        room: "Begrüssung",
-        title: `Willkommen zur Besichtigung in ${location}`,
-        audioText: `Willkommen in dieser ${rooms}-Zimmer-${propertyType} in ${location}. Diese digitale Besichtigung führt Sie Schritt für Schritt durch das Objekt. Achten Sie besonders auf ${
-          highlightList.slice(0, 3).join(", ") ||
-          "die wichtigsten Eigenschaften dieser Immobilie"
-        }. Nehmen Sie sich Zeit und erleben Sie die Räume in Ruhe.${
-          videoFile
-            ? " Zusätzlich wurde ein Video-Rundgang hochgeladen. Das Drehbuch ist deshalb auch als Video-Szenenplan für Makleraufnahmen vorbereitet."
-            : ""
-        }`,
-        videoText:
-          "Video-Intro: Starte mit einer ruhigen Aussenaufnahme oder dem Eingang. Danach kurz das Gebäude, den Zugang oder den ersten Eindruck zeigen. Die Aufnahme sollte hochwertig, ruhig und professionell wirken.",
-      };
-
-      const roomSections: TourSection[] = selectedRooms.map(
-        (room, index) => {
-          const roomHighlight =
-            highlightList[index % Math.max(highlightList.length, 1)] ||
-            "die angenehme Raumwirkung";
-
-          return {
-            room,
-            title: `${room} erleben`,
-            audioText: `Sie befinden sich jetzt im Bereich ${room}. Dieser Teil der Immobilie unterstreicht den ${styleText}en Charakter des Objekts. Besonders hervorzuheben ist ${roomHighlight}. Die Wohnfläche von ca. ${livingArea} m² bietet eine gute Grundlage für komfortables Wohnen. Achten Sie beim Rundgang auf Atmosphäre, Lichtverhältnisse und Nutzungsmöglichkeiten.`,
-            videoText: `Video-Szene: ${getVideoInstruction(room)}`,
-          };
-        }
-      );
-
-      const outro: TourSection = {
-        room: "Abschluss",
-        title: "Ihr nächster Schritt",
-        audioText: `Damit endet die digitale Besichtigung dieser ${propertyType} in ${location}. Wenn Sie sich vorstellen können, hier zu wohnen oder das Objekt näher prüfen möchten, empfehlen wir eine persönliche Besichtigung oder ein Gespräch mit dem zuständigen Makler. Preisangabe: ${
-          price || "auf Anfrage"
-        }.`,
-        videoText:
-          "Video-Abschluss: Zeige nochmals den stärksten Bereich der Immobilie, zum Beispiel Wohnzimmer, Aussicht, Terrasse oder Eingang. Danach mit einer ruhigen Schlussaufnahme enden.",
-      };
-
-      setTourSections([intro, ...roomSections, outro]);
-      setLoading(false);
-    }, 350);
+      window.print();
+      setPrinting(false);
+    }, 150);
   }
 
-  async function copyText(text: string) {
-    await navigator.clipboard.writeText(text);
-    window.alert("Text wurde kopiert.");
-  }
-
-  async function copyFullTour() {
-    const fullText = tourSections
-      .map(
-        (section) =>
-          `${section.title}\n\nAudio-Text:\n${section.audioText}\n\nVideo-Drehbuch:\n${section.videoText}`
-      )
-      .join("\n\n---\n\n");
-
-    await navigator.clipboard.writeText(fullText);
-    window.alert("Komplettes Drehbuch wurde kopiert.");
-  }
-
-  function getAudioCacheKey(text: string) {
-    return `${selectedVoice}:${text}`;
-  }
-
-  async function createGeneratedAudioUrl(text: string) {
-    const cacheKey = getAudioCacheKey(text);
-    const cachedUrl = audioCacheRef.current.get(cacheKey);
-
-    if (cachedUrl) {
-      return cachedUrl;
-    }
-
-    const response = await fetch("/api/tour-speech", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        text,
-        voice: selectedVoice,
-      }),
-    });
-
-    if (!response.ok) {
-      let message = "Die AI-Stimme konnte nicht erzeugt werden.";
-
-      try {
-        const data = (await response.json()) as { error?: string };
-        message = data.error || message;
-      } catch {
-        // Die Antwort war keine JSON-Fehlermeldung.
-      }
-
-      throw new Error(message);
-    }
-
-    const audioBlob = await response.blob();
-    const audioUrl = URL.createObjectURL(audioBlob);
-
-    audioCacheRef.current.set(cacheKey, audioUrl);
-    generatedAudioUrlsRef.current.add(audioUrl);
-
-    return audioUrl;
-  }
-
-  async function playGeneratedAudio(text: string, audioKey: string) {
-    const requestId = audioRequestIdRef.current + 1;
-    audioRequestIdRef.current = requestId;
-
-    stopGeneratedAudio(false);
-    setActiveAudioKey(audioKey);
-    setAudioStatus("loading");
-    setAudioError("");
-
-    try {
-      const audioUrl = await createGeneratedAudioUrl(text);
-
-      if (audioRequestIdRef.current !== requestId) {
-        return;
-      }
-
-      const audio = new Audio(audioUrl);
-      audio.preload = "auto";
-
-      audio.onplay = () => setAudioStatus("playing");
-      audio.onpause = () => {
-        if (!audio.ended && audio.currentTime > 0) {
-          setAudioStatus("paused");
-        }
-      };
-      audio.onended = () => {
-        setAudioStatus("idle");
-        setActiveAudioKey(null);
-        audioRef.current = null;
-      };
-      audio.onerror = () => {
-        setAudioStatus("idle");
-        setActiveAudioKey(null);
-        setAudioError("Die Audiodatei konnte nicht abgespielt werden.");
-        audioRef.current = null;
-      };
-
-      audioRef.current = audio;
-      await audio.play();
-    } catch (error) {
-      if (audioRequestIdRef.current !== requestId) {
-        return;
-      }
-
-      setAudioStatus("idle");
-      setActiveAudioKey(null);
-      setAudioError(
-        error instanceof Error
-          ? error.message
-          : "Die AI-Stimme konnte nicht erzeugt werden."
-      );
-    }
-  }
-
-  function pauseGeneratedAudio() {
-    const audio = audioRef.current;
-
-    if (!audio || audio.paused) {
-      return;
-    }
-
-    audio.pause();
-    setAudioStatus("paused");
-  }
-
-  async function resumeGeneratedAudio() {
-    const audio = audioRef.current;
-
-    if (!audio) {
-      return;
-    }
-
-    try {
-      await audio.play();
-      setAudioStatus("playing");
-    } catch {
-      setAudioError("Die Wiedergabe konnte nicht fortgesetzt werden.");
-    }
-  }
-
-  function stopGeneratedAudio(cancelPendingRequest = true) {
-    if (cancelPendingRequest) {
-      audioRequestIdRef.current += 1;
-    }
-
-    const audio = audioRef.current;
-
-    if (audio) {
-      audio.pause();
-      audio.currentTime = 0;
-      audio.onplay = null;
-      audio.onpause = null;
-      audio.onended = null;
-      audio.onerror = null;
-    }
-
-    audioRef.current = null;
-    setAudioStatus("idle");
-    setActiveAudioKey(null);
-  }
-
-  async function downloadGeneratedAudio(
-    text: string,
-    fileName: string,
-    audioKey: string
-  ) {
-    stopGeneratedAudio();
-    setAudioError("");
-    setActiveAudioKey(audioKey);
-    setAudioStatus("loading");
-
-    try {
-      const audioUrl = await createGeneratedAudioUrl(text);
-      const link = document.createElement("a");
-      link.href = audioUrl;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      setAudioStatus("idle");
-      setActiveAudioKey(null);
-    } catch (error) {
-      setAudioStatus("idle");
-      setActiveAudioKey(null);
-      setAudioError(
-        error instanceof Error
-          ? error.message
-          : "Die MP3-Datei konnte nicht erstellt werden."
-      );
-    }
-  }
-
-  function toggleTourPlayback() {
-    setIsTourPlaying((current) => !current);
-  }
-
-  function stopTourPlayback() {
-    setIsTourPlaying(false);
-    setActiveSceneIndex(0);
-  }
-
-  if (accessStatus === "checking") {
+  if (loading) {
     return (
-      <main className="grid min-h-screen place-items-center bg-[#050819] px-6 text-white">
-        <div className="w-full max-w-xl rounded-[2rem] border border-white/10 bg-white/[0.06] p-9 text-center shadow-2xl backdrop-blur-xl">
-          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-white/15 border-t-cyan-300" />
-          <h1 className="mt-6 text-2xl font-black">Zugang wird geprüft</h1>
-          <p className="mt-3 text-slate-300">
-            Inserat-AI lädt deine Pro-Berechtigungen.
-          </p>
+      <main className="status-screen">
+        <div className="status-card">
+          <div className="status-logo">IA</div>
+          <p>Exposé wird vorbereitet …</p>
+          <div className="loading-line" />
         </div>
+        <ExposeStyles />
       </main>
     );
   }
 
-  if (accessStatus === "blocked") {
+  if (error || !listing) {
     return (
-      <main className="grid min-h-screen place-items-center bg-gradient-to-br from-slate-950 via-indigo-950 to-orange-700 px-6 py-12 text-white">
-        <div className="w-full max-w-2xl rounded-[2rem] border border-amber-400/30 bg-slate-950/70 p-8 text-center shadow-2xl backdrop-blur sm:p-12">
-          <div className="text-5xl">🎬</div>
-          <p className="mt-6 text-sm font-black uppercase tracking-[0.25em] text-amber-300">
-            Inserat-AI Pro
-          </p>
-          <h1 className="mt-4 text-3xl font-black sm:text-5xl">
-            Virtual Tour Studio
-          </h1>
-          <p className="mx-auto mt-6 max-w-xl text-base leading-7 text-slate-300 sm:text-lg">
-            Das Audio- und Video-Drehbuch für digitale Immobilienbesichtigungen
-            ist im Pro-Plan für 79.90 CHF pro Monat enthalten.
-          </p>
-          <div className="mt-8 grid gap-3 text-left text-slate-200 sm:grid-cols-2">
-            <FeatureTile text="Raum-für-Raum Audio-Guide" />
-            <FeatureTile text="Realistische AI-Stimmen" />
-            <FeatureTile text="Professioneller Video-Szenenplan" />
-            <FeatureTile text="Vollständiges Makler-Cockpit" />
-          </div>
-          <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link
-              href="/#pricing"
-              className="rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-7 py-4 font-black text-slate-950 shadow-xl transition hover:scale-[1.02]"
-            >
-              Pro für 79.90 CHF ansehen
-            </Link>
-            <Link
-              href="/dashboard"
-              className="rounded-2xl border border-white/15 bg-white/[0.06] px-7 py-4 font-bold text-white"
-            >
-              Zurück zum Dashboard
-            </Link>
-          </div>
+      <main className="status-screen">
+        <div className="status-card status-card--error">
+          <div className="status-logo">IA</div>
+          <h1>Exposé nicht verfügbar</h1>
+          <p>{error || "Das Objekt wurde nicht gefunden."}</p>
+          <button type="button" onClick={goBack}>
+            Zurück zum Makler-Cockpit
+          </button>
         </div>
+        <ExposeStyles />
       </main>
     );
   }
+
+  const title = getExposeTitle(listing);
+  const description = getDescription(listing);
+  const place = [listing.postalCode, listing.location]
+    .filter(Boolean)
+    .join(" ");
+  const creationDate = formatDate(listing.updatedAt || listing.createdAt);
+
+  const featureItems = [
+    listing.style ? `Stil: ${listing.style}` : "",
+    ...highlights,
+  ].filter(Boolean);
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#050819] text-white">
-      <style>{`
-        @keyframes inseratTourCamera {
-          0% { transform: scale(1.02) translate3d(-1.3%, 0, 0); }
-          50% { transform: scale(1.09) translate3d(1%, -1%, 0); }
-          100% { transform: scale(1.14) translate3d(0, 1%, 0); }
-        }
-
-        @keyframes inseratTourCameraDynamic {
-          0% { transform: scale(1.01) translate3d(-2.8%, 1.2%, 0); }
-          35% { transform: scale(1.12) translate3d(2.4%, -1.8%, 0); }
-          70% { transform: scale(1.07) translate3d(-1.2%, -2.4%, 0); }
-          100% { transform: scale(1.17) translate3d(2.2%, 1.6%, 0); }
-        }
-
-        .tourStudioScroll {
-          scrollbar-width: thin;
-          scrollbar-color: #22d3ee rgba(255, 255, 255, 0.06);
-          scrollbar-gutter: stable;
-          overscroll-behavior: contain;
-        }
-
-        .tourStudioScroll::-webkit-scrollbar {
-          width: 10px;
-          height: 8px;
-        }
-
-        .tourStudioScroll::-webkit-scrollbar-track {
-          margin: 10px 0;
-          border-radius: 999px;
-          background: rgba(255, 255, 255, 0.05);
-        }
-
-        .tourStudioScroll::-webkit-scrollbar-thumb {
-          border: 2px solid transparent;
-          border-radius: 999px;
-          background: linear-gradient(180deg, #22d3ee, #6366f1);
-          background-clip: padding-box;
-        }
-
-        .tourStudioScroll::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(180deg, #67e8f9, #818cf8);
-          background-clip: padding-box;
-        }
-
-        html,
-        body {
-          scrollbar-width: thin;
-          scrollbar-color: #22d3ee #050819;
-        }
-
-        html::-webkit-scrollbar,
-        body::-webkit-scrollbar {
-          width: 11px;
-        }
-
-        html::-webkit-scrollbar-track,
-        body::-webkit-scrollbar-track {
-          background: #050819;
-        }
-
-        html::-webkit-scrollbar-thumb,
-        body::-webkit-scrollbar-thumb {
-          border: 3px solid #050819;
-          border-radius: 999px;
-          background: linear-gradient(180deg, #22d3ee, #6366f1);
-        }
-
-        .tourStudioLayout {
-          display: flex;
-          flex-direction: column;
-          gap: 24px;
-        }
-
-        .tourWorkspace,
-        .tourDataColumn {
-          display: contents;
-        }
-
-        .tourObjectCard {
-          order: 1;
-          min-width: 0;
-        }
-
-        .tourMaterialCard {
-          order: 2;
-          min-width: 0;
-        }
-
-        .tourPreviewCard {
-          order: 3;
-          min-width: 0;
-        }
-
-        .tourControlPanel {
-          order: 4;
-          min-width: 0;
-        }
-
-        .tourScriptArea {
-          order: 5;
-          min-width: 0;
-        }
-
-        @media (min-width: 1280px) {
-          .tourStudioLayout {
-            display: grid;
-            grid-template-columns: minmax(360px, 410px) minmax(0, 1fr);
-            gap: 24px;
-            align-items: start;
-          }
-
-          .tourControlPanel {
-            grid-column: 1;
-            grid-row: 1;
-            order: initial;
-            position: sticky;
-            top: 88px;
-            max-height: calc(100vh - 108px);
-            overflow-y: auto;
-            overflow-x: hidden;
-          }
-
-          .tourWorkspace {
-            grid-column: 2;
-            grid-row: 1;
-            display: flex;
-            align-items: stretch;
-            gap: 24px;
-            min-width: 0;
-          }
-
-          .tourDataColumn {
-            display: flex;
-            flex: 0 0 38%;
-            min-width: 320px;
-            max-width: 420px;
-            flex-direction: column;
-            gap: 24px;
-          }
-
-          .tourObjectCard,
-          .tourMaterialCard {
-            min-width: 0;
-            order: initial;
-          }
-
-          .tourPreviewCard {
-            display: flex;
-            flex: 1 1 0;
-            min-width: 0;
-            flex-direction: column;
-            align-self: stretch;
-            order: initial;
-          }
-
-          .tourScriptArea {
-            grid-column: 1 / -1;
-            grid-row: 2;
-            order: initial;
-          }
-
-          .tourOutputScroll {
-            max-height: 650px;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding-right: 12px;
-          }
-        }
-
-        @media (max-width: 1279px) {
-          .tourControlPanel {
-            position: static;
-            max-height: none;
-            overflow: visible;
-          }
-
-          .tourOutputScroll {
-            max-height: none;
-            overflow: visible;
-            padding-right: 0;
-          }
-        }
-      `}</style>
-
-      <div className="pointer-events-none fixed inset-0">
-        <div className="absolute left-[8%] top-[-12rem] h-[34rem] w-[34rem] rounded-full bg-cyan-400/10 blur-[110px]" />
-        <div className="absolute right-[-8rem] top-[20%] h-[30rem] w-[30rem] rounded-full bg-indigo-500/15 blur-[120px]" />
-        <div className="absolute bottom-[-12rem] left-[30%] h-[34rem] w-[34rem] rounded-full bg-orange-500/10 blur-[120px]" />
-      </div>
-
-      <div className="relative mx-auto w-full max-w-[1540px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-        <section className="mb-8 overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-r from-white/[0.08] to-white/[0.035] p-6 shadow-2xl backdrop-blur-xl sm:p-8">
-          <div className="flex flex-col gap-7 xl:flex-row xl:items-end xl:justify-between">
-            <div className="max-w-4xl">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-cyan-200">
-                  Inserat-AI Pro
-                </span>
-                <span className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-bold text-slate-300">
-                  AI-Stimme · Live-Vorschau · Video-Drehbuch
-                </span>
-              </div>
-
-              <h1 className="mt-6 text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">
-                Virtual Tour <span className="text-cyan-300">Studio</span>
-              </h1>
-
-              <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300 sm:text-lg">
-                Aus Objektdaten und Bildern entsteht eine geführte digitale
-                Besichtigung – mit realistischer AI-Stimme, kontrollierbarer
-                Kamerafahrt und einem Raum-für-Raum-Drehbuch.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3 sm:min-w-[430px]">
-              <HeroStat value={String(listingImages.length)} label="Szenen" />
-              <HeroStat value={String(selectedRooms.length)} label="Räume" />
-              <HeroStat value={selectedVoiceProfile.name} label="Stimme" />
-            </div>
+    <>
+      <header className="preview-toolbar">
+        <div className="preview-toolbar__brand">
+          <div className="preview-toolbar__logo">IA</div>
+          <div>
+            <strong>Inserat-AI</strong>
+            <span>Exposé-Vorschau</span>
           </div>
+        </div>
+
+        <div className="preview-toolbar__actions">
+          <button
+            type="button"
+            className="button button--secondary"
+            onClick={goBack}
+          >
+            Zurück
+          </button>
+          <button
+            type="button"
+            className="button button--primary"
+            onClick={exportPdf}
+            disabled={printing}
+          >
+            {printing ? "PDF wird vorbereitet …" : "Als PDF speichern"}
+          </button>
+        </div>
+      </header>
+
+      <main className="preview-canvas">
+        <section className="sheet cover-sheet">
+          <div className="cover-topline">
+            <div className="cover-brand">
+              <div className="cover-brand__logo">IA</div>
+              <div>
+                <strong>INSERAT-AI</strong>
+                <span>IMMOBILIEN-EXPOSÉ</span>
+              </div>
+            </div>
+            <span className="cover-status">
+              {listing.archivedAt ? "ARCHIVIERT" : "EXKLUSIV"}
+            </span>
+          </div>
+
+          <div className="cover-image">
+            {primaryImage ? (
+              <img
+                src={primaryImage.url}
+                alt={`Hauptbild: ${title}`}
+              />
+            ) : (
+              <ImagePlaceholder />
+            )}
+            <div className="cover-image__overlay" />
+            <div className="cover-image__index">01</div>
+          </div>
+
+          <div className="cover-copy">
+            <div className="cover-kicker">{listing.propertyType}</div>
+            <h1>{title}</h1>
+            <p>{place}</p>
+          </div>
+
+          <div className="cover-facts">
+            <DataItem
+              label="Zimmer"
+              value={
+                listing.rooms !== null && listing.rooms !== undefined
+                  ? formatNumber(listing.rooms)
+                  : "–"
+              }
+            />
+            <DataItem
+              label="Wohnfläche"
+              value={
+                listing.livingArea !== null &&
+                listing.livingArea !== undefined
+                  ? `${formatNumber(listing.livingArea)} m²`
+                  : "–"
+              }
+            />
+            <DataItem label="Kaufpreis" value={formatPrice(listing.price)} />
+          </div>
+
+          <footer className="sheet-footer sheet-footer--cover">
+            <span>Professionell erstellt mit Inserat-AI</span>
+            <span>{creationDate}</span>
+          </footer>
         </section>
 
-        <section className="tourStudioLayout">
-          <aside className="tourControlPanel tourStudioScroll overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-b from-white/[0.075] to-white/[0.035] shadow-2xl backdrop-blur-xl">
-            <div className="p-5 sm:p-6">
-              <div className="mb-5 flex items-center gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-cyan-300/30 bg-cyan-300/10 text-xs font-black text-cyan-200">
-                  01
-                </span>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300">
-                    AI-Stimme
-                  </p>
-                  <h2 className="mt-1 text-xl font-black">Stimme auswählen</h2>
-                </div>
+        <section className="sheet gallery-sheet">
+          <div className="page-header">
+            <div className="page-header__brand">
+              <span>INSERAT-AI</span>
+              <strong>02</strong>
+            </div>
+            <SectionTitle
+              eyebrow="Impressionen"
+              title="Bildergalerie"
+            />
+          </div>
+
+          <div className="gallery-grid">
+            <div className="gallery-feature">
+              {primaryImage ? (
+                <img
+                  src={primaryImage.url}
+                  alt={`Objektansicht: ${title}`}
+                />
+              ) : (
+                <ImagePlaceholder />
+              )}
+            </div>
+
+            {galleryImages.slice(0, 4).map((image, index) => (
+              <div className="gallery-tile" key={image.id}>
+                <img
+                  src={image.url}
+                  alt={`Objektbild ${index + 2}: ${title}`}
+                />
               </div>
+            ))}
 
-              <p className="text-sm leading-6 text-slate-400">
-                Sechs Stimmen bleiben verfügbar, werden aber kompakt dargestellt.
-              </p>
-
-              <div className="mt-5 space-y-4">
-                {(["Frauenstimmen", "Männerstimmen"] as const).map((group) => (
-                  <div key={group}>
-                    <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
-                      {group}
-                    </p>
-
-                    <div className="grid grid-cols-3 gap-2">
-                      {VOICE_PROFILES.filter(
-                        (voice) => voice.group === group
-                      ).map((voice) => {
-                        const selected = voice.id === selectedVoice;
-
-                        return (
-                          <button
-                            key={voice.id}
-                            type="button"
-                            aria-pressed={selected}
-                            onClick={() => setSelectedVoice(voice.id)}
-                            className={`min-w-0 rounded-xl border px-2 py-3 text-center transition ${
-                              selected
-                                ? "border-cyan-300 bg-cyan-300/12 shadow-[0_0_22px_rgba(34,211,238,.12)]"
-                                : "border-white/10 bg-white/[0.035] hover:border-white/25 hover:bg-white/[0.06]"
-                            }`}
-                          >
-                            <strong className="block truncate text-sm font-black text-white">
-                              {voice.name}
-                            </strong>
-                            <span className="mt-1 block truncate text-[9px] font-bold text-cyan-200">
-                              {voice.tone.split(" & ")[0]}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
+            {galleryImages.length < 4 &&
+              Array.from({ length: 4 - galleryImages.length }).map(
+                (_, index) => (
+                  <div
+                    className="gallery-tile"
+                    key={`placeholder-${index}`}
+                  >
+                    <ImagePlaceholder label="Weitere Aufnahme" />
                   </div>
-                ))}
+                )
+              )}
+          </div>
+
+          <div className="gallery-caption">
+            <span>{listing.propertyType}</span>
+            <p>{place}</p>
+          </div>
+
+          <footer className="sheet-footer">
+            <span>Inserat-AI Immobilien-Exposé</span>
+            <span>02</span>
+          </footer>
+        </section>
+
+        <section className="sheet details-sheet">
+          <div className="page-header">
+            <div className="page-header__brand">
+              <span>INSERAT-AI</span>
+              <strong>03</strong>
+            </div>
+            <SectionTitle
+              eyebrow="Das Objekt"
+              title="Details & Beschreibung"
+            />
+          </div>
+
+          <div className="details-layout">
+            <aside className="details-sidebar">
+              <h3>Objektdaten</h3>
+
+              <div className="details-list">
+                <DataItem
+                  label="Objektart"
+                  value={listing.propertyType}
+                />
+                <DataItem label="Ort" value={place || listing.location} />
+                <DataItem
+                  label="Zimmer"
+                  value={
+                    listing.rooms !== null &&
+                    listing.rooms !== undefined
+                      ? formatNumber(listing.rooms)
+                      : "Nicht angegeben"
+                  }
+                />
+                <DataItem
+                  label="Wohnfläche"
+                  value={
+                    listing.livingArea !== null &&
+                    listing.livingArea !== undefined
+                      ? `${formatNumber(listing.livingArea)} m²`
+                      : "Nicht angegeben"
+                  }
+                />
+                <DataItem
+                  label="Preis"
+                  value={formatPrice(listing.price)}
+                />
               </div>
 
-              <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/50 p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-black text-white">
-                      {selectedVoiceProfile.name}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-400">
-                      {selectedVoiceProfile.tone}
-                    </p>
-                  </div>
+              <div className="sidebar-accent">
+                <span>INSERAT-AI</span>
+                <strong>Immobilien überzeugend präsentieren.</strong>
+              </div>
+            </aside>
 
-                  <AudioControls
-                    audioKey="voice-preview"
-                    activeAudioKey={activeAudioKey}
-                    status={audioStatus}
-                    onPlay={() =>
-                      void playGeneratedAudio(
-                        `Willkommen in dieser ${rooms}-Zimmer-${propertyType} in ${location}. Nehmen Sie sich Zeit und entdecken Sie die Immobilie in aller Ruhe.`,
-                        "voice-preview"
-                      )
-                    }
-                    onPause={pauseGeneratedAudio}
-                    onResume={() => void resumeGeneratedAudio()}
-                    onStop={() => stopGeneratedAudio()}
-                    compact
-                  />
-                </div>
+            <article className="description-column">
+              <span className="article-kicker">
+                {listing.propertyType} · {listing.location}
+              </span>
+              <h2>{title}</h2>
+
+              <div className="description-text">
+                {description
+                  .split(/\n{2,}/)
+                  .map((paragraph) => paragraph.trim())
+                  .filter(Boolean)
+                  .map((paragraph, index) => (
+                    <p key={`${paragraph.slice(0, 24)}-${index}`}>
+                      {paragraph}
+                    </p>
+                  ))}
               </div>
 
-              {audioError && (
-                <div className="mt-4 rounded-2xl border border-red-300/20 bg-red-400/10 px-4 py-3 text-xs font-bold leading-5 text-red-200">
-                  {audioError}
+              {listing.imageAnalysis && (
+                <div className="analysis-note">
+                  <span>Bildwirkung</span>
+                  <p>{listing.imageAnalysis}</p>
                 </div>
               )}
+            </article>
+          </div>
 
-              <p className="mt-4 text-[11px] leading-5 text-slate-500">
-                Die Stimme wird mit AI erzeugt und ist keine echte Person.
-              </p>
+          <footer className="sheet-footer">
+            <span>Inserat-AI Immobilien-Exposé</span>
+            <span>03</span>
+          </footer>
+        </section>
+
+        <section className="sheet final-sheet">
+          <div className="page-header">
+            <div className="page-header__brand">
+              <span>INSERAT-AI</span>
+              <strong>04</strong>
             </div>
+            <SectionTitle
+              eyebrow="Mehr erfahren"
+              title="Highlights, Lage & Kontakt"
+            />
+          </div>
 
-            <div className="border-t border-white/10 p-5 sm:p-6">
-              <div className="mb-5 flex items-center gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-indigo-300/30 bg-indigo-300/10 text-xs font-black text-indigo-200">
-                  02
-                </span>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-indigo-300">
-                    Tour
-                  </p>
-                  <h2 className="mt-1 text-xl font-black">Einstellungen</h2>
-                </div>
-              </div>
+          <div className="final-grid">
+            <section className="content-card">
+              <span className="content-card__number">01</span>
+              <h3>Highlights & Ausstattung</h3>
 
-              <div>
-                <p className="text-sm font-black text-white">Szenenlänge</p>
-                <div className="mt-3 grid grid-cols-3 gap-2">
-                  {SCENE_DURATIONS.map((duration) => (
-                    <button
-                      key={duration}
-                      type="button"
-                      onClick={() => setSceneDuration(duration)}
-                      className={`rounded-xl px-3 py-3 text-xs font-black transition ${
-                        sceneDuration === duration
-                          ? "bg-cyan-300 text-slate-950"
-                          : "border border-white/10 bg-white/[0.05] text-slate-300 hover:border-white/25"
-                      }`}
-                    >
-                      {duration} Sek.
-                    </button>
+              {featureItems.length > 0 ? (
+                <ul className="highlight-list">
+                  {featureItems.slice(0, 10).map((item) => (
+                    <li key={item}>
+                      <span aria-hidden="true">◆</span>
+                      <p>{item}</p>
+                    </li>
                   ))}
-                </div>
-              </div>
-
-              <div className="mt-5 border-t border-white/10 pt-5">
-                <p className="text-sm font-black text-white">Kamerafahrt</p>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setCameraStyle("calm")}
-                    className={`rounded-xl border px-3 py-3 text-xs font-black transition ${
-                      cameraStyle === "calm"
-                        ? "border-cyan-300 bg-cyan-300/10 text-cyan-100"
-                        : "border-white/10 bg-white/[0.04] text-slate-300"
-                    }`}
-                  >
-                    Ruhig
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCameraStyle("dynamic")}
-                    className={`rounded-xl border px-3 py-3 text-xs font-black transition ${
-                      cameraStyle === "dynamic"
-                        ? "border-indigo-300 bg-indigo-300/10 text-indigo-100"
-                        : "border-white/10 bg-white/[0.04] text-slate-300"
-                    }`}
-                  >
-                    Dynamisch
-                  </button>
-                </div>
-              </div>
-
-              <div className="mt-5 grid gap-3 border-t border-white/10 pt-5">
-                <SettingToggle
-                  title="Objekttext anzeigen"
-                  description="Ort, Zimmer, Fläche und Preis im Bild."
-                  active={showSceneOverlay}
-                  onClick={() => setShowSceneOverlay((current) => !current)}
-                />
-                <SettingToggle
-                  title="Automatisch weiter"
-                  description="Nach der Szenenlänge zum nächsten Bild."
-                  active={autoAdvance}
-                  onClick={() => setAutoAdvance((current) => !current)}
-                />
-              </div>
-            </div>
-
-            <div className="sticky bottom-0 border-t border-white/10 bg-[#0b1022]/95 p-5 backdrop-blur-xl sm:p-6">
-              <div className="mb-4 flex items-end justify-between gap-3">
-                <div>
-                  <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-500">
-                    Produktionsstand
-                  </p>
-                  <p className="mt-1 text-sm font-black text-white">
-                    {completedProductionSteps} von {productionChecks.length} bereit
-                  </p>
-                </div>
-                <span className="text-xs font-black text-cyan-200">
-                  {Math.round(
-                    (completedProductionSteps / productionChecks.length) * 100
-                  )}
-                  %
-                </span>
-              </div>
-
-              <div className="mb-4 h-2 overflow-hidden rounded-full bg-white/[0.07]">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-indigo-400 to-emerald-300 transition-all"
-                  style={{
-                    width: `${
-                      (completedProductionSteps / productionChecks.length) * 100
-                    }%`,
-                  }}
-                />
-              </div>
-
-              <button
-                type="button"
-                onClick={generateTourGuide}
-                disabled={loading}
-                className="flex min-h-[62px] w-full items-center justify-center rounded-2xl border border-cyan-200/40 bg-gradient-to-r from-cyan-300 via-sky-400 to-indigo-500 px-5 py-4 text-center text-sm font-black text-slate-950 shadow-[0_18px_50px_rgba(14,165,233,.25)] transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-60"
-              >
-                {loading
-                  ? "Tour-Drehbuch wird erstellt ..."
-                  : "✨ Audio- & Video-Tour erstellen"}
-              </button>
-            </div>
-          </aside>
-
-          <div className="tourWorkspace">
-            <div className="tourDataColumn">
-            <div className="tourObjectCard">
-              <StudioCard step="03" eyebrow="Objekt" title="Objekt & Tour-Daten">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Field
-                    label="Ort / Lage"
-                    value={location}
-                    onChange={setLocation}
-                  />
-                  <Field
-                    label="Objektart"
-                    value={propertyType}
-                    onChange={setPropertyType}
-                  />
-                  <Field label="Zimmer" value={rooms} onChange={setRooms} />
-                  <Field
-                    label="Wohnfläche (m²)"
-                    value={livingArea}
-                    onChange={setLivingArea}
-                  />
-                  <Field label="Preis" value={price} onChange={setPrice} />
-                  <Field
-                    label="Stil"
-                    value={styleText}
-                    onChange={setStyleText}
-                  />
-                </div>
-
-                <TextAreaField
-                  label="Highlights"
-                  value={highlights}
-                  onChange={setHighlights}
-                  placeholder="Terrasse, Seesicht, moderne Küche ..."
-                />
-
-                {sourceListingId && (
-                  <div className="mt-4 rounded-2xl border border-emerald-300/20 bg-emerald-300/10 px-4 py-3 text-sm font-bold text-emerald-200">
-                    ✓ Aus dem Makler-Cockpit übernommen
-                  </div>
-                )}
-
-                {listingLoadError && (
-                  <div className="mt-4 rounded-2xl border border-red-300/20 bg-red-300/10 px-4 py-3 text-sm font-bold text-red-200">
-                    {listingLoadError}
-                  </div>
-                )}
-              </StudioCard>
-            </div>
-
-            <div className="tourMaterialCard">
-              <StudioCard step="05" eyebrow="Material" title="Video & Räume">
-                <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-                  <div>
-                    <p className="text-sm font-black text-white">
-                      Eigenes Rundgang-Video
-                    </p>
-                    <p className="mt-1 text-xs leading-5 text-slate-400">
-                      Optionales MP4-, MOV- oder Smartphone-Video.
-                    </p>
-
-                    <label className="mt-4 flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-dashed border-cyan-300/25 bg-cyan-300/[0.055] p-4 transition hover:border-cyan-300/50 hover:bg-cyan-300/10">
-                      <input
-                        type="file"
-                        accept="video/mp4,video/quicktime,video/*"
-                        className="hidden"
-                        onChange={handleVideoUpload}
-                      />
-                      <span className="text-sm font-black text-white">
-                        🎬 Video auswählen
-                      </span>
-                      <span className="rounded-xl bg-white px-3 py-2 text-xs font-black text-slate-950">
-                        Öffnen
-                      </span>
-                    </label>
-
-                    {videoFile && (
-                      <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/55 p-3">
-                        <div className="mb-3 flex items-center justify-between gap-3">
-                          <p className="min-w-0 truncate text-xs font-black text-white">
-                            {videoFile.name}
-                          </p>
-                          <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-[10px] font-black text-emerald-300">
-                            Bereit
-                          </span>
-                        </div>
-
-                        {videoPreview && (
-                          <video
-                            src={videoPreview}
-                            controls
-                            className="max-h-[230px] w-full rounded-xl bg-black"
-                          />
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="border-t border-white/10 pt-6 xl:border-l xl:border-t-0 xl:pl-6 xl:pt-0">
-                    <p className="text-sm font-black text-white">
-                      Räume der Besichtigung
-                    </p>
-                    <p className="mt-1 text-xs leading-5 text-slate-400">
-                      Diese Auswahl bestimmt die Szenen des Drehbuchs.
-                    </p>
-
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {DEFAULT_ROOMS.map((room) => (
-                        <button
-                          key={room}
-                          type="button"
-                          onClick={() => toggleRoom(room)}
-                          className={`rounded-full border px-3 py-2 text-xs font-black transition ${
-                            selectedRooms.includes(room)
-                              ? "border-cyan-300 bg-cyan-300 text-slate-950"
-                              : "border-white/10 bg-white/[0.05] text-slate-300 hover:border-white/25"
-                          }`}
-                        >
-                          {room}
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="mt-4 flex gap-2">
-                      <input
-                        value={customRoom}
-                        onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                          setCustomRoom(event.target.value)
-                        }
-                        onKeyDown={(event: KeyboardEvent<HTMLInputElement>) => {
-                          if (event.key === "Enter") {
-                            event.preventDefault();
-                            addCustomRoom();
-                          }
-                        }}
-                        placeholder="Eigener Raum"
-                        className="min-w-0 flex-1 rounded-xl border border-white/10 bg-white/[0.055] px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-300/60"
-                      />
-                      <button
-                        type="button"
-                        onClick={addCustomRoom}
-                        className="rounded-xl bg-white px-4 py-3 font-black text-slate-950"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </StudioCard>
-            </div>
-            </div>
-
-            <section className="tourPreviewCard overflow-hidden rounded-[2rem] border border-cyan-300/20 bg-gradient-to-br from-[#081127] to-[#09091c] p-4 shadow-[0_30px_90px_rgba(0,0,0,.35)] sm:p-6">
-              <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-cyan-300 text-xs font-black text-slate-950">
-                    04
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300">
-                      Live-Vorschau
-                    </p>
-                    <h2 className="mt-1 text-xl font-black sm:text-2xl">
-                      Virtuelle Immobilienbesichtigung
-                    </h2>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2 text-xs font-black text-white">
-                    {listingImages.length === 0
-                      ? "Keine Szenen"
-                      : `${activeSceneIndex + 1} / ${listingImages.length}`}
-                  </span>
-                  <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-xs font-black text-cyan-200">
-                    {selectedVoiceProfile.name}
-                  </span>
-                </div>
-              </div>
-
-              <div className="relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-slate-950 shadow-2xl">
-                {activeTourImage ? (
-                  <div className="relative aspect-video">
-                    <img
-                      key={`${activeTourImage.id}-${activeSceneIndex}`}
-                      src={activeTourImage.url}
-                      alt={`Tour-Szene ${activeSceneIndex + 1}`}
-                      className="h-full w-full object-cover"
-                      style={{
-                        animation: `${
-                          cameraStyle === "dynamic"
-                            ? "inseratTourCameraDynamic"
-                            : "inseratTourCamera"
-                        } ${sceneDuration}s ease-in-out infinite alternate`,
-                        animationPlayState: isTourPlaying ? "running" : "paused",
-                      }}
-                    />
-
-                    {showSceneOverlay && (
-                      <>
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/25" />
-
-                        <div className="absolute left-4 top-4 flex flex-wrap gap-2 sm:left-6 sm:top-6">
-                          <span className="rounded-full border border-white/15 bg-slate-950/70 px-3 py-2 text-xs font-black text-white backdrop-blur">
-                            Szene {activeSceneIndex + 1}
-                          </span>
-                          {activeTourImage.isPrimary && (
-                            <span className="rounded-full bg-amber-400 px-3 py-2 text-xs font-black text-slate-950">
-                              Hauptbild
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-7">
-                          <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300">
-                            {propertyType} in {location}
-                          </p>
-                          <h3 className="mt-2 max-w-[92%] text-xl font-black leading-tight sm:text-2xl xl:text-3xl">
-                            Virtuelle Immobilienbesichtigung
-                          </h3>
-                          <p className="mt-3 text-xs text-slate-200 sm:text-sm">
-                            {rooms ? `${rooms} Zimmer` : "Immobilie"}
-                            {livingArea ? ` · ca. ${livingArea} m²` : ""}
-                            {price ? ` · CHF ${formatPrice(price)}` : ""}
-                          </p>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                ) : (
-                  <div className="grid aspect-video place-items-center bg-gradient-to-br from-slate-900 to-indigo-950 p-8 text-center">
-                    <div className="max-w-md">
-                      <div className="mx-auto grid h-16 w-16 place-items-center rounded-[1.25rem] border border-cyan-300/20 bg-cyan-300/10 text-3xl">
-                        🏠
-                      </div>
-                      <h3 className="mt-5 text-xl font-black">
-                        Noch keine Objektbilder
-                      </h3>
-                      <p className="mt-3 text-sm leading-6 text-slate-400">
-                        Öffne die Tour über ein Objekt mit gespeicherten Bildern
-                        im Makler-Cockpit.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-                <TourControlButton
-                  label="← Zurück"
-                  onClick={showPreviousTourScene}
-                  disabled={listingImages.length <= 1}
-                />
-                <button
-                  type="button"
-                  onClick={toggleTourPlayback}
-                  disabled={listingImages.length === 0}
-                  className="rounded-2xl bg-gradient-to-r from-cyan-300 to-indigo-500 px-4 py-4 text-sm font-black text-slate-950 transition hover:scale-[1.01] disabled:opacity-40"
-                >
-                  {isTourPlaying ? "⏸ Pause" : "▶ Tour starten"}
-                </button>
-                <button
-                  type="button"
-                  onClick={stopTourPlayback}
-                  disabled={listingImages.length === 0}
-                  className="rounded-2xl border border-red-300/20 bg-red-400/10 px-4 py-4 text-sm font-black text-red-100 transition hover:bg-red-400/20 disabled:opacity-40"
-                >
-                  ⏹ Stop
-                </button>
-                <TourControlButton
-                  label="Weiter →"
-                  onClick={showNextTourScene}
-                  disabled={listingImages.length <= 1}
-                />
-              </div>
-
-              {listingImages.length > 0 && (
-                <div className="mt-5 border-t border-white/10 pt-5">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-black text-white">
-                        Gespeicherte Szenen
-                      </p>
-                      <p className="mt-1 text-xs text-slate-400">
-                        Ein Bild auswählen oder die Tour automatisch abspielen.
-                      </p>
-                    </div>
-                    <span className="rounded-full bg-cyan-300/10 px-3 py-1 text-xs font-black text-cyan-200">
-                      {listingImages.length} Bilder
-                    </span>
-                  </div>
-
-                  <div className="tourStudioScroll flex min-w-0 gap-3 overflow-x-auto pb-2">
-                    {listingImages.map((image, index) => (
-                      <button
-                        key={image.id}
-                        type="button"
-                        onClick={() => setActiveSceneIndex(index)}
-                        className={`group relative aspect-[4/3] w-24 shrink-0 overflow-hidden rounded-xl border transition sm:w-28 ${
-                          activeSceneIndex === index
-                            ? "border-cyan-300 ring-2 ring-cyan-300/25"
-                            : "border-white/10 hover:border-white/30"
-                        }`}
-                      >
-                        <img
-                          src={image.url}
-                          alt={`Szene ${index + 1}`}
-                          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                        />
-                        <span className="absolute left-2 top-2 rounded-full bg-slate-950/80 px-2 py-1 text-[9px] font-black text-white">
-                          {index + 1}
-                        </span>
-                        {image.isPrimary && (
-                          <span className="absolute bottom-2 right-2 rounded-full bg-amber-400 px-2 py-1 text-[8px] font-black text-slate-950">
-                            Hauptbild
-                          </span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                </ul>
+              ) : (
+                <p className="empty-copy">
+                  Ausstattungsmerkmale können im Objekt ergänzt werden und
+                  erscheinen danach automatisch an dieser Stelle.
+                </p>
               )}
             </section>
 
+            <section className="content-card">
+              <span className="content-card__number">02</span>
+              <h3>Lage</h3>
+              <p className="location-copy">
+                Die Immobilie befindet sich in{" "}
+                <strong>{place || listing.location}</strong>. Die genaue
+                Adresse sowie zusätzliche Angaben zur Mikrolage,
+                Erreichbarkeit und Umgebung können im nächsten Ausbauschritt
+                ergänzt oder automatisch generiert werden.
+              </p>
+
+              <div className="location-mark">
+                <span>Standort</span>
+                <strong>{listing.location}</strong>
+                {listing.postalCode && <small>{listing.postalCode}</small>}
+              </div>
+            </section>
           </div>
 
-          <section className="tourScriptArea rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.065] to-white/[0.025] p-5 shadow-2xl backdrop-blur-xl sm:p-8">
-            <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-              <div>
-                <div className="flex items-center gap-3">
-                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-amber-400 text-xs font-black text-slate-950">
-                    06
-                  </span>
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-200">
-                      Produktion
-                    </p>
-                    <h2 className="mt-1 text-2xl font-black sm:text-3xl">
-                      Audio- & Video-Drehbuch
-                    </h2>
-                  </div>
-                </div>
-                <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-400">
-                  Gesprochener Tour-Text und konkrete Videoanweisung pro Szene.
-                </p>
-              </div>
-
-              {tourSections.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  <AudioControls
-                    audioKey="full-tour"
-                    activeAudioKey={activeAudioKey}
-                    status={audioStatus}
-                    onPlay={() =>
-                      void playGeneratedAudio(fullTourAudioText, "full-tour")
-                    }
-                    onPause={pauseGeneratedAudio}
-                    onResume={() => void resumeGeneratedAudio()}
-                    onStop={() => stopGeneratedAudio()}
-                    compact
-                    playLabel="Tour anhören"
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      void downloadGeneratedAudio(
-                        fullTourAudioText,
-                        "inserat-ai-komplette-tour.mp3",
-                        "download-full-tour"
-                      )
-                    }
-                    className="rounded-xl border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/20"
-                  >
-                    MP3 herunterladen
-                  </button>
-                  <button
-                    type="button"
-                    onClick={copyFullTour}
-                    className="rounded-xl border border-white/10 bg-white/[0.06] px-4 py-2 text-xs font-black text-white transition hover:bg-white/[0.1]"
-                  >
-                    Alles kopieren
-                  </button>
-                </div>
-              )}
+          <section className="contact-panel">
+            <div className="contact-panel__intro">
+              <span>Persönliche Beratung</span>
+              <h3>Interesse an dieser Immobilie?</h3>
+              <p>
+                Für weitere Informationen, Unterlagen oder einen
+                Besichtigungstermin stehen wir gerne zur Verfügung.
+              </p>
             </div>
 
-            {tourSections.length === 0 ? (
-              <div className="mt-7 grid gap-4 md:grid-cols-3">
-                <EmptyTourCard
-                  number="1"
-                  title="Daten prüfen"
-                  text="Objektdaten, Tourbilder und Räume kontrollieren."
-                />
-                <EmptyTourCard
-                  number="2"
-                  title="Stimme wählen"
-                  text="Eine passende AI-Stimme auswählen und probehören."
-                />
-                <EmptyTourCard
-                  number="3"
-                  title="Tour erstellen"
-                  text="Audio-Text und Video-Szenenplan mit einem Klick erstellen."
-                />
+            <div className="contact-panel__details">
+              <strong>
+                {contact.name || "Ihre Ansprechperson"}
+              </strong>
+              <span>
+                {contact.company ||
+                  "Kontaktdaten im Benutzerprofil ergänzen"}
+              </span>
+
+              <div className="contact-lines">
+                <p>
+                  <small>E-Mail</small>
+                  {contact.email || "Noch nicht hinterlegt"}
+                </p>
+                <p>
+                  <small>Telefon</small>
+                  {contact.phone || "Noch nicht hinterlegt"}
+                </p>
               </div>
-            ) : (
-              <div className="tourStudioScroll tourOutputScroll mt-7 grid gap-5">
-                {tourSections.map((section, index) => {
-                  const audioKey = `section-${index}`;
-
-                  return (
-                    <article
-                      key={`${section.room}-${index}`}
-                      className="overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#090e20]"
-                    >
-                      <div className="grid lg:grid-cols-[1.2fr_.8fr]">
-                        <div className="p-5 sm:p-7">
-                          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                            <div>
-                              <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300">
-                                {String(index + 1).padStart(2, "0")} ·{" "}
-                                {section.room}
-                              </p>
-                              <h3 className="mt-2 text-xl font-black sm:text-2xl">
-                                {section.title}
-                              </h3>
-                            </div>
-
-                            <div className="flex flex-wrap gap-2">
-                              <AudioControls
-                                audioKey={audioKey}
-                                activeAudioKey={activeAudioKey}
-                                status={audioStatus}
-                                onPlay={() =>
-                                  void playGeneratedAudio(
-                                    section.audioText,
-                                    audioKey
-                                  )
-                                }
-                                onPause={pauseGeneratedAudio}
-                                onResume={() => void resumeGeneratedAudio()}
-                                onStop={() => stopGeneratedAudio()}
-                                compact
-                                playLabel="Anhören"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => copyText(section.audioText)}
-                                className="rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-xs font-black text-white transition hover:bg-white/[0.1]"
-                              >
-                                Kopieren
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  void downloadGeneratedAudio(
-                                    section.audioText,
-                                    `inserat-ai-${String(index + 1).padStart(
-                                      2,
-                                      "0"
-                                    )}-${section.room
-                                      .toLowerCase()
-                                      .replace(/[^a-z0-9äöü]+/gi, "-")}.mp3`,
-                                    `download-${audioKey}`
-                                  )
-                                }
-                                className="rounded-xl border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/20"
-                              >
-                                MP3
-                              </button>
-                            </div>
-                          </div>
-
-                          <p className="mt-5 whitespace-pre-wrap text-sm leading-7 text-slate-300 sm:text-base sm:leading-8">
-                            {section.audioText}
-                          </p>
-                        </div>
-
-                        <div className="border-t border-white/10 bg-gradient-to-br from-cyan-300/[0.09] to-indigo-400/[0.08] p-5 lg:border-l lg:border-t-0 sm:p-7">
-                          <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-200">
-                            🎥 Video-Szenenplan
-                          </p>
-                          <p className="mt-4 text-sm leading-7 text-slate-300">
-                            {section.videoText}
-                          </p>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
+            </div>
           </section>
+
+          <div className="legal-note">
+            Dieses Exposé wurde auf Grundlage der gespeicherten Objektdaten
+            erstellt. Alle Angaben sind ohne Gewähr und vom Anbieter vor der
+            Veröffentlichung zu prüfen.
+          </div>
+
+          <footer className="sheet-footer">
+            <span>Inserat-AI Immobilien-Exposé</span>
+            <span>04</span>
+          </footer>
         </section>
-      </div>
-    </main>
+      </main>
+
+      <ExposeStyles />
+    </>
   );
 }
 
-function SettingToggle({
-  title,
-  description,
-  active,
-  onClick,
-}: {
-  title: string;
-  description: string;
-  active: boolean;
-  onClick: () => void;
-}) {
+function ExposeStyles() {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex w-full items-center justify-between gap-4 rounded-2xl border p-4 text-left transition ${
-        active
-          ? "border-cyan-300/35 bg-cyan-300/[0.08]"
-          : "border-white/10 bg-white/[0.035] hover:border-white/20"
-      }`}
-    >
-      <span>
-        <strong className="block text-sm font-black text-white">
-          {title}
-        </strong>
-        <span className="mt-1 block text-xs leading-5 text-slate-400">
-          {description}
-        </span>
-      </span>
-      <span
-        className={`relative h-7 w-12 shrink-0 rounded-full transition ${
-          active ? "bg-cyan-300" : "bg-white/10"
-        }`}
-      >
-        <span
-          className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition ${
-            active ? "left-6" : "left-1"
-          }`}
-        />
-      </span>
-    </button>
-  );
-}
+    <style jsx global>{`
+      * {
+        box-sizing: border-box;
+      }
 
-function FeatureTile({ text }: { text: string }) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
-      ✓ {text}
-    </div>
-  );
-}
+      html {
+        background: ${PAGE_BACKGROUND};
+      }
 
-function HeroStat({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-slate-950/45 p-4 text-center">
-      <strong className="block truncate text-lg font-black text-white sm:text-xl">
-        {value}
-      </strong>
-      <span className="mt-1 block text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">
-        {label}
-      </span>
-    </div>
-  );
-}
+      body {
+        margin: 0;
+        color: ${INK};
+        background: ${PAGE_BACKGROUND};
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
 
-function StudioCard({
-  step,
-  eyebrow,
-  title,
-  children,
-}: {
-  step: string;
-  eyebrow: string;
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.055] p-5 shadow-2xl backdrop-blur-xl sm:p-6">
-      <div className="mb-6 flex items-center gap-3">
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-cyan-300/30 bg-cyan-300/10 text-xs font-black text-cyan-200">
-          {step}
-        </span>
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300">
-            {eyebrow}
-          </p>
-          <h2 className="mt-1 text-xl font-black text-white">{title}</h2>
-        </div>
-      </div>
-      {children}
-    </section>
-  );
-}
+      button,
+      input,
+      textarea,
+      select {
+        font: inherit;
+      }
 
-function Field({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-2 block text-xs font-black text-slate-400">
-        {label}
-      </span>
-      <input
-        value={value}
-        onChange={(event: ChangeEvent<HTMLInputElement>) =>
-          onChange(event.target.value)
+      .preview-toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        min-height: 76px;
+        padding: 12px clamp(16px, 4vw, 48px);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        color: #ffffff;
+        background:
+          linear-gradient(
+            90deg,
+            rgba(7, 24, 47, 0.98),
+            rgba(16, 39, 70, 0.98)
+          );
+        border-bottom: 1px solid rgba(201, 164, 84, 0.48);
+        box-shadow: 0 16px 40px rgba(7, 24, 47, 0.18);
+        backdrop-filter: blur(18px);
+      }
+
+      .preview-toolbar__brand,
+      .preview-toolbar__actions {
+        display: flex;
+        align-items: center;
+      }
+
+      .preview-toolbar__brand {
+        gap: 12px;
+      }
+
+      .preview-toolbar__brand > div:last-child {
+        display: grid;
+        gap: 2px;
+      }
+
+      .preview-toolbar__brand strong {
+        font-size: 15px;
+        letter-spacing: 0.1em;
+      }
+
+      .preview-toolbar__brand span {
+        color: rgba(255, 255, 255, 0.66);
+        font-size: 12px;
+      }
+
+      .preview-toolbar__logo,
+      .status-logo {
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        color: ${NAVY};
+        background: ${GOLD};
+        border-radius: 11px;
+        font-weight: 950;
+        letter-spacing: -0.04em;
+        box-shadow: 0 8px 22px rgba(201, 164, 84, 0.24);
+      }
+
+      .preview-toolbar__actions {
+        gap: 10px;
+      }
+
+      .button,
+      .status-card button {
+        min-height: 44px;
+        padding: 0 18px;
+        border-radius: 11px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        font-weight: 800;
+        transition:
+          transform 160ms ease,
+          opacity 160ms ease,
+          border-color 160ms ease;
+      }
+
+      .button:hover,
+      .status-card button:hover {
+        transform: translateY(-1px);
+      }
+
+      .button:disabled {
+        cursor: wait;
+        opacity: 0.7;
+      }
+
+      .button--primary,
+      .status-card button {
+        color: ${NAVY};
+        background: ${GOLD};
+        border-color: ${GOLD};
+      }
+
+      .button--secondary {
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.22);
+      }
+
+      .preview-canvas {
+        width: 100%;
+        padding: 36px 16px 72px;
+        display: grid;
+        justify-items: center;
+        gap: 32px;
+      }
+
+      .sheet {
+        position: relative;
+        width: min(210mm, calc(100vw - 32px));
+        min-height: 297mm;
+        padding: 18mm;
+        overflow: hidden;
+        color: ${INK};
+        background: ${PAPER};
+        box-shadow: 0 26px 80px rgba(7, 24, 47, 0.14);
+      }
+
+      .cover-sheet {
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+        color: #ffffff;
+        background: ${NAVY};
+      }
+
+      .cover-topline {
+        height: 30mm;
+        padding: 0 17mm;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+
+      .cover-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .cover-brand__logo {
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
+        color: ${NAVY};
+        background: ${GOLD};
+        border-radius: 10px;
+        font-weight: 950;
+      }
+
+      .cover-brand > div:last-child {
+        display: grid;
+        gap: 4px;
+      }
+
+      .cover-brand strong {
+        font-size: 13px;
+        letter-spacing: 0.18em;
+      }
+
+      .cover-brand span {
+        color: rgba(255, 255, 255, 0.54);
+        font-size: 8px;
+        letter-spacing: 0.23em;
+      }
+
+      .cover-status {
+        padding: 7px 11px;
+        color: ${GOLD};
+        border: 1px solid rgba(201, 164, 84, 0.55);
+        border-radius: 999px;
+        font-size: 8px;
+        font-weight: 900;
+        letter-spacing: 0.19em;
+      }
+
+      .cover-image {
+        position: relative;
+        height: 133mm;
+        overflow: hidden;
+        background: ${NAVY_SOFT};
+      }
+
+      .cover-image img,
+      .gallery-grid img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+      }
+
+      .cover-image__overlay {
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(
+            180deg,
+            rgba(7, 24, 47, 0.06) 38%,
+            rgba(7, 24, 47, 0.78) 100%
+          );
+      }
+
+      .cover-image__index {
+        position: absolute;
+        right: 15mm;
+        bottom: 11mm;
+        color: rgba(255, 255, 255, 0.58);
+        font-family: Georgia, serif;
+        font-size: 24px;
+      }
+
+      .cover-copy {
+        min-height: 79mm;
+        padding: 15mm 17mm 11mm;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background:
+          radial-gradient(
+            circle at 86% 16%,
+            rgba(201, 164, 84, 0.12),
+            transparent 31%
+          );
+      }
+
+      .cover-kicker,
+      .article-kicker {
+        color: ${GOLD};
+        font-size: 9px;
+        font-weight: 900;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+
+      .cover-copy h1 {
+        max-width: 155mm;
+        margin: 7mm 0 4mm;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(32px, 5vw, 52px);
+        font-weight: 500;
+        line-height: 1.05;
+        text-wrap: balance;
+      }
+
+      .cover-copy p {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 14px;
+        letter-spacing: 0.05em;
+      }
+
+      .cover-facts {
+        min-height: 37mm;
+        margin: 0 17mm;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        border-top: 1px solid rgba(201, 164, 84, 0.42);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .cover-facts .data-item {
+        padding: 9mm 7mm;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .cover-facts .data-item:first-child {
+        padding-left: 0;
+      }
+
+      .cover-facts .data-item:last-child {
+        border-right: 0;
+      }
+
+      .cover-facts .data-item span {
+        color: rgba(255, 255, 255, 0.48);
+      }
+
+      .cover-facts .data-item strong {
+        color: #ffffff;
+      }
+
+      .sheet-footer {
+        position: absolute;
+        right: 18mm;
+        bottom: 10mm;
+        left: 18mm;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        color: #8a94a7;
+        font-size: 7.5px;
+        font-weight: 800;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+      }
+
+      .sheet-footer--cover {
+        position: static;
+        min-height: 18mm;
+        margin-top: auto;
+        padding: 0 17mm;
+        align-items: center;
+        color: rgba(255, 255, 255, 0.38);
+      }
+
+      .page-header {
+        display: grid;
+        grid-template-columns: 32mm 1fr;
+        gap: 10mm;
+        align-items: start;
+        margin-bottom: 13mm;
+      }
+
+      .page-header__brand {
+        display: grid;
+        gap: 3mm;
+      }
+
+      .page-header__brand span {
+        color: ${NAVY};
+        font-size: 8px;
+        font-weight: 950;
+        letter-spacing: 0.18em;
+      }
+
+      .page-header__brand strong {
+        color: rgba(7, 24, 47, 0.16);
+        font-family: Georgia, serif;
+        font-size: 34px;
+        font-weight: 500;
+      }
+
+      .section-heading span {
+        color: ${GOLD};
+        font-size: 8px;
+        font-weight: 900;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+
+      .section-heading h2 {
+        margin: 2mm 0 3mm;
+        color: ${NAVY};
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 29px;
+        font-weight: 500;
+      }
+
+      .section-heading > div {
+        width: 18mm;
+        height: 1px;
+        background: ${GOLD};
+      }
+
+      .gallery-grid {
+        height: 200mm;
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        grid-template-rows: repeat(4, 1fr);
+        gap: 4mm;
+      }
+
+      .gallery-feature {
+        grid-row: 1 / 5;
+      }
+
+      .gallery-feature,
+      .gallery-tile {
+        overflow: hidden;
+        background: #edf1f5;
+      }
+
+      .gallery-caption {
+        margin-top: 9mm;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border-top: 1px solid #dfe4ec;
+        padding-top: 5mm;
+      }
+
+      .gallery-caption span {
+        color: ${GOLD};
+        font-size: 9px;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .gallery-caption p {
+        margin: 0;
+        color: ${MUTED};
+        font-size: 11px;
+      }
+
+      .image-placeholder {
+        width: 100%;
+        height: 100%;
+        min-height: 80px;
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        gap: 10px;
+        color: #7a879b;
+        background:
+          linear-gradient(135deg, #eef2f6, #dfe6ed);
+        text-align: center;
+        font-size: 10px;
+        font-weight: 700;
+      }
+
+      .image-placeholder__mark {
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        color: ${NAVY};
+        background: rgba(201, 164, 84, 0.72);
+        border-radius: 10px;
+        font-weight: 950;
+      }
+
+      .details-layout {
+        min-height: 216mm;
+        display: grid;
+        grid-template-columns: 55mm 1fr;
+        gap: 14mm;
+      }
+
+      .details-sidebar {
+        position: relative;
+        padding: 9mm 7mm;
+        color: #ffffff;
+        background: ${NAVY};
+      }
+
+      .details-sidebar h3 {
+        margin: 0 0 8mm;
+        color: ${GOLD};
+        font-family: Georgia, serif;
+        font-size: 18px;
+        font-weight: 500;
+      }
+
+      .details-list {
+        display: grid;
+      }
+
+      .details-list .data-item {
+        padding: 5mm 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      }
+
+      .details-list .data-item span {
+        color: rgba(255, 255, 255, 0.48);
+      }
+
+      .details-list .data-item strong {
+        color: #ffffff;
+        font-size: 11px;
+      }
+
+      .data-item {
+        display: grid;
+        gap: 2mm;
+      }
+
+      .data-item span {
+        color: ${MUTED};
+        font-size: 7.5px;
+        font-weight: 900;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+      }
+
+      .data-item strong {
+        color: ${NAVY};
+        font-size: 13px;
+        line-height: 1.25;
+      }
+
+      .sidebar-accent {
+        position: absolute;
+        right: 7mm;
+        bottom: 9mm;
+        left: 7mm;
+        display: grid;
+        gap: 3mm;
+      }
+
+      .sidebar-accent span {
+        color: ${GOLD};
+        font-size: 7px;
+        font-weight: 900;
+        letter-spacing: 0.16em;
+      }
+
+      .sidebar-accent strong {
+        color: rgba(255, 255, 255, 0.7);
+        font-family: Georgia, serif;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1.35;
+      }
+
+      .description-column {
+        padding-top: 3mm;
+      }
+
+      .description-column h2 {
+        margin: 4mm 0 8mm;
+        color: ${NAVY};
+        font-family: Georgia, serif;
+        font-size: 28px;
+        font-weight: 500;
+        line-height: 1.15;
+      }
+
+      .description-text {
+        color: #3c4759;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 12px;
+        line-height: 1.85;
+      }
+
+      .description-text p {
+        margin: 0 0 5mm;
+      }
+
+      .analysis-note {
+        margin-top: 10mm;
+        padding: 7mm;
+        border-left: 2px solid ${GOLD};
+        background: #f5f2eb;
+      }
+
+      .analysis-note span {
+        color: ${GOLD};
+        font-size: 8px;
+        font-weight: 900;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .analysis-note p {
+        margin: 3mm 0 0;
+        color: #4c5668;
+        font-size: 10px;
+        line-height: 1.6;
+      }
+
+      .final-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 7mm;
+      }
+
+      .content-card {
+        position: relative;
+        min-height: 116mm;
+        padding: 9mm;
+        border: 1px solid #e2e6ed;
+        background: #fbfcfd;
+      }
+
+      .content-card__number {
+        position: absolute;
+        top: 7mm;
+        right: 8mm;
+        color: rgba(7, 24, 47, 0.12);
+        font-family: Georgia, serif;
+        font-size: 28px;
+      }
+
+      .content-card h3 {
+        max-width: 42mm;
+        margin: 0 0 8mm;
+        color: ${NAVY};
+        font-family: Georgia, serif;
+        font-size: 20px;
+        font-weight: 500;
+        line-height: 1.2;
+      }
+
+      .highlight-list {
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 4mm;
+        list-style: none;
+      }
+
+      .highlight-list li {
+        display: grid;
+        grid-template-columns: 10px 1fr;
+        gap: 3mm;
+        align-items: start;
+      }
+
+      .highlight-list li > span {
+        color: ${GOLD};
+        font-size: 7px;
+        line-height: 2;
+      }
+
+      .highlight-list p,
+      .location-copy,
+      .empty-copy {
+        margin: 0;
+        color: #4d586a;
+        font-size: 9.5px;
+        line-height: 1.55;
+      }
+
+      .location-mark {
+        margin-top: 11mm;
+        padding: 7mm;
+        display: grid;
+        gap: 2mm;
+        color: #ffffff;
+        background: ${NAVY};
+      }
+
+      .location-mark span {
+        color: ${GOLD};
+        font-size: 7px;
+        font-weight: 900;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .location-mark strong {
+        font-family: Georgia, serif;
+        font-size: 18px;
+        font-weight: 500;
+      }
+
+      .location-mark small {
+        color: rgba(255, 255, 255, 0.56);
+        font-size: 9px;
+      }
+
+      .contact-panel {
+        min-height: 66mm;
+        margin-top: 8mm;
+        padding: 10mm;
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 12mm;
+        align-items: center;
+        color: #ffffff;
+        background:
+          linear-gradient(125deg, ${NAVY}, ${NAVY_SOFT});
+      }
+
+      .contact-panel__intro > span {
+        color: ${GOLD};
+        font-size: 7.5px;
+        font-weight: 900;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      .contact-panel__intro h3 {
+        margin: 3mm 0;
+        font-family: Georgia, serif;
+        font-size: 21px;
+        font-weight: 500;
+      }
+
+      .contact-panel__intro p {
+        max-width: 80mm;
+        margin: 0;
+        color: rgba(255, 255, 255, 0.63);
+        font-size: 9px;
+        line-height: 1.55;
+      }
+
+      .contact-panel__details {
+        padding-left: 8mm;
+        display: grid;
+        gap: 2mm;
+        border-left: 1px solid rgba(201, 164, 84, 0.42);
+      }
+
+      .contact-panel__details > strong {
+        color: #ffffff;
+        font-family: Georgia, serif;
+        font-size: 18px;
+        font-weight: 500;
+      }
+
+      .contact-panel__details > span {
+        color: ${GOLD};
+        font-size: 8px;
+        line-height: 1.4;
+      }
+
+      .contact-lines {
+        margin-top: 4mm;
+        display: grid;
+        gap: 3mm;
+      }
+
+      .contact-lines p {
+        margin: 0;
+        display: grid;
+        gap: 1mm;
+        color: rgba(255, 255, 255, 0.76);
+        font-size: 9px;
+      }
+
+      .contact-lines small {
+        color: rgba(255, 255, 255, 0.36);
+        font-size: 6.5px;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .legal-note {
+        margin-top: 6mm;
+        padding: 4mm 0;
+        color: #8b95a7;
+        border-top: 1px solid #e1e5eb;
+        font-size: 7px;
+        line-height: 1.45;
+      }
+
+      .status-screen {
+        min-height: 100vh;
+        padding: 24px;
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(
+            circle at 20% 10%,
+            rgba(201, 164, 84, 0.14),
+            transparent 25%
+          ),
+          ${NAVY};
+      }
+
+      .status-card {
+        width: min(430px, 100%);
+        padding: 34px;
+        display: grid;
+        justify-items: center;
+        gap: 16px;
+        color: #ffffff;
+        text-align: center;
+        background: rgba(16, 39, 70, 0.82);
+        border: 1px solid rgba(201, 164, 84, 0.38);
+        border-radius: 24px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.26);
+      }
+
+      .status-card h1,
+      .status-card p {
+        margin: 0;
+      }
+
+      .status-card h1 {
+        font-family: Georgia, serif;
+        font-weight: 500;
+      }
+
+      .status-card p {
+        color: rgba(255, 255, 255, 0.66);
+        line-height: 1.55;
+      }
+
+      .status-card button {
+        margin-top: 6px;
+      }
+
+      .loading-line {
+        width: 100%;
+        height: 3px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 99px;
+      }
+
+      .loading-line::after {
+        content: "";
+        width: 42%;
+        height: 100%;
+        display: block;
+        background: ${GOLD};
+        border-radius: inherit;
+        animation: loading 1.15s ease-in-out infinite alternate;
+      }
+
+      @keyframes loading {
+        from {
+          transform: translateX(-10%);
         }
-        className="w-full rounded-xl border border-white/10 bg-slate-950/45 px-4 py-3 text-sm font-semibold text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/60 focus:bg-slate-950/70"
-      />
-    </label>
-  );
-}
 
-function TextAreaField({
-  label,
-  value,
-  onChange,
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-}) {
-  return (
-    <label className="mt-4 block">
-      <span className="mb-2 block text-xs font-black text-slate-400">
-        {label}
-      </span>
-      <textarea
-        value={value}
-        onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-          onChange(event.target.value)
+        to {
+          transform: translateX(150%);
         }
-        placeholder={placeholder}
-        rows={3}
-        className="w-full resize-y rounded-xl border border-white/10 bg-slate-950/45 px-4 py-3 text-sm font-semibold leading-6 text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/60 focus:bg-slate-950/70"
-      />
-    </label>
-  );
-}
+      }
 
-function TourControlButton({
-  label,
-  onClick,
-  disabled,
-}: {
-  label: string;
-  onClick: () => void;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-4 text-sm font-black text-white transition hover:border-white/25 hover:bg-white/[0.1] disabled:cursor-not-allowed disabled:opacity-35"
-    >
-      {label}
-    </button>
-  );
-}
+      @media (max-width: 760px) {
+        .preview-toolbar {
+          position: static;
+          align-items: stretch;
+          flex-direction: column;
+        }
 
-function AudioControls({
-  audioKey,
-  activeAudioKey,
-  status,
-  onPlay,
-  onPause,
-  onResume,
-  onStop,
-  compact = false,
-  playLabel = "Probehören",
-}: {
-  audioKey: string;
-  activeAudioKey: string | null;
-  status: AudioStatus;
-  onPlay: () => void;
-  onPause: () => void;
-  onResume: () => void;
-  onStop: () => void;
-  compact?: boolean;
-  playLabel?: string;
-}) {
-  const active = activeAudioKey === audioKey;
-  const padding = compact ? "px-3 py-2 text-xs" : "px-4 py-3 text-xs";
+        .preview-toolbar__actions {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+        }
 
-  if (active && status === "loading") {
-    return (
-      <button
-        type="button"
-        disabled
-        className={`rounded-xl bg-cyan-300/15 font-black text-cyan-100 ${padding}`}
-      >
-        ◌ Stimme wird erzeugt ...
-      </button>
-    );
-  }
+        .button {
+          width: 100%;
+        }
 
-  if (active && status === "playing") {
-    return (
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={onPause}
-          className={`rounded-xl bg-amber-300 font-black text-slate-950 ${padding}`}
-        >
-          ⏸ Pause
-        </button>
-        <button
-          type="button"
-          onClick={onStop}
-          className={`rounded-xl border border-red-300/20 bg-red-400/10 font-black text-red-100 ${padding}`}
-        >
-          ⏹ Stop
-        </button>
-      </div>
-    );
-  }
+        .preview-canvas {
+          padding: 18px 8px 48px;
+          gap: 18px;
+          overflow-x: hidden;
+        }
 
-  if (active && status === "paused") {
-    return (
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={onResume}
-          className={`rounded-xl bg-emerald-300 font-black text-slate-950 ${padding}`}
-        >
-          ▶ Fortsetzen
-        </button>
-        <button
-          type="button"
-          onClick={onStop}
-          className={`rounded-xl border border-red-300/20 bg-red-400/10 font-black text-red-100 ${padding}`}
-        >
-          ⏹ Stop
-        </button>
-      </div>
-    );
-  }
+        .sheet {
+          width: calc(100vw - 16px);
+          min-height: auto;
+          padding: 28px 22px 70px;
+        }
 
-  return (
-    <button
-      type="button"
-      onClick={onPlay}
-      className={`rounded-xl bg-gradient-to-r from-cyan-300 to-indigo-400 font-black text-slate-950 transition hover:scale-[1.01] ${padding}`}
-    >
-      ▶ {playLabel}
-    </button>
-  );
-}
+        .cover-sheet {
+          min-height: calc(100vh - 24px);
+          padding: 0;
+        }
 
-function EmptyTourCard({
-  number,
-  title,
-  text,
-}: {
-  number: string;
-  title: string;
-  text: string;
-}) {
-  return (
-    <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/40 p-5">
-      <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/[0.06] text-xs font-black text-cyan-200">
-        {number}
-      </span>
-      <p className="mt-5 font-black text-white">{title}</p>
-      <p className="mt-2 text-sm leading-6 text-slate-400">{text}</p>
-    </div>
+        .cover-topline {
+          height: auto;
+          padding: 22px;
+        }
+
+        .cover-image {
+          height: 58vw;
+          min-height: 250px;
+        }
+
+        .cover-copy {
+          min-height: auto;
+          padding: 34px 24px 26px;
+        }
+
+        .cover-copy h1 {
+          margin: 18px 0 12px;
+          font-size: 34px;
+        }
+
+        .cover-facts {
+          min-height: auto;
+          margin: 0 24px;
+          grid-template-columns: 1fr;
+        }
+
+        .cover-facts .data-item,
+        .cover-facts .data-item:first-child {
+          padding: 17px 0;
+          border-right: 0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sheet-footer--cover {
+          min-height: 56px;
+          padding: 0 24px;
+        }
+
+        .page-header {
+          grid-template-columns: 1fr;
+          gap: 12px;
+          margin-bottom: 28px;
+        }
+
+        .page-header__brand {
+          grid-template-columns: 1fr auto;
+          align-items: center;
+        }
+
+        .gallery-grid {
+          height: auto;
+          grid-template-columns: 1fr 1fr;
+          grid-template-rows: auto;
+          gap: 10px;
+        }
+
+        .gallery-feature {
+          height: 58vw;
+          min-height: 260px;
+          grid-column: 1 / 3;
+          grid-row: auto;
+        }
+
+        .gallery-tile {
+          height: 38vw;
+          min-height: 150px;
+        }
+
+        .gallery-caption {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .details-layout {
+          min-height: auto;
+          grid-template-columns: 1fr;
+          gap: 30px;
+        }
+
+        .details-sidebar {
+          min-height: 460px;
+        }
+
+        .final-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .content-card {
+          min-height: auto;
+        }
+
+        .contact-panel {
+          grid-template-columns: 1fr;
+          gap: 28px;
+        }
+
+        .contact-panel__details {
+          padding: 26px 0 0;
+          border-top: 1px solid rgba(201, 164, 84, 0.42);
+          border-left: 0;
+        }
+      }
+
+      @page {
+        size: A4;
+        margin: 0;
+      }
+
+      @media print {
+        html,
+        body {
+          width: 210mm;
+          margin: 0;
+          background: #ffffff !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        .preview-toolbar {
+          display: none !important;
+        }
+
+        .preview-canvas {
+          width: 210mm;
+          padding: 0;
+          display: block;
+          background: #ffffff;
+        }
+
+        .sheet {
+          width: 210mm;
+          min-height: 297mm;
+          height: 297mm;
+          margin: 0;
+          padding: 18mm;
+          page-break-after: always;
+          break-after: page;
+          box-shadow: none;
+        }
+
+        .sheet:last-child {
+          page-break-after: auto;
+          break-after: auto;
+        }
+
+        .cover-sheet {
+          padding: 0;
+        }
+
+        .gallery-grid {
+          height: 200mm;
+        }
+
+        .details-layout {
+          min-height: 216mm;
+        }
+      }
+    `}</style>
   );
 }
