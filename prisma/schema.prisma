@@ -50,17 +50,17 @@ model Listing {
   highlights   String?
   style        String?
 
-  generatedVariants String?
-  socialVariants    String?
-  imageAnalysis     String?
+  generatedVariants   String?
+  socialVariants      String?
+  imageAnalysis       String?
   locationDescription String?
   locationData        String?
-  archivedAt        DateTime?
+  archivedAt          DateTime?
 
-  images ListingImage[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  images            ListingImage[]
+  homeStagingImages HomeStagingImage[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 
   @@index([userId])
   @@index([userId, archivedAt])
@@ -81,12 +81,41 @@ model ListingImage {
   position  Int     @default(0)
   isPrimary Boolean @default(false)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  homeStagingImages HomeStagingImage[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 
   @@index([listingId])
   @@index([listingId, position])
   @@index([listingId, isPrimary])
+}
+
+model HomeStagingImage {
+  id String @id @default(cuid())
+
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  sourceImageId String
+  sourceImage   ListingImage @relation(fields: [sourceImageId], references: [id], onDelete: Cascade)
+
+  url        String
+  storageKey String  @unique
+  fileName   String?
+  mimeType   String?
+  sizeBytes  Int?
+
+  roomType      String
+  style         String
+  aiModel       String
+  promptVersion String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([listingId])
+  @@index([sourceImageId])
+  @@index([listingId, createdAt])
 }
 
 model Session {
