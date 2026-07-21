@@ -67,6 +67,32 @@ export default function FeedbackButton() {
     };
   }, [open]);
 
+  useEffect(() => {
+    const openFeedback = () => setOpen(true);
+    const closeFeedback = () => setOpen(false);
+
+    window.addEventListener(
+      "inserat-ai:open-feedback",
+      openFeedback
+    );
+
+    window.addEventListener(
+      "inserat-ai:close-feedback",
+      closeFeedback
+    );
+
+    return () => {
+      window.removeEventListener(
+        "inserat-ai:open-feedback",
+        openFeedback
+      );
+
+      window.removeEventListener(
+        "inserat-ai:close-feedback",
+        closeFeedback
+      );
+    };
+  }, []);
   function closeDialog() {
     if (status === "sending") {
       return;
@@ -139,17 +165,6 @@ export default function FeedbackButton() {
 
   return (
     <>
-      <button
-        type="button"
-        className="feedbackFloatingButton"
-        onClick={() => setOpen(true)}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-      >
-        <span className="feedbackButtonDot" />
-        Feedback
-      </button>
-
       {open ? (
         <div
           className="feedbackOverlay"
@@ -588,3 +603,5 @@ export default function FeedbackButton() {
     </>
   );
 }
+
+
