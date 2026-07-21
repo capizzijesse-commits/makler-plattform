@@ -133,6 +133,7 @@ function isGuidePage(pathname: string): boolean {
     pathname === "/cockpit" ||
     /^\/cockpit\/[^/]+\/?$/.test(pathname) ||
     /^\/cockpit\/[^/]+\/edit\/?$/.test(pathname) ||
+    /^\/cockpit\/[^/]+\/home-staging\/?$/.test(pathname) ||
     pathname === "/dashboard" ||
     pathname === "/dashboard/social-media" ||
     pathname === "/dashboard/tour-guide" ||
@@ -143,7 +144,7 @@ function isGuidePage(pathname: string): boolean {
 
 function getListingId(pathname: string): string | null {
   const match = pathname.match(
-    /^\/(?:cockpit|expose)\/([^/]+)(?:\/edit)?\/?$/
+    /^\/(?:cockpit|expose)\/([^/]+)(?:\/(?:edit|home-staging))?\/?$/
   );
 
   return match?.[1]
@@ -154,6 +155,14 @@ function getListingId(pathname: string): string | null {
 function getPageLabel(pathname: string): string {
   if (pathname === "/cockpit") {
     return "Makler-Cockpit";
+  }
+
+  if (
+    /^\/cockpit\/[^/]+\/home-staging\/?$/.test(
+      pathname
+    )
+  ) {
+    return "Virtuelles Home Staging";
   }
 
   if (/^\/cockpit\/[^/]+\/edit\/?$/.test(pathname)) {

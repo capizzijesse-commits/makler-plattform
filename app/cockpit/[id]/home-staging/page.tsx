@@ -1,12 +1,14 @@
-﻿"use client";
+"use client";
 
 import { upload } from "@vercel/blob/client";
+import FloorPlanAnalyzer from "./FloorPlanAnalyzer";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
   useEffect,
   useMemo,
   useState,
+  type ChangeEvent,
 } from "react";
 
 type ListingImage = {
@@ -42,6 +44,16 @@ type StagingStyle =
   | "scandinavian"
   | "luxurious"
   | "minimalist";
+
+type OutputSize =
+  | "720x928"
+  | "928x720"
+  | "816x816"
+  | "1024x1536"
+  | "1536x1024"
+  | "1024x1024";
+
+type GenerationMode = "preview" | "final";
 
 type HomeStagingPreview = {
   imageBase64: string;
@@ -147,6 +159,62 @@ function base64ToFile(
   });
 }
 
+function detectOutputSize(
+  imageUrl: string,
+  mode: GenerationMode
+): Promise<OutputSize> {
+  return new Promise((resolve) => {
+    const image = new window.Image();
+
+    image.onload = () => {
+      const width = image.naturalWidth;
+      const height = image.naturalHeight;
+
+      const ratio =
+        width && height
+          ? width / height
+          : 1.34;
+
+      if (mode === "final") {
+        if (ratio > 1.12) {
+          resolve("1536x1024");
+          return;
+        }
+
+        if (ratio < 0.88) {
+          resolve("1024x1536");
+          return;
+        }
+
+        resolve("1024x1024");
+        return;
+      }
+
+      if (ratio > 1.12) {
+        resolve("928x720");
+        return;
+      }
+
+      if (ratio < 0.88) {
+        resolve("720x928");
+        return;
+      }
+
+      resolve("816x816");
+    };
+
+    image.onerror = () => {
+      resolve(
+        mode === "final"
+          ? "1536x1024"
+          : "928x720"
+      );
+    };
+
+    image.src = imageUrl;
+  });
+}
+
 export default function HomeStagingPage() {
   const params = useParams();
   const router = useRouter();
@@ -164,6 +232,18 @@ export default function HomeStagingPage() {
     useState<RoomType>("livingRoom");
   const [style, setStyle] =
     useState<StagingStyle>("modern");
+  const [
+    generationMode,
+    setGenerationMode,
+  ] = useState<GenerationMode>("preview");
+  const [
+    variationIndex,
+    setVariationIndex,
+  ] = useState(0);
+  const [
+    customInstructions,
+    setCustomInstructions,
+  ] = useState("");
   const [preview, setPreview] =
     useState<HomeStagingPreview | null>(null);
 
@@ -171,6 +251,20 @@ export default function HomeStagingPage() {
   const [generating, setGenerating] =
     useState(false);
   const [saving, setSaving] = useState(false);
+  const [
+    uploadingImages,
+    setUploadingImages,
+  ] = useState(false);
+  const [uploadMessage, setUploadMessage] =
+    useState("");
+  const [
+    pendingDeleteImage,
+    setPendingDeleteImage,
+  ] = useState<ListingImage | null>(null);
+  const [
+    deletingImageId,
+    setDeletingImageId,
+  ] = useState<string | null>(null);
 
   const [error, setError] = useState("");
   const [statusMessage, setStatusMessage] =
@@ -295,6 +389,7 @@ export default function HomeStagingPage() {
     setSavedImageUrl("");
     setStatusMessage("");
     setError("");
+    setVariationIndex(0);
   }
 
   function chooseImage(imageId: string) {
@@ -312,7 +407,399 @@ export default function HomeStagingPage() {
     resetResult();
   }
 
-  async function generatePreview() {
+  function chooseGenerationMode(
+    mode: GenerationMode
+  ) {
+    setGenerationMode(mode);
+    resetResult();
+  }
+
+  function changeCustomInstructions(
+    value: string
+  ) {
+    setCustomInstructions(value.slice(0, 500));
+    resetResult();
+  }
+
+  async function handleImageUpload(
+    event: ChangeEvent<HTMLInputElement>
+  ) {
+    const selectedFiles = Array.from(
+      event.target.files || []
+    );
+
+    event.target.value = "";
+
+    if (
+      !listing ||
+      selectedFiles.length === 0 ||
+      uploadingImages ||
+      generating ||
+      saving
+    ) {
+      return;
+    }
+
+    const availableSlots = Math.max(
+      0,
+      10 - listing.images.length
+    );
+
+    if (availableSlots === 0) {
+      setError(
+        "Für dieses Objekt sind bereits 10 Bilder gespeichert."
+      );
+      return;
+    }
+
+    const filesToUpload = selectedFiles.slice(
+      0,
+      availableSlots
+    );
+
+    const invalidFile = filesToUpload.find(
+      (file) =>
+        ![
+          "image/jpeg",
+          "image/png",
+          "image/webp",
+        ].includes(file.type) ||
+        file.size > 10 * 1024 * 1024
+    );
+
+    if (invalidFile) {
+      setError(
+        "Erlaubt sind JPEG, PNG und WebP mit maximal 10 MB pro Bild."
+      );
+      return;
+    }
+
+    try {
+      setUploadingImages(true);
+      setUploadMessage("");
+      setError("");
+      setStatusMessage("");
+
+      const uploadedImages: ListingImage[] = [];
+
+      for (
+        let index = 0;
+        index < filesToUpload.length;
+        index += 1
+      ) {
+        const file = filesToUpload[index];
+
+        setUploadMessage(
+          `Bild ${index + 1} von ${
+            filesToUpload.length
+          } wird hochgeladen …`
+        );
+
+        const safeFileName = file.name
+          .normalize("NFKD")
+          .replace(/[^a-zA-Z0-9._-]+/g, "-")
+          .replace(/-+/g, "-")
+          .replace(/^-|-$/g, "");
+
+        const blob = await upload(
+          `listing-images/${listing.id}/${Date.now()}-${index}-${
+            safeFileName || "objektbild"
+          }`,
+          file,
+          {
+            access: "public",
+            handleUploadUrl:
+              "/api/listing-images/upload",
+            clientPayload: JSON.stringify({
+              listingId: listing.id,
+            }),
+          }
+        );
+
+        const imageResponse = await fetch(
+          "/api/listing-images",
+          {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              listingId: listing.id,
+              url: blob.url,
+              storageKey: blob.pathname,
+              fileName: file.name,
+              mimeType: file.type,
+              sizeBytes: file.size,
+            }),
+          }
+        );
+
+        if (imageResponse.status === 401) {
+          router.replace("/login");
+          return;
+        }
+
+        const imageData = (await imageResponse
+          .json()
+          .catch(() => ({}))) as {
+          image?: ListingImage;
+          error?: string;
+        };
+
+        if (
+          !imageResponse.ok ||
+          !imageData.image
+        ) {
+          throw new Error(
+            imageData.error ||
+              `Das Bild „${file.name}“ konnte nicht gespeichert werden.`
+          );
+        }
+
+        uploadedImages.push(imageData.image);
+      }
+
+      setListing((currentListing) => {
+        if (!currentListing) {
+          return currentListing;
+        }
+
+        return {
+          ...currentListing,
+          images: [
+            ...currentListing.images,
+            ...uploadedImages,
+          ].sort(
+            (firstImage, secondImage) =>
+              firstImage.position -
+              secondImage.position
+          ),
+        };
+      });
+
+      if (uploadedImages[0]) {
+        setSelectedImageId(
+          uploadedImages[0].id
+        );
+      }
+
+      setPreview(null);
+      setSavedImageUrl("");
+
+      setUploadMessage(
+        uploadedImages.length === 1
+          ? "Das neue Raumfoto wurde gespeichert und ausgewählt."
+          : `${uploadedImages.length} neue Raumfotos wurden gespeichert. Das erste neue Bild wurde ausgewählt.`
+      );
+    } catch (uploadError) {
+      console.error(
+        "Raumfotos konnten nicht hochgeladen werden:",
+        uploadError
+      );
+
+      setError(
+        uploadError instanceof Error
+          ? uploadError.message
+          : "Die Raumfotos konnten nicht hochgeladen werden."
+      );
+    } finally {
+      setUploadingImages(false);
+    }
+  }
+
+  function requestImageDeletion(
+    image: ListingImage
+  ) {
+    if (
+      generating ||
+      saving ||
+      uploadingImages ||
+      deletingImageId
+    ) {
+      return;
+    }
+
+    setPendingDeleteImage(image);
+    setError("");
+    setUploadMessage("");
+  }
+
+  function cancelImageDeletion() {
+    if (deletingImageId) {
+      return;
+    }
+
+    setPendingDeleteImage(null);
+  }
+
+  async function deleteSelectedImage() {
+    const image = pendingDeleteImage;
+
+    if (
+      !listing ||
+      !image ||
+      deletingImageId ||
+      generating ||
+      saving ||
+      uploadingImages
+    ) {
+      return;
+    }
+
+    try {
+      setDeletingImageId(image.id);
+      setError("");
+      setUploadMessage("");
+
+      const response = await fetch(
+        `/api/listing-images/${encodeURIComponent(
+          image.id
+        )}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      if (response.status === 401) {
+        router.replace("/login");
+        return;
+      }
+
+      const data = (await response
+        .json()
+        .catch(() => ({}))) as {
+        success?: boolean;
+        error?: string;
+        nextPrimaryImage?: ListingImage | null;
+      };
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.error ||
+            "Das Bild konnte nicht gelöscht werden."
+        );
+      }
+
+      const remainingImages =
+        listing.images.filter(
+          (currentImage) =>
+            currentImage.id !== image.id
+        );
+
+      const nextPrimaryId =
+        data.nextPrimaryImage?.id ?? null;
+
+      const updatedImages = remainingImages
+        .map((currentImage) => ({
+          ...currentImage,
+          isPrimary: nextPrimaryId
+            ? currentImage.id === nextPrimaryId
+            : currentImage.isPrimary,
+        }))
+        .sort(
+          (firstImage, secondImage) =>
+            Number(secondImage.isPrimary) -
+              Number(firstImage.isPrimary) ||
+            firstImage.position -
+              secondImage.position
+        );
+
+      setListing({
+        ...listing,
+        images: updatedImages,
+      });
+
+      setSelectedImageId((currentId) =>
+        currentId === image.id
+          ? nextPrimaryId ||
+            updatedImages[0]?.id ||
+            ""
+          : currentId
+      );
+
+      resetResult();
+      setPendingDeleteImage(null);
+      setUploadMessage(
+        "Das Raumfoto wurde dauerhaft gelöscht."
+      );
+    } catch (deleteError) {
+      console.error(
+        "Raumfoto konnte nicht gelöscht werden:",
+        deleteError
+      );
+
+      setError(
+        deleteError instanceof Error
+          ? deleteError.message
+          : "Das Raumfoto konnte nicht gelöscht werden."
+      );
+    } finally {
+      setDeletingImageId(null);
+    }
+  }
+
+  function renderImageUpload() {
+    const imageCount =
+      listing?.images.length ?? 0;
+
+    const uploadDisabled =
+      uploadingImages ||
+      generating ||
+      saving ||
+      imageCount >= 10;
+
+    return (
+      <div className="directImageUpload">
+        <label
+          className={
+            uploadDisabled
+              ? "directImageUploadButton directImageUploadButtonDisabled"
+              : "directImageUploadButton"
+          }
+        >
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            disabled={uploadDisabled}
+            onChange={handleImageUpload}
+          />
+
+          <span
+            className="directImageUploadIcon"
+            aria-hidden="true"
+          >
+            ＋
+          </span>
+
+          <div>
+            <strong>
+              {uploadingImages
+                ? "Raumfotos werden hochgeladen …"
+                : imageCount >= 10
+                  ? "Maximal 10 Objektbilder erreicht"
+                  : "Neue Raumfotos hochladen"}
+            </strong>
+
+            <small>
+              JPEG, PNG oder WebP · maximal
+              10 MB pro Bild
+            </small>
+          </div>
+        </label>
+
+        {uploadMessage && (
+          <p className="directImageUploadMessage">
+            {uploadMessage}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  async function runGeneration(variationIndexForRequest: number) {
     if (
       !listing ||
       !selectedImage ||
@@ -329,6 +816,11 @@ export default function HomeStagingPage() {
       setStatusMessage("");
       setError("");
 
+      const outputSize = await detectOutputSize(
+        selectedImage.url,
+        generationMode
+      );
+
       const response = await fetch(
         "/api/home-staging/generate",
         {
@@ -342,6 +834,11 @@ export default function HomeStagingPage() {
             sourceImageId: selectedImage.id,
             roomType,
             style,
+            customInstructions,
+            outputSize,
+            mode: generationMode,
+            variationIndex:
+              variationIndexForRequest,
           }),
         }
       );
@@ -384,6 +881,21 @@ export default function HomeStagingPage() {
     } finally {
       setGenerating(false);
     }
+  }
+
+  function generatePreview() {
+    void runGeneration(variationIndex);
+  }
+
+  function generateNewVariant() {
+    const nextVariationIndex =
+      variationIndex + 1;
+
+    setVariationIndex(nextVariationIndex);
+
+    void runGeneration(
+      nextVariationIndex
+    );
   }
 
   async function saveResult() {
@@ -629,9 +1141,11 @@ export default function HomeStagingPage() {
               eingerichteten Raumes hoch.
             </p>
 
+            {renderImageUpload()}
+
             <Link
               href={`/cockpit/${listing.id}`}
-              className="primaryLink"
+              className="secondaryPageLink"
             >
               Zur Objektseite
             </Link>
@@ -652,43 +1166,179 @@ export default function HomeStagingPage() {
                 <div className="imageSelection">
                   {listing.images.map(
                     (image, index) => (
-                      <button
+                      <article
                         key={image.id}
-                        type="button"
-                        className={
-                          image.id ===
-                          selectedImageId
-                            ? "imageChoice imageChoiceActive"
-                            : "imageChoice"
-                        }
-                        onClick={() =>
-                          chooseImage(image.id)
-                        }
-                        disabled={
-                          generating || saving
-                        }
+                        className="imageChoiceWrapper"
                       >
-                        <img
-                          src={image.url}
-                          alt={
-                            image.fileName ||
-                            `Objektbild ${index + 1}`
+                        <button
+                          type="button"
+                          className={
+                            image.id ===
+                            selectedImageId
+                              ? "imageChoice imageChoiceActive"
+                              : "imageChoice"
                           }
-                        />
+                          onClick={() =>
+                            chooseImage(image.id)
+                          }
+                          disabled={
+                            generating ||
+                            saving ||
+                            uploadingImages ||
+                            deletingImageId !== null
+                          }
+                          aria-label={`Bild ${
+                            index + 1
+                          } auswählen`}
+                        >
+                          <img
+                            src={image.url}
+                            alt={
+                              image.fileName ||
+                              `Objektbild ${index + 1}`
+                            }
+                          />
 
-                        <span>
-                          Bild {index + 1}
-                          {image.isPrimary
-                            ? " · Hauptbild"
-                            : ""}
-                        </span>
-                      </button>
+                          <span>
+                            Bild {index + 1}
+                            {image.isPrimary
+                              ? " · Hauptbild"
+                              : ""}
+                          </span>
+                        </button>
+
+                        <button
+                          type="button"
+                          className="deleteImageButton"
+                          onClick={() =>
+                            requestImageDeletion(
+                              image
+                            )
+                          }
+                          disabled={
+                            generating ||
+                            saving ||
+                            uploadingImages ||
+                            deletingImageId !== null
+                          }
+                          aria-label={`Bild ${
+                            index + 1
+                          } löschen`}
+                          title="Bild löschen"
+                        >
+                          {deletingImageId ===
+                          image.id ? (
+                            <span
+                              className="deleteImageSpinner"
+                              aria-hidden="true"
+                            />
+                          ) : (
+                            <svg
+                              viewBox="0 0 24 24"
+                              aria-hidden="true"
+                            >
+                              <path
+                                d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5m4-5v5"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          )}
+                        </button>
+                      </article>
                     )
                   )}
                 </div>
+
+                {renderImageUpload()}
+                {pendingDeleteImage ? (
+                  <div
+                    className="imageDeleteConfirmation"
+                    role="alert"
+                  >
+                      <div>
+                        <small>
+                          BILD DAUERHAFT LÖSCHEN
+                        </small>
+
+                        <strong>
+                          Raumfoto wirklich entfernen?
+                        </strong>
+
+                        <p>
+                          Das ausgewählte Bild wird
+                          aus dem Objekt und dem
+                          Bildspeicher gelöscht.
+                          Dieser Vorgang kann nicht
+                          rückgängig gemacht werden.
+                        </p>
+
+                        {pendingDeleteImage.isPrimary ? (
+                          <p className="primaryDeleteWarning">
+                            Dieses Bild ist das
+                            Hauptbild. Inserat-AI
+                            bestimmt automatisch ein
+                            neues Hauptbild.
+                          </p>
+                        ) : null}
+                      </div>
+
+                      <div className="imageDeleteButtons">
+                        <button
+                          type="button"
+                          className="cancelImageDeleteButton"
+                          onClick={
+                            cancelImageDeletion
+                          }
+                          disabled={
+                            deletingImageId !== null
+                          }
+                        >
+                          Abbrechen
+                        </button>
+
+                        <button
+                          type="button"
+                          className="confirmImageDeleteButton"
+                          onClick={
+                            deleteSelectedImage
+                          }
+                          disabled={
+                            deletingImageId !== null
+                          }
+                        >
+                          {deletingImageId
+                            ? "Wird gelöscht …"
+                            : "Dauerhaft löschen"}
+                        </button>
+                      </div>
+                  </div>
+                ) : null}
+
               </div>
 
-              <div className="panel">
+                          <section className="roomDesignGroup">
+              <div className="workflowGroupHeading">
+                <span>2</span>
+
+                <div>
+                  <small>RAUM GESTALTEN</small>
+
+                  <h2>
+                    Raum, Stil und Wünsche festlegen
+                  </h2>
+
+                  <p>
+                    Bestimme Nutzung, Einrichtung und
+                    individuelle Vorgaben gemeinsam
+                    in einem Arbeitsbereich.
+                  </p>
+                </div>
+              </div>
+<div className="panel">
                 <div className="panelHeading">
                   <span>2</span>
 
@@ -765,9 +1415,183 @@ export default function HomeStagingPage() {
                   ))}
                 </div>
               </div>
+
+              <div className="panel customPromptPanel">
+                <div className="panelHeading">
+                  <span>4</span>
+
+                  <div>
+                    <small>EIGENE WÜNSCHE</small>
+                    <h2>Einrichtung beschreiben</h2>
+                  </div>
+                </div>
+
+                <label className="customPromptField">
+                  <span>
+                    Wie soll der Raum eingerichtet
+                    werden?
+                  </span>
+
+                  <textarea
+                    value={customInstructions}
+                    onChange={(event) =>
+                      changeCustomInstructions(
+                        event.target.value
+                      )
+                    }
+                    maxLength={500}
+                    rows={5}
+                    disabled={
+                      generating || saving
+                    }
+                    placeholder="Zum Beispiel: Helles beigefarbenes Sofa, runder Holztisch, warme Beleuchtung, wenige Pflanzen und keine Teppiche."
+                  />
+                </label>
+
+                <div className="customPromptFooter">
+                  <span>
+                    Die Wünsche gelten nur für Möbel,
+                    Farben, Textilien, Licht und
+                    Dekoration. Bauliche Merkmale
+                    bleiben geschützt.
+                  </span>
+
+                  <strong>
+                    {customInstructions.length} / 500
+                  </strong>
+                </div>
+
+                <div className="promptExamples">
+                  <span>Beispiele:</span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      changeCustomInstructions(
+                        "Helles Sofa, runder Holztisch, warme Beleuchtung und wenige Pflanzen."
+                      )
+                    }
+                    disabled={generating || saving}
+                  >
+                    Warm und wohnlich
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      changeCustomInstructions(
+                        "Dunkles Ledersofa, schwarzer Metalltisch, dezente Kunst und keine Teppiche."
+                      )
+                    }
+                    disabled={generating || saving}
+                  >
+                    Markant und modern
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      changeCustomInstructions(
+                        "Naturholz, helle Stoffe, dezente Pflanzen und möglichst wenig Dekoration."
+                      )
+                    }
+                    disabled={generating || saving}
+                  >
+                    Natürlich und ruhig
+                  </button>
+                </div>
+              </div>
             </section>
 
+            <FloorPlanAnalyzer
+              listingId={listing.id}
+              disabled={
+                generating ||
+                saving ||
+                uploadingImages
+              }
+              onApply={changeCustomInstructions}
+            />
+                        </section>
+
             <section className="generationPanel">
+              <div className="generationModeSection">
+                <div className="generationModeHeading">
+                  <small>AUSGABEQUALITÄT</small>
+                  <h2>Generierungsmodus wählen</h2>
+                </div>
+
+                <div className="generationModeGrid">
+                  <button
+                    type="button"
+                    className={
+                      generationMode === "preview"
+                        ? "generationModeCard generationModeCardActive"
+                        : "generationModeCard"
+                    }
+                    onClick={() =>
+                      chooseGenerationMode(
+                        "preview"
+                      )
+                    }
+                    disabled={
+                      generating ||
+                      saving ||
+                      uploadingImages
+                    }
+                  >
+                    <span>⚡</span>
+
+                    <div>
+                      <strong>
+                        Schnellvorschau
+                      </strong>
+
+                      <small>
+                        Schneller prüfen, wie Stil,
+                        Möbel und Farben wirken
+                      </small>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={
+                      generationMode === "final"
+                        ? "generationModeCard generationModeCardActive"
+                        : "generationModeCard"
+                    }
+                    onClick={() =>
+                      chooseGenerationMode(
+                        "final"
+                      )
+                    }
+                    disabled={
+                      generating ||
+                      saving ||
+                      uploadingImages
+                    }
+                  >
+                    <span>◆</span>
+
+                    <div>
+                      <strong>
+                        Finales Vermarktungsbild
+                      </strong>
+
+                      <small>
+                        Höhere Qualität für Inserat,
+                        Exposé und Social Media
+                      </small>
+                    </div>
+                  </button>
+                </div>
+
+                <div className="generationModeNotice">
+                  {generationMode === "preview"
+                    ? "Schnellmodus aktiv: geeignet zum Ausprobieren und Vergleichen."
+                    : "Finalmodus aktiv: benötigt länger, liefert aber mehr Details und eine grössere Ausgabe."}
+                </div>
+              </div>
               <div>
                 <span className="generationLabel">
                   BEREIT ZUR VISUALISIERUNG
@@ -823,16 +1647,6 @@ export default function HomeStagingPage() {
               </div>
             )}
 
-            {statusMessage && (
-              <div className="messageBox successBox">
-                <strong>
-                  {savedImageUrl
-                    ? "Ergebnis gespeichert"
-                    : "Vorschau bereit"}
-                </strong>
-                <span>{statusMessage}</span>
-              </div>
-            )}
 
             {generating && (
               <section className="generationProgress">
@@ -853,6 +1667,25 @@ export default function HomeStagingPage() {
 
             {preview && selectedImage && (
               <section className="resultSection">
+                {statusMessage && (
+                  <div className="resultStatusBar">
+                    <div className="resultStatusIcon">
+                      ✓
+                    </div>
+
+                    <div>
+                      <strong>
+                        {savedImageUrl
+                          ? "Ergebnis gespeichert"
+                          : "Vorschau bereit"}
+                      </strong>
+
+                      <span>
+                        {statusMessage}
+                      </span>
+                    </div>
+                  </div>
+                )}
                 <div className="resultHeading">
                   <div>
                     <span className="eyebrow">
@@ -926,14 +1759,14 @@ export default function HomeStagingPage() {
                     <button
                       type="button"
                       className="secondaryButton"
-                      onClick={generatePreview}
+                      onClick={generateNewVariant}
                       disabled={
                         generating ||
                         saving ||
                         Boolean(savedImageUrl)
                       }
                     >
-                      Neu erstellen
+                      Neue Variante erstellen
                     </button>
 
                     <button
@@ -1216,6 +2049,274 @@ function PageStyles() {
         font-weight: 800;
       }
 
+      .directImageUpload {
+        display: grid;
+        gap: 9px;
+        margin-top: 16px;
+      }
+
+      .directImageUploadButton {
+        display: flex;
+        min-height: 76px;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
+        border: 1px dashed rgba(34, 211, 238, 0.48);
+        border-radius: 15px;
+        background:
+          linear-gradient(
+            135deg,
+            rgba(8, 145, 178, 0.13),
+            rgba(79, 70, 229, 0.13)
+          );
+        color: #e2e8f0;
+        cursor: pointer;
+        transition:
+          border-color 160ms ease,
+          transform 160ms ease,
+          background 160ms ease;
+      }
+
+      .directImageUploadButton:hover {
+        transform: translateY(-1px);
+        border-color: rgba(251, 191, 36, 0.62);
+        background:
+          linear-gradient(
+            135deg,
+            rgba(8, 145, 178, 0.2),
+            rgba(120, 53, 15, 0.18)
+          );
+      }
+
+      .directImageUploadButton input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .directImageUploadButtonDisabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+
+      .directImageUploadButtonDisabled:hover {
+        transform: none;
+      }
+
+      .directImageUploadIcon {
+        display: grid;
+        width: 42px;
+        height: 42px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid rgba(251, 191, 36, 0.42);
+        border-radius: 50%;
+        background: rgba(245, 158, 11, 0.13);
+        color: #fcd34d;
+        font-size: 25px;
+        font-weight: 900;
+      }
+
+      .directImageUploadButton div {
+        display: grid;
+        gap: 4px;
+      }
+
+      .directImageUploadButton strong {
+        color: #ffffff;
+        font-size: 14px;
+      }
+
+      .directImageUploadButton small {
+        color: #94a3b8;
+        font-size: 11px;
+      }
+
+      .directImageUploadMessage {
+        margin: 0;
+        color: #a5f3fc;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .secondaryPageLink {
+        display: inline-flex;
+        min-height: 44px;
+        align-items: center;
+        justify-content: center;
+        padding: 0 18px;
+        border: 1px solid rgba(148, 163, 184, 0.28);
+        border-radius: 12px;
+        background: rgba(15, 23, 42, 0.8);
+        color: #e2e8f0;
+        font-weight: 850;
+        text-decoration: none;
+      }
+
+      .imageChoiceWrapper {
+        position: relative;
+        min-width: 0;
+      }
+
+      .imageChoiceWrapper .imageChoice {
+        width: 100%;
+        height: 100%;
+      }
+
+      .deleteImageButton {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        z-index: 5;
+        display: grid;
+        width: 35px;
+        height: 35px;
+        place-items: center;
+        padding: 0;
+        border: 1px solid rgba(254, 202, 202, 0.55);
+        border-radius: 10px;
+        background: rgba(69, 10, 10, 0.9);
+        color: #fecaca;
+        cursor: pointer;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.38);
+        transition:
+          transform 150ms ease,
+          background 150ms ease,
+          border-color 150ms ease;
+      }
+
+      .deleteImageButton:hover:not(:disabled) {
+        transform: translateY(-1px) scale(1.05);
+        border-color: rgba(248, 113, 113, 0.95);
+        background: rgba(153, 27, 27, 0.97);
+      }
+
+      .deleteImageButton:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+
+      .deleteImageButton svg {
+        width: 19px;
+        height: 19px;
+      }
+
+      .deleteImageSpinner {
+        width: 15px;
+        height: 15px;
+        border: 2px solid rgba(254, 202, 202, 0.28);
+        border-top-color: #fecaca;
+        border-radius: 50%;
+        animation: deleteImageSpin 700ms linear infinite;
+      }
+
+      @keyframes deleteImageSpin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .imageDeleteConfirmation {
+        display: grid;
+        grid-template-columns:
+          minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 18px;
+        padding: 17px;
+        border: 1px solid rgba(248, 113, 113, 0.35);
+        border-radius: 14px;
+        background:
+          linear-gradient(
+            135deg,
+            rgba(69, 10, 10, 0.28),
+            rgba(15, 23, 42, 0.85)
+          );
+      }
+
+      .imageDeleteConfirmation > div:first-child {
+        display: grid;
+        gap: 7px;
+      }
+
+      .imageDeleteConfirmation small {
+        color: #fca5a5;
+        font-size: 9px;
+        font-weight: 900;
+        letter-spacing: 0.1em;
+      }
+
+      .imageDeleteConfirmation strong {
+        color: #ffffff;
+        font-size: 14px;
+      }
+
+      .imageDeleteConfirmation p {
+        margin: 0;
+        color: #cbd5e1;
+        font-size: 12px;
+        line-height: 1.55;
+      }
+
+      .imageDeleteConfirmation
+        .primaryDeleteWarning {
+        color: #fde68a;
+      }
+
+      .imageDeleteButtons {
+        display: flex;
+        gap: 8px;
+      }
+
+      .cancelImageDeleteButton,
+      .confirmImageDeleteButton {
+        min-height: 40px;
+        padding: 0 13px;
+        border-radius: 10px;
+        cursor: pointer;
+        font: inherit;
+        font-size: 11px;
+        font-weight: 900;
+        white-space: nowrap;
+      }
+
+      .cancelImageDeleteButton {
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        background: rgba(15, 23, 42, 0.8);
+        color: #e2e8f0;
+      }
+
+      .confirmImageDeleteButton {
+        border: 1px solid rgba(248, 113, 113, 0.55);
+        background:
+          linear-gradient(
+            135deg,
+            #b91c1c,
+            #ef4444
+          );
+        color: #ffffff;
+      }
+
+      .cancelImageDeleteButton:disabled,
+      .confirmImageDeleteButton:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+
+      @media (max-width: 700px) {
+        .imageDeleteConfirmation {
+          grid-template-columns: 1fr;
+        }
+
+        .imageDeleteButtons {
+          display: grid;
+          grid-template-columns: 1fr;
+        }
+
+      }
       .optionGrid {
         display: grid;
         grid-template-columns:
@@ -1257,6 +2358,210 @@ function PageStyles() {
           );
       }
 
+      .customPromptField {
+        display: grid;
+        gap: 9px;
+      }
+
+      .customPromptField > span {
+        color: #e2e8f0;
+        font-size: 13px;
+        font-weight: 850;
+      }
+
+      .customPromptField textarea {
+        width: 100%;
+        min-height: 126px;
+        resize: vertical;
+        padding: 15px 16px;
+        border: 1px solid rgba(148, 163, 184, 0.24);
+        border-radius: 14px;
+        outline: none;
+        background: rgba(2, 6, 23, 0.62);
+        color: #f8fafc;
+        font: inherit;
+        line-height: 1.55;
+        box-sizing: border-box;
+      }
+
+      .customPromptField textarea:focus {
+        border-color: rgba(251, 191, 36, 0.65);
+        box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+      }
+
+      .customPromptField textarea::placeholder {
+        color: #64748b;
+      }
+
+      .customPromptFooter {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        margin-top: 9px;
+        color: #94a3b8;
+        font-size: 11px;
+        line-height: 1.5;
+      }
+
+      .customPromptFooter span {
+        max-width: 760px;
+      }
+
+      .customPromptFooter strong {
+        flex: 0 0 auto;
+        color: #fbbf24;
+      }
+
+      .promptExamples {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        margin-top: 15px;
+      }
+
+      .promptExamples > span {
+        margin-right: 2px;
+        color: #94a3b8;
+        font-size: 11px;
+        font-weight: 850;
+      }
+
+      .promptExamples button {
+        min-height: 34px;
+        padding: 0 11px;
+        border: 1px solid rgba(34, 211, 238, 0.25);
+        border-radius: 999px;
+        background: rgba(8, 47, 73, 0.24);
+        color: #a5f3fc;
+        font-size: 11px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .promptExamples button:hover {
+        border-color: rgba(251, 191, 36, 0.5);
+        color: #fde68a;
+      }
+
+      .generationModeSection {
+        display: grid;
+        gap: 15px;
+        margin-bottom: 23px;
+        padding-bottom: 22px;
+        border-bottom: 1px solid
+          rgba(148, 163, 184, 0.16);
+      }
+
+      .generationModeHeading small {
+        color: #93c5fd;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0.1em;
+      }
+
+      .generationModeHeading h2 {
+        margin: 5px 0 0;
+        color: #ffffff;
+        font-size: 20px;
+      }
+
+      .generationModeGrid {
+        display: grid;
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .generationModeCard {
+        display: flex;
+        min-height: 94px;
+        align-items: center;
+        gap: 13px;
+        padding: 15px;
+        border: 1px solid
+          rgba(148, 163, 184, 0.22);
+        border-radius: 15px;
+        background: rgba(2, 6, 23, 0.56);
+        color: #cbd5e1;
+        cursor: pointer;
+        text-align: left;
+        transition:
+          transform 160ms ease,
+          border-color 160ms ease,
+          background 160ms ease;
+      }
+
+      .generationModeCard:hover:not(:disabled) {
+        transform: translateY(-1px);
+        border-color:
+          rgba(34, 211, 238, 0.48);
+      }
+
+      .generationModeCardActive {
+        border-color: #fbbf24;
+        background:
+          linear-gradient(
+            135deg,
+            rgba(120, 53, 15, 0.22),
+            rgba(8, 47, 73, 0.26)
+          );
+        box-shadow:
+          0 0 0 2px rgba(251, 191, 36, 0.1);
+      }
+
+      .generationModeCard > span {
+        display: grid;
+        width: 40px;
+        height: 40px;
+        flex: 0 0 auto;
+        place-items: center;
+        border-radius: 12px;
+        background:
+          rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+        font-size: 18px;
+        font-weight: 900;
+      }
+
+      .generationModeCard div {
+        display: grid;
+        gap: 5px;
+      }
+
+      .generationModeCard strong {
+        color: #ffffff;
+        font-size: 13px;
+      }
+
+      .generationModeCard small {
+        color: #94a3b8;
+        font-size: 11px;
+        line-height: 1.45;
+      }
+
+      .generationModeCard:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+
+      .generationModeNotice {
+        padding: 11px 13px;
+        border: 1px solid
+          rgba(96, 165, 250, 0.2);
+        border-radius: 11px;
+        background:
+          rgba(30, 64, 175, 0.1);
+        color: #bfdbfe;
+        font-size: 11px;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 700px) {
+        .generationModeGrid {
+          grid-template-columns: 1fr;
+        }
+      }
       .generationPanel {
         display: flex;
         align-items: center;
@@ -1384,12 +2689,14 @@ function PageStyles() {
 
       .comparisonGrid {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 16px;
+        grid-template-columns: 1fr;
+        justify-items: center;
+        gap: 18px;
       }
 
       .comparisonCard {
         overflow: hidden;
+        width: min(720px, 100%);
         border: 1px solid rgba(148, 163, 184, 0.2);
         border-radius: 17px;
         background: rgba(2, 6, 23, 0.65);
@@ -1415,15 +2722,15 @@ function PageStyles() {
       .comparisonImage {
         position: relative;
         overflow: hidden;
-        min-height: 310px;
+        width: 100%;
         background: #020617;
       }
 
       .comparisonImage img {
         display: block;
         width: 100%;
-        height: 100%;
-        min-height: 310px;
+        height: auto;
+        max-height: 560px;
         object-fit: contain;
       }
 
@@ -1543,6 +2850,7 @@ function PageStyles() {
       @media (max-width: 880px) {
         .hero {
           grid-template-columns: 1fr;
+        justify-items: center;
         }
 
         .objectSummary {
@@ -1561,8 +2869,11 @@ function PageStyles() {
         }
 
         .comparisonGrid {
-          grid-template-columns: 1fr;
-        }
+        display: grid;
+        grid-template-columns: 1fr;
+        justify-items: center;
+        gap: 18px;
+      }
 
         .saveActions {
           width: 100%;
@@ -1609,12 +2920,17 @@ function PageStyles() {
           padding-bottom: 5px;
         }
 
-        .imageChoice {
+        .imageChoiceWrapper {
           flex: 0 0 150px;
+        }
+
+        .imageChoiceWrapper .imageChoice {
+          width: 100%;
         }
 
         .optionGrid {
           grid-template-columns: 1fr;
+        justify-items: center;
         }
 
         .resultHeading {
@@ -1624,14 +2940,295 @@ function PageStyles() {
 
         .comparisonImage,
         .comparisonImage img {
-          min-height: 230px;
-        }
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 560px;
+        object-fit: contain;
+      }
 
         .saveActions {
           flex-direction: column;
         }
       }
 
+      .roomDesignGroup {
+        display: grid;
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+        padding: 22px;
+        border: 1px solid
+          rgba(251, 191, 36, 0.2);
+        border-radius: 24px;
+        background:
+          linear-gradient(
+            145deg,
+            rgba(15, 23, 42, 0.92),
+            rgba(8, 17, 35, 0.92)
+          );
+        box-shadow:
+          0 24px 60px rgba(0, 0, 0, 0.18);
+      }
+
+      .workflowGroupHeading {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 3px 4px 17px;
+        border-bottom: 1px solid
+          rgba(148, 163, 184, 0.15);
+      }
+
+      .workflowGroupHeading > span {
+        display: grid;
+        width: 44px;
+        height: 44px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid
+          rgba(251, 191, 36, 0.5);
+        border-radius: 50%;
+        background:
+          rgba(120, 53, 15, 0.18);
+        color: #fbbf24;
+        font-size: 16px;
+        font-weight: 950;
+      }
+
+      .workflowGroupHeading small {
+        color: #93c5fd;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+      }
+
+      .workflowGroupHeading h2 {
+        margin: 5px 0 0;
+        color: #ffffff;
+        font-size: 24px;
+      }
+
+      .workflowGroupHeading p {
+        max-width: 720px;
+        margin: 7px 0 0;
+        color: #94a3b8;
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .roomDesignGroup > .panel {
+        min-width: 0;
+        margin: 0;
+        padding: 20px;
+        border-color:
+          rgba(148, 163, 184, 0.16);
+        border-radius: 17px;
+        background:
+          rgba(2, 6, 23, 0.42);
+        box-shadow: none;
+      }
+
+      .roomDesignGroup
+        > .panel
+        .panelHeading
+        > span {
+        display: none;
+      }
+
+      .roomDesignGroup
+        > .panel
+        .panelHeading {
+        gap: 0;
+        margin-bottom: 17px;
+      }
+
+      .roomDesignGroup
+        > .panel
+        .panelHeading h2 {
+        font-size: 18px;
+      }
+
+      .roomDesignGroup
+        > .customPromptPanel {
+        grid-column: 1 / -1;
+        width: 100%;
+      }
+
+      .customPromptPanel
+        .customPromptField,
+      .customPromptPanel
+        textarea {
+        width: 100%;
+      }
+      .roomDesignGroup .optionGrid {
+        gap: 10px;
+      }
+
+      .roomDesignGroup .optionCard {
+        min-height: 92px;
+      }
+
+      .generationPanel {
+        display: grid;
+        grid-template-columns:
+          minmax(420px, 1.15fr)
+          minmax(260px, 0.75fr)
+          auto;
+        align-items: center;
+        gap: 25px;
+        margin-top: 20px;
+        padding: 25px;
+      }
+
+      .generationModeSection {
+        min-width: 0;
+        margin: 0;
+        padding: 0;
+        border-bottom: 0;
+      }
+
+      .generationModeHeading h2 {
+        font-size: 18px;
+      }
+
+      .generationModeGrid {
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+      }
+
+      .generationModeCard {
+        min-height: 88px;
+      }
+
+      .generationPanel
+        > div:nth-of-type(2) {
+        min-width: 0;
+        padding-left: 2px;
+      }
+
+      .generationPanel
+        > div:nth-of-type(2)
+        h2 {
+        font-size: 21px;
+      }
+
+      .generationPanel
+        > div:nth-of-type(2)
+        p {
+        font-size: 13px;
+      }
+
+      .generationPanel .generateButton {
+        min-width: 255px;
+      }
+
+      .resultStatusBar {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        margin-bottom: 19px;
+        padding: 14px 16px;
+        border: 1px solid
+          rgba(52, 211, 153, 0.35);
+        border-radius: 14px;
+        background:
+          linear-gradient(
+            135deg,
+            rgba(6, 78, 59, 0.26),
+            rgba(15, 23, 42, 0.82)
+          );
+      }
+
+      .resultStatusIcon {
+        display: grid;
+        width: 37px;
+        height: 37px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid
+          rgba(52, 211, 153, 0.45);
+        border-radius: 50%;
+        background:
+          rgba(6, 95, 70, 0.3);
+        color: #6ee7b7;
+        font-size: 18px;
+        font-weight: 950;
+      }
+
+      .resultStatusBar > div:last-child {
+        display: grid;
+        gap: 3px;
+      }
+
+      .resultStatusBar strong {
+        color: #d1fae5;
+        font-size: 13px;
+      }
+
+      .resultStatusBar span {
+        color: #a7f3d0;
+        font-size: 12px;
+      }
+
+      @media (max-width: 1100px) {
+        .generationPanel {
+          grid-template-columns:
+            minmax(0, 1fr)
+            minmax(250px, 0.75fr);
+        }
+
+        .generationPanel .generateButton {
+          grid-column: 1 / -1;
+          width: 100%;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .roomDesignGroup {
+          grid-template-columns: 1fr;
+          padding: 17px;
+          border-radius: 18px;
+        }
+
+        .workflowGroupHeading {
+          padding-bottom: 15px;
+        }
+
+        .workflowGroupHeading h2 {
+          font-size: 20px;
+        }
+
+        .roomDesignGroup > .panel {
+          padding: 16px;
+        }
+
+        .generationPanel {
+          grid-template-columns: 1fr;
+          padding: 18px;
+        }
+
+        .generationModeGrid {
+          grid-template-columns: 1fr;
+        }
+
+        .generationPanel
+          > div:nth-of-type(2) {
+          padding-left: 0;
+        }
+
+        .generationPanel .generateButton {
+          grid-column: auto;
+          min-width: 0;
+          width: 100%;
+        }
+
+        .resultStatusBar {
+          align-items: flex-start;
+        }
+      }
       @media print {
         .stagingPage {
           display: none !important;

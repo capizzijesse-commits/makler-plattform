@@ -12,6 +12,7 @@ function isGuidePage(pathname: string): boolean {
     pathname === "/cockpit" ||
     /^\/cockpit\/[^/]+\/?$/.test(pathname) ||
     /^\/cockpit\/[^/]+\/edit\/?$/.test(pathname) ||
+    /^\/cockpit\/[^/]+\/home-staging\/?$/.test(pathname) ||
     pathname === "/dashboard" ||
     pathname === "/dashboard/social-media" ||
     pathname === "/dashboard/tour-guide" ||
