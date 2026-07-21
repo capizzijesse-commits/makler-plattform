@@ -24,6 +24,7 @@ type Listing = {
   generatedVariants?: unknown;
   socialVariants?: unknown;
   imageAnalysis?: string | null;
+  locationDescription?: string | null;
   archivedAt?: string | null;
   createdAt?: string;
   updatedAt?: string;
@@ -965,10 +966,10 @@ export default function ExposePreviewPage() {
               </div>
 
               <p>
-                Die Immobilie befindet sich in{" "}
-                <strong>{place || listing.location}</strong>. Angaben zur
-                Mikrolage, Erreichbarkeit und Umgebung können im nächsten
-                Ausbauschritt automatisch ergänzt werden.
+                {listing.locationDescription ||
+                  `Die Immobilie befindet sich in ${
+                    place || listing.location
+                  }. Die Lage verbindet ein angenehmes Wohnumfeld mit den vielfältigen Möglichkeiten der umliegenden Region.`}
               </p>
             </section>
           </div>
