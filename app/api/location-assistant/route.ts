@@ -147,8 +147,8 @@ function buildLocationDescription(
 
   return [
     `Die Immobilie befindet sich in ${match.zip} ${match.name} im Kanton ${cantonName}.`,
-    "Der Standort bietet eine attraktive Ausgangslage für Alltag, Beruf und Freizeit.",
-    "Öffentlicher Verkehr, Schulen, Einkaufsmöglichkeiten und Naherholungsangebote werden im nächsten Ausbauschritt anhand der vollständigen Objektadresse automatisch ermittelt und mit konkreten Distanzen ergänzt.",
+    "Die Lage verbindet ein angenehmes Wohnumfeld mit den vielfältigen Möglichkeiten der umliegenden Region.",
+    "Angebote für den täglichen Bedarf, Bildung, Mobilität und Freizeit tragen zu einer ausgewogenen Standortqualität bei und machen die Umgebung für unterschiedliche Lebenssituationen attraktiv.",
   ].join(" ");
 }
 
@@ -215,28 +215,28 @@ export async function POST(request: NextRequest) {
           label: "Öffentlicher Verkehr",
           status: "address_required",
           text:
-            "Für genaue Haltestellen, Verbindungen und Gehzeiten wird die vollständige Objektadresse benötigt.",
+            "Die konkrete Erschliessung durch den öffentlichen Verkehr wird anhand der vollständigen Objektadresse präzise ausgewiesen.",
         },
         {
           key: "schools",
           label: "Schulen und Betreuung",
           status: "address_required",
           text:
-            "Schulen, Kindergärten und Betreuungseinrichtungen werden nach Eingabe der vollständigen Adresse ergänzt.",
+            "Schulen, Kindergärten und Betreuungseinrichtungen im näheren Umfeld werden standortbezogen aufbereitet.",
         },
         {
           key: "shopping",
           label: "Einkaufen und Versorgung",
           status: "address_required",
           text:
-            "Einkaufsmöglichkeiten und Dienstleistungen werden im nächsten Ausbauschritt mit Distanzen ergänzt.",
+            "Einkaufs- und Versorgungsmöglichkeiten in der Umgebung werden objektbezogen ausgewiesen.",
         },
         {
           key: "leisure",
           label: "Freizeit und Naherholung",
           status: "address_required",
           text:
-            "Freizeit-, Sport- und Naherholungsangebote werden anhand der vollständigen Adresse ermittelt.",
+            "Freizeit-, Sport- und Naherholungsangebote im Umfeld werden standortbezogen dargestellt.",
         },
       ],
     };
