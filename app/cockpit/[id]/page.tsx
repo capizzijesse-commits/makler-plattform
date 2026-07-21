@@ -743,6 +743,32 @@ function showNextImage() {
 >
   🎬 3D-Video-Tour erstellen
 </Link>
+<Link
+  href={`/cockpit/${listing.id}/home-staging`}
+  style={{
+    display: "inline-flex",
+    width: "100%",
+    minHeight: "48px",
+    marginTop: "10px",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "9px",
+    padding: "10px 16px",
+    border: "1px solid rgba(34, 211, 238, 0.48)",
+    borderRadius: "14px",
+    background:
+      "linear-gradient(135deg, rgba(34, 211, 238, 0.22), rgba(139, 92, 246, 0.28), rgba(245, 189, 33, 0.18))",
+    color: "#ffffff",
+    fontWeight: 900,
+    textDecoration: "none",
+    boxSizing: "border-box",
+    boxShadow: "0 12px 28px rgba(34, 211, 238, 0.12)",
+  }}
+>
+  <span aria-hidden="true">🛋️</span>
+  Virtuelles Home Staging
+</Link>
+
               <ListingActions
                 listingId={listing.id}
                 archived={Boolean(listing.archivedAt)}
