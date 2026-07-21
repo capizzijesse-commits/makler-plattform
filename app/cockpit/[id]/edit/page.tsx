@@ -1,14 +1,21 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
+import LocationAssistantPanel, {
+  type LocationAssistantData,
+} from "./LocationAssistantPanel";
+
 import { useParams, useRouter } from "next/navigation";
+
 import { upload } from "@vercel/blob/client";
 import {
+  
   type ChangeEvent,
   type FormEvent,
   useEffect,
   useState,
 } from "react";
+
 type ListingImage = {
   id: string;
   url: string;
@@ -29,6 +36,8 @@ type Listing = {
   price: number | null;
   highlights: string | null;
   style: string | null;
+  locationDescription: string | null;
+  locationData: LocationAssistantData | null;
   images: ListingImage[];
 };
 
@@ -65,6 +74,10 @@ export default function EditListingPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [locationDescription, setLocationDescription] =
+    useState("");
+  const [locationData, setLocationData] =
+    useState<LocationAssistantData | null>(null);
   const [images, setImages] = useState<ListingImage[]>([]);
 const [uploadingImages, setUploadingImages] = useState(false);
 const [uploadMessage, setUploadMessage] = useState("");
@@ -132,6 +145,10 @@ setImages(
           highlights: listing.highlights || "",
           style: listing.style || "",
         });
+        setLocationDescription(
+          listing.locationDescription || ""
+        );
+        setLocationData(listing.locationData || null);
       } catch (loadError) {
         if (
           loadError instanceof DOMException &&
@@ -478,6 +495,8 @@ async function deleteListingImage(imageId: string) {
             price: form.price,
             highlights: form.highlights,
             style: form.style,
+            locationDescription,
+            locationData,
           }),
         }
       );
@@ -628,6 +647,20 @@ async function deleteListingImage(imageId: string) {
             </div>
           </div>
 
+          <LocationAssistantPanel
+            postalCode={form.postalCode}
+            location={form.location}
+            locationDescription={locationDescription}
+            locationData={locationData}
+            onPostalCodeChange={(value) =>
+              updateField("postalCode", value)
+            }
+            onLocationChange={(value) =>
+              updateField("location", value)
+            }
+            onDescriptionChange={setLocationDescription}
+            onDataChange={setLocationData}
+          />
           <div className="formSection">
             <div className="sectionHeading">
               <span>VERMARKTUNG</span>

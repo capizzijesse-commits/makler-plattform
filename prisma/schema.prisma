@@ -53,6 +53,8 @@ model Listing {
   generatedVariants String?
   socialVariants    String?
   imageAnalysis     String?
+  locationDescription String?
+  locationData        String?
   archivedAt        DateTime?
 
   images ListingImage[]

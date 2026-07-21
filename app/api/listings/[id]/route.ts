@@ -117,7 +117,7 @@ export async function GET(
       );
     }
 
-   return NextResponse.json({
+  return NextResponse.json({
   success: true,
   listing: {
     ...listing,
@@ -127,8 +127,12 @@ export async function GET(
     socialVariants: parseJsonValue(
       listing.socialVariants
     ),
+    locationData: parseJsonValue(
+      listing.locationData
+    ),
   },
 });
+
   } catch (error) {
     console.error("Fehler beim Laden des Objekts:", error);
 
@@ -212,7 +216,7 @@ export async function PATCH(
 
     const price = optionalNumber(body.price);
 
-    const updatedListing = await prisma.listing.update({
+       const updatedListing = await prisma.listing.update({
       where: {
         id: existingListing.id,
       },
@@ -225,21 +229,37 @@ export async function PATCH(
         price: price === null ? null : Math.round(price),
         highlights: normalizeHighlights(body.highlights),
         style: optionalText(body.style),
-generatedVariants:
-  body.generatedVariants === undefined
-    ? existingListing.generatedVariants
-    : JSON.stringify(body.generatedVariants),
-    socialVariants:
-  body.socialVariants === undefined
-    ? existingListing.socialVariants
-    : JSON.stringify(body.socialVariants),
-imageAnalysis:
-  body.imageAnalysis === undefined
-    ? existingListing.imageAnalysis
-    : optionalText(body.imageAnalysis),
+
+        generatedVariants:
+          body.generatedVariants === undefined
+            ? existingListing.generatedVariants
+            : JSON.stringify(body.generatedVariants),
+
+        socialVariants:
+          body.socialVariants === undefined
+            ? existingListing.socialVariants
+            : JSON.stringify(body.socialVariants),
+
+        imageAnalysis:
+          body.imageAnalysis === undefined
+            ? existingListing.imageAnalysis
+            : optionalText(body.imageAnalysis),
+
+        locationDescription:
+          body.locationDescription === undefined
+            ? existingListing.locationDescription
+            : optionalText(body.locationDescription),
+
+        locationData:
+          body.locationData === undefined
+            ? existingListing.locationData
+            : body.locationData === null
+              ? null
+              : typeof body.locationData === "string"
+                ? optionalText(body.locationData)
+                : JSON.stringify(body.locationData),
       },
     });
-    
 
     return NextResponse.json({
       success: true,
@@ -248,6 +268,12 @@ imageAnalysis:
         ...updatedListing,
         generatedVariants: parseJsonValue(
           updatedListing.generatedVariants
+        ),
+        socialVariants: parseJsonValue(
+          updatedListing.socialVariants
+        ),
+        locationData: parseJsonValue(
+          updatedListing.locationData
         ),
       },
     });
