@@ -1,20 +1,37 @@
 "use client";
 
 import { useState } from "react";
+import { useAppDialog } from "../../../components/AppDialogProvider";
 
 type ListingActionsProps = {
   listingId: string;
   archived: boolean;
+  unlockStatus: string;
+  singleObjectPriceCents: number;
 };
 
 export default function ListingActions({
   listingId,
   archived,
+  unlockStatus,
+  singleObjectPriceCents,
 }: ListingActionsProps) {
   const [busyAction, setBusyAction] = useState<
-    "archive" | "delete" | null
+    "archive" | "delete" | "checkout" | null
   >(null);
+  const { confirmAction } = useAppDialog();
 
+  const requiresPayment =
+    unlockStatus === "locked" ||
+    unlockStatus === "pending";
+
+  const formattedSingleObjectPrice =
+    new Intl.NumberFormat("de-CH", {
+      style: "currency",
+      currency: "CHF",
+    }).format(
+      singleObjectPriceCents / 100
+    );
   const [error, setError] = useState("");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
@@ -24,13 +41,23 @@ export default function ListingActions({
   async function handleArchive() {
     if (busyAction) return;
 
-    const question = archived
-      ? "Möchtest du dieses Objekt wieder aktivieren?"
-: "Möchtest du dieses Objekt archivieren?";
+   const confirmed = await confirmAction({
+  title: archived
+    ? "Objekt reaktivieren?"
+    : "Objekt archivieren?",
+  message: archived
+    ? "Dieses Objekt wird wieder aktiviert und erscheint erneut im Makler-Cockpit."
+    : "Dieses Objekt wird archiviert und bleibt weiterhin gespeichert.",
+  confirmLabel: archived
+    ? "Objekt aktivieren"
+    : "Objekt archivieren",
+  cancelLabel: "Abbrechen",
+  tone: "warning",
+});
 
-    if (!window.confirm(question)) {
-      return;
-    }
+if (!confirmed) {
+  return;
+}
 
     try {
       setBusyAction("archive");
@@ -138,6 +165,70 @@ export default function ListingActions({
     }
   }
 
+  async function handleCheckout() {
+    if (busyAction) return;
+
+    try {
+      setBusyAction("checkout");
+      setError("");
+
+      const response = await fetch(
+        "/api/payments/single-object/checkout",
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            listingId,
+          }),
+        }
+      );
+
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
+
+      const data =
+        (await response.json().catch(() => null)) as
+          | {
+              success?: boolean;
+              checkoutUrl?: string;
+              alreadyUnlocked?: boolean;
+              error?: string;
+            }
+          | null;
+
+      if (data?.alreadyUnlocked) {
+        window.location.reload();
+        return;
+      }
+
+      if (
+        !response.ok ||
+        !data?.success ||
+        typeof data.checkoutUrl !== "string"
+      ) {
+        throw new Error(
+          data?.error ||
+            "Die Zahlungsseite konnte nicht geöffnet werden."
+        );
+      }
+
+      window.location.href =
+        data.checkoutUrl;
+    } catch (checkoutError) {
+      setError(
+        checkoutError instanceof Error
+          ? checkoutError.message
+          : "Die Zahlungsseite konnte nicht geöffnet werden."
+      );
+
+      setBusyAction(null);
+    }
+  }
   return (
     <>
       <div
@@ -147,6 +238,90 @@ export default function ListingActions({
           marginTop: "9px",
         }}
       >
+        {requiresPayment && (
+          <div
+            style={{
+              padding: "17px",
+              border:
+                "1px solid rgba(251, 191, 36, 0.46)",
+              borderRadius: "14px",
+              background:
+                "linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.94))",
+              boxShadow:
+                "0 16px 36px rgba(2, 6, 23, 0.32)",
+            }}
+          >
+            <span
+              style={{
+                display: "block",
+                marginBottom: "6px",
+                color: "#fbbf24",
+                fontSize: "10px",
+                fontWeight: 900,
+                letterSpacing: "0.14em",
+              }}
+            >
+              EINZELIMMOBILIE
+            </span>
+
+            <strong
+              style={{
+                display: "block",
+                color: "#ffffff",
+                fontSize: "18px",
+              }}
+            >
+              {unlockStatus === "pending"
+                ? "Zahlung noch offen"
+                : "Immobilie freischalten"}
+            </strong>
+
+            <p
+              style={{
+                margin: "8px 0 14px",
+                color: "rgba(226, 232, 240, 0.76)",
+                fontSize: "12px",
+                lineHeight: 1.55,
+              }}
+            >
+              Einmalige Zahlung für Inserat-Texte,
+              Social-Media-Texte und Exposé dieses
+              Objekts. Kein Abonnement.
+            </p>
+
+            <button
+              type="button"
+              onClick={handleCheckout}
+              disabled={busyAction !== null}
+              style={{
+                width: "100%",
+                minHeight: "48px",
+                padding: "0 14px",
+                border:
+                  "1px solid rgba(251, 191, 36, 0.62)",
+                borderRadius: "11px",
+                background:
+                  "linear-gradient(135deg, #fcd34d, #f59e0b, #d97706)",
+                color: "#111827",
+                fontWeight: 900,
+                cursor:
+                  busyAction !== null
+                    ? "wait"
+                    : "pointer",
+                opacity:
+                  busyAction !== null
+                    ? 0.68
+                    : 1,
+              }}
+            >
+              {busyAction === "checkout"
+                ? "Stripe wird geöffnet ..."
+                : unlockStatus === "pending"
+                  ? `Zahlung fortsetzen – ${formattedSingleObjectPrice}`
+                  : `Für ${formattedSingleObjectPrice} freischalten`}
+            </button>
+          </div>
+        )}
         <button
           type="button"
           onClick={handleArchive}

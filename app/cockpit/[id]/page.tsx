@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -42,6 +42,10 @@ type Listing = {
   createdAt: string;
   updatedAt: string;
   archivedAt: string | null;
+
+  paymentModel: string;
+  unlockStatus: string;
+  singleObjectPriceCents: number;
   images: ListingImage[];
 };
 
@@ -772,6 +776,11 @@ function showNextImage() {
               <ListingActions
                 listingId={listing.id}
                 archived={Boolean(listing.archivedAt)}
+                unlockStatus={listing.unlockStatus}
+                singleObjectPriceCents={
+                  listing.singleObjectPriceCents
+                }
+
               />
             </section>
           </aside>

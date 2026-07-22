@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/session";
+import { normalizeUserPlan } from "@/lib/plans";
 
 export const runtime = "nodejs";
 
@@ -132,9 +133,19 @@ export async function POST(request: NextRequest) {
 
     const price = optionalNumber(body.price);
 
+    const userPlan = normalizeUserPlan(user.plan);
+    const usesSingleObjectPayment =
+      userPlan === "free";
+
     const listing = await prisma.listing.create({
       data: {
         userId: user.id,
+        paymentModel: usesSingleObjectPayment
+          ? "single_object"
+          : "subscription",
+        unlockStatus: usesSingleObjectPayment
+          ? "locked"
+          : "included",
         location,
         postalCode: optionalText(body.postalCode),
         propertyType,

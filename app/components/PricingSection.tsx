@@ -1,256 +1,676 @@
 "use client";
 
-export default function PricingSection() {
-  const founderPaymentLink =
+const founderPaymentLink =
   "https://buy.stripe.com/5kQ14o93d8Du1WR74b6J201";
 
 const proPaymentLink =
   "https://buy.stripe.com/00w14o2EP5ri9pj1JR6J200";
 
-const agencyPaymentLink =
-  "https://buy.stripe.com/fZuaEYfrBaLC5933RZ6J203";
-
-  const plans = [
-    {
-      name: "Demo",
-      price: "0 CHF",
-      text: "Kostenlos ausprobieren – ohne Risiko.",
-      button: "Kostenlos testen",
-      disabled: false,
-      href: "/register",
-      features: [
-        "Einfach registrieren",
-        "Inserat-AI kennenlernen",
-        "Erste Funktionen testen",
-        "Ideal zum Ausprobieren",
-      ],
-    },
+const plans = [
   {
-  name: "Founder",
-  price: "30 Tage kostenlos",
-  text: "Danach nur 19.90 CHF pro Monat statt 39.90 CHF.",
-  badge: "🔥 Gründerangebot",
-  highlighted: true,
-  button: "Founder sichern",
-  href: founderPaymentLink,
-  disabled: false,
-  features: [
-    "Heute 0 CHF zahlen",
-    "30 Tage kostenlos testen",
-    "Danach 19.90 CHF pro Monat",
-    "3 professionelle Inserat-Varianten",
-    "Social-Media-Texte",
-    "PDF, Copy und Portal-Export",
-    "Begrenztes Makler-Cockpit",
-    "Objekte, Texte und Bilder speichern",
-  ],
-},
-{
-  name: "Pro",
-  price: "30 Tage kostenlos",
-  text: "Danach 79.90 CHF pro Monat. Für die zentrale Immobilienvermarktung.",
-  badge: "Empfohlen für aktive Makler",
-  button: "Pro starten",
-  href: proPaymentLink,
-  disabled: false,
-  features: [
-    "Heute 0 CHF zahlen",
-    "30 Tage kostenlos testen",
-    "Alles aus Founder",
-    "Vollständiges Makler-Cockpit",
-    "Mehr Objekte dauerhaft verwalten",
-    "Social-Media-Cockpit",
-    "Erweiterte Bild- und Marketingfunktionen",
-    "Kommende Premium-Funktionen ohne Aufpreis",
-    "Priorisierter Support",
-  ],
-},
-{
-  name: "Agency",
-  price: "149.90 CHF",
-  text: "Geplant für Teams, Agenturen und grössere Immobilienbüros.",
-  button: "Demnächst verfügbar",
-  href: agencyPaymentLink,
-  disabled: true,
-  features: [
-    "Alles aus Pro",
-    "Mehrere Benutzer",
-    "Gemeinsamer Objektbestand",
-    "Rollen und Berechtigungen",
-    "Firmenbranding",
-    "Teamübersicht",
-    "Premium-Support",
-  ],
-},
-];
-  
+    name: "Demo",
+    label: "Kennenlernen",
+    price: "0 CHF",
+    cadence: "kostenlos",
+    text: "Inserat-AI unverbindlich kennenlernen und die ersten Funktionen ausprobieren.",
+    button: "Kostenlos testen",
+    href: "/register",
+    external: false,
+    highlighted: false,
+    features: [
+      "Einfach registrieren",
+      "Inserat-AI kennenlernen",
+      "Erste Funktionen testen",
+      "Ideal zum Ausprobieren",
+    ],
+  },
+  {
+    name: "Founder",
+    label: "Gründerangebot",
+    price: "30 Tage kostenlos",
+    cadence: "danach 19.90 CHF pro Monat",
+    text: "Das attraktive Einstiegsangebot für unsere ersten Immobilienprofis.",
+    button: "Founder sichern",
+    href: founderPaymentLink,
+    external: true,
+    highlighted: true,
+    features: [
+      "Heute 0 CHF bezahlen",
+      "3 professionelle Inserat-Varianten",
+      "Social-Media-Texte",
+      "PDF, Copy und Portal-Export",
+      "Begrenztes Makler-Cockpit",
+      "Objekte, Texte und Bilder speichern",
+    ],
+  },
+  {
+    name: "Pro",
+    label: "Für aktive Makler",
+    price: "30 Tage kostenlos",
+    cadence: "danach 79.90 CHF pro Monat",
+    text: "Für die zentrale und professionelle Vermarktung mehrerer Immobilien.",
+    button: "Pro starten",
+    href: proPaymentLink,
+    external: true,
+    highlighted: false,
+    features: [
+      "Alles aus Founder",
+      "Vollständiges Makler-Cockpit",
+      "Mehr Objekte dauerhaft verwalten",
+      "Social-Media-Cockpit",
+      "Erweiterte Marketingfunktionen",
+      "Priorisierter Support",
+    ],
+  },
+] as const;
 
+export default function PricingSection() {
   return (
-    <section
-      id="pricing"
-      className="pricingSection"
-      style={{
-        background: "#ffffff",
-        fontFamily: "Inter, sans-serif",
-        color: "#1f2937",
-        borderRadius: "24px",
-        padding: "36px 40px 44px",
-        maxWidth: "1100px",
-        margin: "45px auto 0",
-        boxSizing: "border-box",
-        boxShadow: "0 20px 50px rgba(15, 23, 42, 0.10)",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          width: "100%",
-          boxSizing: "border-box",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px",
-          padding: "9px 16px",
-          borderRadius: "999px",
-          background:
-            "linear-gradient(135deg, rgba(251, 191, 36, 0.16), rgba(245, 158, 11, 0.10))",
-          border: "1px solid rgba(245, 158, 11, 0.28)",
-          color: "#92400e",
-          fontWeight: 800,
-          fontSize: "0.9rem",
-          marginBottom: "16px",
-        }}
-      >
-        <span>✨</span>
-        <span>
-          30 Tage kostenlos testen. ✨ Gründerangebot: 19.90 CHF statt 39.90 CHF pro Monat – nur für unsere ersten Kunden. 
-         
-        </span>
-      </div>
+    <section id="pricing" className="pricingSection">
+      <div className="pricingShell">
+        <header className="pricingHeader">
+          <span className="pricingEyebrow">
+            TRANSPARENTE PREISE
+          </span>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-          gap: "20px",
-          alignItems: "stretch",
-        }}
-      >
-        {plans.map((plan) => (
-          <div
-            key={plan.name}
-            style={{
-              background: plan.highlighted
-                ? "linear-gradient(135deg, #fff7ed, #ffffff)"
-                : "#ffffff",
-              borderRadius: "20px",
-              padding: "26px 22px",
-              border: plan.highlighted
-                ? "2px solid #f59e0b"
-                : "1px solid #e5e7eb",
-              boxShadow: plan.highlighted
-                ? "0 18px 40px rgba(245, 158, 11, 0.22)"
-                : "0 10px 24px rgba(15, 23, 42, 0.06)",
-              transform: plan.highlighted ? "translateY(-6px)" : "none",
-              display: "flex",
-              flexDirection: "column",
-              boxSizing: "border-box",
-            }}
-          >
-            <div
-              style={{
-                flexGrow: 1,
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              {plan.badge && (
-                <div
-                  style={{
-                    alignSelf: "flex-start",
-                    background: "#f59e0b",
-                    color: "#ffffff",
-                    padding: "7px 11px",
-                    borderRadius: "999px",
-                    fontSize: "0.8rem",
-                    fontWeight: 900,
-                    marginBottom: "14px",
-                  }}
-                >
-                  {plan.badge}
-                </div>
-              )}
+          <h2>Wähle den passenden Einstieg</h2>
 
-              <h3 style={{ margin: 0, fontSize: "1.35rem", fontWeight: 800 }}>
-                {plan.name}
-              </h3>
+          <p>
+            Starte ohne Abonnement mit einer einzelnen Immobilie
+            oder nutze Inserat-AI dauerhaft als tägliches
+            Maklerwerkzeug.
+          </p>
+        </header>
 
-              <p
-                style={{
-                  fontSize: "2rem",
-                  fontWeight: 900,
-                  margin: "14px 0 6px",
-                  color: "#111827",
-                }}
-              >
-                {plan.price}
-              </p>
-
-              <p
-                style={{
-                  color: "#64748b",
-                  fontSize: "0.95rem",
-                  margin: "0 0 18px",
-                }}
-              >
-                {plan.text}
-              </p>
-
-              <div
-                style={{
-                  display: "grid",
-                  gap: "10px",
-                  textAlign: "left",
-                  marginBottom: "20px",
-                }}
-              >
-                {plan.features.map((feature) => (
-                  <div
-                    key={feature}
-                    style={{
-                      color: "#334155",
-                      fontSize: "0.95rem",
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    ✓ {feature}
-                  </div>
-                ))}
-              </div>
+        <article className="singleObjectCard">
+          <div className="singleObjectMain">
+            <div className="singleObjectBadge">
+              OHNE ABONNEMENT
             </div>
 
-            <a
-              href={plan.href}
-              target={plan.name === "Demo" ? "_self" : "_blank"}
-              rel={plan.name === "Demo" ? undefined : "noopener noreferrer"}
-              style={{
-                display: "block",
-                padding: "14px 28px",
-                background: plan.highlighted ? "#f59e0b" : "#111827",
-                color: "#ffffff",
-                borderRadius: "12px",
-                textDecoration: "none",
-                width: "100%",
-                boxSizing: "border-box",
-                textAlign: "center",
-                fontWeight: 700,
-                marginTop: "auto",
-              }}
-            >
-              {plan.button}
-            </a>
+            <h3>Einzelimmobilie</h3>
+
+            <p className="singleObjectDescription">
+              Die komplette Inserat-AI Vermarktung für genau eine
+              Immobilie. Einmal bezahlen und das konkrete Objekt
+              dauerhaft freischalten.
+            </p>
+
+            <div className="singleObjectFeatures">
+              {[
+                "3 professionelle Inserat-Varianten",
+                "Social-Media-Texte",
+                "Professionelles Immobilien-Exposé",
+                "Objekt, Texte und Bilder speichern",
+                "Bearbeiten und erneut aufrufen",
+                "Keine monatlichen Kosten",
+              ].map((feature) => (
+                <div
+                  className="singleObjectFeature"
+                  key={feature}
+                >
+                  <span>✓</span>
+                  <span>{feature}</span>
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
+
+          <div className="singleObjectPriceBox">
+            <span className="singleObjectPriceLabel">
+              EINMALIG
+            </span>
+
+            <div className="singleObjectPrice">
+              <span>CHF</span>
+              <strong>9.90</strong>
+            </div>
+
+            <p>pro Immobilie</p>
+
+            <a
+              href="/register?plan=single-object"
+              className="singleObjectButton"
+            >
+              Einzelimmobilie starten
+              <span aria-hidden="true">→</span>
+            </a>
+
+            <small>
+              Die Zahlung erfolgt erst beim konkreten Objekt.
+            </small>
+          </div>
+        </article>
+
+        <div className="plansGrid">
+          {plans.map((plan) => (
+            <article
+              key={plan.name}
+              className={
+                plan.highlighted
+                  ? "planCard planCardHighlighted"
+                  : "planCard"
+              }
+            >
+              <div className="planTop">
+                <span className="planLabel">
+                  {plan.label}
+                </span>
+
+                <h3>{plan.name}</h3>
+
+                <div className="planPrice">
+                  {plan.price}
+                </div>
+
+                <div className="planCadence">
+                  {plan.cadence}
+                </div>
+
+                <p className="planDescription">
+                  {plan.text}
+                </p>
+              </div>
+
+              <ul className="planFeatures">
+                {plan.features.map((feature) => (
+                  <li key={feature}>
+                    <span>✓</span>
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <a
+                href={plan.href}
+                target={
+                  plan.external ? "_blank" : "_self"
+                }
+                rel={
+                  plan.external
+                    ? "noopener noreferrer"
+                    : undefined
+                }
+                className={
+                  plan.highlighted
+                    ? "planButton planButtonHighlighted"
+                    : "planButton"
+                }
+              >
+                {plan.button}
+                <span aria-hidden="true">→</span>
+              </a>
+            </article>
+          ))}
+        </div>
+
+        <div className="agencyTeaser">
+          <div>
+            <span className="agencyLabel">
+              FÜR TEAMS UND IMMOBILIENBÜROS
+            </span>
+
+            <strong>Agency</strong>
+
+            <p>
+              Mehrere Benutzer, gemeinsame Objekte,
+              Berechtigungen und Firmenbranding.
+            </p>
+          </div>
+
+          <div className="agencyStatus">
+            <span>149.90 CHF / Monat</span>
+            <strong>Demnächst verfügbar</strong>
+          </div>
+        </div>
       </div>
+
+      <style jsx>{`
+        .pricingSection {
+          width: 100%;
+          padding: 78px 20px;
+          box-sizing: border-box;
+          color: #ffffff;
+          background:
+            radial-gradient(
+              circle at 15% 5%,
+              rgba(37, 99, 235, 0.18),
+              transparent 32%
+            ),
+            radial-gradient(
+              circle at 90% 20%,
+              rgba(245, 158, 11, 0.16),
+              transparent 28%
+            ),
+            linear-gradient(
+              145deg,
+              #020617 0%,
+              #071020 48%,
+              #0f172a 100%
+            );
+        }
+
+        .pricingShell {
+          width: min(1220px, 100%);
+          margin: 0 auto;
+        }
+
+        .pricingHeader {
+          max-width: 760px;
+          margin: 0 auto 34px;
+          text-align: center;
+        }
+
+        .pricingEyebrow {
+          display: inline-flex;
+          padding: 8px 13px;
+          border: 1px solid rgba(251, 191, 36, 0.34);
+          border-radius: 999px;
+          background: rgba(245, 158, 11, 0.1);
+          color: #fbbf24;
+          font-size: 11px;
+          font-weight: 900;
+          letter-spacing: 0.15em;
+        }
+
+        .pricingHeader h2 {
+          margin: 18px 0 12px;
+          color: #ffffff;
+          font-size: clamp(34px, 5vw, 54px);
+          line-height: 1.05;
+          letter-spacing: -0.045em;
+        }
+
+        .pricingHeader p {
+          margin: 0;
+          color: rgba(226, 232, 240, 0.72);
+          font-size: 17px;
+          line-height: 1.65;
+        }
+
+        .singleObjectCard {
+          display: grid;
+          grid-template-columns:
+            minmax(0, 1fr)
+            minmax(250px, 320px);
+          gap: 34px;
+          padding: 34px;
+          border: 1px solid rgba(251, 191, 36, 0.44);
+          border-radius: 26px;
+          background:
+            radial-gradient(
+              circle at 10% 10%,
+              rgba(245, 158, 11, 0.18),
+              transparent 34%
+            ),
+            linear-gradient(
+              135deg,
+              rgba(15, 23, 42, 0.98),
+              rgba(30, 41, 59, 0.94)
+            );
+          box-shadow:
+            0 28px 70px rgba(0, 0, 0, 0.32),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+
+        .singleObjectBadge {
+          display: inline-flex;
+          padding: 7px 11px;
+          border-radius: 999px;
+          background: #f59e0b;
+          color: #111827;
+          font-size: 10px;
+          font-weight: 950;
+          letter-spacing: 0.13em;
+        }
+
+        .singleObjectMain h3 {
+          margin: 17px 0 10px;
+          color: #ffffff;
+          font-size: clamp(30px, 4vw, 44px);
+          letter-spacing: -0.035em;
+        }
+
+        .singleObjectDescription {
+          max-width: 720px;
+          margin: 0;
+          color: rgba(226, 232, 240, 0.76);
+          font-size: 16px;
+          line-height: 1.65;
+        }
+
+        .singleObjectFeatures {
+          display: grid;
+          grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+          gap: 12px 22px;
+          margin-top: 26px;
+        }
+
+        .singleObjectFeature {
+          display: flex;
+          align-items: flex-start;
+          gap: 9px;
+          color: #e2e8f0;
+          font-size: 14px;
+          line-height: 1.45;
+        }
+
+        .singleObjectFeature > span:first-child {
+          color: #fbbf24;
+          font-weight: 950;
+        }
+
+        .singleObjectPriceBox {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          padding: 25px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 20px;
+          background: rgba(2, 6, 23, 0.58);
+          text-align: center;
+        }
+
+        .singleObjectPriceLabel {
+          color: #fbbf24;
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: 0.16em;
+        }
+
+        .singleObjectPrice {
+          display: flex;
+          align-items: flex-start;
+          justify-content: center;
+          gap: 8px;
+          margin-top: 9px;
+          color: #ffffff;
+        }
+
+        .singleObjectPrice span {
+          padding-top: 12px;
+          color: #fbbf24;
+          font-size: 16px;
+          font-weight: 900;
+        }
+
+        .singleObjectPrice strong {
+          font-size: clamp(50px, 6vw, 70px);
+          line-height: 1;
+          letter-spacing: -0.06em;
+        }
+
+        .singleObjectPriceBox p {
+          margin: 6px 0 20px;
+          color: rgba(226, 232, 240, 0.62);
+          font-size: 13px;
+        }
+
+        .singleObjectButton,
+        .planButton {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          min-height: 50px;
+          padding: 0 18px;
+          border-radius: 13px;
+          text-decoration: none;
+          font-size: 14px;
+          font-weight: 900;
+          transition:
+            transform 160ms ease,
+            box-shadow 160ms ease;
+        }
+
+        .singleObjectButton {
+          background:
+            linear-gradient(
+              135deg,
+              #fcd34d,
+              #f59e0b
+            );
+          color: #111827;
+          box-shadow:
+            0 14px 28px rgba(245, 158, 11, 0.24);
+        }
+
+        .singleObjectButton:hover,
+        .planButton:hover {
+          transform: translateY(-2px);
+        }
+
+        .singleObjectPriceBox small {
+          margin-top: 13px;
+          color: rgba(226, 232, 240, 0.48);
+          font-size: 10px;
+          line-height: 1.45;
+        }
+
+        .plansGrid {
+          display: grid;
+          grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+          gap: 20px;
+          margin-top: 22px;
+        }
+
+        .planCard {
+          display: flex;
+          min-width: 0;
+          min-height: 530px;
+          flex-direction: column;
+          padding: 28px;
+          border: 1px solid rgba(148, 163, 184, 0.2);
+          border-radius: 22px;
+          background: #ffffff;
+          color: #0f172a;
+          box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18);
+        }
+
+        .planCardHighlighted {
+          border: 2px solid #f59e0b;
+          background:
+            linear-gradient(
+              145deg,
+              #fffbeb,
+              #ffffff
+            );
+          box-shadow:
+            0 22px 55px rgba(245, 158, 11, 0.22);
+          transform: translateY(-6px);
+        }
+
+        .planLabel {
+          display: inline-flex;
+          width: fit-content;
+          padding: 6px 10px;
+          border-radius: 999px;
+          background: #f1f5f9;
+          color: #475569;
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+
+        .planCardHighlighted .planLabel {
+          background: #f59e0b;
+          color: #ffffff;
+        }
+
+        .planCard h3 {
+          margin: 20px 0 10px;
+          font-size: 25px;
+          letter-spacing: -0.025em;
+        }
+
+        .planPrice {
+          color: #0f172a;
+          font-size: clamp(29px, 3vw, 38px);
+          font-weight: 950;
+          line-height: 1.08;
+          letter-spacing: -0.045em;
+        }
+
+        .planCadence {
+          min-height: 22px;
+          margin-top: 8px;
+          color: #d97706;
+          font-size: 13px;
+          font-weight: 850;
+        }
+
+        .planDescription {
+          min-height: 70px;
+          margin: 14px 0 20px;
+          color: #64748b;
+          font-size: 14px;
+          line-height: 1.55;
+        }
+
+        .planFeatures {
+          display: grid;
+          gap: 12px;
+          margin: 0 0 24px;
+          padding: 0;
+          list-style: none;
+        }
+
+        .planFeatures li {
+          display: flex;
+          align-items: flex-start;
+          gap: 9px;
+          color: #334155;
+          font-size: 13px;
+          line-height: 1.45;
+        }
+
+        .planFeatures li > span:first-child {
+          color: #f59e0b;
+          font-weight: 950;
+        }
+
+        .planButton {
+          margin-top: auto;
+          background: #0f172a;
+          color: #ffffff;
+        }
+
+        .planButtonHighlighted {
+          background:
+            linear-gradient(
+              135deg,
+              #f59e0b,
+              #d97706
+            );
+          box-shadow:
+            0 13px 26px rgba(245, 158, 11, 0.22);
+        }
+
+        .agencyTeaser {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 24px;
+          margin-top: 22px;
+          padding: 23px 27px;
+          border: 1px solid rgba(148, 163, 184, 0.18);
+          border-radius: 19px;
+          background: rgba(15, 23, 42, 0.7);
+        }
+
+        .agencyLabel {
+          color: #94a3b8;
+          font-size: 9px;
+          font-weight: 900;
+          letter-spacing: 0.13em;
+        }
+
+        .agencyTeaser strong {
+          display: block;
+          margin-top: 6px;
+          color: #ffffff;
+          font-size: 21px;
+        }
+
+        .agencyTeaser p {
+          margin: 5px 0 0;
+          color: rgba(226, 232, 240, 0.58);
+          font-size: 13px;
+        }
+
+        .agencyStatus {
+          flex-shrink: 0;
+          text-align: right;
+        }
+
+        .agencyStatus span {
+          display: block;
+          color: #e2e8f0;
+          font-size: 14px;
+          font-weight: 800;
+        }
+
+        .agencyStatus strong {
+          margin-top: 5px;
+          color: #fbbf24;
+          font-size: 12px;
+        }
+
+        @media (max-width: 900px) {
+          .singleObjectCard {
+            grid-template-columns: 1fr;
+          }
+
+          .plansGrid {
+            grid-template-columns: 1fr;
+          }
+
+          .planCard,
+          .planCardHighlighted {
+            min-height: 0;
+            transform: none;
+          }
+
+          .planDescription {
+            min-height: 0;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .pricingSection {
+            padding: 55px 14px;
+          }
+
+          .singleObjectCard {
+            padding: 23px;
+            border-radius: 20px;
+          }
+
+          .singleObjectFeatures {
+            grid-template-columns: 1fr;
+          }
+
+          .singleObjectPriceBox {
+            padding: 22px 17px;
+          }
+
+          .planCard {
+            padding: 23px;
+          }
+
+          .agencyTeaser {
+            align-items: flex-start;
+            flex-direction: column;
+          }
+
+          .agencyStatus {
+            text-align: left;
+          }
+        }
+      `}</style>
     </section>
   );
 }
