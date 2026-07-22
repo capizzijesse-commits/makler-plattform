@@ -88,6 +88,10 @@ export default function PricingSection() {
               OHNE ABONNEMENT
             </div>
 
+            <div className="singleObjectAvailability">
+              {"Ab Montag, 27. Juli 2026 verf\u00fcgbar"}
+            </div>
+
             <h3>Einzelimmobilie</h3>
 
             <p className="singleObjectDescription">
@@ -132,12 +136,12 @@ export default function PricingSection() {
               href="/register?plan=single-object"
               className="singleObjectButton"
             >
-              Einzelimmobilie starten
+              Jetzt kostenlos registrieren
               <span aria-hidden="true">→</span>
             </a>
 
             <small>
-              Die Zahlung erfolgt erst beim konkreten Objekt.
+              {"Die Freischaltung f\u00fcr CHF 9.90 pro Immobilie ist ab Montag verf\u00fcgbar."}
             </small>
           </div>
         </article>
@@ -322,6 +326,19 @@ export default function PricingSection() {
           font-size: 10px;
           font-weight: 950;
           letter-spacing: 0.13em;
+        }
+
+        .singleObjectAvailability {
+          display: inline-flex;
+          margin-left: 8px;
+          padding: 7px 11px;
+          border: 1px solid rgba(251, 191, 36, 0.4);
+          border-radius: 999px;
+          background: rgba(245, 158, 11, 0.1);
+          color: #fbbf24;
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: 0.07em;
         }
 
         .singleObjectMain h3 {
