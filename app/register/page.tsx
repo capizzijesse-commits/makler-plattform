@@ -31,7 +31,7 @@ export default function RegisterPage() {
   e.preventDefault();
 
   if (!name || !email || !password) {
-    alert("Bitte alle Felder ausfÃ¼llen.");
+    alert("Bitte alle Felder ausfüllen.");
     return;
   }
 
@@ -62,7 +62,7 @@ try {
   data = responseText ? JSON.parse(responseText) : {};
 } catch {
   data = {
-    error: responseText || "Die Registrierung hat keine gÃ¼ltige Antwort geliefert.",
+    error: responseText || "Die Registrierung hat keine gültige Antwort geliefert.",
   };
 }
 
@@ -70,7 +70,7 @@ if (!response.ok) {
   throw new Error(
     data.error ||
       data.message ||
-      `Registrierung fehlgeschlagen â€“ HTTP ${response.status}`
+      `Registrierung fehlgeschlagen – HTTP ${response.status}`
   );
 }
 
@@ -116,12 +116,12 @@ if (!response.ok) {
             href="/"
             className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.08] px-5 py-2 text-sm font-semibold text-slate-200 backdrop-blur transition hover:bg-white/15 hover:text-white"
           >
-            â† ZurÃ¼ck zur Startseite
+            â† Zurück zur Startseite
           </Link>
 
           <div className="ml-3 mt-6 inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-5 py-2 text-sm font-bold uppercase tracking-wide text-amber-300 backdrop-blur">
             {isSingleObject
-              ? "Einzelimmobilie gewÃ¤hlt"
+              ? "Einzelimmobilie gewählt"
               : "30 Tage kostenlos testen"}
           </div>
 
@@ -132,9 +132,9 @@ if (!response.ok) {
           <p className="mt-5 max-w-2xl text-base leading-7 text-slate-200 drop-shadow sm:text-lg sm:leading-8">
             {isSingleObject
   ?
-    "Registriere dich kostenlos, erstelle deine Immobilie und schalte sie anschliessend einmalig fÃ¼r CHF 9.90 frei â€“ ohne Abonnement."
+    "Registriere dich kostenlos, erstelle deine Immobilie und schalte sie anschliessend einmalig für CHF 9.90 frei – ohne Abonnement."
   :
-    "Erstelle deinen Zugang und teste Inserat-AI kostenlos. Generiere professionelle Titel, Beschreibungen, Highlights und Inhalte fÃ¼r Immobilienportale in wenigen Sekunden."}
+    "Erstelle deinen Zugang und teste Inserat-AI kostenlos. Generiere professionelle Titel, Beschreibungen, Highlights und Inhalte für Immobilienportale in wenigen Sekunden."}
           </p>
 
        <div className="mt-8 hidden max-w-2xl gap-3 sm:grid sm:grid-cols-3">
@@ -156,7 +156,11 @@ if (!response.ok) {
 
   <div className="rounded-3xl border border-white/10 bg-slate-950/55 p-4 backdrop-blur sm:p-5">
     <p className="text-2xl font-semibold text-white">Keine</p>
-    <p className="mt-2 text-sm text-slate-300">Kreditkarte nÃ¶tig</p>
+    <p className="mt-2 text-sm text-slate-300">
+  {isSingleObject
+    ? "Zahlung bei Registrierung"
+    : "Kreditkarte nötig"}
+</p>
   </div>
 </div>
         </section>
@@ -287,7 +291,7 @@ if (!response.ok) {
   ) : (
     <>
       30 Tage kostenlos testen. Danach kannst du den
-      passenden Plan auswÃ¤hlen.
+      passenden Plan auswählen.
     </>
   )}
 </div>
