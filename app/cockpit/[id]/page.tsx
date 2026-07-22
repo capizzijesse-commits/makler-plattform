@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -27,6 +27,7 @@ type Listing = {
   style: string | null;
   generatedVariants: unknown;
   createdAt: string;
+  archivedAt: string | null;
   updatedAt: string;
 };
 

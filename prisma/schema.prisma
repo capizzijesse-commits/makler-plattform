@@ -49,11 +49,19 @@ model Listing {
   generatedVariants String?
   archivedAt        DateTime?
 
+  paymentModel             String    @default("subscription")
+  unlockStatus             String    @default("included")
+  singleObjectPriceCents   Int       @default(990)
+  stripeCheckoutSessionId  String?   @unique
+  stripePaymentIntentId    String?   @unique
+  paidAt                   DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([userId, archivedAt])
+  @@index([userId, unlockStatus])
 }
 
 model Session {
