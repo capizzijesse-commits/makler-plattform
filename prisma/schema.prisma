@@ -29,8 +29,9 @@ model User {
   passwordResetTokenHash   String?   @unique
   passwordResetExpires     DateTime?
   passwordResetRequestedAt DateTime?
-  listings                 Listing[]
-  sessions                 Session[]
+
+  listings Listing[]
+  sessions Session[]
 
   createdAt DateTime @default(now())
 }
@@ -57,13 +58,22 @@ model Listing {
   locationData        String?
   archivedAt          DateTime?
 
+  paymentModel            String    @default("subscription")
+  unlockStatus            String    @default("included")
+  singleObjectPriceCents  Int       @default(990)
+  stripeCheckoutSessionId String?   @unique
+  stripePaymentIntentId   String?   @unique
+  paidAt                  DateTime?
+
   images            ListingImage[]
   homeStagingImages HomeStagingImage[]
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([userId, archivedAt])
+  @@index([userId, unlockStatus])
 }
 
 model ListingImage {
@@ -82,8 +92,9 @@ model ListingImage {
   isPrimary Boolean @default(false)
 
   homeStagingImages HomeStagingImage[]
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([listingId])
   @@index([listingId, position])
