@@ -1,42 +1,86 @@
-﻿import { NextResponse } from "next/server";
+﻿import { createHash } from "node:crypto";
+
+import { NextResponse } from "next/server";
+
+import { getAppUrl } from "@/lib/app-url";
 import { prisma } from "@/lib/prisma";
 
+export const runtime = "nodejs";
+
+function hashVerificationToken(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+function redirectToLogin(
+  request: Request,
+  status: string
+) {
+  const appUrl = getAppUrl(request.url);
+
+  return NextResponse.redirect(
+    new URL(`/login?verified=${status}`, appUrl)
+  );
+}
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const token = searchParams.get("token");
+    const token = searchParams.get("token")?.trim();
 
     if (!token) {
-      return NextResponse.redirect(
-        new URL("/login?verified=missing", request.url)
-      );
+      return redirectToLogin(request, "missing");
     }
+
+    if (token.length > 128) {
+      return redirectToLogin(request, "invalid");
+    }
+
+    const tokenHash = hashVerificationToken(token);
+    const now = new Date();
+
+    /*
+     * Der Klartextvergleich bleibt nur vorübergehend erhalten,
+     * damit bereits versendete alte Links weiterhin funktionieren.
+     * Neue Registrierungen speichern ausschliesslich den Hash.
+     */
+    const tokenConditions = [
+      {
+        emailVerificationToken: tokenHash,
+      },
+      {
+        emailVerificationToken: token,
+      },
+    ];
 
     const user = await prisma.user.findFirst({
       where: {
-        emailVerificationToken: token,
+        emailVerified: false,
+        emailVerificationExpires: {
+          gt: now,
+        },
+        OR: tokenConditions,
+      },
+      select: {
+        id: true,
       },
     });
 
     if (!user) {
-      return NextResponse.redirect(
-        new URL("/login?verified=invalid", request.url)
-      );
+      return redirectToLogin(request, "invalid");
     }
 
-    if (
-      user.emailVerificationExpires &&
-      user.emailVerificationExpires < new Date()
-    ) {
-      return NextResponse.redirect(
-        new URL("/login?verified=expired", request.url)
-      );
-    }
-
-    await prisma.user.update({
+    /*
+     * Atomare Aktualisierung verhindert, dass derselbe Link
+     * durch parallele Anfragen mehrfach verwendet wird.
+     */
+    const verifiedUser = await prisma.user.updateMany({
       where: {
         id: user.id,
+        emailVerified: false,
+        emailVerificationExpires: {
+          gt: new Date(),
+        },
+        OR: tokenConditions,
       },
       data: {
         emailVerified: true,
@@ -45,14 +89,25 @@ export async function GET(request: Request) {
       },
     });
 
-    return NextResponse.redirect(
-      new URL("/login?verified=success", request.url)
-    );
-  } catch (error) {
-    console.error("verify-email error:", error);
+    if (verifiedUser.count !== 1) {
+      return redirectToLogin(request, "invalid");
+    }
 
-    return NextResponse.redirect(
-      new URL("/login?verified=error", request.url)
-    );
+    return redirectToLogin(request, "success");
+  } catch (error) {
+    console.error("VERIFY EMAIL API ERROR:", error);
+
+    try {
+      return redirectToLogin(request, "error");
+    } catch {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Die E-Mail-Adresse konnte momentan nicht bestätigt werden.",
+        },
+        { status: 500 }
+      );
+    }
   }
 }

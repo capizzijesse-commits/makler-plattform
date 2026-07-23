@@ -283,9 +283,24 @@ export default function Navbar() {
             </span>
           </Link>
 
-          <nav className="siteNavActions">
-            <PrivacyModeButton />
-            {isLoggedInArea ? (
+         <nav className="siteNavActions">
+<span
+  aria-hidden={!isLoggedInArea}
+  style={{
+    display: "inline-flex",
+    flex: "0 0 auto",
+    visibility: isLoggedInArea
+      ? "visible"
+      : "hidden",
+    pointerEvents: isLoggedInArea
+      ? "auto"
+      : "none",
+  }}
+>
+  <PrivacyModeButton />
+</span>
+
+  {isLoggedInArea ? (
               
               <>
                 <span className="appPlanBadge">
@@ -313,20 +328,27 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link
-                  href="/login"
-                  className="siteLoginLink"
-                >
-                  Login
-                </Link>
+              <Link
+  href="/login"
+  className="siteLoginLink publicMobileLogin"
+>
+  Login
+</Link>
 
-                <Link
-                  href="/register"
-                  className="siteCtaButton"
-                >
-                  Kostenlos testen
-                  <span aria-hidden="true">→</span>
-                </Link>
+<Link
+  href="/register"
+  className="siteCtaButton publicMobileCta"
+>
+  <span className="siteCtaDesktopText">
+    Kostenlos testen
+  </span>
+
+  <span className="siteCtaMobileText">
+    Kostenlos testen
+  </span>
+
+  <span aria-hidden="true">→</span>
+</Link>
               </>
             )}
           </nav>
@@ -382,7 +404,16 @@ export default function Navbar() {
                   </Link>
                 )}
             </div>
+<div className="appMenuPrivacyCard">
+  <div className="appMenuPrivacyText">
+    <strong>Privatsphäre-Modus</strong>
+    <small>
+      Objektbilder bei Kundenterminen vorübergehend schützen
+    </small>
+  </div>
 
+  <PrivacyModeButton />
+</div>
             <nav className="appMenuLinks">
               {menuItems.map((item) => {
                 const active = isMenuItemActive(

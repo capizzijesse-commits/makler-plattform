@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   useEffect,
@@ -130,15 +130,8 @@ function normalizeStoredMessages(
 
 function isGuidePage(pathname: string): boolean {
   return (
-    pathname === "/cockpit" ||
-    /^\/cockpit\/[^/]+\/?$/.test(pathname) ||
-    /^\/cockpit\/[^/]+\/edit\/?$/.test(pathname) ||
-    /^\/cockpit\/[^/]+\/home-staging\/?$/.test(pathname) ||
-    pathname === "/dashboard" ||
-    pathname === "/dashboard/social-media" ||
-    pathname === "/dashboard/tour-guide" ||
-    /^\/expose\/[^/]+\/?$/.test(pathname) ||
-    pathname === "/konto"
+    pathname !== "/impressum" &&
+    pathname !== "/datenschutz"
   );
 }
 
@@ -165,13 +158,21 @@ function getPageLabel(pathname: string): string {
     return "Virtuelles Home Staging";
   }
 
-  if (/^\/cockpit\/[^/]+\/edit\/?$/.test(pathname)) {
-    return "Objekt bearbeiten";
-  }
+ if (/^\/cockpit\/[^/]+\/edit\/?$/.test(pathname)) {
+  return "Objekt bearbeiten";
+}
 
-  if (/^\/cockpit\/[^/]+\/?$/.test(pathname)) {
-    return "Objektdetails";
-  }
+if (
+  /^\/cockpit\/[^/]+\/home-staging\/?$/.test(
+    pathname
+  )
+) {
+  return "Virtuelles Home Staging";
+}
+
+if (/^\/cockpit\/[^/]+\/?$/.test(pathname)) {
+  return "Objektdetails";
+}
 
   if (pathname === "/dashboard/social-media") {
     return "Social Media";
@@ -196,6 +197,236 @@ function getPageLabel(pathname: string): string {
   return "Inserat-AI";
 }
 
+type GuideQuickAction = {
+  label: string;
+  prompt: string;
+};
+
+function getQuickActions(
+  pathname: string
+): GuideQuickAction[] {
+  if (pathname === "/cockpit") {
+    return [
+      {
+        label: "Nächster Schritt",
+        prompt:
+          "Was ist im Makler-Cockpit mein sinnvollster nächster Arbeitsschritt?",
+      },
+      {
+        label: "Objekt vorbereiten",
+        prompt:
+          "Welche Angaben sollte ich für ein vollständiges Immobilienobjekt vorbereiten?",
+      },
+      {
+        label: "Vermarktung planen",
+        prompt:
+          "Wie plane ich die Vermarktung eines neuen Objekts mit Inserat-AI?",
+      },
+    ];
+  }
+
+  if (
+    /^\/cockpit\/[^/]+\/home-staging\/?$/.test(
+      pathname
+    )
+  ) {
+    return [
+      {
+        label: "Stil empfehlen",
+        prompt:
+          "Welcher Einrichtungsstil passt zu diesem Objekt und warum?",
+      },
+      {
+        label: "Wunschtext formulieren",
+        prompt:
+          "Hilf mir, einen präzisen Wunschtext für das virtuelle Home Staging dieses Objekts zu formulieren.",
+      },
+      {
+        label: "Raum einrichten",
+        prompt:
+          "Welche Möbel, Farben und Dekorationen eignen sich für ein professionelles Home Staging dieses Objekts?",
+      },
+      {
+        label: "Ergebnis prüfen",
+        prompt:
+          "Worauf sollte ich beim Prüfen eines AI-visualisierten Home-Staging-Ergebnisses achten?",
+      },
+    ];
+  }
+
+  if (/^\/cockpit\/[^/]+\/edit\/?$/.test(pathname)) {
+    return [
+      {
+        label: "Fehlende Angaben",
+        prompt:
+          "Welche Angaben fehlen bei diesem Objekt noch?",
+      },
+      {
+        label: "Highlights erstellen",
+        prompt:
+          "Erstelle aus den vorhandenen Objektdaten fünf hochwertige Highlights. Erfinde keine Angaben.",
+      },
+      {
+        label: "Objekt verbessern",
+        prompt:
+          "Wie kann ich die vorhandenen Objektdaten für eine bessere Vermarktung verbessern?",
+      },
+      {
+        label: "Nächster Schritt",
+        prompt:
+          "Was sollte ich bei diesem Objekt als Nächstes erledigen?",
+      },
+    ];
+  }
+
+  if (/^\/cockpit\/[^/]+\/?$/.test(pathname)) {
+    return [
+      {
+        label: "Objekt prüfen",
+        prompt:
+          "Prüfe dieses Objekt auf Vollständigkeit und Verkaufswirkung.",
+      },
+      {
+        label: "Nächster Schritt",
+        prompt:
+          "Was ist bei diesem Objekt der sinnvollste nächste Arbeitsschritt?",
+      },
+      {
+        label: "Inserat vorbereiten",
+        prompt:
+          "Wie sollte ich aus diesen Objektdaten ein überzeugendes Immobilieninserat aufbauen?",
+      },
+      {
+        label: "Social Media",
+        prompt:
+          "Welche Social-Media-Inhalte eignen sich für dieses Objekt?",
+      },
+    ];
+  }
+
+  if (pathname === "/dashboard/social-media") {
+    return [
+      {
+        label: "Instagram",
+        prompt:
+          "Erstelle einen hochwertigen Instagram-Text für das aktuelle Immobilienobjekt.",
+      },
+      {
+        label: "Facebook",
+        prompt:
+          "Erstelle einen professionellen Facebook-Text für das aktuelle Immobilienobjekt.",
+      },
+      {
+        label: "Hashtags",
+        prompt:
+          "Schlage passende Schweizer Immobilien-Hashtags vor.",
+      },
+      {
+        label: "Plattform wählen",
+        prompt:
+          "Welche Social-Media-Plattform eignet sich für dieses Objekt am besten und warum?",
+      },
+    ];
+  }
+
+  if (pathname === "/dashboard/tour-guide") {
+    return [
+      {
+        label: "Tour planen",
+        prompt:
+          "Wie baue ich eine überzeugende Besichtigungstour für dieses Objekt auf?",
+      },
+      {
+        label: "Begrüssung",
+        prompt:
+          "Formuliere eine professionelle Begrüssung für die Objektbesichtigung.",
+      },
+      {
+        label: "Raumreihenfolge",
+        prompt:
+          "Welche Reihenfolge der Räume erzeugt bei einer Besichtigung die beste Wirkung?",
+      },
+      {
+        label: "Tour verbessern",
+        prompt:
+          "Wie kann ich den Tour Guide professioneller und verkaufsstärker machen?",
+      },
+    ];
+  }
+
+  if (/^\/expose\/[^/]+\/?$/.test(pathname)) {
+    return [
+      {
+        label: "Exposé prüfen",
+        prompt:
+          "Prüfe dieses Exposé auf Vollständigkeit und professionelle Verkaufswirkung.",
+      },
+      {
+        label: "Fehlende Inhalte",
+        prompt:
+          "Welche Inhalte fehlen in diesem Exposé noch?",
+      },
+      {
+        label: "Lagetext prüfen",
+        prompt:
+          "Prüfe den vorhandenen Lagetext und schlage konkrete Verbesserungen vor.",
+      },
+      {
+        label: "Wirkung erhöhen",
+        prompt:
+          "Wie kann dieses Exposé hochwertiger und verkaufsstärker wirken?",
+      },
+    ];
+  }
+
+  if (pathname === "/dashboard") {
+    return [
+      {
+        label: "Inserat starten",
+        prompt:
+          "Welche Angaben brauche ich für ein hochwertiges Immobilieninserat?",
+      },
+      {
+        label: "Titel verbessern",
+        prompt:
+          "Wie schreibe ich einen klaren und verkaufsstarken Immobilientitel?",
+      },
+      {
+        label: "Beschreibung",
+        prompt:
+          "Wie sollte eine professionelle Immobilienbeschreibung aufgebaut sein?",
+      },
+      {
+        label: "Nächster Schritt",
+        prompt:
+          "Was sollte ich im Inserat-Generator als Nächstes erledigen?",
+      },
+    ];
+  }
+
+  if (pathname === "/konto") {
+    return [
+      {
+        label: "Profil prüfen",
+        prompt:
+          "Welche Profilangaben sind für professionelle Inserate und Exposés besonders wichtig?",
+      },
+      {
+        label: "Kontaktdaten",
+        prompt:
+          "Wie sollten meine Kontaktdaten in einem Immobilienexposé dargestellt werden?",
+      },
+      {
+        label: "Inserat-AI nutzen",
+        prompt:
+          "Wie hole ich den grössten Nutzen aus Inserat-AI heraus?",
+      },
+    ];
+  }
+
+  return [];
+}
+
 export default function GuideAssistant() {
   const pathname = usePathname() || "/";
   const isVisible = useMemo(
@@ -210,6 +441,11 @@ export default function GuideAssistant() {
 
   const listingId = useMemo(
     () => getListingId(pathname),
+    [pathname]
+  );
+
+  const quickActions = useMemo(
+    () => getQuickActions(pathname),
     [pathname]
   );
 
@@ -746,6 +982,15 @@ export default function GuideAssistant() {
     }
   }
 
+  function selectQuickAction(prompt: string) {
+    setInput(prompt);
+    setAudioNotice("");
+
+    window.setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 50);
+  }
+
   function handleTextareaKeyDown(
     event: KeyboardEvent<HTMLTextAreaElement>
   ) {
@@ -923,6 +1168,29 @@ export default function GuideAssistant() {
 
             <div ref={messagesEndRef} />
           </div>
+
+          {quickActions.length > 0 ? (
+            <div
+              className="guide-quick-actions"
+              aria-label="Vorgeschlagene Fragen"
+            >
+              {quickActions.map((action) => (
+                <button
+                  key={action.label}
+                  type="button"
+                  className="guide-quick-action"
+                  onClick={() =>
+                    selectQuickAction(action.prompt)
+                  }
+                  disabled={isSending}
+                  title={action.prompt}
+                >
+                  <span aria-hidden="true">✦</span>
+                  {action.label}
+                </button>
+              ))}
+            </div>
+          ) : null}
 
           <form
             className="guide-composer"
@@ -1354,6 +1622,76 @@ export default function GuideAssistant() {
           animation-delay: 0.28s;
         }
 
+        .guide-quick-actions {
+          display: flex;
+          flex: 0 0 auto;
+          gap: 7px;
+          overflow-x: auto;
+          padding: 10px 14px 9px;
+          border-top: 1px solid
+            rgba(216, 178, 92, 0.14);
+          background: rgba(5, 16, 35, 0.72);
+          scrollbar-width: thin;
+          scrollbar-color:
+            rgba(126, 92, 246, 0.48)
+            transparent;
+        }
+
+        .guide-quick-action {
+          display: inline-flex;
+          min-height: 32px;
+          flex: 0 0 auto;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 10px;
+          border: 1px solid
+            rgba(117, 196, 255, 0.24);
+          border-radius: 999px;
+          background:
+            linear-gradient(
+              135deg,
+              rgba(24, 90, 155, 0.24),
+              rgba(109, 40, 217, 0.2)
+            );
+          color: #dcecff;
+          cursor: pointer;
+          font: inherit;
+          font-size: 10px;
+          font-weight: 800;
+          white-space: nowrap;
+          transition:
+            transform 150ms ease,
+            border-color 150ms ease,
+            background 150ms ease;
+        }
+
+        .guide-quick-action span {
+          color: #d7bcff;
+          font-size: 11px;
+        }
+
+        .guide-quick-action:hover:not(:disabled) {
+          transform: translateY(-1px);
+          border-color:
+            rgba(156, 224, 255, 0.58);
+          background:
+            linear-gradient(
+              135deg,
+              rgba(17, 132, 184, 0.34),
+              rgba(126, 52, 220, 0.32)
+            );
+        }
+
+        .guide-quick-action:focus-visible {
+          outline: 2px solid #8ce7ff;
+          outline-offset: 2px;
+        }
+
+        .guide-quick-action:disabled {
+          cursor: not-allowed;
+          opacity: 0.42;
+        }
+
         .guide-composer {
           display: flex;
           align-items: flex-end;
@@ -1572,7 +1910,77 @@ export default function GuideAssistant() {
             );
           }
 
-          .guide-composer {
+          .guide-quick-actions {
+          display: flex;
+          flex: 0 0 auto;
+          gap: 7px;
+          overflow-x: auto;
+          padding: 10px 14px 9px;
+          border-top: 1px solid
+            rgba(216, 178, 92, 0.14);
+          background: rgba(5, 16, 35, 0.72);
+          scrollbar-width: thin;
+          scrollbar-color:
+            rgba(126, 92, 246, 0.48)
+            transparent;
+        }
+
+        .guide-quick-action {
+          display: inline-flex;
+          min-height: 32px;
+          flex: 0 0 auto;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 10px;
+          border: 1px solid
+            rgba(117, 196, 255, 0.24);
+          border-radius: 999px;
+          background:
+            linear-gradient(
+              135deg,
+              rgba(24, 90, 155, 0.24),
+              rgba(109, 40, 217, 0.2)
+            );
+          color: #dcecff;
+          cursor: pointer;
+          font: inherit;
+          font-size: 10px;
+          font-weight: 800;
+          white-space: nowrap;
+          transition:
+            transform 150ms ease,
+            border-color 150ms ease,
+            background 150ms ease;
+        }
+
+        .guide-quick-action span {
+          color: #d7bcff;
+          font-size: 11px;
+        }
+
+        .guide-quick-action:hover:not(:disabled) {
+          transform: translateY(-1px);
+          border-color:
+            rgba(156, 224, 255, 0.58);
+          background:
+            linear-gradient(
+              135deg,
+              rgba(17, 132, 184, 0.34),
+              rgba(126, 52, 220, 0.32)
+            );
+        }
+
+        .guide-quick-action:focus-visible {
+          outline: 2px solid #8ce7ff;
+          outline-offset: 2px;
+        }
+
+        .guide-quick-action:disabled {
+          cursor: not-allowed;
+          opacity: 0.42;
+        }
+
+        .guide-composer {
             padding-bottom: 10px;
           }
 
@@ -1607,6 +2015,7 @@ export default function GuideAssistant() {
     </div>
   );
 }
+
 
 
 

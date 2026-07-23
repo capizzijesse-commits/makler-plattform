@@ -1,4 +1,4 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -577,7 +577,7 @@ body {
     width: 100% !important;
   }
 
-  /* 🔥 DAS HIER FEHLT BEI DIR */
+  /* ðŸ”¥ DAS HIER FEHLT BEI DIR */
   .landingPage .pricingGrid {
     grid-template-columns: 1fr !important;
     padding: 0 16px !important;
@@ -733,12 +733,12 @@ body {
     max-width: 100% !important;
     text-align: center !important;
   }
- /* Erzwingt das durchsichtige Grau für alle Browser */
+ /* Erzwingt das durchsichtige Grau fÃ¼r alle Browser */
 input::placeholder,
 textarea::placeholder {
   color: #94A3B8 !important;
-  opacity: 0.4 !important; /* Etwas niedriger für echtes "Durchscheinen" */
-  -webkit-text-fill-color: #94A3B8 !important; /* Speziell für Safari/iOS */
+  opacity: 0.4 !important; /* Etwas niedriger fÃ¼r echtes "Durchscheinen" */
+  -webkit-text-fill-color: #94A3B8 !important; /* Speziell fÃ¼r Safari/iOS */
 }
 
 /* Verhindert, dass der Browser den Text beim Reinklicken schwarz macht */
@@ -1346,7 +1346,7 @@ input:focus::placeholder {
 }
 
 .landingMiniCard li::before {
-  content: "✓";
+  content: "âœ“";
   color: #fbbf24;
   font-weight: 900;
   margin-right: 8px;
@@ -1812,7 +1812,7 @@ input:focus::placeholder {
 }
 
 .landingMiniCard li::before {
-  content: "✓";
+  content: "âœ“";
   color: #fbbf24;
   font-weight: 950;
   margin-right: 8px;
@@ -2007,7 +2007,7 @@ input:focus::placeholder {
     grid-template-columns: 1fr;
   }
 }
-/* Weicher Übergang von Hero zu Preisen */
+/* Weicher Ãœbergang von Hero zu Preisen */
 
 .landingHero {
   position: relative;
@@ -2054,7 +2054,7 @@ input:focus::placeholder {
     display: none;
   }
 }
-/* Trust-/Vorteile-Balken schöner und grösser */
+/* Trust-/Vorteile-Balken schÃ¶ner und grÃ¶sser */
 
 .landingTrustBar {
   min-height: 116px;
@@ -2467,7 +2467,7 @@ input:focus::placeholder {
     text-align: center !important;
   }
 
-  /* Begrüssung */
+  /* BegrÃ¼ssung */
 
   .heroSection {
     align-items: stretch !important;
@@ -2500,7 +2500,7 @@ input:focus::placeholder {
     min-height: 48px !important;
   }
 
-  /* Statistik-Karten: 2 × 2 statt vier nebeneinander */
+  /* Statistik-Karten: 2 Ã— 2 statt vier nebeneinander */
 
   .statsGrid {
     display: grid !important;
@@ -2854,7 +2854,7 @@ input:focus::placeholder {
     color: #fbbf24 !important;
   }
 
-  /* Statistik-Karten kompakt als 2 × 2 */
+  /* Statistik-Karten kompakt als 2 Ã— 2 */
 
   .statsGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -2888,7 +2888,7 @@ input:focus::placeholder {
     font-size: 16px !important;
   }
 
-  /* Kontaktbutton kleiner und näher am Rand */
+  /* Kontaktbutton kleiner und nÃ¤her am Rand */
 
   .fixed.bottom-24.right-5.z-50 {
     right: 9px !important;
@@ -2972,7 +2972,7 @@ input:focus::placeholder {
     box-sizing: border-box !important;
   }
 }/* =========================================================
-   INSERAT-AI: MOBILE DASHBOARD – FINALER EINGABEBEREICH
+   INSERAT-AI: MOBILE DASHBOARD â€“ FINALER EINGABEBEREICH
    ========================================================= */
 
 .saveCockpitButton {
@@ -3051,7 +3051,7 @@ input:focus::placeholder {
     display: none !important;
   }
 
-  /* Auch die Ausgabekarte normal über die Seite scrollen lassen */
+  /* Auch die Ausgabekarte normal Ã¼ber die Seite scrollen lassen */
 
   .outputSection,
   .outputCard {
@@ -3111,5 +3111,1652 @@ input:focus::placeholder {
     overflow-wrap: normal !important;
     word-break: normal !important;
     text-align: center !important;
+  }
+}
+/* Virtual Tour Studio â€“ elegante Scrollbereiche */
+
+@media (min-width: 901px) {
+  .tourPanel {
+    max-height: calc(100vh - 150px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding-right: 12px;
+  }
+}
+
+.tourPanel {
+  scrollbar-width: thin;
+  scrollbar-color:
+    rgba(34, 211, 238, 0.85)
+    rgba(255, 255, 255, 0.07);
+}
+
+.tourPanel::-webkit-scrollbar {
+  width: 9px;
+}
+
+.tourPanel::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  margin: 10px 0;
+}
+
+.tourPanel::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      180deg,
+      #22d3ee 0%,
+      #6366f1 55%,
+      #f59e0b 100%
+    );
+  background-clip: padding-box;
+}
+
+.tourPanel::-webkit-scrollbar-thumb:hover {
+  background:
+    linear-gradient(
+      180deg,
+      #67e8f9 0%,
+      #818cf8 55%,
+      #fbbf24 100%
+    );
+  background-clip: padding-box;
+}
+
+/* Smartphone: keine enge interne Scrollbox */
+
+@media (max-width: 900px) {
+  .tourPanel {
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+    scrollbar-width: none;
+  }
+
+  .tourPanel::-webkit-scrollbar {
+    display: none;
+  }
+}
+/* Virtual Tour Studio â€“ haftender Aktionsbutton */
+
+.tourStickyActionBar {
+  position: sticky;
+  bottom: -1px;
+  z-index: 30;
+  width: 100%;
+  margin-top: 18px;
+  padding: 16px 0 2px;
+  background: linear-gradient(
+    180deg,
+    rgba(39, 37, 86, 0),
+    rgba(39, 37, 86, 0.74) 38%,
+    rgba(45, 37, 78, 0.94) 100%
+  );
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.tourStickyActionButton {
+  display: flex;
+  width: 100%;
+  min-height: 66px;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 20px;
+  border: 1px solid rgba(103, 232, 249, 0.55);
+  border-radius: 999px;
+  background: linear-gradient(
+    135deg,
+    rgba(34, 211, 238, 0.82),
+    rgba(59, 130, 246, 0.82)
+  );
+  color: #07111f;
+  font-size: 16px;
+  font-weight: 950;
+  text-align: center;
+  cursor: pointer;
+  box-shadow:
+    0 16px 34px rgba(14, 165, 233, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  transition:
+    transform 160ms ease,
+    opacity 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.tourStickyActionButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 20px 40px rgba(14, 165, 233, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38);
+}
+
+.tourStickyActionButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Auf dem Handy normal im Seitenfluss */
+
+@media (max-width: 900px) {
+  .tourStickyActionBar {
+    position: static;
+    margin-top: 18px;
+    padding: 0;
+    background: transparent;
+    backdrop-filter: none;
+  }
+
+  .tourStickyActionButton {
+    min-height: 60px;
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+}
+/* =========================================================
+   INSERAT-AI â€“ ZENTRALE APP-NAVIGATION
+   ========================================================= */
+
+.appCentralNavbar {
+  --app-nav-accent: #f59e0b;
+  --app-nav-accent-soft: rgba(245, 158, 11, 0.18);
+
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid
+    color-mix(
+      in srgb,
+      var(--app-nav-accent) 24%,
+      transparent
+    );
+  background: rgba(5, 10, 29, 0.84);
+  box-shadow:
+    0 12px 34px rgba(2, 6, 23, 0.2),
+    inset 0 -1px 0
+      var(--app-nav-accent-soft);
+  backdrop-filter: blur(20px);
+}
+
+.appNavModuleDashboard {
+  --app-nav-accent: #f59e0b;
+  --app-nav-accent-soft: rgba(245, 158, 11, 0.18);
+}
+
+.appNavModuleCockpit {
+  --app-nav-accent: #3b82f6;
+  --app-nav-accent-soft: rgba(59, 130, 246, 0.18);
+}
+
+.appNavModuleSocial {
+  --app-nav-accent: #d946ef;
+  --app-nav-accent-soft: rgba(217, 70, 239, 0.18);
+}
+
+.appNavModuleTour {
+  --app-nav-accent: #22d3ee;
+  --app-nav-accent-soft: rgba(34, 211, 238, 0.18);
+}
+
+.appCentralNavbarInner {
+  min-height: 72px;
+}
+
+.appPlanBadge {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 13px;
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--app-nav-accent) 50%,
+      transparent
+    );
+  border-radius: 999px;
+  background: var(--app-nav-accent-soft);
+  color: var(--app-nav-accent);
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+}
+
+.appMenuButton {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 17px;
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--app-nav-accent) 48%,
+      transparent
+    );
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      135deg,
+      var(--app-nav-accent-soft),
+      rgba(255, 255, 255, 0.04)
+    );
+  color: #ffffff;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.appMenuButton:hover {
+  transform: translateY(-1px);
+  border-color: var(--app-nav-accent);
+}
+
+.appMenuButtonIcon {
+  color: var(--app-nav-accent);
+  font-size: 18px;
+}
+
+.appMenuOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 190;
+  border: 0;
+  background: rgba(2, 6, 23, 0.64);
+  backdrop-filter: blur(5px);
+  cursor: default;
+}
+
+.appMenuDrawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 200;
+  display: flex;
+  width: min(430px, 94vw);
+  height: 100dvh;
+  flex-direction: column;
+  padding: 24px;
+  overflow-y: auto;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(34, 211, 238, 0.15),
+      transparent 32%
+    ),
+    linear-gradient(
+      180deg,
+      #071023 0%,
+      #101535 100%
+    );
+  color: #ffffff;
+  box-shadow: -28px 0 80px rgba(2, 6, 23, 0.5);
+}
+
+.appMenuHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.appMenuHeader h2 {
+  margin: 5px 0 0;
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 950;
+}
+
+.appMenuEyebrow {
+  color: #67e8f9;
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 0.2em;
+}
+
+.appMenuCloseButton {
+  display: inline-flex;
+  width: 42px;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  font-size: 27px;
+  cursor: pointer;
+}
+
+.appMenuPlanCard {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  margin-top: 24px;
+  padding: 17px;
+  border: 1px solid rgba(251, 191, 36, 0.22);
+  border-radius: 20px;
+  background: rgba(251, 191, 36, 0.08);
+}
+
+.appMenuPlanCard span {
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.appMenuPlanCard strong {
+  color: #fbbf24;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+}
+
+.appMenuPlanCard a {
+  grid-column: 1 / -1;
+  margin-top: 10px;
+  color: #fbbf24;
+  font-size: 13px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.appMenuLinks {
+  display: grid;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.appMenuItem {
+  --menu-item-color: #f59e0b;
+  --menu-item-soft: rgba(245, 158, 11, 0.12);
+
+  display: grid;
+  grid-template-columns: 46px 1fr auto;
+  min-height: 72px;
+  align-items: center;
+  gap: 13px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.045);
+  color: #ffffff;
+  text-decoration: none;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.appMenuItem:hover:not(.appMenuItemDisabled),
+.appMenuItemActive {
+  transform: translateX(-3px);
+  border-color: var(--menu-item-color);
+  background: var(--menu-item-soft);
+}
+
+.appMenuItem-orange {
+  --menu-item-color: #f59e0b;
+  --menu-item-soft: rgba(245, 158, 11, 0.12);
+}
+
+.appMenuItem-blue {
+  --menu-item-color: #3b82f6;
+  --menu-item-soft: rgba(59, 130, 246, 0.12);
+}
+
+.appMenuItem-violet {
+  --menu-item-color: #d946ef;
+  --menu-item-soft: rgba(217, 70, 239, 0.12);
+}
+
+.appMenuItem-cyan {
+  --menu-item-color: #22d3ee;
+  --menu-item-soft: rgba(34, 211, 238, 0.12);
+}
+
+.appMenuItem-green {
+  --menu-item-color: #34d399;
+  --menu-item-soft: rgba(52, 211, 153, 0.12);
+}
+
+.appMenuItem-turquoise {
+  --menu-item-color: #2dd4bf;
+  --menu-item-soft: rgba(45, 212, 191, 0.12);
+}
+
+.appMenuItem-gold {
+  --menu-item-color: #fbbf24;
+  --menu-item-soft: rgba(251, 191, 36, 0.12);
+}
+
+.appMenuItemIcon {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 15px;
+  background: var(--menu-item-soft);
+  font-size: 21px;
+}
+
+.appMenuItemContent {
+  display: grid;
+  gap: 4px;
+}
+
+.appMenuItemContent strong {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.appMenuItemContent small {
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.appMenuArrow {
+  color: var(--menu-item-color);
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.appMenuItemDisabled {
+  opacity: 0.52;
+  cursor: not-allowed;
+}
+
+.appMenuSoon {
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.appMenuFooter {
+  margin-top: auto;
+  padding-top: 22px;
+}
+
+.appLogoutButton {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid rgba(248, 113, 113, 0.28);
+  border-radius: 16px;
+  background: rgba(127, 29, 29, 0.18);
+  color: #fecaca;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.appLogoutButton:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+@media (max-width: 700px) {
+  .appCentralNavbarInner {
+    min-height: 64px;
+  }
+
+  .appPlanBadge {
+    min-height: 30px;
+    padding: 0 9px;
+    font-size: 9px;
+  }
+
+  .appMenuButton {
+    min-height: 38px;
+    padding: 0 13px;
+    font-size: 13px;
+  }
+
+  .appMenuDrawer {
+    width: 100%;
+    padding: 20px 16px;
+  }
+
+  .siteCtaButton {
+    padding-inline: 13px;
+    font-size: 12px;
+  }
+
+  .siteLoginLink {
+    font-size: 12px;
+  }
+}
+/* GLOBALER PRIVATSPHÃ„RE-MODUS */
+
+html.privacy-mode main img:not([data-privacy-exempt="true"]),
+html.privacy-mode main video:not([data-privacy-exempt="true"]) {
+  filter: brightness(0.3) blur(11px) !important;
+  transition: filter 0.35s ease !important;
+}
+
+.globalPrivacyButton {
+  position: fixed;
+  right: 22px;
+  bottom: 154px;
+  z-index: 9997;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+
+  min-height: 46px;
+  padding: 0 17px;
+
+  border: 1px solid rgba(251, 191, 36, 0.5);
+  border-radius: 999px;
+
+  background: linear-gradient(
+    145deg,
+    rgba(13, 27, 62, 0.97),
+    rgba(7, 17, 42, 0.97)
+  );
+
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(251, 191, 36, 0.1);
+
+  color: #fbbf24;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.globalPrivacyButton.active {
+  border-color: rgba(251, 191, 36, 0.85);
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #07152f;
+
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.32),
+    0 0 30px rgba(251, 191, 36, 0.3);
+}
+
+@media (max-width: 640px) {
+  html.privacy-mode main img:not([data-privacy-exempt="true"]),
+  html.privacy-mode main video:not([data-privacy-exempt="true"]) {
+    filter: brightness(0.28) blur(8px) !important;
+  }
+
+  .globalPrivacyButton {
+    right: 14px;
+    bottom: 132px;
+    min-height: 43px;
+    padding: 0 14px;
+    font-size: 11px;
+  }
+}
+/* PREMIUM-PRIVATSPHÃ„RE-SCHALTER IN DER NAVBAR */
+
+.globalPrivacyButton {
+  position: relative !important;
+  inset: auto !important;
+  z-index: auto !important;
+
+  display: inline-grid !important;
+  place-items: center !important;
+
+  width: 46px !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  padding: 0 !important;
+
+  overflow: hidden !important;
+
+  border: 1px solid rgba(96, 165, 250, 0.42) !important;
+  border-radius: 50% !important;
+
+  background:
+    radial-gradient(
+      circle at 30% 25%,
+      rgba(96, 165, 250, 0.14),
+      transparent 48%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(15, 34, 73, 0.98),
+      rgba(5, 15, 40, 0.98)
+    ) !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 10px 26px rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(96, 165, 250, 0.04) !important;
+
+  color: #60a5fa !important;
+  cursor: pointer !important;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease !important;
+}
+
+.globalPrivacyButton::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.045);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.globalPrivacyButton:hover {
+  transform: translateY(-2px) scale(1.03) !important;
+
+  border-color: rgba(96, 165, 250, 0.7) !important;
+  color: #93c5fd !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 14px 32px rgba(0, 0, 0, 0.32),
+    0 0 20px rgba(96, 165, 250, 0.15) !important;
+}
+
+.globalPrivacyButton.active {
+  border-color: rgba(251, 191, 36, 0.78) !important;
+
+  background:
+    radial-gradient(
+      circle at 30% 25%,
+      rgba(251, 191, 36, 0.24),
+      transparent 50%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(64, 44, 10, 0.96),
+      rgba(16, 22, 45, 0.98)
+    ) !important;
+
+  color: #fbbf24 !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 205, 0.14),
+    0 12px 30px rgba(0, 0, 0, 0.32),
+    0 0 22px rgba(251, 191, 36, 0.2) !important;
+}
+
+.globalPrivacyButton.active:hover {
+  border-color: rgba(253, 211, 77, 0.95) !important;
+  color: #fde68a !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 205, 0.18),
+    0 15px 34px rgba(0, 0, 0, 0.34),
+    0 0 28px rgba(251, 191, 36, 0.28) !important;
+}
+
+.privacyIcon {
+  position: relative;
+  z-index: 2;
+  width: 21px;
+  height: 21px;
+}
+
+.privacyStatusDot {
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  z-index: 3;
+
+  width: 7px;
+  height: 7px;
+
+  border: 2px solid #07152f;
+  border-radius: 50%;
+
+  background: #60a5fa;
+  box-shadow: 0 0 8px rgba(96, 165, 250, 0.72);
+}
+
+.globalPrivacyButton.active .privacyStatusDot {
+  background: #fbbf24;
+  box-shadow: 0 0 9px rgba(251, 191, 36, 0.85);
+}
+
+@media (max-width: 640px) {
+  .globalPrivacyButton {
+    width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+  }
+
+  .privacyIcon {
+    width: 19px;
+    height: 19px;
+  }
+
+  .privacyStatusDot {
+    right: 6px;
+    bottom: 6px;
+  }
+}
+/* DREI EINHEITLICHE SCHNELLZUGRIFF-KARTEN */
+
+.quickGrid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  align-items: stretch !important;
+  gap: 20px !important;
+  width: 100% !important;
+}
+
+.quickGrid > a.quickCard {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 235px !important;
+  padding: 24px !important;
+  overflow: hidden !important;
+
+  border: 1px solid rgba(251, 191, 36, 0.48) !important;
+  border-radius: 20px !important;
+
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(251, 191, 36, 0.22),
+      transparent 42%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(40, 54, 96, 0.98),
+      rgba(17, 32, 72, 0.98) 55%,
+      rgba(10, 24, 59, 0.98) 100%
+    ) !important;
+
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.03) inset,
+    0 18px 40px rgba(0, 0, 0, 0.28),
+    0 0 24px rgba(251, 191, 36, 0.12) !important;
+
+  color: #ffffff !important;
+  text-decoration: none !important;
+
+  transition:
+    transform 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease,
+    background 0.22s ease !important;
+}
+
+/* Farb-Balken oben */
+.quickGrid > a.quickCard::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 18px !important;
+  right: 18px !important;
+  height: 5px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(
+    90deg,
+    rgba(251,191,36,1) 0%,
+    rgba(255,210,74,0.95) 50%,
+    rgba(255,236,120,0.9) 100%
+  ) !important;
+  box-shadow:
+    0 0 14px rgba(251,191,36,0.38),
+    0 0 24px rgba(251,191,36,0.18) !important;
+}
+
+/* Karte 2 â€“ Cyan */
+.quickGrid > a.quickCard:nth-child(2) {
+  border-color: rgba(56, 189, 248, 0.52) !important;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(56, 189, 248, 0.24),
+      transparent 42%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(28, 63, 110, 0.98),
+      rgba(15, 44, 88, 0.98) 55%,
+      rgba(10, 28, 66, 0.98) 100%
+    ) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.03) inset,
+    0 18px 40px rgba(0, 0, 0, 0.28),
+    0 0 24px rgba(56, 189, 248, 0.14) !important;
+}
+
+.quickGrid > a.quickCard:nth-child(2)::before {
+  background: linear-gradient(
+    90deg,
+    rgba(34,211,238,1) 0%,
+    rgba(56,189,248,1) 55%,
+    rgba(99,102,241,0.95) 100%
+  ) !important;
+  box-shadow:
+    0 0 14px rgba(34,211,238,0.4),
+    0 0 24px rgba(56,189,248,0.2) !important;
+}
+
+/* Karte 3 â€“ Violett / Gold */
+.quickGrid > a.quickCard:nth-child(3) {
+  border-color: rgba(129, 140, 248, 0.48) !important;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(129, 140, 248, 0.2),
+      transparent 40%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(39, 47, 92, 0.98),
+      rgba(22, 31, 72, 0.98) 55%,
+      rgba(12, 24, 59, 0.98) 100%
+    ) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.03) inset,
+    0 18px 40px rgba(0, 0, 0, 0.28),
+    0 0 24px rgba(129, 140, 248, 0.13) !important;
+}
+
+.quickGrid > a.quickCard:nth-child(3)::before {
+  background: linear-gradient(
+    90deg,
+    rgba(251,191,36,0.95) 0%,
+    rgba(168,85,247,0.95) 55%,
+    rgba(99,102,241,0.95) 100%
+  ) !important;
+  box-shadow:
+    0 0 14px rgba(168,85,247,0.28),
+    0 0 24px rgba(99,102,241,0.18) !important;
+}
+
+.quickGrid > a.quickCard:hover {
+  transform: translateY(-5px) scale(1.01) !important;
+  border-color: rgba(255,255,255,0.24) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 24px 52px rgba(0, 0, 0, 0.34),
+    0 0 30px rgba(251, 191, 36, 0.16) !important;
+}
+
+.quickGrid > a.quickCard .quickIcon {
+  display: grid !important;
+  place-items: center !important;
+  width: 54px !important;
+  height: 54px !important;
+  margin-bottom: 18px !important;
+  border-radius: 15px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 10px 22px rgba(0,0,0,0.16) !important;
+}
+
+.quickGrid > a.quickCard h3 {
+  margin: 0 !important;
+  color: #ffffff !important;
+  font-size: 17px !important;
+  font-weight: 700 !important;
+}
+
+.quickGrid > a.quickCard p {
+  margin: 10px 0 18px !important;
+  color: #c5d0e6 !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+}
+
+.quickGrid > a.quickCard strong {
+  margin-top: auto !important;
+  color: #fbbf24 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+@media (max-width: 900px) {
+  .quickGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .quickGrid > a.quickCard {
+    min-height: 190px !important;
+  }
+}
+/* SCHNELLZUGRIFF â€“ FARBEN DEZENTER */
+
+.quickGrid > a.quickCard {
+  border-color: rgba(251, 191, 36, 0.28) !important;
+
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(251, 191, 36, 0.09),
+      transparent 46%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(30, 43, 82, 0.96),
+      rgba(15, 29, 67, 0.97)
+    ) !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 16px 34px rgba(0, 0, 0, 0.22),
+    0 0 16px rgba(251, 191, 36, 0.05) !important;
+}
+
+.quickGrid > a.quickCard::before {
+  height: 3px !important;
+  opacity: 0.72 !important;
+
+  box-shadow:
+    0 0 8px rgba(251, 191, 36, 0.18) !important;
+}
+
+/* Bilder analysieren â€“ dezentes Cyan */
+
+.quickGrid > a.quickCard:nth-child(2) {
+  border-color: rgba(56, 189, 248, 0.32) !important;
+
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(56, 189, 248, 0.11),
+      transparent 46%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(24, 48, 88, 0.96),
+      rgba(12, 31, 70, 0.97)
+    ) !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 16px 34px rgba(0, 0, 0, 0.22),
+    0 0 16px rgba(56, 189, 248, 0.06) !important;
+}
+
+.quickGrid > a.quickCard:nth-child(2)::before {
+  opacity: 0.7 !important;
+  box-shadow:
+    0 0 8px rgba(56, 189, 248, 0.2) !important;
+}
+
+/* Objekte verwalten â€“ dezentes Violett */
+
+.quickGrid > a.quickCard:nth-child(3) {
+  border-color: rgba(129, 140, 248, 0.3) !important;
+
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(129, 140, 248, 0.09),
+      transparent 46%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(30, 38, 78, 0.96),
+      rgba(15, 28, 65, 0.97)
+    ) !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 16px 34px rgba(0, 0, 0, 0.22),
+    0 0 16px rgba(129, 140, 248, 0.05) !important;
+}
+
+.quickGrid > a.quickCard:nth-child(3)::before {
+  opacity: 0.68 !important;
+  box-shadow:
+    0 0 8px rgba(129, 140, 248, 0.16) !important;
+}
+
+.quickGrid > a.quickCard .quickIcon {
+  width: 48px !important;
+  height: 48px !important;
+}
+
+.quickGrid > a.quickCard:hover {
+  transform: translateY(-3px) !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 20px 42px rgba(0, 0, 0, 0.26),
+    0 0 18px rgba(251, 191, 36, 0.07) !important;
+}
+/* =========================================================
+   INSERAT-AI â€“ GLOBALE SMARTPHONE-BASIS
+   Finale Regeln bewusst am Dateiende
+   ========================================================= */
+
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+}
+
+main,
+header,
+nav,
+section,
+article,
+aside,
+footer,
+form {
+  min-width: 0;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+/* =========================================================
+   Ã–FFENTLICHE MOBILE-NAVIGATION
+   ========================================================= */
+
+@media (max-width: 700px) {
+  .siteNavbar {
+    width: 100% !important;
+    overflow: visible !important;
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .siteNavbarInner {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 64px !important;
+    margin: 0 !important;
+    padding:
+      8px
+      max(12px, env(safe-area-inset-right))
+      8px
+      max(12px, env(safe-area-inset-left)) !important;
+
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+  }
+
+  .siteBrand {
+    width: auto !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+    justify-content: flex-start !important;
+  }
+
+  .siteBrandIcon {
+    flex: 0 0 auto;
+  }
+
+  .siteBrandText {
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  .siteNavActions {
+    min-width: 0;
+    flex: 0 0 auto;
+    gap: 8px !important;
+  }
+
+  .siteLoginLink,
+  .siteCtaButton {
+    min-height: 44px !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* =========================================================
+   ANGEMELDETE APP-NAVIGATION
+   ========================================================= */
+
+@media (max-width: 700px) {
+  .appCentralNavbar {
+    width: 100%;
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .appCentralNavbarInner {
+    width: 100%;
+    min-width: 0;
+    min-height: 64px !important;
+    padding:
+      8px
+      max(12px, env(safe-area-inset-right))
+      8px
+      max(12px, env(safe-area-inset-left));
+    gap: 8px;
+  }
+
+  .appPlanBadge {
+    min-height: 32px;
+    max-width: 92px;
+    padding-inline: 9px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .appMenuButton {
+    min-width: 44px;
+    min-height: 44px !important;
+    padding: 0 13px !important;
+    touch-action: manipulation;
+  }
+
+  .globalPrivacyButton {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    flex: 0 0 44px;
+  }
+
+  .appMenuOverlay {
+    inset: 0;
+    width: 100%;
+    height: 100dvh;
+    touch-action: none;
+  }
+
+  .appMenuDrawer {
+    top: 0;
+    right: 0;
+    width: 100% !important;
+    max-width: none !important;
+    height: 100dvh;
+    max-height: 100dvh;
+
+    padding:
+      max(18px, env(safe-area-inset-top))
+      max(16px, env(safe-area-inset-right))
+      max(18px, env(safe-area-inset-bottom))
+      max(16px, env(safe-area-inset-left)) !important;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .appMenuDrawer a,
+  .appMenuDrawer button {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+
+  .appLogoutButton {
+    min-height: 50px;
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+}
+/* =========================================================
+   INSERAT-AI â€“ FINALE Ã–FFENTLICHE MOBILE-NAVBAR
+   ========================================================= */
+
+.siteCtaMobileText {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .siteNavbar:not(.appCentralNavbar) {
+    width: 100% !important;
+    padding-top: env(safe-area-inset-top);
+    overflow: visible !important;
+  }
+
+  .siteNavbar:not(.appCentralNavbar)
+    .siteNavbarInner {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 66px !important;
+    margin: 0 !important;
+
+    padding:
+      7px
+      max(11px, env(safe-area-inset-right))
+      7px
+      max(11px, env(safe-area-inset-left)) !important;
+
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 7px !important;
+  }
+
+  .siteNavbar:not(.appCentralNavbar)
+    .siteBrand {
+    width: auto !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 7px !important;
+  }
+
+  .siteNavbar:not(.appCentralNavbar)
+    .siteBrandIcon {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    flex: 0 0 38px !important;
+    transform: none !important;
+  }
+
+  .siteNavbar:not(.appCentralNavbar)
+    .siteBrandText {
+    min-width: 0 !important;
+    font-size: 1.02rem !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  .siteNavbar:not(.appCentralNavbar)
+    .siteNavActions {
+    display: flex !important;
+    min-width: 0 !important;
+    flex: 0 0 auto !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+
+  .siteNavbar:not(.appCentralNavbar)
+    .siteLoginLink {
+    min-width: 0 !important;
+    min-height: 42px !important;
+
+    padding: 0 11px !important;
+    border-radius: 12px !important;
+
+    font-size: 0.8rem !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  .siteNavbar:not(.appCentralNavbar)
+    .siteCtaButton {
+    min-width: 0 !important;
+    min-height: 42px !important;
+
+    padding: 0 11px !important;
+    border-radius: 12px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+
+    font-size: 0.76rem !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  .siteCtaDesktopText {
+    display: none;
+  }
+
+  .siteCtaMobileText {
+    display: inline;
+  }
+}
+
+/* Auf sehr schmalen GerÃ¤ten nur das Logo-Symbol */
+@media (max-width: 370px) {
+  .siteNavbar:not(.appCentralNavbar)
+    .siteBrandText {
+    display: none !important;
+  }
+
+  .siteNavbar:not(.appCentralNavbar)
+    .siteLoginLink {
+    padding-inline: 9px !important;
+  }
+
+  .siteNavbar:not(.appCentralNavbar)
+    .siteCtaButton {
+    padding-inline: 9px !important;
+    font-size: 0.72rem !important;
+  }
+}
+/* =========================================================
+   INSERAT-AI â€“ Ã–FFENTLICHE MOBILE-NAVBAR V2
+   Ãœberschreibt bewusst alle Ã¤lteren Mobile-Regeln
+   ========================================================= */
+
+@media screen and (max-width: 700px) {
+  .siteNavbar:not(.appCentralNavbar)
+    > .siteNavbarInner {
+    width: 100% !important;
+    min-height: 64px !important;
+    margin: 0 !important;
+    padding:
+      7px
+      max(10px, env(safe-area-inset-right))
+      7px
+      max(10px, env(safe-area-inset-left)) !important;
+
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+  }
+
+  .siteNavbar:not(.appCentralNavbar)
+    .siteBrand {
+    width: auto !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+    gap: 7px !important;
+    justify-content: flex-start !important;
+  }
+
+  .siteNavbar:not(.appCentralNavbar)
+    .siteBrandIcon {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    flex: 0 0 36px !important;
+    transform: none !important;
+  }
+
+  .siteNavbar:not(.appCentralNavbar)
+    .siteBrandText {
+    display: block !important;
+    min-width: 0 !important;
+    font-size: 17px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  .siteNavbar:not(.appCentralNavbar)
+    .siteNavActions {
+    width: auto !important;
+    min-width: 0 !important;
+    flex: 0 0 auto !important;
+
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 6px !important;
+  }
+
+  .siteNavbar:not(.appCentralNavbar)
+    .publicMobileLogin {
+    width: auto !important;
+    min-width: 54px !important;
+    max-width: none !important;
+    min-height: 44px !important;
+    flex: 0 0 auto !important;
+
+    padding: 0 8px !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  .siteNavbar:not(.appCentralNavbar)
+    .publicMobileCta {
+    width: auto !important;
+    min-width: 118px !important;
+    max-width: none !important;
+    min-height: 44px !important;
+    flex: 0 0 auto !important;
+
+    padding: 0 12px !important;
+    border-radius: 14px !important;
+
+    display: inline-flex !important;
+    flex-flow: row nowrap !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+
+    font-size: 12px !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  .siteNavbar:not(.appCentralNavbar)
+    .publicMobileCta > span {
+    display: inline !important;
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+  }
+
+  .siteNavbar:not(.appCentralNavbar)
+    .publicMobileCta
+    .siteCtaDesktopText {
+    display: none !important;
+  }
+
+  .siteNavbar:not(.appCentralNavbar)
+    .publicMobileCta
+    .siteCtaMobileText {
+    display: inline !important;
+  }
+}
+
+@media screen and (max-width: 380px) {
+  .siteNavbar:not(.appCentralNavbar)
+    .siteBrandText {
+    font-size: 15px !important;
+  }
+
+  .siteNavbar:not(.appCentralNavbar)
+    .publicMobileLogin {
+    min-width: 48px !important;
+    padding-inline: 5px !important;
+    font-size: 12px !important;
+  }
+
+  .siteNavbar:not(.appCentralNavbar)
+    .publicMobileCta {
+    min-width: 102px !important;
+    padding-inline: 9px !important;
+    font-size: 11px !important;
+  }
+}
+
+/* =========================================================
+   INSERAT-AI – MOBILER LOGIN MIT NORMALEM SEITENSCROLLEN
+   ========================================================= */
+
+@media (max-width: 700px) {
+  html,
+  body {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+    overscroll-behavior-y: auto !important;
+    touch-action: pan-y !important;
+  }
+
+  body {
+    position: static !important;
+  }
+
+  .loginPage {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: calc(100dvh - 64px) !important;
+
+    padding:
+      24px
+      12px
+      calc(220px + env(safe-area-inset-bottom))
+      !important;
+
+    overflow: visible !important;
+    overscroll-behavior: auto !important;
+    touch-action: pan-y !important;
+    box-sizing: border-box !important;
+  }
+
+  .loginCard {
+    width: 100% !important;
+    max-width: 460px !important;
+    margin: 0 auto !important;
+    padding: 26px 20px !important;
+    border-radius: 22px !important;
+    box-sizing: border-box !important;
+  }
+
+  .loginInput {
+    min-height: 56px !important;
+    font-size: 16px !important;
+    scroll-margin-top: 110px;
+    scroll-margin-bottom: 55dvh;
+  }
+
+  .loginSubmit {
+    min-height: 58px !important;
+  }
+
+  /*
+   Während der Eingabe entsteht echter Platz unter dem Formular.
+   Die Seite bleibt normales Dokument und keine interne Scrollbox.
+  */
+  .loginPage:focus-within {
+    padding-bottom:
+      calc(75dvh + env(safe-area-inset-bottom))
+      !important;
+  }
+
+  html:has(.loginPage input:focus) {
+    scroll-padding-bottom: 55dvh;
+  }
+
+  body:has(.loginPage input:focus)
+    .supportDock,
+  body:has(.loginPage input:focus)
+    .guide-launcher {
+    display: none !important;
+  }
+}
+/* =========================================================
+   INSERAT-AI – PRIVATSPHÄRE FEST IM APP-MENÜ
+   ========================================================= */
+
+.appMenuPrivacyCard {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+
+  margin: 0 0 16px;
+  padding: 14px;
+
+  border: 1px solid rgba(251, 191, 36, 0.24);
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(120, 82, 20, 0.18),
+      rgba(255, 255, 255, 0.04)
+    );
+}
+
+.appMenuPrivacyText {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.appMenuPrivacyText strong {
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.appMenuPrivacyText small {
+  color: rgba(226, 232, 240, 0.7);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.appMenuPrivacyCard
+  .globalPrivacyButton {
+  position: relative !important;
+  inset: auto !important;
+  z-index: auto !important;
+
+  width: 46px !important;
+  min-width: 46px !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  flex: 0 0 46px !important;
+}
+
+@media (max-width: 640px) {
+  .appMenuPrivacyCard {
+    padding: 13px;
+  }
+
+  .appMenuPrivacyText small {
+    font-size: 9px;
+  }
+
+  .appMenuPrivacyCard
+    .globalPrivacyButton {
+    width: 44px !important;
+    min-width: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    flex-basis: 44px !important;
   }
 }

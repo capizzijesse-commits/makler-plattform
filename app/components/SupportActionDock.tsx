@@ -1,23 +1,21 @@
-﻿"use client";
+"use client";
+
+
 
 import { usePathname } from "next/navigation";
+import PrivacyModeButton from "@/components/PrivacyModeButton";
+
 
 type SupportAction =
   | "feedback"
   | "contact"
   | "guide";
 
+  
 function isGuidePage(pathname: string): boolean {
   return (
-    pathname === "/cockpit" ||
-    /^\/cockpit\/[^/]+\/?$/.test(pathname) ||
-    /^\/cockpit\/[^/]+\/edit\/?$/.test(pathname) ||
-    /^\/cockpit\/[^/]+\/home-staging\/?$/.test(pathname) ||
-    pathname === "/dashboard" ||
-    pathname === "/dashboard/social-media" ||
-    pathname === "/dashboard/tour-guide" ||
-    /^\/expose\/[^/]+\/?$/.test(pathname) ||
-    pathname === "/konto"
+    pathname !== "/impressum" &&
+    pathname !== "/datenschutz"
   );
 }
 
@@ -279,40 +277,70 @@ export default function SupportActionDock() {
           }
         }
 
-        @media (max-width: 640px) {
-          .supportDock {
-            right: 8px;
-            bottom: calc(8px + env(safe-area-inset-bottom));
-            width: min(230px, calc(100vw - 16px));
-            padding: 6px;
-            gap: 6px;
-            border-radius: 18px;
-          }
+       @media (max-width: 640px) {
+  .supportDock {
+    right: 10px;
+    bottom: calc(
+      10px + env(safe-area-inset-bottom)
+    );
 
-          .supportAction {
-            min-height: 49px;
-            padding: 7px 9px;
-          }
+    display: flex;
+    grid-template-columns: none;
+    width: auto;
+    max-width: calc(100vw - 20px);
+    gap: 6px;
+    padding: 5px;
+    border-radius: 999px;
+  }
 
-          .supportIcon {
-            width: 30px;
-            height: 30px;
-            flex-basis: 30px;
-          }
+  .supportAction {
+    width: 48px;
+    min-width: 48px;
+    min-height: 48px;
+    flex: 0 0 48px;
+    justify-content: center;
+    gap: 0;
+    padding: 0;
+    border-radius: 999px;
+  }
 
-          .supportIcon svg {
-            width: 20px;
-            height: 20px;
-          }
+  .supportGuide {
+    width: auto;
+    min-width: 116px;
+    flex-basis: auto;
+    gap: 8px;
+    padding: 0 13px 0 8px;
+  }
 
-          .supportText strong {
-            font-size: 12px;
-          }
+  .supportIcon {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    border-radius: 50%;
+  }
 
-          .supportText small {
-            font-size: 9px;
-          }
-        }
+  .supportIcon svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  .supportFeedback .supportText,
+  .supportContact .supportText {
+    display: none;
+  }
+
+  .supportGuide .supportText {
+    display: grid;
+  }
+
+  .supportGuide .supportText strong {
+    font-size: 11px;
+  }
+
+  .supportGuide .supportText small {
+    display: none;
+  }
+}
 
         @media print {
           .supportDock {

@@ -1595,7 +1595,16 @@ return (
   </div>
 )}
 
-  
+  <button
+  type="button"
+  onClick={analyzeImage}
+  disabled={analyzingImage || imagePreviews.length === 0}
+  className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-300/50 bg-gradient-to-r from-amber-400 to-orange-500 px-5 py-4 text-sm font-black text-slate-950 shadow-[0_14px_32px_rgba(245,158,11,0.2)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+>
+  {analyzingImage
+    ? "🔍 Foto wird analysiert …"
+    : "🔍 Foto analysieren"}
+</button>
 
  
 
@@ -1739,12 +1748,7 @@ return (
   </div>
 </section>
 
-<a
-  href="mailto:info@inserat-ai.ch?subject=Feedback%20zu%20Inserat-AI&body=Hallo%20Inserat-AI-Team%2C%0A%0Amein%20Feedback%3A%0A%0A"
-  className="feedbackButton"
->
-  Feedback / Support
-</a>
+
 
   <section className="rightCard">
   <div className="topStats">

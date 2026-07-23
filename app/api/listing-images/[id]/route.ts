@@ -1,4 +1,4 @@
-import { del } from "@vercel/blob";
+﻿import { del } from "@vercel/blob";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
@@ -6,6 +6,39 @@ import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/session";
 
 export const runtime = "nodejs";
+
+const MAX_ID_LENGTH = 128;
+
+async function deleteBlobFiles(urls: string[]): Promise<void> {
+  const uniqueUrls = [
+    ...new Set(
+      urls.filter(
+        (url) =>
+          typeof url === "string" &&
+          url.trim().length > 0
+      )
+    ),
+  ];
+
+  if (uniqueUrls.length === 0) {
+    return;
+  }
+
+  const results = await Promise.allSettled(
+    uniqueUrls.map((url) => del(url))
+  );
+
+  const failedCount = results.filter(
+    (result) => result.status === "rejected"
+  ).length;
+
+  if (failedCount > 0) {
+    console.error("BLOB-BEREINIGUNG UNVOLLSTÄNDIG:", {
+      failedCount,
+      totalCount: uniqueUrls.length,
+    });
+  }
+}
 
 export async function DELETE(
   request: NextRequest,
@@ -27,21 +60,36 @@ export async function DELETE(
     const { id } = await context.params;
     const imageId = id?.trim();
 
-    if (!imageId) {
+    if (!imageId || imageId.length > MAX_ID_LENGTH) {
       return NextResponse.json(
         {
           success: false,
-          error: "Keine Bild-ID angegeben.",
+          error: "Keine gültige Bild-ID angegeben.",
         },
         { status: 400 }
       );
     }
 
+    /*
+     * Das Bild wird nur gefunden, wenn das zugehörige Objekt
+     * dem angemeldeten Benutzer gehört.
+     */
     const image = await prisma.listingImage.findFirst({
       where: {
         id: imageId,
         listing: {
           userId: user.id,
+        },
+      },
+      select: {
+        id: true,
+        listingId: true,
+        isPrimary: true,
+        url: true,
+        homeStagingImages: {
+          select: {
+            url: true,
+          },
         },
       },
     });
@@ -56,8 +104,11 @@ export async function DELETE(
       );
     }
 
-    await del(image.url);
-
+    /*
+     * Zuerst die Datenbank konsistent aktualisieren.
+     * HomeStagingImage-Datensätze werden durch die
+     * Prisma-Cascade automatisch mitgelöscht.
+     */
     const nextPrimaryImage = await prisma.$transaction(
       async (transaction) => {
         await transaction.listingImage.delete({
@@ -83,6 +134,9 @@ export async function DELETE(
                 createdAt: "asc",
               },
             ],
+            select: {
+              id: true,
+            },
           });
 
         if (!nextImage) {
@@ -99,6 +153,17 @@ export async function DELETE(
         });
       }
     );
+
+    /*
+     * Danach Original und alle dazugehörigen
+     * Home-Staging-Dateien aus Blob entfernen.
+     */
+    await deleteBlobFiles([
+      image.url,
+      ...image.homeStagingImages.map(
+        (stagingImage) => stagingImage.url
+      ),
+    ]);
 
     return NextResponse.json({
       success: true,
@@ -118,6 +183,7 @@ export async function DELETE(
     );
   }
 }
+
 export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -138,11 +204,11 @@ export async function PATCH(
     const { id } = await context.params;
     const imageId = id?.trim();
 
-    if (!imageId) {
+    if (!imageId || imageId.length > MAX_ID_LENGTH) {
       return NextResponse.json(
         {
           success: false,
-          error: "Keine Bild-ID angegeben.",
+          error: "Keine gültige Bild-ID angegeben.",
         },
         { status: 400 }
       );
@@ -155,6 +221,11 @@ export async function PATCH(
           userId: user.id,
         },
       },
+      select: {
+        id: true,
+        listingId: true,
+        isPrimary: true,
+      },
     });
 
     if (!image) {
@@ -165,6 +236,13 @@ export async function PATCH(
         },
         { status: 404 }
       );
+    }
+
+    if (image.isPrimary) {
+      return NextResponse.json({
+        success: true,
+        message: "Dieses Bild ist bereits das Hauptbild.",
+      });
     }
 
     const updatedImage = await prisma.$transaction(
@@ -200,7 +278,8 @@ export async function PATCH(
     return NextResponse.json(
       {
         success: false,
-        error: "Das Hauptbild konnte nicht geändert werden.",
+        error:
+          "Das Hauptbild konnte nicht geändert werden.",
       },
       { status: 500 }
     );

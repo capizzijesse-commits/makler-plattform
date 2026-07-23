@@ -142,3 +142,16 @@ model Session {
   @@index([userId])
   @@index([expiresAt])
 }
+
+model StripeWebhookEvent {
+  eventId         String   @id
+  eventType       String
+  stripeSessionId String?
+  outcome         String
+  livemode        Boolean
+  stripeCreatedAt DateTime
+  processedAt     DateTime @default(now())
+
+  @@index([eventType])
+  @@index([processedAt])
+}

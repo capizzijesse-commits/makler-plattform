@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+
 type MessageType = "success" | "error" | "info";
 
 type LoginResponse = {
@@ -25,7 +26,8 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] =
+    useState(false);
   const [loading, setLoading] = useState(false);
   
 
@@ -91,6 +93,7 @@ if (reset === "success") {
       setMessageType("error");
     }
   }, []);
+ 
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -209,11 +212,10 @@ if (reset === "success") {
           };
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        background:
-          "radial-gradient(circle at 20% 10%, rgba(37, 99, 235, 0.35), transparent 28%), radial-gradient(circle at 90% 80%, rgba(245, 158, 11, 0.28), transparent 30%), linear-gradient(135deg, #020617 0%, #0f172a 45%, #1e3a8a 100%)",
+   <main
+  className="loginPage"
+  style={{
+        
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -293,8 +295,10 @@ if (reset === "success") {
             E-Mail
           </label>
 
-          <input
-            id="login-email"
+         <input
+  className="loginInput"
+  id="login-email"
+            
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
@@ -314,42 +318,44 @@ if (reset === "success") {
               boxSizing: "border-box",
             }}
           />
+          
 
-          <label
-            htmlFor="login-password"
-            style={{
-              display: "block",
-              color: "#e5e7eb",
-              fontWeight: 800,
-              marginBottom: "8px",
-            }}
-          >
-            Passwort
-          </label>
+         <label
+  htmlFor="login-password"
+  style={{
+    display: "block",
+    color: "#e5e7eb",
+    fontWeight: 800,
+    marginBottom: "8px",
+  }}
+>
+  Passwort
+</label>
 
           <div style={{ position: "relative" }}>
-            <input
-              id="login-password"
-              type={showPassword ? "text" : "password"}
-              placeholder="Passwort"
-              value={password}
-              onChange={(event) =>
-                setPassword(event.target.value)
-              }
-              required
-              autoComplete="current-password"
-              style={{
-                width: "100%",
-                padding: "14px 48px 14px 16px",
-                borderRadius: "12px",
-                border:
-                  "1px solid rgba(255,255,255,0.15)",
-                background: "rgba(255,255,255,0.08)",
-                color: "#fff",
-                outline: "none",
-                boxSizing: "border-box",
-              }}
-            />
+  <input
+    className="loginInput"
+    id="login-password"
+    type={showPassword ? "text" : "password"}
+    placeholder="Passwort"
+    value={password}
+    onChange={(event) =>
+      setPassword(event.target.value)
+    }
+    required
+    autoComplete="current-password"
+    style={{
+      width: "100%",
+      padding: "14px 48px 14px 16px",
+      borderRadius: "12px",
+      border:
+        "1px solid rgba(255,255,255,0.15)",
+      background: "rgba(255,255,255,0.08)",
+      color: "#fff",
+      outline: "none",
+      boxSizing: "border-box",
+    }}
+  />
 
             <button
               type="button"
@@ -428,10 +434,12 @@ if (reset === "success") {
             </Link>
           </div>
 
-                   <button
-            type="submit"
-            disabled={loading}
-            style={{
+                <button
+  id="login-submit"
+  className="loginSubmit"
+  type="submit"
+  disabled={loading}
+  style={{
               width: "100%",
               marginTop: "24px",
               padding: "16px 22px",

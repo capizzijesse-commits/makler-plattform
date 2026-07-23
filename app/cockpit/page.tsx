@@ -433,12 +433,11 @@ justifySelf: "start",
   Dashboard
 </Link>
 
-          <div className="cockpitWordmark">
-            <strong>
-              Inserat<span>-AI</span>
-            </strong>
-            <small>Makler-Cockpit</small>
-          </div>
+        <div className="cockpitWordmark">
+  <strong>
+    Makler-<span>Cockpit</span>
+  </strong>
+</div>
 
           <div className="topbarActions">
             <div className="userBadge">
@@ -451,10 +450,7 @@ justifySelf: "start",
           <div className="heroContent">
             <p className="eyebrow">DEIN MAKLER-COCKPIT</p>
 
-            <h1>
-              {greeting},{" "}
-              <span>{userName}</span>
-            </h1>
+            <h1>Inserat AI</h1>
 
             <p className="heroDescription">
               Erstelle Inserate, verwalte Immobilien und bereite
@@ -519,49 +515,6 @@ justifySelf: "start",
             </div>
           </article>
         </section>
-
-        <section className="mainGrid">
-          <div className="mainColumn">
-            <section className="panel quickPanel">
-              <div className="panelHeader">
-                <div>
-                  <p className="sectionLabel">SCHNELLZUGRIFF</p>
-                  <h2>Was möchtest du erledigen?</h2>
-                </div>
-              </div>
-
-              <div className="quickGrid">
-                <Link href="/dashboard" className="quickCard">
-                  <span className="quickIcon">✨</span>
-                  <h3>Neues Inserat</h3>
-                  <p>
-                    Objektdaten eingeben und drei professionelle
-                    Varianten erstellen.
-                  </p>
-                  <strong>Inserat erstellen →</strong>
-                </Link>
-
-                <Link href="/dashboard" className="quickCard">
-                  <span className="quickIcon">🖼️</span>
-                  <h3>Bilder analysieren</h3>
-                  <p>
-                    Immobilienbilder hochladen und automatisch
-                    beschreiben lassen.
-                  </p>
-                  <strong>Bilder hochladen →</strong>
-                </Link>
-
-                <a href="#objekte" className="quickCard">
-                  <span className="quickIcon">🏘️</span>
-                  <h3>Objekte verwalten</h3>
-                  <p>
-                    Gespeicherte Immobilien öffnen, prüfen und
-                    weiterbearbeiten.
-                  </p>
-                  <strong>Objekte anzeigen →</strong>
-                </a>
-              </div>
-            </section>
 
             <section className="panel objectsPanel" id="objekte">
               <div className="panelHeader">
@@ -707,22 +660,7 @@ justifySelf: "start",
     </span>
   </div>
 
-  <div className="propertyHeading">
-    <small>{currentListing.propertyType}</small>
-
-    <h3>
-      {currentListing.propertyType} in{" "}
-      {currentListing.location}
-    </h3>
-
-    <p>
-      📍{" "}
-      {currentListing.postalCode
-        ? `${currentListing.postalCode} `
-        : ""}
-      {currentListing.location}
-    </p>
-  </div>
+  
 
   <div className="cockpitMediaGallery">
     <div className="cockpitMediaHeader">
@@ -758,6 +696,7 @@ justifySelf: "start",
         ›
       </button>
     </div>
+   
 
 <div
   className="cockpitMediaLayout"
@@ -864,6 +803,22 @@ justifySelf: "start",
       )}
     </div>
   </div>
+  <div className="propertyHeading">
+    <small>{currentListing.propertyType}</small>
+
+    <h3>
+      {currentListing.propertyType} in{" "}
+      {currentListing.location}
+    </h3>
+
+    <p>
+      📍{" "}
+      {currentListing.postalCode
+        ? `${currentListing.postalCode} `
+        : ""}
+      {currentListing.location}
+    </p>
+  </div>
 
   <div className="propertyFacts">
     <div>
@@ -931,89 +886,124 @@ justifySelf: "start",
 </div>
               )}
             </section>
-          </div>
+            <section className="panel quickPanel allFunctionsPanel">
+  <div className="panelHeader">
+    <div>
+      <p className="sectionLabel">SCHNELLZUGRIFF</p>
+      <h2>Was möchtest du erledigen?</h2>
+    </div>
+  </div>
 
-          <aside className="sideColumn">
-            <section className="panel checklistPanel">
-              <div className="panelHeader checklistTitle">
-                <div>
-                  <p className="sectionLabel">HEUTE</p>
-                  <h2>Deine Checkliste</h2>
-                </div>
+  <div className="quickGrid">
+    <Link href="/dashboard" className="quickCard">
+      <span className="quickIcon">✨</span>
 
-                <button type="button" onClick={resetChecklist}>
-                  Zurücksetzen
-                </button>
-              </div>
+      <h3>Neues Inserat</h3>
 
-              <div
-                className="progressCircle"
-                style={{
-                  background: `
-                    radial-gradient(
-                      circle at center,
-                      #0c1738 59%,
-                      transparent 61%
-                    ),
-                    conic-gradient(
-                      #fbbf24 0deg,
-                      #fbbf24 ${checklistProgress * 3.6}deg,
-                      rgba(255,255,255,0.09)
-                        ${checklistProgress * 3.6}deg,
-                      rgba(255,255,255,0.09) 360deg
-                    )
-                  `,
-                }}
-              >
-                <div>
-                  <strong>
-                    {completedTasks}/{checklist.length}
-                  </strong>
-                  <span>{checklistProgress}% erledigt</span>
-                </div>
-              </div>
+      <p>
+        Objektdaten eingeben und drei professionelle Varianten
+        erstellen.
+      </p>
 
-              <div className="checklist">
-                {checklist.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={
-                      item.completed
-                        ? "checkItem completed"
-                        : "checkItem"
-                    }
-                    onClick={() =>
-                      toggleChecklistItem(item.id)
-                    }
-                  >
-                    <span className="checkBox">
-                      {item.completed ? "✓" : ""}
-                    </span>
+      <strong>Inserat erstellen →</strong>
+    </Link>
 
-                    <span className="checkText">
-                      <strong>{item.title}</strong>
-                      <small>{item.description}</small>
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </section>
+    <Link href="/dashboard" className="quickCard">
+      <span className="quickIcon">🖼️</span>
 
-            <section className="panel tipPanel">
-              <span className="tipIcon">💡</span>
-              <p className="sectionLabel">INSERAT-AI TIPP</p>
-              <h3>Highlights verbessern dein Inserat</h3>
-              <p>
-                Ergänze Lage, Aussicht, Ausstattung und
-                Renovationen für überzeugendere Texte.
-              </p>
-              <Link href="/dashboard">
-                Jetzt ausprobieren →
-              </Link>
-            </section>
-          </aside>
-        </section>
+      <h3>Bilder analysieren</h3>
+
+      <p>
+        Immobilienbilder hochladen und automatisch beschreiben
+        lassen.
+      </p>
+
+      <strong>Bilder hochladen →</strong>
+    </Link>
+
+    <a href="#objekte" className="quickCard">
+      <span className="quickIcon">🏘️</span>
+
+      <h3>Objekte verwalten</h3>
+
+      <p>
+        Gespeicherte Immobilien öffnen, prüfen und
+        weiterbearbeiten.
+      </p>
+
+      <strong>Objekte anzeigen →</strong>
+    </a>
+  </div>
+
+  <div className="functionsDivider" />
+
+  <div className="checklistInside">
+    <div className="panelHeader checklistTitle">
+      <div>
+        <p className="sectionLabel">HEUTE</p>
+        <h2>Deine Checkliste</h2>
+      </div>
+
+      <button type="button" onClick={resetChecklist}>
+        Zurücksetzen
+      </button>
+    </div>
+
+    <div className="checklistInsideLayout">
+      <div
+        className="progressCircle"
+        style={{
+          background: `
+            radial-gradient(
+              circle at center,
+              #0c1738 59%,
+              transparent 61%
+            ),
+            conic-gradient(
+              #fbbf24 0deg,
+              #fbbf24 ${checklistProgress * 3.6}deg,
+              rgba(255,255,255,0.09)
+                ${checklistProgress * 3.6}deg,
+              rgba(255,255,255,0.09) 360deg
+            )
+          `,
+        }}
+      >
+        <div>
+          <strong>
+            {completedTasks}/{checklist.length}
+          </strong>
+
+          <span>{checklistProgress}% erledigt</span>
+        </div>
+      </div>
+
+      <div className="checklist">
+        {checklist.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            className={
+              item.completed
+                ? "checkItem completed"
+                : "checkItem"
+            }
+            onClick={() => toggleChecklistItem(item.id)}
+          >
+            <span className="checkBox">
+              {item.completed ? "✓" : ""}
+            </span>
+
+            <span className="checkText">
+              <strong>{item.title}</strong>
+              <small>{item.description}</small>
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
       </div>
 
       <style jsx>{`
@@ -1182,7 +1172,196 @@ justifySelf: "start",
     0 0 0 2px rgba(251, 191, 36, 0.2),
     0 8px 20px rgba(0, 0, 0, 0.3) !important;
 }
+/* GEMEINSAMER SCHNELLZUGRIFF + CHECKLISTE */
 
+.allFunctionsPanel {
+  width: 100% !important;
+  padding: 28px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 22px !important;
+  background: rgba(8, 22, 55, 0.94) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2) !important;
+}
+
+.allFunctionsPanel > .panelHeader {
+  margin-bottom: 22px !important;
+}
+
+.allFunctionsPanel h2 {
+  margin: 0 !important;
+  font-size: 22px !important;
+  color: #ffffff !important;
+}
+
+.allFunctionsPanel .quickGrid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+}
+
+.allFunctionsPanel .quickCard {
+ position: relative;
+  overflow: hidden;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 180px !important;
+  padding: 20px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 17px !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+  color: #ffffff !important;
+  text-decoration: none !important;
+}
+ 
+
+.allFunctionsPanel .quickCard:hover {
+  border-color: rgba(251, 191, 36, 0.4) !important;
+  background: rgba(251, 191, 36, 0.06) !important;
+  transform: translateY(-2px) !important;
+}
+
+.allFunctionsPanel .quickIcon {
+  display: grid !important;
+  place-items: center !important;
+  width: 42px !important;
+  height: 42px !important;
+  margin-bottom: 14px !important;
+  border-radius: 13px !important;
+  background: rgba(255, 255, 255, 0.09) !important;
+}
+
+.allFunctionsPanel .quickCard h3 {
+  margin: 0 !important;
+  font-size: 15px !important;
+  color: #ffffff !important;
+}
+
+.allFunctionsPanel .quickCard p {
+  margin: 8px 0 16px !important;
+  color: #97a4bf !important;
+  font-size: 12px !important;
+  line-height: 1.55 !important;
+}
+
+.allFunctionsPanel .quickCard strong {
+  margin-top: auto !important;
+  color: #fbbf24 !important;
+  font-size: 12px !important;
+}
+
+.allFunctionsPanel .functionsDivider {
+  width: 100% !important;
+  height: 1px !important;
+  margin: 30px 0 26px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.allFunctionsPanel .checklistInside > .panelHeader {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 22px !important;
+}
+
+.allFunctionsPanel .checklistTitle button {
+  padding: 8px 12px !important;
+  border: 1px solid rgba(251, 191, 36, 0.3) !important;
+  border-radius: 10px !important;
+  background: rgba(251, 191, 36, 0.07) !important;
+  color: #fbbf24 !important;
+  cursor: pointer !important;
+}
+
+.allFunctionsPanel .checklistInsideLayout {
+  display: grid !important;
+  grid-template-columns: 170px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 28px !important;
+}
+
+.allFunctionsPanel .progressCircle {
+  display: grid !important;
+  place-items: center !important;
+  width: 140px !important;
+  height: 140px !important;
+  margin: 0 auto !important;
+  border-radius: 50% !important;
+}
+
+.allFunctionsPanel .progressCircle > div {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+.allFunctionsPanel .progressCircle strong {
+  font-size: 27px !important;
+  color: #ffffff !important;
+}
+
+.allFunctionsPanel .progressCircle span {
+  margin-top: 7px !important;
+  color: #8e9bb8 !important;
+  font-size: 10px !important;
+}
+
+.allFunctionsPanel .checklist {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.allFunctionsPanel .checkItem {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  min-height: 76px !important;
+  padding: 15px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+  color: #ffffff !important;
+  text-align: left !important;
+}
+
+.allFunctionsPanel .checkBox {
+  display: grid !important;
+  place-items: center !important;
+  width: 22px !important;
+  height: 22px !important;
+  flex: 0 0 22px !important;
+  border: 1px solid rgba(251, 191, 36, 0.7) !important;
+  border-radius: 6px !important;
+  color: #fbbf24 !important;
+}
+
+.allFunctionsPanel .checkText {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.allFunctionsPanel .checkText strong {
+  font-size: 12px !important;
+  color: #ffffff !important;
+}
+
+.allFunctionsPanel .checkText small {
+  margin-top: 5px !important;
+  color: #8794af !important;
+  font-size: 10px !important;
+  line-height: 1.4 !important;
+}
+
+@media (max-width: 900px) {
+  .allFunctionsPanel .quickGrid,
+  .allFunctionsPanel .checklist {
+    grid-template-columns: 1fr !important;
+  }
+
+  .allFunctionsPanel .checklistInsideLayout {
+    grid-template-columns: 1fr !important;
+  }
+}
 @media (max-width: 800px) {
   .slideshowCard .cockpitMediaLayout {
     grid-template-columns: 1fr !important;
@@ -2766,6 +2945,618 @@ justifySelf: "start",
     min-height: 0 !important;
   }
 }
+  /* Schnellzugriff und Checkliste als gemeinsamer Block */
+
+.mainGrid {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.75fr)
+    minmax(310px, 0.75fr);
+  gap: 0;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 21px;
+  background: rgba(9, 22, 54, 0.87);
+  box-shadow: 0 24px 65px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(17px);
+}
+
+.mainGrid .mainColumn,
+.mainGrid .sideColumn {
+  display: block;
+  min-width: 0;
+}
+
+.mainGrid .quickPanel,
+.mainGrid .checklistPanel {
+  height: 100%;
+  min-height: 100%;
+  padding: 24px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.mainGrid .checklistPanel {
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(5, 16, 43, 0.28);
+}
+
+@media (max-width: 1100px) {
+  .mainGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .mainGrid .checklistPanel {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .mainGrid .quickPanel,
+  .mainGrid .checklistPanel {
+    padding: 18px;
+  }
+}
+  /* FINAL: Schnellzugriff + Checkliste als EIN gemeinsamer Block */
+
+.mainGrid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 390px) !important;
+  align-items: stretch !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 22px !important;
+  background: rgba(9, 22, 54, 0.87) !important;
+  box-shadow: 0 24px 65px rgba(0, 0, 0, 0.2) !important;
+}
+
+.mainGrid > .mainColumn,
+.mainGrid > .sideColumn {
+  display: block !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  gap: 0 !important;
+  margin: 0 !important;
+}
+
+.mainGrid > .mainColumn > .quickPanel,
+.mainGrid > .sideColumn > .checklistPanel {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  margin: 0 !important;
+  padding: 24px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.mainGrid > .sideColumn > .checklistPanel {
+  border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(5, 16, 43, 0.3) !important;
+}
+
+@media (max-width: 1100px) {
+  .mainGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .mainGrid > .sideColumn > .checklistPanel {
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-left: 0 !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .mainGrid > .mainColumn > .quickPanel,
+  .mainGrid > .sideColumn > .checklistPanel {
+    padding: 18px !important;
+  }
+}
+  /* Schnellzugriff und Checkliste wirklich in EINEM Block */
+
+.allFunctionsPanel {
+  display: block;
+  width: 100%;
+}
+
+.functionsDivider {
+  width: 100%;
+  height: 1px;
+  margin: 28px 0 24px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.checklistInside {
+  width: 100%;
+}
+
+.checklistInsideLayout {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  align-items: center;
+  gap: 30px;
+}
+
+.checklistInside .progressCircle {
+  margin: 0 auto;
+}
+
+.checklistInside .checklist {
+  width: 100%;
+}
+
+@media (max-width: 800px) {
+  .checklistInsideLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .allFunctionsPanel {
+    padding: 18px;
+  }
+}
+  /* FINAL – GEMEINSAMER FUNKTIONSBLOCK SAUBER GEGLIEDERT */
+
+.allFunctionsPanel {
+  display: block !important;
+  width: 100% !important;
+  padding: 28px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 255, 255, 0.11) !important;
+  border-radius: 22px !important;
+  background: rgba(8, 23, 58, 0.9) !important;
+  box-shadow: 0 24px 65px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Überschrift Schnellzugriff */
+
+.allFunctionsPanel > .panelHeader {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 20px !important;
+}
+
+.allFunctionsPanel .sectionLabel {
+  margin: 0 0 8px !important;
+  color: #fbbf24 !important;
+  font-size: 10px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.16em !important;
+}
+
+.allFunctionsPanel h2 {
+  margin: 0 !important;
+  color: #ffffff !important;
+  font-size: 22px !important;
+  line-height: 1.2 !important;
+}
+
+/* Drei Schnellzugriff-Karten */
+
+.allFunctionsPanel .quickGrid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+  width: 100% !important;
+}
+
+.allFunctionsPanel .quickCard {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  min-height: 185px !important;
+  padding: 20px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 17px !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+  color: #ffffff !important;
+  text-decoration: none !important;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease !important;
+}
+
+.allFunctionsPanel .quickCard:hover {
+  transform: translateY(-3px) !important;
+  border-color: rgba(251, 191, 36, 0.42) !important;
+  background: rgba(251, 191, 36, 0.065) !important;
+}
+
+.allFunctionsPanel .quickIcon {
+  display: grid !important;
+  place-items: center !important;
+  width: 42px !important;
+  height: 42px !important;
+  margin-bottom: 16px !important;
+  border-radius: 13px !important;
+  background: rgba(255, 255, 255, 0.09) !important;
+  font-size: 19px !important;
+}
+
+.allFunctionsPanel .quickCard h3 {
+  margin: 0 !important;
+  color: #ffffff !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+}
+
+.allFunctionsPanel .quickCard p {
+  margin: 8px 0 16px !important;
+  color: #9aa8c5 !important;
+  font-size: 12px !important;
+  line-height: 1.55 !important;
+}
+
+.allFunctionsPanel .quickCard strong {
+  display: block !important;
+  margin-top: auto !important;
+  color: #fbbf24 !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+}
+
+/* Trennlinie zwischen Funktionen und Checkliste */
+
+.allFunctionsPanel .functionsDivider {
+  width: 100% !important;
+  height: 1px !important;
+  margin: 30px 0 26px !important;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.16),
+    transparent
+  ) !important;
+}
+
+/* Checklisten-Bereich */
+
+.allFunctionsPanel .checklistInside {
+  display: block !important;
+  width: 100% !important;
+}
+
+.allFunctionsPanel .checklistInside > .panelHeader {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 20px !important;
+  margin-bottom: 22px !important;
+}
+
+.allFunctionsPanel .checklistTitle button {
+  padding: 8px 12px !important;
+  border: 1px solid rgba(251, 191, 36, 0.28) !important;
+  border-radius: 10px !important;
+  background: rgba(251, 191, 36, 0.07) !important;
+  color: #fbbf24 !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+}
+
+.allFunctionsPanel .checklistInsideLayout {
+  display: grid !important;
+  grid-template-columns: 180px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 30px !important;
+  width: 100% !important;
+}
+
+/* Fortschrittskreis */
+
+.allFunctionsPanel .progressCircle {
+  position: relative !important;
+  display: grid !important;
+  place-items: center !important;
+  width: 145px !important;
+  height: 145px !important;
+  margin: 0 auto !important;
+  border-radius: 50% !important;
+  flex: none !important;
+}
+
+.allFunctionsPanel .progressCircle > div {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.allFunctionsPanel .progressCircle strong {
+  color: #ffffff !important;
+  font-size: 27px !important;
+  line-height: 1 !important;
+}
+
+.allFunctionsPanel .progressCircle span {
+  display: block !important;
+  margin-top: 8px !important;
+  color: #8795b3 !important;
+  font-size: 10px !important;
+}
+
+/* Aufgaben als sauberes 2x2-Raster */
+
+.allFunctionsPanel .checklist {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  width: 100% !important;
+}
+
+.allFunctionsPanel .checkItem {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  width: 100% !important;
+  min-height: 78px !important;
+  padding: 15px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+  color: #ffffff !important;
+  text-align: left !important;
+  cursor: pointer !important;
+}
+
+.allFunctionsPanel .checkItem:hover {
+  border-color: rgba(251, 191, 36, 0.35) !important;
+  background: rgba(251, 191, 36, 0.055) !important;
+}
+
+.allFunctionsPanel .checkBox {
+  display: grid !important;
+  place-items: center !important;
+  width: 22px !important;
+  height: 22px !important;
+  flex: 0 0 22px !important;
+  border: 1px solid rgba(251, 191, 36, 0.7) !important;
+  border-radius: 6px !important;
+  color: #fbbf24 !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+}
+
+.allFunctionsPanel .checkText {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+}
+
+.allFunctionsPanel .checkText strong {
+  color: #ffffff !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+}
+
+.allFunctionsPanel .checkText small {
+  display: block !important;
+  margin-top: 5px !important;
+  color: #8593af !important;
+  font-size: 10px !important;
+  line-height: 1.45 !important;
+}
+
+.allFunctionsPanel .checkItem.completed {
+  border-color: rgba(34, 197, 94, 0.3) !important;
+  background: rgba(34, 197, 94, 0.07) !important;
+}
+
+.allFunctionsPanel .checkItem.completed .checkBox {
+  border-color: #22c55e !important;
+  background: rgba(34, 197, 94, 0.17) !important;
+  color: #86efac !important;
+}
+
+/* Tablet */
+
+@media (max-width: 900px) {
+  .allFunctionsPanel .quickGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .allFunctionsPanel .quickCard {
+    min-height: auto !important;
+  }
+
+  .allFunctionsPanel .checklistInsideLayout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .allFunctionsPanel .checklist {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Smartphone */
+
+@media (max-width: 600px) {
+  .allFunctionsPanel {
+    padding: 18px !important;
+    border-radius: 18px !important;
+  }
+
+  .allFunctionsPanel h2 {
+    font-size: 19px !important;
+  }
+
+  .allFunctionsPanel .quickGrid,
+  .allFunctionsPanel .checklist {
+    grid-template-columns: 1fr !important;
+  }
+
+  .allFunctionsPanel .checklistInside > .panelHeader {
+    align-items: center !important;
+  }
+
+  .allFunctionsPanel .progressCircle {
+    width: 130px !important;
+    height: 130px !important;
+  }
+}
+  /* FINALE SEITENBEZEICHNUNG IM COCKPIT */
+
+.cockpitWordmark {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  justify-self: center !important;
+  min-width: 280px !important;
+  padding: 15px 26px 17px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 255, 255, 0.13) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.055),
+      rgba(255, 255, 255, 0.018)
+    ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 14px 34px rgba(0, 0, 0, 0.18) !important;
+}
+
+.cockpitWordmark::before {
+  content: "";
+  position: absolute;
+  top: -45px;
+  right: -20px;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: rgba(251, 191, 36, 0.1);
+  filter: blur(28px);
+  pointer-events: none;
+}
+
+.cockpitWordmark::after {
+  content: "";
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  width: 58px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #fbbf24,
+    transparent
+  );
+  transform: translateX(-50%);
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.38);
+}
+
+.cockpitWordmark strong {
+  position: relative !important;
+  z-index: 1 !important;
+  display: block !important;
+  margin: 0 !important;
+  color: #ffffff !important;
+  font-size: 26px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.cockpitWordmark strong span {
+  color: #fbbf24 !important;
+  text-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+}
+  /* DREI EINHEITLICHE SCHNELLZUGRIFF-KARTEN */
+
+.allFunctionsPanel .quickGrid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  align-items: stretch !important;
+  gap: 20px !important;
+  width: 100% !important;
+}
+
+.allFunctionsPanel .quickGrid .quickCard {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 245px !important;
+  padding: 24px !important;
+
+  border: 1px solid rgba(251, 191, 36, 0.34) !important;
+  border-radius: 19px !important;
+
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(251, 191, 36, 0.1),
+      transparent 48%
+    ),
+    rgba(255, 255, 255, 0.035) !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 18px 38px rgba(0, 0, 0, 0.18) !important;
+
+  color: #ffffff !important;
+  text-decoration: none !important;
+}
+
+.allFunctionsPanel .quickGrid .quickCard:nth-child(2) {
+  border-color: rgba(34, 211, 238, 0.36) !important;
+
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(34, 211, 238, 0.1),
+      transparent 48%
+    ),
+    rgba(255, 255, 255, 0.035) !important;
+}
+
+.allFunctionsPanel .quickGrid .quickCard:nth-child(3) {
+  border-color: rgba(129, 140, 248, 0.38) !important;
+
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(129, 140, 248, 0.11),
+      transparent 48%
+    ),
+    rgba(255, 255, 255, 0.035) !important;
+}
+
+.allFunctionsPanel .quickGrid .quickCard strong {
+  margin-top: auto !important;
+}
+
+@media (max-width: 900px) {
+  .allFunctionsPanel .quickGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .allFunctionsPanel .quickGrid .quickCard {
+    min-height: 185px !important;
+  }
+}
+  
       `}</style>
     </main>
   );

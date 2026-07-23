@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import {
@@ -32,6 +32,9 @@ type LoginUser = {
   freeGenerationLimit: number;
   emailVerified: boolean;
 };
+
+const INVALID_LOGIN_MESSAGE =
+  "Ungültige E-Mail-Adresse oder falsches Passwort.";
 
 async function createLoginResponse(user: LoginUser) {
   const { token, expiresAt } = await createUserSession(user.id);
@@ -79,36 +82,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-    const adminPassword = process.env.ADMIN_PASSWORD;
-
-    if (
-      adminEmail &&
-      adminPassword &&
-      email === adminEmail &&
-      password === adminPassword
-    ) {
-      const adminUser = await prisma.user.upsert({
-        where: {
-          email: adminEmail,
+    if (email.length > 254 || password.length > 128) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: INVALID_LOGIN_MESSAGE,
         },
-        update: {
-          name: "Admin",
-          role: "admin",
-          plan: "admin",
-          emailVerified: true,
-        },
-        create: {
-          name: "Admin",
-          email: adminEmail,
-          password: await hashPassword(adminPassword),
-          role: "admin",
-          plan: "admin",
-          emailVerified: true,
-        },
-      });
-
-      return createLoginResponse(adminUser);
+        { status: 401 }
+      );
     }
 
     const user = await prisma.user.findUnique({
@@ -121,7 +102,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: "Ungültige E-Mail-Adresse oder falsches Passwort.",
+          error: INVALID_LOGIN_MESSAGE,
         },
         { status: 401 }
       );
@@ -136,7 +117,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: "Ungültige E-Mail-Adresse oder falsches Passwort.",
+          error: INVALID_LOGIN_MESSAGE,
         },
         { status: 401 }
       );
@@ -154,6 +135,10 @@ export async function POST(request: Request) {
       );
     }
 
+    /*
+     * Übergangsschutz für ältere Konten, deren Passwort eventuell
+     * noch nicht als scrypt-Hash gespeichert wurde.
+     */
     if (!isHashedPassword(user.password)) {
       const passwordHash = await hashPassword(password);
 
@@ -171,15 +156,11 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("LOGIN API ERROR:", error);
 
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Unbekannter Fehler beim Login.";
-
     return NextResponse.json(
       {
         success: false,
-        error: message,
+        error:
+          "Die Anmeldung konnte momentan nicht verarbeitet werden.",
       },
       { status: 500 }
     );

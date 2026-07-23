@@ -4,9 +4,17 @@ import { useEffect, useState } from "react";
 
 const STORAGE_KEY = "inseratAiPrivacyMode";
 
-export default function PrivacyModeButton() {
+type PrivacyModeButtonProps = {
+  variant?: "navbar" | "dock";
+};
+
+export default function PrivacyModeButton({
+  variant = "navbar",
+}: PrivacyModeButtonProps) {
   const [active, setActive] = useState(false);
   const [ready, setReady] = useState(false);
+
+  const isDock = variant === "dock";
 
   useEffect(() => {
     const savedValue =
@@ -45,11 +53,13 @@ export default function PrivacyModeButton() {
   return (
     <button
       type="button"
-      className={
-        active
-          ? "globalPrivacyButton active"
-          : "globalPrivacyButton"
-      }
+      className={[
+        "globalPrivacyButton",
+        active ? "active" : "",
+        isDock ? "privacyDockButton" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
       onClick={togglePrivacyMode}
       aria-pressed={active}
       aria-label={
@@ -118,6 +128,17 @@ export default function PrivacyModeButton() {
           />
         </svg>
       )}
+
+      {isDock ? (
+        <span className="privacyDockText">
+          <strong>Privatsphäre</strong>
+          <small>
+            {active
+              ? "Bilder geschützt"
+              : "Bilder sichtbar"}
+          </small>
+        </span>
+      ) : null}
 
       <span className="privacyStatusDot" />
     </button>

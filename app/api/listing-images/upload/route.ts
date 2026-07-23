@@ -1,4 +1,4 @@
-import {
+﻿import {
   handleUpload,
   type HandleUploadBody,
 } from "@vercel/blob/client";
@@ -10,9 +10,21 @@ import { getAuthenticatedUser } from "@/lib/session";
 
 export const runtime = "nodejs";
 
+const MAX_IMAGE_COUNT = 10;
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+
 type UploadClientPayload = {
   listingId?: unknown;
 };
+
+const SAFE_ERROR_MESSAGES = new Set([
+  "Bitte zuerst einloggen.",
+  "Ungültige Upload-Daten.",
+  "Keine Objekt-ID angegeben.",
+  "Das aktive Objekt wurde nicht gefunden.",
+  "Ungültiger Speicherpfad.",
+  "Für dieses Objekt sind bereits 10 Bilder gespeichert.",
+]);
 
 export async function POST(
   request: NextRequest
@@ -49,7 +61,7 @@ export async function POST(
             ? payload.listingId.trim()
             : "";
 
-        if (!listingId) {
+        if (!listingId || listingId.length > 128) {
           throw new Error("Keine Objekt-ID angegeben.");
         }
 
@@ -57,6 +69,7 @@ export async function POST(
           where: {
             id: listingId,
             userId: user.id,
+            archivedAt: null,
           },
           select: {
             id: true,
@@ -65,7 +78,7 @@ export async function POST(
 
         if (!listing) {
           throw new Error(
-            "Das Objekt wurde nicht gefunden."
+            "Das aktive Objekt wurde nicht gefunden."
           );
         }
 
@@ -83,7 +96,7 @@ export async function POST(
             },
           });
 
-        if (storedImageCount >= 10) {
+        if (storedImageCount >= MAX_IMAGE_COUNT) {
           throw new Error(
             "Für dieses Objekt sind bereits 10 Bilder gespeichert."
           );
@@ -95,7 +108,7 @@ export async function POST(
             "image/png",
             "image/webp",
           ],
-          maximumSizeInBytes: 10 * 1024 * 1024,
+          maximumSizeInBytes: MAX_IMAGE_SIZE,
           addRandomSuffix: true,
           tokenPayload: JSON.stringify({
             listingId: listing.id,
@@ -117,16 +130,20 @@ export async function POST(
     console.error("BILD-UPLOAD-FEHLER:", error);
 
     const message =
-      error instanceof Error
+      error instanceof Error &&
+      SAFE_ERROR_MESSAGES.has(error.message)
         ? error.message
         : "Das Bild konnte nicht hochgeladen werden.";
+
+    const status =
+      message === "Bitte zuerst einloggen." ? 401 : 400;
 
     return NextResponse.json(
       {
         success: false,
         error: message,
       },
-      { status: 400 }
+      { status }
     );
   }
 }

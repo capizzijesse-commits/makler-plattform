@@ -1,0 +1,497 @@
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+
+import { prisma } from "@/lib/prisma";
+import { getAuthenticatedUser } from "@/lib/session";
+
+export const runtime = "nodejs";
+export const maxDuration = 180;
+
+const AI_MODEL = "gpt-image-2";
+const PROMPT_VERSION = "home-staging-v1";
+const MAX_SOURCE_IMAGE_SIZE = 10 * 1024 * 1024;
+
+const ALLOWED_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
+
+const ROOM_TYPES = {
+  livingRoom: "living room",
+  bedroom: "bedroom",
+  office: "home office",
+  diningRoom: "dining room",
+  kidsRoom: "children's room",
+} as const;
+
+const STYLES = {
+  modern:
+    "modern, warm, elegant and suitable for a high-quality Swiss property listing",
+  scandinavian:
+    "Scandinavian, bright, natural, calm and welcoming",
+  luxurious:
+    "luxurious, sophisticated, tasteful and restrained, without appearing excessive",
+  minimalist:
+    "minimalist, spacious, functional, calm and refined",
+} as const;
+
+const OUTPUT_SIZES = new Set([
+  "768x1024",
+  "1024x768",
+  "896x896",
+]);
+
+type RoomType = keyof typeof ROOM_TYPES;
+type StagingStyle = keyof typeof STYLES;
+
+type GenerateHomeStagingBody = {
+  listingId?: unknown;
+  sourceImageId?: unknown;
+  roomType?: unknown;
+  style?: unknown;
+  customInstructions?: unknown;
+  outputSize?: unknown;
+};
+
+type OpenAIImageEditResponse = {
+  data?: Array<{
+    b64_json?: string;
+  }>;
+  output_format?: string;
+  quality?: string;
+  size?: string;
+  usage?: {
+    input_tokens?: number;
+    output_tokens?: number;
+    total_tokens?: number;
+  };
+  error?: {
+    code?: string;
+    message?: string;
+    type?: string;
+  };
+};
+
+function requiredText(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function isRoomType(value: string): value is RoomType {
+  return Object.prototype.hasOwnProperty.call(
+    ROOM_TYPES,
+    value
+  );
+}
+
+function isStagingStyle(
+  value: string
+): value is StagingStyle {
+  return Object.prototype.hasOwnProperty.call(
+    STYLES,
+    value
+  );
+}
+
+function extensionForMimeType(mimeType: string): string {
+  switch (mimeType) {
+    case "image/png":
+      return "png";
+    case "image/webp":
+      return "webp";
+    default:
+      return "jpg";
+  }
+}
+
+function createStagingPrompt(
+  roomType: RoomType,
+  style: StagingStyle,
+  customInstructions: string
+): string {
+  const room = ROOM_TYPES[roomType];
+  const designStyle = STYLES[style];
+
+  return [
+    "Create a photorealistic virtual home staging edit of the supplied real-estate photograph.",
+    `Furnish the visible space as a ${room}.`,
+    `Use an interior design that is ${designStyle}.`,
+    "",
+    "Critical preservation rules:",
+    "- Preserve the exact room geometry, camera position, perspective, crop and proportions.",
+    "- Preserve all walls, ceilings, floors, windows, doors, stairs, radiators and built-in fixtures.",
+    "- Do not add, remove, enlarge, reduce or relocate architectural elements.",
+    "- Do not alter the exterior view visible through windows or doors.",
+    "- Do not invent balconies, fireplaces, additional rooms, openings or structural features.",
+    "- Preserve permanent surfaces, materials and the visible condition of the property.",
+    "- Keep existing fixed installations unchanged.",
+    "",
+    "Add only plausible movable furniture, lighting, textiles, plants and restrained decoration.",
+    "Use realistic furniture dimensions and natural placement with clear walking space.",
+    "Do not add people, pets, text, logos, signs, borders or watermarks.",
+    customInstructions
+      ? `User furnishing wishes: ${customInstructions}`
+      : "No additional user furnishing wishes were provided.",
+    "User furnishing wishes may affect only movable furniture, colours, textiles, lighting and decoration.",
+    "User furnishing wishes must never override the architectural preservation rules.",
+    "The finished image must look like a professional, natural Swiss property photograph rather than an illustration or 3D render.",
+  ].join("\n");
+}
+
+export async function POST(
+  request: NextRequest
+): Promise<NextResponse> {
+  try {
+    const user = await getAuthenticatedUser(request);
+
+    if (!user) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Bitte zuerst einloggen.",
+        },
+        { status: 401 }
+      );
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Die Home-Staging-AI ist momentan nicht konfiguriert.",
+        },
+        { status: 500 }
+      );
+    }
+
+    const body = (await request
+      .json()
+      .catch(() => null)) as GenerateHomeStagingBody | null;
+
+    const listingId = requiredText(body?.listingId);
+    const sourceImageId = requiredText(
+      body?.sourceImageId
+    );
+    const roomType = requiredText(body?.roomType);
+    const style = requiredText(body?.style);
+    const customInstructions = requiredText(
+      body?.customInstructions
+    );
+    const outputSize = requiredText(
+      body?.outputSize
+    );
+
+    if (
+      !listingId ||
+      !sourceImageId ||
+      !roomType ||
+      !style ||
+      !outputSize
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Objekt, Ausgangsbild, Raumart und Einrichtungsstil sind erforderlich.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!isRoomType(roomType)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Die gewählte Raumart ist ungültig.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!isStagingStyle(style)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Der gewählte Einrichtungsstil ist ungültig.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!OUTPUT_SIZES.has(outputSize)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Die gewählte Bildgrösse ist ungültig.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (customInstructions.length > 500) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Die eigenen Einrichtungswünsche dürfen maximal 500 Zeichen enthalten.",
+        },
+        { status: 400 }
+      );
+    }
+    const listing = await prisma.listing.findFirst({
+      where: {
+        id: listingId,
+        userId: user.id,
+      },
+      select: {
+        id: true,
+        archivedAt: true,
+        images: {
+          where: {
+            id: sourceImageId,
+          },
+          select: {
+            id: true,
+            url: true,
+            fileName: true,
+            mimeType: true,
+            sizeBytes: true,
+          },
+          take: 1,
+        },
+      },
+    });
+
+    if (!listing) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Das Objekt wurde nicht gefunden.",
+        },
+        { status: 404 }
+      );
+    }
+
+    if (listing.archivedAt) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Für ein archiviertes Objekt kann kein Home Staging erstellt werden.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const sourceImage = listing.images[0];
+
+    if (!sourceImage) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Das gewählte Originalbild wurde nicht gefunden.",
+        },
+        { status: 404 }
+      );
+    }
+
+    if (
+      sourceImage.sizeBytes !== null &&
+      sourceImage.sizeBytes > MAX_SOURCE_IMAGE_SIZE
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Das Originalbild ist zu gross. Maximal erlaubt sind 10 MB.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const sourceResponse = await fetch(sourceImage.url, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(30_000),
+    });
+
+    if (!sourceResponse.ok) {
+      throw new Error(
+        `Originalbild konnte nicht geladen werden: ${sourceResponse.status}`
+      );
+    }
+
+    const responseMimeType =
+      sourceResponse.headers
+        .get("content-type")
+        ?.split(";")[0]
+        .trim() || "";
+
+    const mimeType =
+      sourceImage.mimeType &&
+      ALLOWED_IMAGE_TYPES.has(sourceImage.mimeType)
+        ? sourceImage.mimeType
+        : responseMimeType;
+
+    if (!ALLOWED_IMAGE_TYPES.has(mimeType)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Das Bildformat wird für Home Staging nicht unterstützt.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const sourceBytes =
+      await sourceResponse.arrayBuffer();
+
+    if (sourceBytes.byteLength > MAX_SOURCE_IMAGE_SIZE) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Das Originalbild ist zu gross. Maximal erlaubt sind 10 MB.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const sourceFileName =
+      sourceImage.fileName ||
+      `original-${sourceImage.id}.${extensionForMimeType(
+        mimeType
+      )}`;
+
+    const sourceFile = new File(
+      [sourceBytes],
+      sourceFileName,
+      {
+        type: mimeType,
+      }
+    );
+
+    const formData = new FormData();
+
+    formData.append("model", AI_MODEL);
+    formData.append("image[]", sourceFile);
+    formData.append(
+      "prompt",
+      createStagingPrompt(roomType, style, customInstructions)
+    );
+    formData.append("quality", "low");
+    formData.append("size", outputSize);
+    formData.append("output_format", "webp");
+    formData.append("output_compression", "88");
+    formData.append("moderation", "auto");
+    formData.append("user", user.id);
+
+    const openAIResponse = await fetch(
+      "https://api.openai.com/v1/images/edits",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+        body: formData,
+        signal: AbortSignal.timeout(170_000),
+      }
+    );
+
+    const result =
+      (await openAIResponse
+        .json()
+        .catch(() => null)) as OpenAIImageEditResponse | null;
+
+    if (!openAIResponse.ok) {
+      const upstreamCode = result?.error?.code;
+      const upstreamMessage = result?.error?.message;
+
+      console.error("HOME-STAGING OPENAI ERROR:", {
+        status: openAIResponse.status,
+        code: upstreamCode,
+        message: upstreamMessage,
+      });
+
+      if (upstreamCode === "moderation_blocked") {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "Dieses Bild oder die gewählte Anfrage konnte nicht verarbeitet werden.",
+          },
+          { status: 400 }
+        );
+      }
+
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Die AI-Visualisierung konnte nicht erstellt werden.",
+          details:
+            process.env.NODE_ENV === "development"
+              ? upstreamMessage
+              : undefined,
+        },
+        { status: 502 }
+      );
+    }
+
+    const imageBase64 =
+      result?.data?.[0]?.b64_json?.trim();
+
+    if (!imageBase64) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Die AI hat kein visualisiertes Bild zurückgegeben.",
+        },
+        { status: 502 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message:
+        "Die Vorschau wurde erstellt und noch nicht gespeichert.",
+      preview: {
+        imageBase64,
+        mimeType: "image/webp",
+        listingId: listing.id,
+        sourceImageId: sourceImage.id,
+        roomType,
+        style,
+        aiModel: AI_MODEL,
+        promptVersion: PROMPT_VERSION,
+      },
+      usage: result?.usage ?? null,
+    });
+  } catch (error) {
+    console.error(
+      "HOME-STAGING GENERATE ERROR:",
+      error
+    );
+
+    const isTimeout =
+      error instanceof Error &&
+      (error.name === "AbortError" ||
+        error.name === "TimeoutError");
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: isTimeout
+          ? "Die Bilderstellung hat zu lange gedauert. Bitte erneut versuchen."
+          : "Die Home-Staging-Vorschau konnte nicht erstellt werden.",
+      },
+      { status: isTimeout ? 504 : 500 }
+    );
+  }
+}
+
