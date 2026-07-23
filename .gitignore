@@ -46,3 +46,12 @@ next-env.d.ts
 .env*
 prisma/dev.db
 prisma/migrations-sqlite-backup-*/
+
+# Local development backups
+backups/
+**/*.backup-security
+app/globals.before-*.css
+payment-final-review.*
+prisma/schema.before-*.prisma
+prisma/schema.prisma.backup-*
+prisma/*-diff.sql
