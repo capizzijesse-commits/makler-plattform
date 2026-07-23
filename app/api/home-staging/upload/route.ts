@@ -112,7 +112,7 @@ export async function POST(
 
         if (
           aiModel !== "gpt-image-2" ||
-          promptVersion !== "home-staging-v1"
+          promptVersion !== "home-staging-v2-variants"
         ) {
           throw new Error(
             "Ungültige AI-Generierungsdaten."
@@ -191,8 +191,21 @@ export async function POST(
       error
     );
 
+    const safeMessages = new Set([
+      "Bitte zuerst einloggen.",
+      "Ungültige Home-Staging-Daten.",
+      "Die Angaben zur AI-Visualisierung sind unvollständig.",
+      "Ungültige Raumart.",
+      "Ungültiger Einrichtungsstil.",
+      "Ungültige AI-Generierungsdaten.",
+      "Das Objekt wurde nicht gefunden.",
+      "Das Originalbild wurde nicht gefunden.",
+      "Ungültiger Home-Staging-Speicherpfad.",
+    ]);
+
     const message =
-      error instanceof Error
+      error instanceof Error &&
+      safeMessages.has(error.message)
         ? error.message
         : "Das Home-Staging-Bild konnte nicht hochgeladen werden.";
 
@@ -205,3 +218,4 @@ export async function POST(
     );
   }
 }
+
