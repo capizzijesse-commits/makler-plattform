@@ -619,7 +619,9 @@ async function uploadListingImages(listingId: string) {
     }
   }
 }
-const saveListingPermanently = async (): Promise<string | null> => {
+const saveListingPermanently = async (
+  uploadImages = true
+): Promise<string | null> => {
   const userEmail =
     localStorage.getItem("userEmail")?.trim().toLowerCase() || "";
 
@@ -676,7 +678,7 @@ if (!listingId) {
   );
 }
 
-if (selectedImages.length > 0) {
+if (uploadImages && selectedImages.length > 0) {
   try {
     setSaveProgress(
       `${selectedImages.length} ${
@@ -734,7 +736,7 @@ const startSingleObjectCheckoutFromDemo =
     }
 
     const listingId =
-      await saveListingPermanently();
+      await saveListingPermanently(false);
 
     if (!listingId) {
       return;
@@ -778,6 +780,18 @@ const startSingleObjectCheckoutFromDemo =
           | null;
 
       if (data?.alreadyUnlocked) {
+        if (selectedImages.length > 0) {
+          setSaveProgress(
+            selectedImages.length === 1
+              ? "Bild wird gespeichert …"
+              : `${selectedImages.length} Bilder werden gespeichert …`
+          );
+
+          await uploadListingImages(
+            listingId
+          );
+        }
+
         router.push(
           `/cockpit/${encodeURIComponent(
             listingId
@@ -798,6 +812,22 @@ const startSingleObjectCheckoutFromDemo =
             "Die Zahlungsseite konnte nicht geöffnet werden."
         );
       }
+
+      if (selectedImages.length > 0) {
+        setSaveProgress(
+          selectedImages.length === 1
+            ? "Bild wird vor der Zahlung sicher gespeichert …"
+            : `${selectedImages.length} Bilder werden vor der Zahlung sicher gespeichert …`
+        );
+
+        await uploadListingImages(
+          listingId
+        );
+      }
+
+      setSaveProgress(
+        "Weiterleitung zur sicheren Zahlungsseite …"
+      );
 
       window.location.href =
         data.checkoutUrl;
@@ -1227,20 +1257,17 @@ function handleImageUpload(event: ChangeEvent<HTMLInputElement>) {
 
   if (!files || files.length === 0) return;
 
-  if (!canUseDashboardImages) {
-    notify(
-      "Bilder gehören nicht zur kostenlosen Demo. Nach der Freischaltung für CHF 9.90 kannst du bis zu 5 Bilder für diese Immobilie verwenden.",
-      "warning"
-    );
+  const imageLimit =
+    userPlan === "free" ? 5 : 10;
 
-    event.target.value = "";
-    return;
-  }
-
-  const remainingSlots = 10 - selectedImages.length;
+  const remainingSlots =
+    imageLimit - selectedImages.length;
 
   if (remainingSlots <= 0) {
-    notify("Du kannst maximal 10 Fotos pro Objekt hochladen.", "warning");
+    notify(
+      `Du kannst maximal ${imageLimit} Fotos pro Objekt hochladen.`,
+      "warning"
+    );
     event.target.value = "";
     return;
   }
@@ -1884,13 +1911,13 @@ return (
 {!canUseDashboardImages && (
   <div className="mb-4 rounded-2xl border border-amber-300/30 bg-amber-400/10 p-4 text-sm leading-6 text-amber-100">
     <div className="font-black text-amber-300">
-      🔒 Bilder sind in der kostenlosen Demo nicht enthalten
+      📷 Bilder für das CHF-9.90-Objekt vorbereiten
     </div>
 
     <div className="mt-1 text-slate-200">
-      Bildfunktionen werden nach der Freischaltung dieser
-      Immobilie für CHF 9.90 aktiviert. Danach kannst du
-      bis zu 5 Bilder hochladen und analysieren lassen.
+      Du kannst bereits bis zu 5 Bilder auswählen. Sie werden
+      sicher gespeichert, bevor Stripe geöffnet wird. Die
+      Bildanalyse wird nach der Zahlung freigeschaltet.
     </div>
   </div>
 )}
@@ -1900,7 +1927,7 @@ return (
     type="file"
     accept="image/*"
     multiple
-    disabled={!canUseDashboardImages}
+    disabled={savingListing}
     onChange={handleImageUpload}
   />
 

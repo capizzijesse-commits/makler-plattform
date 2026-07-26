@@ -80,6 +80,7 @@ export async function POST(
             paymentModel: true,
             unlockStatus: true,
             paidAt: true,
+            stripeCheckoutSessionId: true,
           },
         });
 
@@ -102,9 +103,19 @@ export async function POST(
             listing.paidAt !== null
           );
 
+        const hasPendingSingleObjectCheckout =
+          listing.paymentModel === "single_object" &&
+          listing.unlockStatus === "pending" &&
+          typeof listing.stripeCheckoutSessionId ===
+            "string" &&
+          listing.stripeCheckoutSessionId.startsWith(
+            "cs_"
+          );
+
         if (
           !hasSubscriptionImageAccess &&
-          !hasPaidSingleObjectImageAccess
+          !hasPaidSingleObjectImageAccess &&
+          !hasPendingSingleObjectCheckout
         ) {
           throw new Error(
             "Bilder sind erst nach der Freischaltung dieser Immobilie verfügbar."

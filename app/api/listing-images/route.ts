@@ -122,6 +122,7 @@ export async function POST(request: NextRequest) {
         paymentModel: true,
         unlockStatus: true,
         paidAt: true,
+            stripeCheckoutSessionId: true,
       },
     });
 
@@ -148,9 +149,19 @@ export async function POST(request: NextRequest) {
         listing.paidAt !== null
       );
 
+        const hasPendingSingleObjectCheckout =
+          listing.paymentModel === "single_object" &&
+          listing.unlockStatus === "pending" &&
+          typeof listing.stripeCheckoutSessionId ===
+            "string" &&
+          listing.stripeCheckoutSessionId.startsWith(
+            "cs_"
+          );
+
     if (
       !hasSubscriptionImageAccess &&
-      !hasPaidSingleObjectImageAccess
+          !hasPaidSingleObjectImageAccess &&
+          !hasPendingSingleObjectCheckout
     ) {
       return NextResponse.json(
         {
