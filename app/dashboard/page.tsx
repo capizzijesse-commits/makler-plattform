@@ -846,6 +846,11 @@ const startSingleObjectCheckoutFromDemo =
   };
 
 const saveListingAndOpenCockpit = async () => {
+  if (userPlan === "free") {
+    await startSingleObjectCheckoutFromDemo();
+    return;
+  }
+
   const listingId = await saveListingPermanently();
 
   if (!listingId) {
