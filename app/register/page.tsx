@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { sendGAEvent } from "@next/third-parties/google";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -60,9 +61,12 @@ if (!response.ok) {
   );
 }
 
-   router.push("/login?registered=success");
+sendGAEvent("event", "sign_up", {
+  method: "email",
+});
 
-    router.push("/login");
+router.push("/login?registered=success");
+
   } catch (error) {
     alert(
       error instanceof Error
@@ -106,7 +110,7 @@ if (!response.ok) {
           </Link>
 
           <div className="ml-3 mt-6 inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-5 py-2 text-sm font-bold uppercase tracking-wide text-amber-300 backdrop-blur">
-            30 Tage kostenlos testen
+            Kostenlos registrieren
           </div>
 
           <h1 className="mt-8 max-w-3xl break-words text-[2.15rem] font-light leading-[1.08] tracking-tight text-white drop-shadow-2xl sm:text-5xl md:text-6xl lg:text-7xl">
@@ -114,15 +118,15 @@ if (!response.ok) {
 </h1>
 
           <p className="mt-5 max-w-2xl text-base leading-7 text-slate-200 drop-shadow sm:text-lg sm:leading-8">
-            Erstelle deinen Zugang und teste Inserat-AI kostenlos. Generiere
+            Erstelle deinen kostenlosen Zugang und lerne Inserat-AI unverbindlich kennen. Generiere
             professionelle Titel, Beschreibungen, Highlights und Inhalte für
             Immobilienportale in wenigen Sekunden.
           </p>
 
        <div className="mt-8 hidden max-w-2xl gap-3 sm:grid sm:grid-cols-3">
   <div className="rounded-3xl border border-white/10 bg-slate-950/55 p-4 backdrop-blur sm:p-5">
-    <p className="text-2xl font-semibold text-white">30 Tage</p>
-    <p className="mt-2 text-sm text-slate-300">kostenlos testen</p>
+    <p className="text-2xl font-semibold text-white">1 Demo</p>
+    <p className="mt-2 text-sm text-slate-300">kostenlose Generierung</p>
   </div>
 
   <div className="rounded-3xl border border-white/10 bg-slate-950/55 p-4 backdrop-blur sm:p-5">
@@ -245,8 +249,9 @@ if (!response.ok) {
             </p>
 
             <div className="mt-8 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-5 text-center text-sm leading-6 text-amber-100">
-              30 Tage kostenlos testen. Danach kannst du den passenden Plan
-              auswählen.
+              Die Registrierung ist kostenlos. Kosten entstehen erst, wenn
+              du ein Angebot auswählst oder eine einzelne Immobilie
+              freischaltest.
             </div>
           </div>
         </section>

@@ -22,12 +22,19 @@ export type AppConfirmTone =
   | "warning"
   | "danger";
 
+export type AppDialogChoice =
+  | "confirm"
+  | "secondary"
+  | "cancel";
+
 type ConfirmOptions = {
   title: string;
   message: string;
   confirmLabel?: string;
+  secondaryLabel?: string;
   cancelLabel?: string;
   tone?: AppConfirmTone;
+  emphasizeConfirmAfterMs?: number;
 };
 
 type ToastItem = {
@@ -45,6 +52,10 @@ type AppDialogContextValue = {
   confirmAction: (
     options: ConfirmOptions
   ) => Promise<boolean>;
+
+  chooseAction: (
+    options: ConfirmOptions
+  ) => Promise<AppDialogChoice>;
 };
 
 const AppDialogContext =
@@ -74,10 +85,15 @@ export default function AppDialogProvider({
   const [confirmOptions, setConfirmOptions] =
     useState<ConfirmOptions | null>(null);
 
+  const [
+    confirmEmphasized,
+    setConfirmEmphasized,
+  ] = useState(false);
+
   const nextToastId = useRef(1);
 
   const confirmResolver = useRef<
-    ((result: boolean) => void) | null
+    ((result: AppDialogChoice) => void) | null
   >(null);
 
   const removeToast = useCallback(
@@ -120,31 +136,56 @@ export default function AppDialogProvider({
     [removeToast]
   );
 
-  const confirmAction = useCallback(
+  const openActionDialog = useCallback(
     (options: ConfirmOptions) => {
-      return new Promise<boolean>((resolve) => {
-        if (confirmResolver.current) {
-          confirmResolver.current(false);
+      return new Promise<AppDialogChoice>(
+        (resolve) => {
+          if (confirmResolver.current) {
+            confirmResolver.current("cancel");
+          }
+
+          confirmResolver.current = resolve;
+
+          setConfirmOptions({
+            confirmLabel:
+              options.confirmLabel || "Bestätigen",
+            secondaryLabel:
+              options.secondaryLabel,
+            cancelLabel:
+              options.cancelLabel || "Abbrechen",
+            tone:
+              options.tone || "default",
+            title:
+              options.title,
+            message:
+              options.message,
+            emphasizeConfirmAfterMs:
+              options.emphasizeConfirmAfterMs,
+          });
         }
-
-        confirmResolver.current = resolve;
-
-        setConfirmOptions({
-          confirmLabel:
-            options.confirmLabel || "Bestätigen",
-          cancelLabel:
-            options.cancelLabel || "Abbrechen",
-          tone: options.tone || "default",
-          title: options.title,
-          message: options.message,
-        });
-      });
+      );
     },
     []
   );
 
+  const confirmAction = useCallback(
+    async (options: ConfirmOptions) => {
+      const result =
+        await openActionDialog(options);
+
+      return result === "confirm";
+    },
+    [openActionDialog]
+  );
+
+  const chooseAction = useCallback(
+    (options: ConfirmOptions) =>
+      openActionDialog(options),
+    [openActionDialog]
+  );
+
   const finishConfirmation = useCallback(
-    (result: boolean) => {
+    (result: AppDialogChoice) => {
       confirmResolver.current?.(result);
       confirmResolver.current = null;
       setConfirmOptions(null);
@@ -159,7 +200,7 @@ export default function AppDialogProvider({
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        finishConfirmation(false);
+        finishConfirmation("cancel");
       }
     }
 
@@ -176,12 +217,44 @@ export default function AppDialogProvider({
     };
   }, [confirmOptions, finishConfirmation]);
 
+  useEffect(() => {
+    setConfirmEmphasized(false);
+
+    const delay =
+      confirmOptions
+        ?.emphasizeConfirmAfterMs;
+
+    if (
+      !confirmOptions ||
+      typeof delay !== "number" ||
+      delay <= 0
+    ) {
+      return;
+    }
+
+    const timer = window.setTimeout(
+      () => {
+        setConfirmEmphasized(true);
+      },
+      delay
+    );
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [confirmOptions]);
+
   const contextValue = useMemo(
     () => ({
       notify,
       confirmAction,
+      chooseAction,
     }),
-    [notify, confirmAction]
+    [
+      notify,
+      confirmAction,
+      chooseAction,
+    ]
   );
 
   return (
@@ -227,7 +300,7 @@ export default function AppDialogProvider({
           role="presentation"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) {
-              finishConfirmation(false);
+              finishConfirmation("cancel");
             }
           }}
         >
@@ -262,27 +335,74 @@ export default function AppDialogProvider({
               </p>
             </div>
 
-            <div className="appDialogActions">
-              <button
-                type="button"
-                className="appDialogCancel"
-                onClick={() =>
-                  finishConfirmation(false)
-                }
-              >
-                {confirmOptions.cancelLabel}
-              </button>
+            <div
+              className={`appDialogActions ${
+                confirmOptions.secondaryLabel
+                  ? "hasSecondary"
+                  : ""
+              }`}
+            >
+              {confirmOptions.secondaryLabel ? (
+                <>
+                  <button
+                    type="button"
+                    className={`appDialogConfirm ${
+                      confirmEmphasized
+                        ? "isEmphasized"
+                        : ""
+                    }`}
+                    onClick={() =>
+                      finishConfirmation("confirm")
+                    }
+                    autoFocus
+                  >
+                    {confirmOptions.confirmLabel}
+                  </button>
 
-              <button
-                type="button"
-                className="appDialogConfirm"
-                onClick={() =>
-                  finishConfirmation(true)
-                }
-                autoFocus
-              >
-                {confirmOptions.confirmLabel}
-              </button>
+                  <button
+                    type="button"
+                    className="appDialogSecondary"
+                    onClick={() =>
+                      finishConfirmation("secondary")
+                    }
+                  >
+                    {confirmOptions.secondaryLabel}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="appDialogCancel appDialogLater"
+                    onClick={() =>
+                      finishConfirmation("cancel")
+                    }
+                  >
+                    {confirmOptions.cancelLabel}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="appDialogCancel"
+                    onClick={() =>
+                      finishConfirmation("cancel")
+                    }
+                  >
+                    {confirmOptions.cancelLabel}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="appDialogConfirm"
+                    onClick={() =>
+                      finishConfirmation("confirm")
+                    }
+                    autoFocus
+                  >
+                    {confirmOptions.confirmLabel}
+                  </button>
+                </>
+              )}
             </div>
           </section>
         </div>
@@ -520,6 +640,100 @@ export default function AppDialogProvider({
             transform: translateX(0);
           }
         }
+        .appDialogActions.hasSecondary {
+          display: grid;
+          grid-template-columns:
+            minmax(0, 1.25fr)
+            minmax(0, 1fr);
+          gap: 10px;
+        }
+
+        .appDialogActions.hasSecondary
+        .appDialogConfirm,
+        .appDialogActions.hasSecondary
+        .appDialogSecondary {
+          width: 100%;
+          min-height: 49px;
+        }
+
+        .appDialogSecondary {
+          border: 1px solid
+            rgba(251, 191, 36, 0.38);
+          border-radius: 13px;
+          background:
+            rgba(251, 191, 36, 0.08);
+          color: #fde68a;
+          padding: 12px 15px;
+          font-weight: 900;
+          cursor: pointer;
+          transition:
+            transform 0.18s ease,
+            background 0.18s ease,
+            border-color 0.18s ease;
+        }
+
+        .appDialogSecondary:hover {
+          transform: translateY(-1px);
+          border-color:
+            rgba(251, 191, 36, 0.68);
+          background:
+            rgba(251, 191, 36, 0.14);
+        }
+
+        .appDialogLater {
+          grid-column: 1 / -1;
+          justify-self: center;
+          min-height: 34px;
+          padding: 5px 12px;
+          border-color: transparent;
+          background: transparent;
+          color: #94a3b8;
+          font-size: 12px;
+        }
+
+        .appDialogLater:hover {
+          background:
+            rgba(255, 255, 255, 0.045);
+          color: #ffffff;
+        }
+
+        .appDialogConfirm.isEmphasized {
+          animation:
+            appDialogPrimaryPulse
+            1.55s ease-in-out infinite;
+        }
+
+        @keyframes appDialogPrimaryPulse {
+          0%,
+          100% {
+            transform: translateY(0)
+              scale(1);
+            box-shadow:
+              0 12px 28px
+                rgba(245, 158, 11, 0.25);
+          }
+
+          50% {
+            transform: translateY(-2px)
+              scale(1.018);
+            box-shadow:
+              0 16px 40px
+                rgba(245, 158, 11, 0.52),
+              0 0 24px
+                rgba(251, 191, 36, 0.27);
+          }
+        }
+
+        @media (max-width: 560px) {
+          .appDialogActions.hasSecondary {
+            grid-template-columns: 1fr;
+          }
+
+          .appDialogLater {
+            grid-column: auto;
+          }
+        }
+
 
         @keyframes dialogEnter {
           from {

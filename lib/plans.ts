@@ -1,7 +1,6 @@
-export const USER_PLANS = [
+﻿export const USER_PLANS = [
   "free",
   "founder",
-  "standard",
   "pro",
   "agency",
   "admin",
@@ -9,25 +8,64 @@ export const USER_PLANS = [
 
 export type UserPlan = (typeof USER_PLANS)[number];
 
+export const OFFER_PRICES_CENTS = {
+  singleObject: 990,
+  founder: 1990,
+  pro: 7990,
+  agency: 14990,
+} as const;
+
+export const PLAN_LABELS: Record<UserPlan, string> = {
+  free: "Einzelobjekt / Testzugang",
+  founder: "Founder",
+  pro: "Pro",
+  agency: "Agency",
+  admin: "Admin",
+};
+
 export type PlanCapabilities = {
   plan: UserPlan;
+
   canUseGenerator: boolean;
+  canUseMultipleListings: boolean;
   canUseBasicCockpit: boolean;
+  canUseStandardImageAnalysis: boolean;
   canUseSocialMedia: boolean;
+  canUseExpose: boolean;
+
   canUsePremiumCockpit: boolean;
+  canUseAdvancedImageAnalysis: boolean;
+  canUseHomeStaging: boolean;
   canUsePublishingCenter: boolean;
   canUseSecretMarketing: boolean;
   canUseLocationAssistant: boolean;
   canUseTourGuide: boolean;
+  canUseMultiListingGeneration: boolean;
+
   canUseAgencyFeatures: boolean;
 };
 
-export function normalizeUserPlan(value: unknown): UserPlan {
-  if (typeof value !== "string") {
-    return "free";
-  }
+export type ListingAccessInput = {
+  paymentModel?: unknown;
+  unlockStatus?: unknown;
+};
 
-  const normalized = value.trim().toLowerCase();
+function normalizeString(value: unknown): string {
+  return typeof value === "string"
+    ? value.trim().toLowerCase()
+    : "";
+}
+
+export function normalizeUserPlan(value: unknown): UserPlan {
+  const normalized = normalizeString(value);
+
+  /*
+   * Frühere Standard-Konten werden sicher auf Founder abgebildet.
+   * Dadurch verlieren bestehende Benutzer keinen Basiszugang.
+   */
+  if (normalized === "standard") {
+    return "founder";
+  }
 
   if (USER_PLANS.includes(normalized as UserPlan)) {
     return normalized as UserPlan;
@@ -42,44 +80,92 @@ export function getPlanCapabilities(
   const plan = normalizeUserPlan(value);
 
   const isAdmin = plan === "admin";
+  const isAgency = plan === "agency";
+  const isPro = plan === "pro";
+
   const isProOrHigher =
-    plan === "pro" ||
-    plan === "agency" ||
+    isPro ||
+    isAgency ||
     isAdmin;
 
-  const hasBasicCockpit =
+  const isFounderOrHigher =
     plan === "founder" ||
-    plan === "standard" ||
-    isProOrHigher;
-
-  const hasSocialMedia =
-    plan === "founder" ||
-    plan === "standard" ||
     isProOrHigher;
 
   return {
     plan,
 
-    // Alle registrierten Benutzer dürfen den Generator testen.
+    /*
+     * Der Generator darf als Einstieg getestet werden.
+     * Die dauerhafte Nutzung eines Einzelobjekts wird zusätzlich
+     * über den Zahlungsstatus des jeweiligen Objekts geprüft.
+     */
     canUseGenerator: true,
 
-    // Founder und Standard erhalten das begrenzte Cockpit.
-    canUseBasicCockpit: hasBasicCockpit,
+    /*
+     * Founder CHF 19.90 und höhere Pläne:
+     * mehrere Immobilien und vollständiger Basis-Arbeitsbereich.
+     */
+    canUseMultipleListings: isFounderOrHigher,
+    canUseBasicCockpit: isFounderOrHigher,
+    canUseStandardImageAnalysis: isFounderOrHigher,
+    canUseSocialMedia: isFounderOrHigher,
+    canUseExpose: isFounderOrHigher,
 
-    // Social-Texte bleiben auch im Founder-/Standard-Angebot.
-    canUseSocialMedia: hasSocialMedia,
-
-    // Vollständige Marketing-Verwaltung ab Pro 79.90 CHF.
+    /*
+     * Pro CHF 79.90 und höhere Pläne:
+     * Premium-Vermarktung und Automatisierung.
+     */
     canUsePremiumCockpit: isProOrHigher,
+    canUseAdvancedImageAnalysis: isProOrHigher,
+    canUseHomeStaging: isProOrHigher,
     canUsePublishingCenter: isProOrHigher,
     canUseSecretMarketing: isProOrHigher,
     canUseLocationAssistant: isProOrHigher,
     canUseTourGuide: isProOrHigher,
+    canUseMultiListingGeneration: isProOrHigher,
 
-    // Team- und Agenturfunktionen erst ab Agency.
+    /*
+     * Agency CHF 149.90:
+     * technisch vorbereitet, aber noch nicht aktiv zu verkaufen.
+     */
     canUseAgencyFeatures:
-      plan === "agency" || isAdmin,
+      isAgency ||
+      isAdmin,
   };
+}
+
+/*
+ * Ein bezahltes CHF-9.90-Einzelobjekt besitzt Basiszugang,
+ * obwohl das Benutzerkonto weiterhin den Plan "free" haben kann.
+ */
+export function isPaidSingleObjectListing(
+  listing: ListingAccessInput | null | undefined
+): boolean {
+  if (!listing) {
+    return false;
+  }
+
+  return (
+    normalizeString(listing.paymentModel) === "single_object" &&
+    normalizeString(listing.unlockStatus) === "paid"
+  );
+}
+
+/*
+ * Basisfunktionen eines konkreten Objekts:
+ * Founder/Pro/Agency/Admin oder bezahltes Einzelobjekt.
+ */
+export function hasListingCoreAccess(
+  planValue: unknown,
+  listing: ListingAccessInput | null | undefined
+): boolean {
+  const capabilities = getPlanCapabilities(planValue);
+
+  return (
+    capabilities.canUseBasicCockpit ||
+    isPaidSingleObjectListing(listing)
+  );
 }
 
 export function hasProAccess(value: unknown): boolean {

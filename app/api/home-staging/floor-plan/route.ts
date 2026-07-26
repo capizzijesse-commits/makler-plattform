@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { getPlanCapabilities } from "@/lib/plans";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/session";
 
@@ -161,6 +162,20 @@ export async function POST(
             "Bitte melde dich erneut an.",
         },
         { status: 401 }
+      );
+    }
+
+    const capabilities =
+      getPlanCapabilities(user.plan);
+
+    if (!capabilities.canUseHomeStaging) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Die Grundrissanalyse für Home Staging ist im Pro-Plan für CHF 79.90 pro Monat enthalten.",
+        },
+        { status: 403 }
       );
     }
 

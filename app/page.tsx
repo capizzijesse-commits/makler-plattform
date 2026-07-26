@@ -30,7 +30,7 @@ export default function HomePage() {
 
             <div className="landingHeroActions">
               <a href="/register" className="landingPrimaryButton">
-                Kostenlos testen <span>→</span>
+                Kostenlos registrieren <span>→</span>
               </a>
 
               <div className="landingCheck">

@@ -75,14 +75,36 @@ const listings = await prisma.listing.findMany({
   },
 });
 
+    const userPlan = normalizeUserPlan(user.plan);
+
     return NextResponse.json({
       success: true,
-      listings: listings.map((listing) => ({
-        ...listing,
-        generatedVariants: parseJsonValue(
-          listing.generatedVariants
-        ),
-      })),
+      listings: listings.map((listing) => {
+        const hasCoreAccess =
+          userPlan !== "free" ||
+          listing.unlockStatus === "paid" ||
+          listing.unlockStatus === "included";
+
+        return {
+          ...listing,
+          generatedVariants: hasCoreAccess
+            ? parseJsonValue(listing.generatedVariants)
+            : null,
+          socialVariants: hasCoreAccess
+            ? parseJsonValue(listing.socialVariants)
+            : null,
+          imageAnalysis: hasCoreAccess
+            ? listing.imageAnalysis
+            : null,
+          locationDescription: hasCoreAccess
+            ? listing.locationDescription
+            : null,
+          locationData: hasCoreAccess
+            ? parseJsonValue(listing.locationData)
+            : null,
+          hasCoreAccess,
+        };
+      }),
     });
   } catch (error) {
     console.error("Fehler beim Laden der Objekte:", error);

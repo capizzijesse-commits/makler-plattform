@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -177,7 +177,7 @@ if (reset === "success") {
         String(loginExpiresAt)
       );
 
-      router.push("/cockpit");
+      router.push("/dashboard");
     } catch (error) {
       console.error("LOGIN PAGE ERROR:", error);
 
@@ -477,7 +477,7 @@ if (reset === "success") {
               textDecoration: "none",
             }}
           >
-            30 Tage kostenlos starten
+            Kostenlos registrieren
           </Link>
         </p>
 

@@ -408,7 +408,7 @@ async function saveSocialVariants(
         highlights,
         styleText,
         imageAnalysis,
-        demo: true,
+        listingId: sourceListingId,
       }),
     });
 

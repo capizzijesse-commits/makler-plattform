@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -8,9 +8,16 @@ import PrivacyModeButton from "../../components/PrivacyModeButton";
 type SessionResponse = {
   success?: boolean;
   user?: {
+    name?: string | null;
+    email?: string;
     plan?: string;
   };
 };
+
+type SessionStatus =
+  | "loading"
+  | "authenticated"
+  | "anonymous";
 
 type MenuItem = {
   label: string;
@@ -30,8 +37,8 @@ const menuItems: MenuItem[] = [
     accent: "orange",
   },
  {
-  label: "Makler-Cockpit",
-  description: "Objekte dauerhaft verwalten",
+  label: "Meine Projekte",
+  description: "Immobilien öffnen, bearbeiten und verwalten",
   icon: "🏠",
   href: "/cockpit",
   accent: "blue",
@@ -132,6 +139,10 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [userPlan, setUserPlan] = useState("free");
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [sessionStatus, setSessionStatus] =
+    useState<SessionStatus>("loading");
 
  const isLoggedInArea =
   pathname?.startsWith("/dashboard") ||
@@ -142,22 +153,23 @@ export default function Navbar() {
   const moduleClass = getModuleClass(pathname);
   const planLabel = getPlanLabel(userPlan);
 
+  const isAuthenticated =
+    sessionStatus === "authenticated";
+
+  const displayUserName =
+    userName.trim() ||
+    userEmail.trim() ||
+    "Mein Konto";
+
   useEffect(() => {
     setMenuOpen(false);
   }, [pathname]);
 
   useEffect(() => {
-    if (!isLoggedInArea) {
-      return;
-    }
-
     let cancelled = false;
 
-    async function loadPlan() {
-      const localPlan =
-        localStorage.getItem("userPlan") || "free";
-
-      setUserPlan(localPlan);
+    async function loadSession() {
+      setSessionStatus("loading");
 
       try {
         const response = await fetch("/api/session", {
@@ -167,38 +179,82 @@ export default function Navbar() {
         });
 
         if (!response.ok) {
+          if (!cancelled) {
+            setSessionStatus("anonymous");
+            setUserName("");
+            setUserEmail("");
+            setUserPlan("free");
+          }
+
           return;
         }
 
         const data =
           (await response.json()) as SessionResponse;
 
-        const sessionPlan = data.user?.plan;
+        const sessionPlan =
+          typeof data.user?.plan === "string"
+            ? data.user.plan
+            : "free";
 
-        if (
-          !cancelled &&
-          typeof sessionPlan === "string"
-        ) {
-          setUserPlan(sessionPlan);
+        const sessionName =
+          typeof data.user?.name === "string"
+            ? data.user.name.trim()
+            : "";
+
+        const sessionEmail =
+          typeof data.user?.email === "string"
+            ? data.user.email.trim()
+            : "";
+
+        if (cancelled) {
+          return;
+        }
+
+        setUserPlan(sessionPlan);
+        setUserName(sessionName);
+        setUserEmail(sessionEmail);
+        setSessionStatus("authenticated");
+
+        localStorage.setItem(
+          "userPlan",
+          sessionPlan
+        );
+
+        if (sessionName) {
           localStorage.setItem(
-            "userPlan",
-            sessionPlan
+            "userName",
+            sessionName
+          );
+        }
+
+        if (sessionEmail) {
+          localStorage.setItem(
+            "userEmail",
+            sessionEmail
           );
         }
       } catch (error) {
-        console.error(
-          "PLAN KONNTE NICHT GELADEN WERDEN:",
+        console.warn(
+          "SESSION KONNTE NICHT GELADEN WERDEN:",
           error
         );
+
+        if (!cancelled) {
+          setSessionStatus("anonymous");
+          setUserName("");
+          setUserEmail("");
+          setUserPlan("free");
+        }
       }
     }
 
-    void loadPlan();
+    void loadSession();
 
     return () => {
       cancelled = true;
     };
-  }, [isLoggedInArea]);
+  }, [pathname]);
 
   useEffect(() => {
     if (!menuOpen) {
@@ -265,7 +321,11 @@ export default function Navbar() {
       >
         <div className="siteNavbarInner appCentralNavbarInner">
           <Link
-            href={isLoggedInArea ? "/dashboard" : "/"}
+            href={
+              isLoggedInArea || isAuthenticated
+                ? "/dashboard"
+                : "/"
+            }
             className="siteBrand"
           >
             <span
@@ -303,6 +363,63 @@ export default function Navbar() {
   {isLoggedInArea ? (
               
               <>
+                <Link
+                  href="/konto"
+                  title={displayUserName}
+                  aria-label={`Mein Konto: ${displayUserName}`}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    minHeight: "40px",
+                    maxWidth: "210px",
+                    padding: "0 11px 0 7px",
+                    border:
+                      "1px solid rgba(251, 191, 36, 0.24)",
+                    borderRadius: "13px",
+                    background:
+                      "rgba(15, 23, 42, 0.58)",
+                    color: "#ffffff",
+                    fontSize: "13px",
+                    fontWeight: 900,
+                    textDecoration: "none",
+                    boxShadow:
+                      "0 8px 24px rgba(0, 0, 0, 0.14)",
+                  }}
+                >
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      display: "grid",
+                      placeItems: "center",
+                      flex: "0 0 auto",
+                      width: "28px",
+                      height: "28px",
+                      borderRadius: "9px",
+                      background:
+                        "linear-gradient(135deg, #fbbf24, #f97316)",
+                      color: "#081126",
+                      fontSize: "12px",
+                      fontWeight: 950,
+                    }}
+                  >
+                    {displayUserName
+                      .charAt(0)
+                      .toUpperCase()}
+                  </span>
+
+                  <span
+                    style={{
+                      minWidth: 0,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {displayUserName}
+                  </span>
+                </Link>
+
                 <span className="appPlanBadge">
                   {planLabel}
                 </span>
@@ -326,29 +443,68 @@ export default function Navbar() {
                   <span>Menü</span>
                 </button>
               </>
+            ) : sessionStatus === "loading" ? (
+              <span
+                aria-hidden="true"
+                style={{
+                  display: "inline-block",
+                  width: "280px",
+                  height: "46px",
+                  visibility: "hidden",
+                }}
+              />
+            ) : isAuthenticated ? (
+              <>
+                <Link
+                  href="/konto"
+                  className="siteLoginLink publicMobileLogin"
+                  title={displayUserName}
+                >
+                  {displayUserName}
+                </Link>
+
+                <span className="appPlanBadge">
+                  {planLabel}
+                </span>
+
+                <Link
+                  href="/dashboard"
+                  className="siteCtaButton publicMobileCta"
+                >
+                  <span className="siteCtaDesktopText">
+                    Zum Dashboard
+                  </span>
+
+                  <span className="siteCtaMobileText">
+                    Dashboard
+                  </span>
+
+                  <span aria-hidden="true">→</span>
+                </Link>
+              </>
             ) : (
               <>
-              <Link
-  href="/login"
-  className="siteLoginLink publicMobileLogin"
->
-  Login
-</Link>
+                <Link
+                  href="/login"
+                  className="siteLoginLink publicMobileLogin"
+                >
+                  Login
+                </Link>
 
-<Link
-  href="/register"
-  className="siteCtaButton publicMobileCta"
->
-  <span className="siteCtaDesktopText">
-    Kostenlos testen
-  </span>
+                <Link
+                  href="/register"
+                  className="siteCtaButton publicMobileCta"
+                >
+                  <span className="siteCtaDesktopText">
+                    Kostenlos registrieren
+                  </span>
 
-  <span className="siteCtaMobileText">
-    Kostenlos testen
-  </span>
+                  <span className="siteCtaMobileText">
+                    Kostenlos registrieren
+                  </span>
 
-  <span aria-hidden="true">→</span>
-</Link>
+                  <span aria-hidden="true">→</span>
+                </Link>
               </>
             )}
           </nav>
@@ -395,7 +551,7 @@ export default function Navbar() {
               {userPlan !== "pro" &&
                 userPlan !== "agency" && (
                   <Link
-                    href="/#pricing"
+                    href="/#preise"
                     onClick={() =>
                       setMenuOpen(false)
                     }

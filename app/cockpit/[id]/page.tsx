@@ -46,6 +46,7 @@ type Listing = {
   paymentModel: string;
   unlockStatus: string;
   singleObjectPriceCents: number;
+  viewerPlan: string;
   images: ListingImage[];
 };
 
@@ -72,6 +73,9 @@ export default function CockpitListingPage() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [paymentNotice, setPaymentNotice] = useState("");
+  const [verifyingPayment, setVerifyingPayment] =
+    useState(false);
   const [deletingImageId, setDeletingImageId] = useState<string | null>(
   null
 );
@@ -142,6 +146,157 @@ export default function CockpitListingPage() {
       controller.abort();
     };
   }, [listingId, router]);
+
+  useEffect(() => {
+    if (!listingId) {
+      return;
+    }
+
+    const verifiedListingId = listingId;
+
+    const urlParams =
+      new URLSearchParams(window.location.search);
+
+    if (urlParams.get("payment") !== "success") {
+      return;
+    }
+
+    const sessionId =
+      urlParams.get("session_id")?.trim() ?? "";
+
+    if (!sessionId) {
+      setPaymentNotice(
+        "Die Zahlung wurde abgeschlossen. Die Freischaltung wird noch geprüft."
+      );
+      return;
+    }
+
+    const controller = new AbortController();
+
+    async function verifyReturnedPayment() {
+      try {
+        setVerifyingPayment(true);
+        setPaymentNotice(
+          "Zahlung wird sicher bestätigt …"
+        );
+
+        let lastError =
+          "Die Zahlung konnte noch nicht bestätigt werden.";
+
+        for (let attempt = 1; attempt <= 3; attempt += 1) {
+          const response = await fetch(
+            "/api/payments/single-object/verify",
+            {
+              method: "POST",
+              credentials: "include",
+              cache: "no-store",
+              signal: controller.signal,
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                listingId: verifiedListingId,
+                sessionId,
+              }),
+            }
+          );
+
+          if (response.status === 401) {
+            router.replace("/login");
+            return;
+          }
+
+          const data = (await response
+            .json()
+            .catch(() => null)) as
+            | {
+                success?: boolean;
+                unlockStatus?: string;
+                paymentProcessing?: boolean;
+                error?: string;
+              }
+            | null;
+
+          if (
+            response.ok &&
+            data?.success &&
+            data.unlockStatus === "paid"
+          ) {
+            setListing((currentListing) =>
+              currentListing
+                ? {
+                    ...currentListing,
+                    unlockStatus: "paid",
+                  }
+                : currentListing
+            );
+
+            setPaymentNotice(
+              "Zahlung erfolgreich – diese Immobilie ist freigeschaltet."
+            );
+
+            window.history.replaceState(
+              null,
+              "",
+              `/cockpit/${encodeURIComponent(
+                verifiedListingId
+              )}`
+            );
+
+            return;
+          }
+
+          lastError =
+            data?.error ||
+            "Die Zahlung konnte noch nicht bestätigt werden.";
+
+          if (
+            data?.paymentProcessing &&
+            attempt < 3
+          ) {
+            await new Promise((resolve) =>
+              window.setTimeout(resolve, 1500)
+            );
+
+            continue;
+          }
+
+          throw new Error(lastError);
+        }
+
+        throw new Error(lastError);
+      } catch (verificationError) {
+        if (
+          verificationError instanceof DOMException &&
+          verificationError.name === "AbortError"
+        ) {
+          return;
+        }
+
+        console.error(
+          "Zahlungsprüfung fehlgeschlagen:",
+          verificationError
+        );
+
+        setPaymentNotice(
+          verificationError instanceof Error
+            ? verificationError.message
+            : "Die Zahlung konnte noch nicht bestätigt werden. Bitte lade die Seite erneut."
+        );
+      } finally {
+        if (!controller.signal.aborted) {
+          setVerifyingPayment(false);
+        }
+      }
+    }
+
+    void verifyReturnedPayment();
+
+    return () => {
+      controller.abort();
+    };
+  }, [listingId, router]);
+
 async function deleteListingImage(imageId: string) {
   const confirmed = window.confirm(
     "Dieses Bild wirklich dauerhaft löschen?"
@@ -327,8 +482,69 @@ function showNextImage() {
     );
   }
 
+  const hasProAccess = [
+    "pro",
+    "agency",
+    "admin",
+  ].includes(listing.viewerPlan);
+
   return (
     <main className="detailPage">
+      {paymentNotice && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            maxWidth: "1440px",
+            margin: "0 auto 20px",
+            padding: "16px 18px",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            border:
+              listing?.unlockStatus === "paid"
+                ? "1px solid rgba(52, 211, 153, 0.55)"
+                : "1px solid rgba(251, 191, 36, 0.52)",
+            borderRadius: "16px",
+            background:
+              listing?.unlockStatus === "paid"
+                ? "linear-gradient(135deg, rgba(6, 78, 59, 0.94), rgba(15, 23, 42, 0.96))"
+                : "linear-gradient(135deg, rgba(120, 53, 15, 0.92), rgba(15, 23, 42, 0.96))",
+            color: "#ffffff",
+            fontWeight: 900,
+            boxShadow:
+              "0 16px 38px rgba(0, 0, 0, 0.26)",
+          }}
+        >
+          <span
+            aria-hidden="true"
+            style={{
+              display: "grid",
+              placeItems: "center",
+              flex: "0 0 auto",
+              width: "34px",
+              height: "34px",
+              borderRadius: "11px",
+              background:
+                listing?.unlockStatus === "paid"
+                  ? "rgba(52, 211, 153, 0.2)"
+                  : "rgba(251, 191, 36, 0.2)",
+              color:
+                listing?.unlockStatus === "paid"
+                  ? "#6ee7b7"
+                  : "#fcd34d",
+            }}
+          >
+            {verifyingPayment
+              ? "…"
+              : listing?.unlockStatus === "paid"
+                ? "✓"
+                : "!"}
+          </span>
+
+          <span>{paymentNotice}</span>
+        </div>
+      )}
       <section className="detailContainer">
         <div className="topNavigation">
           <Link href="/cockpit" className="backLink">
@@ -724,6 +940,7 @@ function showNextImage() {
   Exposé erstellen
 </Link>
 
+{hasProAccess ? (
 <Link
   href={`/dashboard/tour-guide?listingId=${listing.id}`}
   style={{
@@ -747,6 +964,59 @@ function showNextImage() {
 >
   🎬 3D-Video-Tour erstellen
 </Link>
+) : (
+  <Link
+    href="/#preise"
+    aria-label="3D-Video-Tour – verfügbar mit Pro für CHF 79.90"
+    style={{
+      display: "inline-flex",
+      width: "100%",
+      minHeight: "52px",
+      marginTop: "10px",
+      padding: "9px 14px",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "10px",
+      border:
+        "1px solid rgba(167, 139, 250, 0.5)",
+      borderRadius: "14px",
+      background:
+        "linear-gradient(135deg, rgba(30, 41, 59, 0.96), rgba(76, 29, 149, 0.42))",
+      color: "#ffffff",
+      textDecoration: "none",
+      boxSizing: "border-box",
+      boxShadow:
+        "0 12px 28px rgba(76, 29, 149, 0.18)",
+    }}
+  >
+    <span aria-hidden="true">🔒</span>
+
+    <span style={{ textAlign: "left" }}>
+      <strong
+        style={{
+          display: "block",
+          fontSize: "14px",
+          fontWeight: 900,
+        }}
+      >
+        3D-Video-Tour
+      </strong>
+
+      <small
+        style={{
+          display: "block",
+          marginTop: "2px",
+          color: "#c4b5fd",
+          fontSize: "11px",
+          fontWeight: 800,
+        }}
+      >
+        Pro CHF 79.90
+      </small>
+    </span>
+  </Link>
+)}
+{hasProAccess ? (
 <Link
   href={`/cockpit/${listing.id}/home-staging`}
   style={{
@@ -772,6 +1042,58 @@ function showNextImage() {
   <span aria-hidden="true">🛋️</span>
   Virtuelles Home Staging
 </Link>
+) : (
+  <Link
+    href="/#preise"
+    aria-label="Virtuelles Home Staging – verfügbar mit Pro für CHF 79.90"
+    style={{
+      display: "inline-flex",
+      width: "100%",
+      minHeight: "52px",
+      marginTop: "10px",
+      padding: "9px 14px",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "10px",
+      border:
+        "1px solid rgba(34, 211, 238, 0.42)",
+      borderRadius: "14px",
+      background:
+        "linear-gradient(135deg, rgba(30, 41, 59, 0.96), rgba(8, 145, 178, 0.28))",
+      color: "#ffffff",
+      textDecoration: "none",
+      boxSizing: "border-box",
+      boxShadow:
+        "0 12px 28px rgba(8, 145, 178, 0.16)",
+    }}
+  >
+    <span aria-hidden="true">🔒</span>
+
+    <span style={{ textAlign: "left" }}>
+      <strong
+        style={{
+          display: "block",
+          fontSize: "14px",
+          fontWeight: 900,
+        }}
+      >
+        Virtuelles Home Staging
+      </strong>
+
+      <small
+        style={{
+          display: "block",
+          marginTop: "2px",
+          color: "#67e8f9",
+          fontSize: "11px",
+          fontWeight: 800,
+        }}
+      >
+        Pro CHF 79.90
+      </small>
+    </span>
+  </Link>
+)}
 
               <ListingActions
                 listingId={listing.id}

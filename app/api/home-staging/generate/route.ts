@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import sharp from "sharp";
 
+import { getPlanCapabilities } from "@/lib/plans";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/session";
 
@@ -266,6 +267,20 @@ export async function POST(
           error: "Bitte zuerst einloggen.",
         },
         { status: 401 }
+      );
+    }
+
+    const capabilities =
+      getPlanCapabilities(user.plan);
+
+    if (!capabilities.canUseHomeStaging) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Virtuelles Home Staging ist im Pro-Plan für CHF 79.90 pro Monat enthalten.",
+        },
+        { status: 403 }
       );
     }
 

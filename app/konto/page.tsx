@@ -35,8 +35,11 @@ function getPlanLabel(plan: string): string {
     return "Pro";
   }
 
-  if (normalized === "standard") {
-    return "Standard";
+  if (
+    normalized === "founder" ||
+    normalized === "standard"
+  ) {
+    return "Founder";
   }
 
   return "Free";
@@ -110,6 +113,145 @@ export default function AccountPage() {
     return () => {
       controller.abort();
     };
+  }, []);
+
+  useEffect(() => {
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const subscriptionState =
+      params.get("subscription");
+
+    if (
+      subscriptionState === "activated"
+    ) {
+      setNotice({
+        type: "success",
+        text:
+          "Founder-Abonnement erfolgreich aktiviert.",
+      });
+
+      window.history.replaceState(
+        {},
+        "",
+        "/konto"
+      );
+
+      return;
+    }
+
+    if (
+      subscriptionState !== "success"
+    ) {
+      return;
+    }
+
+    const sessionId =
+      params.get("session_id")?.trim() ??
+      "";
+
+    if (!sessionId) {
+      setNotice({
+        type: "error",
+        text:
+          "Die Stripe-Checkout-ID fehlt.",
+      });
+
+      return;
+    }
+
+    const verificationKey =
+      `founder-verification:${sessionId}`;
+
+    /*
+     * Erst nach erfolgreicher Bestätigung als erledigt
+     * markieren. So blockiert React Strict Mode die
+     * Stripe-Prüfung nicht.
+     */
+    if (
+      sessionStorage.getItem(
+        verificationKey
+      ) === "done"
+    ) {
+      return;
+    }
+
+    async function verifySubscription() {
+      try {
+        setNotice({
+          type: "success",
+          text:
+            "Dein Founder-Abonnement wird bestätigt …",
+        });
+
+        const response = await fetch(
+          "/api/payments/subscription/verify",
+          {
+            method: "POST",
+            credentials: "include",
+            cache: "no-store",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              sessionId,
+            }),
+          }
+        );
+
+        const data = (await response
+          .json()
+          .catch(() => null)) as
+          | {
+              success?: boolean;
+              message?: string;
+              error?: string;
+            }
+          | null;
+
+        if (
+          !response.ok ||
+          !data?.success
+        ) {
+          throw new Error(
+            data?.error ||
+              "Das Founder-Abonnement konnte nicht bestätigt werden."
+          );
+        }
+
+        sessionStorage.setItem(
+          verificationKey,
+          "done"
+        );
+
+        /*
+         * Vollständiger Reload:
+         * Navbar, Sessionanzeige und Konto laden
+         * unmittelbar den neuen Founder-Plan.
+         */
+        window.location.replace(
+          "/konto?subscription=activated"
+        );
+      } catch (error) {
+        sessionStorage.removeItem(
+          verificationKey
+        );
+
+        setNotice({
+          type: "error",
+          text:
+            error instanceof Error
+              ? error.message
+              : "Das Founder-Abonnement konnte nicht bestätigt werden.",
+        });
+      }
+    }
+
+    void verifySubscription();
+
   }, []);
 
   async function saveAccount(event: React.FormEvent<HTMLFormElement>) {
@@ -227,7 +369,7 @@ export default function AccountPage() {
             </div>
 
             <Link href="/cockpit" className="account-back-link">
-              ← Zurück zum Makler-Cockpit
+              ← Zu meinen Projekten
             </Link>
           </aside>
 
@@ -527,18 +669,62 @@ export default function AccountPage() {
         }
 
         .account-back-link {
-          margin-top: auto;
-          min-height: 48px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          color: #f8fafc;
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          border-radius: 14px;
-          font-weight: 900;
-          text-decoration: none;
-        }
+  margin-top: auto;
+  width: 100%;
+  min-height: 58px;
+  padding: 14px 22px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #081126;
+  background: linear-gradient(
+    180deg,
+    #ffe98a 0%,
+    #ffc83d 50%,
+    #e99a0b 100%
+  );
+
+  border: 1px solid #ffe082;
+  border-radius: 16px;
+
+  font-size: 16px;
+  font-weight: 950;
+  text-decoration: none;
+
+  box-shadow:
+    0 0 0 2px rgba(251, 191, 36, 0.14),
+    0 0 24px rgba(251, 191, 36, 0.42),
+    0 14px 30px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    filter 180ms ease;
+}
+
+.account-back-link:hover {
+  color: #081126;
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 0 0 3px rgba(251, 191, 36, 0.18),
+    0 0 34px rgba(251, 191, 36, 0.58),
+    0 18px 36px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+.account-back-link:active {
+  transform: scale(0.98);
+}
+
+.account-back-link:focus-visible {
+  outline: 3px solid #38bdf8;
+  outline-offset: 4px;
+}
 
         .account-form-card {
           padding: 30px;

@@ -1,84 +1,164 @@
 "use client";
 
-const founderPaymentLink =
-  "https://buy.stripe.com/5kQ14o93d8Du1WR74b6J201";
-
-const proPaymentLink =
-  "https://buy.stripe.com/00w14o2EP5ri9pj1JR6J200";
+import { useState } from "react";
 
 const plans = [
   {
     name: "Demo",
-    label: "Kennenlernen",
+    label: "Kostenlos kennenlernen",
     price: "0 CHF",
-    cadence: "kostenlos",
-    text: "Inserat-AI unverbindlich kennenlernen und die ersten Funktionen ausprobieren.",
-    button: "Kostenlos testen",
+    cadence: "ohne Abonnement",
+    text: "Teste Inserat-AI mit einer kostenlosen Textgenerierung und drei Varianten. Bilder, Bildanalyse und vollständige Exporte sind nicht Bestandteil der Demo.",
+    button: "Kostenlos registrieren",
     href: "/register",
     external: false,
     highlighted: false,
     features: [
-      "Einfach registrieren",
-      "Inserat-AI kennenlernen",
-      "Erste Funktionen testen",
-      "Ideal zum Ausprobieren",
+      "Kostenlose Registrierung",
+      "1 kostenlose Textgenerierung mit 3 Varianten",
+      "Keine Bilder und keine Bildanalyse",
+      "Keine automatische Abbuchung",
     ],
   },
   {
     name: "Founder",
-    label: "Gründerangebot",
-    price: "30 Tage kostenlos",
-    cadence: "danach 19.90 CHF pro Monat",
-    text: "Das attraktive Einstiegsangebot für unsere ersten Immobilienprofis.",
-    button: "Founder sichern",
-    href: founderPaymentLink,
-    external: true,
+    label: "Für die ersten 50 Makler",
+    price: "19.90 CHF",
+    cadence: "pro Monat",
+    text: "Der vollständige Basis-Arbeitsbereich für Makler, die mehrere Immobilien professionell vermarkten.",
+    button: "Founder abonnieren",
+    href: "#",
+    external: false,
     highlighted: true,
     features: [
-      "Heute 0 CHF bezahlen",
-      "3 professionelle Inserat-Varianten",
+      "Mehrere Immobilien im Makler-Cockpit",
+      "3 professionelle Inserat-Varianten pro Objekt",
+      "Bis zu 10 Objektbilder pro Immobilie",
+      "Standard-Bildanalyse und Bildverwaltung",
       "Social-Media-Texte",
-      "PDF, Copy und Portal-Export",
-      "Begrenztes Makler-Cockpit",
-      "Objekte, Texte und Bilder speichern",
+      "Professionelles Exposé mit PDF-Export",
+      "Objekte, Texte und Bilder dauerhaft speichern",
     ],
   },
   {
     name: "Pro",
-    label: "Für aktive Makler",
-    price: "30 Tage kostenlos",
-    cadence: "danach 79.90 CHF pro Monat",
-    text: "Für die zentrale und professionelle Vermarktung mehrerer Immobilien.",
-    button: "Pro starten",
-    href: proPaymentLink,
-    external: true,
+    label: "Premium-Vermarktung",
+    price: "79.90 CHF",
+    cadence: "pro Monat",
+    text: "Für Makler, die zusätzlich AI-Bildfunktionen, Video-Touren und Premium-Automatisierungen einsetzen.",
+    button: "Pro in Vorbereitung",
+    href: "#preise",
+    external: false,
     highlighted: false,
     features: [
       "Alles aus Founder",
-      "Vollständiges Makler-Cockpit",
-      "Mehr Objekte dauerhaft verwalten",
-      "Social-Media-Cockpit",
-      "Erweiterte Marketingfunktionen",
-      "Priorisierter Support",
+      "Bis zu 10 Objektbilder pro Immobilie",
+      "Virtuelles Home Staging",
+      "3D-Video-Tour mit AI-Stimmen",
+      "Erweiterte Bildanalyse",
+      "3 Inserate gleichzeitig = 9 Varianten",
+      "Publishing-Center und Secret Marketing – in Entwicklung",
     ],
   },
 ] as const;
 
+const FOUNDER_CHECKOUT_AVAILABLE = false;
+
 export default function PricingSection() {
+  const [checkoutLoading, setCheckoutLoading] =
+    useState(false);
+
+  const [checkoutError, setCheckoutError] =
+    useState("");
+
+  async function startFounderCheckout() {
+    if (checkoutLoading) {
+      return;
+    }
+
+    try {
+      setCheckoutLoading(true);
+      setCheckoutError("");
+
+      const response = await fetch(
+        "/api/payments/subscription/checkout",
+        {
+          method: "POST",
+          credentials: "include",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            plan: "founder",
+          }),
+        }
+      );
+
+      const data = (await response
+        .json()
+        .catch(() => null)) as
+        | {
+            success?: boolean;
+            url?: string;
+            loginRequired?: boolean;
+            verificationRequired?: boolean;
+            error?: string;
+          }
+        | null;
+
+      if (
+        response.status === 401 ||
+        data?.loginRequired
+      ) {
+        window.location.assign(
+          "/register?plan=founder"
+        );
+        return;
+      }
+
+      if (
+        !response.ok ||
+        !data?.success ||
+        !data.url
+      ) {
+        throw new Error(
+          data?.error ||
+            "Der Founder-Checkout konnte nicht gestartet werden."
+        );
+      }
+
+      window.location.assign(data.url);
+    } catch (error) {
+      console.error(
+        "FOUNDER CHECKOUT FRONTEND ERROR:",
+        error
+      );
+
+      setCheckoutError(
+        error instanceof Error
+          ? error.message
+          : "Der Founder-Checkout konnte nicht gestartet werden."
+      );
+    } finally {
+      setCheckoutLoading(false);
+    }
+  }
+
   return (
-    <section id="pricing" className="pricingSection">
+    <section id="preise" className="pricingSection">
       <div className="pricingShell">
         <header className="pricingHeader">
           <span className="pricingEyebrow">
             TRANSPARENTE PREISE
           </span>
 
-          <h2>Wähle den passenden Einstieg</h2>
+          <h2>Das passende Angebot für deinen Bedarf</h2>
 
           <p>
-            Starte ohne Abonnement mit einer einzelnen Immobilie
-            oder nutze Inserat-AI dauerhaft als tägliches
-            Maklerwerkzeug.
+            Wähle zwischen einer einzelnen Immobilie ohne
+            Abonnement, dem Founder-Basiszugang für Makler oder
+            dem Pro-Angebot mit Premiumfunktionen.
           </p>
         </header>
 
@@ -91,18 +171,20 @@ export default function PricingSection() {
             <h3>Einzelimmobilie</h3>
 
             <p className="singleObjectDescription">
-              Die komplette Inserat-AI Vermarktung für genau eine
-              Immobilie. Einmal bezahlen und das konkrete Objekt
-              dauerhaft freischalten.
+              Ein hochwertiger Arbeitsbereich für genau eine
+              Immobilie. Einmal CHF 9.90 bezahlen und nur dieses
+              konkrete Objekt mit bis zu 5 Objektbildern
+              freischalten – ohne Abonnement.
             </p>
 
             <div className="singleObjectFeatures">
               {[
+                "1 konkrete Immobilie freischalten",
                 "3 professionelle Inserat-Varianten",
+                "Bis zu 5 Objektbilder mit Standard-Bildanalyse",
                 "Social-Media-Texte",
-                "Professionelles Immobilien-Exposé",
-                "Objekt, Texte und Bilder speichern",
-                "Bearbeiten und erneut aufrufen",
+                "Professionelles Exposé mit PDF-Export",
+                "Objekt, Texte und Bilder dauerhaft speichern",
                 "Keine monatlichen Kosten",
               ].map((feature) => (
                 <div
@@ -137,10 +219,31 @@ export default function PricingSection() {
             </a>
 
             <small>
-              Die Zahlung erfolgt erst beim konkreten Objekt.
+              Kein Makler-Abonnement und kein Zugriff auf
+              Pro-Funktionen.
             </small>
           </div>
         </article>
+
+        {checkoutError && (
+          <div
+            role="alert"
+            style={{
+              maxWidth: 760,
+              margin: "0 auto 22px",
+              padding: "14px 16px",
+              border:
+                "1px solid rgba(248,113,113,.55)",
+              borderRadius: 15,
+              background:
+                "rgba(127,29,29,.88)",
+              color: "#fff",
+              fontWeight: 800,
+            }}
+          >
+            {checkoutError}
+          </div>
+        )}
 
         <div className="plansGrid">
           {plans.map((plan) => (
@@ -181,25 +284,61 @@ export default function PricingSection() {
                 ))}
               </ul>
 
-              <a
-                href={plan.href}
-                target={
-                  plan.external ? "_blank" : "_self"
-                }
-                rel={
-                  plan.external
-                    ? "noopener noreferrer"
-                    : undefined
-                }
-                className={
-                  plan.highlighted
-                    ? "planButton planButtonHighlighted"
-                    : "planButton"
-                }
-              >
-                {plan.button}
-                <span aria-hidden="true">→</span>
-              </a>
+              {plan.name === "Founder" ? (
+                <button
+                  type="button"
+                  onClick={startFounderCheckout}
+                  disabled={
+                    !FOUNDER_CHECKOUT_AVAILABLE ||
+                    checkoutLoading
+                  }
+                  className="planButton planButtonHighlighted"
+                  style={{
+                    border: 0,
+                    cursor:
+                      !FOUNDER_CHECKOUT_AVAILABLE
+                        ? "not-allowed"
+                        : checkoutLoading
+                          ? "wait"
+                          : "pointer",
+                    opacity:
+                      FOUNDER_CHECKOUT_AVAILABLE
+                        ? 1
+                        : 0.68,
+                    font: "inherit",
+                  }}
+                >
+                  {!FOUNDER_CHECKOUT_AVAILABLE
+                    ? "Founder-Zugang ab morgen verfügbar"
+                    : checkoutLoading
+                      ? "Founder-Checkout wird geöffnet …"
+                      : plan.button}
+                  <span aria-hidden="true">→</span>
+                </button>
+              ) : plan.name === "Pro" ? (
+                <button
+                  type="button"
+                  disabled
+                  className="planButton"
+                  style={{
+                    border: 0,
+                    font: "inherit",
+                    opacity: 0.62,
+                    cursor: "not-allowed",
+                  }}
+                >
+                  {plan.button}
+                  <span aria-hidden="true">🔒</span>
+                </button>
+              ) : (
+                <a
+                  href={plan.href}
+                  className="planButton"
+                >
+                  {plan.button}
+                  <span aria-hidden="true">→</span>
+                </a>
+              )}
             </article>
           ))}
         </div>

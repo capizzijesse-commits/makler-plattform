@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import {
@@ -51,7 +51,7 @@ async function createLoginResponse(user: LoginUser) {
       founderNumber: user.founderNumber,
       founderPriceCents: user.founderPriceCents,
       freeGenerationsUsed: user.freeGenerationsUsed,
-      freeGenerationLimit: user.freeGenerationLimit,
+      freeGenerationLimit: Math.min(user.freeGenerationLimit, 1),
       emailVerified: user.emailVerified,
     },
   });

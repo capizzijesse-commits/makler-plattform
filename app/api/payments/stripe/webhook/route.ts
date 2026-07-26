@@ -6,6 +6,12 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
+import {
+  getSubscriptionEventObject,
+  processFailedSubscriptionCheckout,
+  processSubscriptionLifecycleEvent,
+  processSuccessfulSubscriptionCheckout,
+} from "@/lib/subscription-billing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -694,19 +700,58 @@ export async function POST(
     switch (event.type) {
       case "checkout.session.completed":
       case "checkout.session.async_payment_succeeded": {
-        await processSuccessfulCheckout(
-          event,
-          getCheckoutSession(event)
-        );
+        const session =
+          getCheckoutSession(event);
+
+        if (
+          session.mode === "subscription" ||
+          session.metadata?.paymentModel ===
+            "subscription"
+        ) {
+          await processSuccessfulSubscriptionCheckout(
+            event,
+            session
+          );
+        } else {
+          await processSuccessfulCheckout(
+            event,
+            session
+          );
+        }
 
         break;
       }
 
       case "checkout.session.expired":
       case "checkout.session.async_payment_failed": {
-        await processFailedCheckout(
+        const session =
+          getCheckoutSession(event);
+
+        if (
+          session.mode === "subscription" ||
+          session.metadata?.paymentModel ===
+            "subscription"
+        ) {
+          await processFailedSubscriptionCheckout(
+            event,
+            session
+          );
+        } else {
+          await processFailedCheckout(
+            event,
+            session
+          );
+        }
+
+        break;
+      }
+
+      case "customer.subscription.created":
+      case "customer.subscription.updated":
+      case "customer.subscription.deleted": {
+        await processSubscriptionLifecycleEvent(
           event,
-          getCheckoutSession(event)
+          getSubscriptionEventObject(event)
         );
 
         break;

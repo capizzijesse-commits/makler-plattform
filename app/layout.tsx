@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import AppDialogProvider from "@/components/AppDialogProvider";
 import AppShell from "@/app/components/AppShell";
 
@@ -21,6 +22,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
   return (
     <html lang="de">
       <body>
@@ -28,6 +31,10 @@ export default function RootLayout({
           <AppShell>{children}</AppShell>
         </AppDialogProvider>
       </body>
+
+      {gaMeasurementId ? (
+        <GoogleAnalytics gaId={gaMeasurementId} />
+      ) : null}
     </html>
   );
 }

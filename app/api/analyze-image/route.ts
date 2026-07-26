@@ -1,5 +1,9 @@
 import OpenAI from "openai";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+
+import { canUseListingCoreForUser } from "@/lib/listing-access";
+import { getAuthenticatedUser } from "@/lib/session";
 
 export const runtime = "nodejs";
 
@@ -11,8 +15,21 @@ const ALLOWED_IMAGE_TYPES = [
   "image/webp",
 ];
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const user = await getAuthenticatedUser(request);
+
+    if (!user) {
+      return NextResponse.json(
+        {
+          error: "Bitte zuerst einloggen.",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
         {
@@ -24,6 +41,35 @@ export async function POST(request: Request) {
     }
 
     const formData = await request.formData();
+
+    const listingIdValue =
+      formData.get("listingId");
+
+    const listingId =
+      typeof listingIdValue === "string"
+        ? listingIdValue.trim()
+        : "";
+
+    const hasListingAccess =
+      await canUseListingCoreForUser({
+        userId: user.id,
+        plan: user.plan,
+        listingId,
+      });
+
+    if (!hasListingAccess) {
+      return NextResponse.json(
+        {
+          error:
+            "Die Bildanalyse ist für dieses Objekt erst nach der Freischaltung verfügbar.",
+          code: "LISTING_PAYMENT_REQUIRED",
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+
     const image = formData.get("image");
 
     if (!(image instanceof File)) {
@@ -60,36 +106,50 @@ export async function POST(request: Request) {
     });
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4.1-mini",
-      max_tokens: 350,
-      messages: [
+  model: "gpt-4.1-mini",
+  temperature: 0.2,
+  max_tokens: 900,
+  messages: [
+    {
+      role: "system",
+      content:
+        "Du bist ein präziser Schweizer Immobilienfoto-Analyst. " +
+        "Du analysierst immer nur das tatsächlich übermittelte einzelne Foto. " +
+        "Du erfindest keine Räume, Flächen, Ausstattungen, Materialien, Aussichten oder baulichen Merkmale. " +
+        "Wenn etwas nicht eindeutig erkennbar ist, bezeichnest du es ausdrücklich als unklar oder nicht beurteilbar. " +
+        "Formuliere in professionellem Schweizer Standarddeutsch und verwende kein ß.",
+    },
+    {
+      role: "user",
+      content: [
         {
-          role: "system",
-          content:
-            "Du bist ein professioneller Schweizer Immobilienmarketing-Assistent. Analysiere Immobilienfotos sachlich und verkaufsstark. Erfinde keine Merkmale, die auf dem Bild nicht klar erkennbar sind.",
+          type: "text",
+          text:
+            "Analysiere dieses einzelne Immobilienfoto sorgfältig und ausführlich für ein Schweizer Immobilieninserat.\n\n" +
+            "Umfang: ungefähr 120 bis 220 Wörter.\n\n" +
+            "Verwende genau diese Struktur:\n\n" +
+            "Raum oder Bereich:\n" +
+            "Benenne nur den tatsächlich sichtbaren Raum oder Bereich. Wenn der Bildausschnitt keine sichere Bestimmung erlaubt, sage dies klar.\n\n" +
+            "Sichtbare Elemente:\n" +
+            "Beschreibe Einrichtung, Sanitäranlagen, Fenster, Türen, Boden, Wände, Decke, Licht, Einbauten und weitere klar erkennbare Merkmale.\n\n" +
+            "Zustand und Eindruck:\n" +
+            "Beurteile den sichtbaren Zustand vorsichtig und neutral. Verwende keine unbelegten Aussagen wie renoviert, hochwertig oder neuwertig.\n\n" +
+            "Vermarktungsrelevante Stärken:\n" +
+            "Nenne nur Vorteile, die durch dieses Foto tatsächlich belegt werden.\n\n" +
+            "Hinweise und Einschränkungen:\n" +
+            "Nenne unklare, abgeschnittene oder nicht zuverlässig beurteilbare Bereiche. Verwechsle Innenräume niemals mit Balkonen, Terrassen oder Aussenbereichen.",
         },
         {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text:
-                "Analysiere dieses Immobilienfoto. Beschreibe in 3 bis 5 deutschen Sätzen: " +
-                "1. Was ist sichtbar? " +
-                "2. Welche Ausstattungs- oder Wohnmerkmale sind erkennbar? " +
-                "3. Welche verkaufsstarken Punkte dürfen für ein Immobilieninserat verwendet werden?",
-            },
-            {
-              type: "image_url",
-              image_url: {
-                url: `data:${image.type};base64,${base64Image}`,
-                detail: "low",
-              },
-            },
-          ],
+          type: "image_url",
+          image_url: {
+            url: `data:${image.type};base64,${base64Image}`,
+            detail: "high",
+          },
         },
       ],
-    });
+    },
+  ],
+});
 
     const analysis = response.choices[0]?.message?.content?.trim();
 

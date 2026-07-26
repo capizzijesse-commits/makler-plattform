@@ -20,9 +20,17 @@ model User {
   freeGenerationsUsed Int     @default(0)
   freeGenerationLimit Int     @default(50)
 
-  isFounder                Boolean   @default(false)
-  founderNumber            Int?
-  founderPriceCents        Int?
+  isFounder         Boolean @default(false)
+  founderNumber     Int?    @unique
+  founderPriceCents Int?
+
+  stripeCustomerId          String?   @unique
+  stripeSubscriptionId      String?   @unique
+  stripeSubscriptionStatus  String?
+  stripeSubscriptionPriceId String?
+  stripeCurrentPeriodEnd    DateTime?
+  stripeCancelAtPeriodEnd   Boolean   @default(false)
+
   emailVerified            Boolean   @default(false)
   emailVerificationToken   String?
   emailVerificationExpires DateTime?
@@ -90,6 +98,10 @@ model ListingImage {
 
   position  Int     @default(0)
   isPrimary Boolean @default(false)
+
+  analysis       String?
+  analysisStatus String    @default("not_analyzed")
+  analyzedAt     DateTime?
 
   homeStagingImages HomeStagingImage[]
 

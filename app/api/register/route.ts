@@ -1,4 +1,4 @@
-﻿import { createHash, randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
@@ -180,14 +180,6 @@ export async function POST(request: Request) {
     } else {
       const passwordHash = await hashPassword(password);
 
-      const founderCount = await prisma.user.count({
-        where: {
-          isFounder: true,
-        },
-      });
-
-      const getsFounderOffer = founderCount < 50;
-
       const createdUser = await prisma.user.create({
         data: {
           name,
@@ -196,12 +188,14 @@ export async function POST(request: Request) {
           role: "user",
           plan: "free",
           freeGenerationsUsed: 0,
-          freeGenerationLimit: 50,
-          isFounder: getsFounderOffer,
-          founderNumber: getsFounderOffer
-            ? founderCount + 1
-            : null,
-          founderPriceCents: getsFounderOffer ? 1990 : null,
+          freeGenerationLimit: 1,
+          /*
+           * Founder wird erst nach einer erfolgreich
+           * bezahlten Subscription vergeben.
+           */
+          isFounder: false,
+          founderNumber: null,
+          founderPriceCents: null,
           emailVerified: false,
 
           /*

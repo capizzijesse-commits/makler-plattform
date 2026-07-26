@@ -5,11 +5,13 @@ import sharp from "sharp";
 
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/session";
+import { normalizeUserPlan } from "@/lib/plans";
 
 export const runtime = "nodejs";
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_IMAGE_COUNT = 10;
+const SINGLE_OBJECT_IMAGE_COUNT = 5;
 const MAX_STORAGE_KEY_LENGTH = 1024;
 const MAX_INPUT_PIXELS = 40_000_000;
 
@@ -117,6 +119,9 @@ export async function POST(request: NextRequest) {
       },
       select: {
         id: true,
+        paymentModel: true,
+        unlockStatus: true,
+        paidAt: true,
       },
     });
 
@@ -130,6 +135,37 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
+
+    const normalizedPlan = normalizeUserPlan(user.plan);
+
+    const hasSubscriptionImageAccess =
+      normalizedPlan !== "free";
+
+    const hasPaidSingleObjectImageAccess =
+      listing.paymentModel === "single_object" &&
+      (
+        listing.unlockStatus === "paid" ||
+        listing.paidAt !== null
+      );
+
+    if (
+      !hasSubscriptionImageAccess &&
+      !hasPaidSingleObjectImageAccess
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Bilder sind erst nach der Freischaltung dieser Immobilie verfügbar.",
+        },
+        { status: 403 }
+      );
+    }
+
+    const maxImageCount =
+      hasSubscriptionImageAccess
+        ? MAX_IMAGE_COUNT
+        : SINGLE_OBJECT_IMAGE_COUNT;
 
     const expectedPathPrefix =
       `listing-images/${listing.id}/`;
@@ -320,14 +356,14 @@ export async function POST(request: NextRequest) {
         },
       });
 
-    if (storedImageCount >= MAX_IMAGE_COUNT) {
+    if (storedImageCount >= maxImageCount) {
       await deleteBlobQuietly(blob.url);
 
       return NextResponse.json(
         {
           success: false,
           error:
-            "Für dieses Objekt sind bereits 10 Bilder gespeichert.",
+            `Für dieses Objekt sind bereits ${maxImageCount} Bilder gespeichert.`,
         },
         { status: 400 }
       );

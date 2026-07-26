@@ -99,6 +99,7 @@ function formatDate(value: string): string {
 
 export default function CockpitPage() {
   const [userName, setUserName] = useState("Makler");
+  const [companyName, setCompanyName] = useState("");
   const [greeting, setGreeting] = useState("Willkommen");
   const [currentDate, setCurrentDate] = useState("");
 
@@ -267,9 +268,15 @@ useEffect(() => {
 }, [searchQuery, statusFilter, sortOrder]);
   useEffect(() => {
     const storedName = localStorage.getItem("userName");
+    const storedCompany =
+      localStorage.getItem("companyName");
 
     if (storedName?.trim()) {
       setUserName(storedName.trim());
+    }
+
+    if (storedCompany?.trim()) {
+      setCompanyName(storedCompany.trim());
     }
 
     const hour = new Date().getHours();
@@ -291,6 +298,73 @@ useEffect(() => {
       }).format(new Date())
     );
   }, []);
+
+useEffect(() => {
+  const controller = new AbortController();
+
+  async function loadCockpitIdentity() {
+    try {
+      const response = await fetch("/api/account", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const data = await response
+        .json()
+        .catch(() => null);
+
+      const accountName =
+        typeof data?.user?.name === "string"
+          ? data.user.name.trim()
+          : "";
+
+      const accountCompany =
+        typeof data?.user?.company === "string"
+          ? data.user.company.trim()
+          : "";
+
+      if (accountName) {
+        setUserName(accountName);
+
+        localStorage.setItem(
+          "userName",
+          accountName
+        );
+      }
+
+      setCompanyName(accountCompany);
+
+      localStorage.setItem(
+        "companyName",
+        accountCompany
+      );
+    } catch (error) {
+      if (
+        error instanceof DOMException &&
+        error.name === "AbortError"
+      ) {
+        return;
+      }
+
+      console.warn(
+        "COCKPIT-PROFIL KONNTE NICHT GELADEN WERDEN:",
+        error
+      );
+    }
+  }
+
+  void loadCockpitIdentity();
+
+  return () => {
+    controller.abort();
+  };
+}, []);
 
   useEffect(() => {
     const savedChecklist = localStorage.getItem(
@@ -441,7 +515,9 @@ justifySelf: "start",
 
           <div className="topbarActions">
             <div className="userBadge">
-              {userName.charAt(0).toUpperCase()}
+              {(companyName || userName)
+                .charAt(0)
+                .toUpperCase()}
             </div>
           </div>
         </div>
@@ -450,7 +526,11 @@ justifySelf: "start",
           <div className="heroContent">
             <p className="eyebrow">DEIN MAKLER-COCKPIT</p>
 
-            <h1>Inserat AI</h1>
+            <h1>
+              {companyName.trim() ||
+                userName.trim() ||
+                "Meine Projekte"}
+            </h1>
 
             <p className="heroDescription">
               Erstelle Inserate, verwalte Immobilien und bereite
@@ -510,8 +590,8 @@ justifySelf: "start",
 
             <div>
               <small>Aktueller Plan</small>
-              <strong>Testphase</strong>
-              <p>30 Tage kostenlos testen</p>
+              <strong>Inserat-AI Zugang</strong>
+              <p>Funktionen gemäss gewähltem Angebot</p>
             </div>
           </article>
         </section>

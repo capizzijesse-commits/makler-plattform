@@ -1,4 +1,8 @@
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+
+import { canUseListingCoreForUser } from "@/lib/listing-access";
+import { getAuthenticatedUser } from "@/lib/session";
 
 type SocialVariant = {
   title: string;
@@ -241,9 +245,47 @@ function extractJson(content: string): SocialResponse | null {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const user = await getAuthenticatedUser(request);
+
+    if (!user) {
+      return NextResponse.json(
+        {
+          error: "Bitte zuerst einloggen.",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
     const body = await request.json();
+
+    const listingId =
+      typeof body?.listingId === "string"
+        ? body.listingId.trim()
+        : "";
+
+    const hasListingAccess =
+      await canUseListingCoreForUser({
+        userId: user.id,
+        plan: user.plan,
+        listingId,
+      });
+
+    if (!hasListingAccess) {
+      return NextResponse.json(
+        {
+          error:
+            "Social-Media-Texte sind für dieses Objekt erst nach der Freischaltung verfügbar.",
+          code: "LISTING_PAYMENT_REQUIRED",
+        },
+        {
+          status: 403,
+        }
+      );
+    }
 
     const location = cleanValue(body.location, "Winterthur");
     const propertyType = cleanValue(body.propertyType, "Wohnung");

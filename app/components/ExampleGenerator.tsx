@@ -278,11 +278,11 @@ export default function ExampleGenerator() {
   href="/register"
   className="inline-flex flex-1 items-center justify-center rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-6 py-4 font-bold text-slate-950 shadow-[0_0_35px_rgba(245,158,11,0.25)] transition hover:scale-[1.01] hover:from-amber-200 hover:to-amber-400"
 >
-  Kostenlos testen
+  Kostenlos registrieren
 </a>
 
               <a
-                href="#pricing"
+                href="#preise"
                 className="inline-flex flex-1 items-center justify-center rounded-full border border-white/15 px-6 py-4 font-bold text-white transition hover:bg-white/10"
               >
                 Preise ansehen

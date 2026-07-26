@@ -1,8 +1,55 @@
-import { NextResponse } from "next/server";
 import OpenAI from "openai";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function POST(req: Request) {
+import { canUseListingCoreForUser } from "@/lib/listing-access";
+import { prisma } from "@/lib/prisma";
+import { normalizeUserPlan } from "@/lib/plans";
+import { getAuthenticatedUser } from "@/lib/session";
+
+const DEMO_GENERATION_LIMIT = 1;
+
+async function releaseDemoGeneration(
+  userId: string | null
+) {
+  if (!userId) {
+    return;
+  }
+
+  await prisma.user
+    .updateMany({
+      where: {
+        id: userId,
+        freeGenerationsUsed: {
+          gt: 0,
+        },
+      },
+      data: {
+        freeGenerationsUsed: {
+          decrement: 1,
+        },
+      },
+    })
+    .catch(() => undefined);
+}
+
+export async function POST(req: NextRequest) {
+  let demoReservationUserId: string | null = null;
+
   try {
+    const user = await getAuthenticatedUser(req);
+
+    if (!user) {
+      return NextResponse.json(
+        {
+          error: "Bitte zuerst einloggen.",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
     const apiKey = process.env.OPENAI_API_KEY;
 
     if (!apiKey) {
@@ -17,6 +64,53 @@ export async function POST(req: Request) {
     });
 
     const body = await req.json();
+
+    const listingId =
+      typeof body?.listingId === "string"
+        ? body.listingId.trim()
+        : "";
+
+    const hasListingAccess =
+      await canUseListingCoreForUser({
+        userId: user.id,
+        plan: user.plan,
+        listingId,
+      });
+
+    const isDemoPlan =
+      normalizeUserPlan(user.plan) === "free";
+
+    if (isDemoPlan && !hasListingAccess) {
+      const reservation =
+        await prisma.user.updateMany({
+          where: {
+            id: user.id,
+            freeGenerationsUsed: {
+              lt: DEMO_GENERATION_LIMIT,
+            },
+          },
+          data: {
+            freeGenerationsUsed: {
+              increment: 1,
+            },
+          },
+        });
+
+      if (reservation.count !== 1) {
+        return NextResponse.json(
+          {
+            error:
+              "Die kostenlose Demo-Generierung wurde bereits verwendet. Schalte eine Immobilie für CHF 9.90 frei oder wähle den Founder-Plan.",
+            code: "DEMO_LIMIT_REACHED",
+          },
+          {
+            status: 403,
+          }
+        );
+      }
+
+      demoReservationUserId = user.id;
+    }
 
     const {
       location,
@@ -96,6 +190,12 @@ Format:
     try {
       parsed = JSON.parse(text);
     } catch {
+      await releaseDemoGeneration(
+        demoReservationUserId
+      );
+
+      demoReservationUserId = null;
+
       return NextResponse.json(
         { error: "Die AI-Ausgabe konnte nicht korrekt gelesen werden." },
         { status: 500 }
@@ -103,6 +203,12 @@ Format:
     }
 
     if (!parsed.variants || !Array.isArray(parsed.variants)) {
+      await releaseDemoGeneration(
+        demoReservationUserId
+      );
+
+      demoReservationUserId = null;
+
       return NextResponse.json(
         { error: "Keine Varianten erhalten." },
         { status: 500 }
@@ -126,6 +232,12 @@ const safeVariants = parsed.variants
   .slice(0, 3);
 
     if (safeVariants.length === 0) {
+      await releaseDemoGeneration(
+        demoReservationUserId
+      );
+
+      demoReservationUserId = null;
+
       return NextResponse.json(
         { error: "Keine Varianten erhalten." },
         { status: 500 }
@@ -136,6 +248,10 @@ const safeVariants = parsed.variants
       variants: safeVariants,
     });
   } catch (error) {
+    await releaseDemoGeneration(
+      demoReservationUserId
+    );
+
     console.error("GENERATE ERROR:", error);
 
     const message =

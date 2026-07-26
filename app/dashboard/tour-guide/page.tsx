@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -25,6 +25,18 @@ type TourListing = {
 type ListingResponse = {
   success?: boolean;
   listing?: TourListing;
+  error?: string;
+};
+
+type SessionResponse = {
+  success?: boolean;
+  authenticated?: boolean;
+  user?: {
+    plan?: string;
+    capabilities?: {
+      canUseTourGuide?: boolean;
+    };
+  };
   error?: string;
 };
 
@@ -92,6 +104,9 @@ export default function TourGuidePage() {
   const finishedTourAudioRef = useRef<HTMLAudioElement | null>(null);
   const [loadingListing, setLoadingListing] = useState(true);
   const [listingError, setListingError] = useState("");
+  const [checkingPlan, setCheckingPlan] = useState(true);
+  const [hasTourAccess, setHasTourAccess] = useState(false);
+  const [planAccessError, setPlanAccessError] = useState("");
 
   const activeImage = listingImages[activeSceneIndex] ?? null;
 
@@ -150,30 +165,66 @@ export default function TourGuidePage() {
   }, [generatedAudioUrl]);
 
   useEffect(() => {
-    const listingId = new URLSearchParams(window.location.search).get(
-      "listingId"
-    );
+    const controller = new AbortController();
+    let accessGranted = false;
 
-    if (!listingId) {
-  setLoadingListing(false);
-  setListingError(
-    "Öffne das Virtual Tour Studio über ein gespeichertes Objekt im Makler-Cockpit."
-  );
-  return;
-}
-
-const listingIdValue = listingId;
-const controller = new AbortController();
-
-    
-
-    async function loadListing() {
+    async function loadTourStudio() {
       try {
+        setCheckingPlan(true);
         setLoadingListing(true);
+        setPlanAccessError("");
         setListingError("");
 
+        const sessionResponse = await fetch("/api/session", {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+          signal: controller.signal,
+        });
+
+        if (sessionResponse.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
+
+        const sessionData =
+          (await sessionResponse.json()) as SessionResponse;
+
+        if (
+          !sessionResponse.ok ||
+          !sessionData.success ||
+          !sessionData.authenticated
+        ) {
+          throw new Error(
+            sessionData.error ||
+              "Die Zugriffsberechtigung konnte nicht geprüft werden."
+          );
+        }
+
+        const canUseTourGuide =
+          sessionData.user?.capabilities?.canUseTourGuide === true;
+
+        if (!canUseTourGuide) {
+          setHasTourAccess(false);
+          return;
+        }
+
+        accessGranted = true;
+        setHasTourAccess(true);
+
+        const listingId = new URLSearchParams(
+          window.location.search
+        ).get("listingId");
+
+        if (!listingId) {
+          setListingError(
+            "Öffne das Virtual Tour Studio über ein gespeichertes Objekt im Makler-Cockpit."
+          );
+          return;
+        }
+
         const response = await fetch(
-          `/api/listings/${encodeURIComponent(listingIdValue)}`,
+          `/api/listings/${encodeURIComponent(listingId)}`,
           {
             method: "GET",
             credentials: "include",
@@ -191,7 +242,8 @@ const controller = new AbortController();
 
         if (!response.ok || !data.success || !data.listing) {
           throw new Error(
-            data.error || "Das gespeicherte Objekt konnte nicht geladen werden."
+            data.error ||
+              "Das gespeicherte Objekt konnte nicht geladen werden."
           );
         }
 
@@ -213,17 +265,24 @@ const controller = new AbortController();
           return;
         }
 
-        setListingError(
+        const message =
           error instanceof Error
             ? error.message
-            : "Das Objekt konnte nicht geladen werden."
-        );
+            : "Das Virtual Tour Studio konnte nicht geladen werden.";
+
+        if (accessGranted) {
+          setListingError(message);
+        } else {
+          setPlanAccessError(message);
+          setHasTourAccess(false);
+        }
       } finally {
+        setCheckingPlan(false);
         setLoadingListing(false);
       }
     }
 
-    void loadListing();
+    void loadTourStudio();
 
     return () => controller.abort();
   }, []);
@@ -628,6 +687,91 @@ const controller = new AbortController();
       value: listing?.style || "–",
     },
   ];
+
+  if (checkingPlan) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-[#050819] px-4 py-10 text-white">
+        <section className="w-full max-w-xl rounded-[2rem] border border-amber-300/35 bg-white/[0.055] p-8 text-center shadow-2xl">
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-300">
+            Inserat-AI
+          </p>
+
+          <h1 className="mt-4 text-2xl font-black sm:text-3xl">
+            Virtual Tour Studio wird vorbereitet
+          </h1>
+
+          <p className="mt-4 text-sm leading-7 text-slate-300">
+            Deine Sitzung und die Pro-Berechtigung werden sicher geprüft.
+          </p>
+        </section>
+      </main>
+    );
+  }
+
+  if (planAccessError) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-[#050819] px-4 py-10 text-white">
+        <section className="w-full max-w-xl rounded-[2rem] border border-red-300/35 bg-white/[0.055] p-8 text-center shadow-2xl">
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-red-300">
+            Zugriff konnte nicht geprüft werden
+          </p>
+
+          <h1 className="mt-4 text-2xl font-black sm:text-3xl">
+            Virtual Tour Studio momentan nicht verfügbar
+          </h1>
+
+          <p className="mt-4 text-sm leading-7 text-slate-300">
+            {planAccessError}
+          </p>
+
+          <Link
+            href="/cockpit"
+            className="mt-7 inline-flex min-h-12 items-center justify-center rounded-xl border border-amber-300/50 bg-amber-300/10 px-6 py-3 text-sm font-black text-amber-100 transition hover:bg-amber-300/20"
+          >
+            Zurück zum Makler-Cockpit
+          </Link>
+        </section>
+      </main>
+    );
+  }
+
+  if (!hasTourAccess) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-[#050819] px-4 py-10 text-white">
+        <section className="w-full max-w-2xl rounded-[2rem] border-2 border-amber-300/45 bg-gradient-to-br from-[#081127] to-[#09091c] p-8 text-center shadow-2xl sm:p-10">
+          <span className="inline-flex rounded-full border border-cyan-300/40 bg-cyan-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-cyan-200">
+            Pro-Funktion
+          </span>
+
+          <h1 className="mt-6 text-3xl font-black sm:text-4xl">
+            Virtual Tour Studio
+          </h1>
+
+          <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-slate-300 sm:text-base">
+            Die 3D-Video-Tour mit AI-Stimmen gehört zum Pro-Angebot für
+            CHF 79.90 pro Monat. Sie ist weder im Founder-Angebot für
+            CHF 19.90 noch im Einzelobjekt für CHF 9.90 enthalten.
+          </p>
+
+          <div className="mt-8 grid gap-3 sm:grid-cols-2">
+            <Link
+              href="/cockpit"
+              className="inline-flex min-h-12 items-center justify-center rounded-xl border border-slate-500/50 bg-white/[0.045] px-6 py-3 text-sm font-black text-white transition hover:bg-white/[0.08]"
+            >
+              Zurück zum Makler-Cockpit
+            </Link>
+
+            <Link
+              href="/#preise"
+              className="inline-flex min-h-12 items-center justify-center rounded-xl border border-amber-300/60 bg-amber-300 px-6 py-3 text-sm font-black text-slate-950 transition hover:brightness-110"
+            >
+              Angebote ansehen
+            </Link>
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#050819] px-4 py-8 text-white sm:px-6 lg:px-8 lg:py-12">

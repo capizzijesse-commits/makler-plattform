@@ -7,10 +7,12 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/session";
+import { normalizeUserPlan } from "@/lib/plans";
 
 export const runtime = "nodejs";
 
 const MAX_IMAGE_COUNT = 10;
+const SINGLE_OBJECT_IMAGE_COUNT = 5;
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 
 type UploadClientPayload = {
@@ -23,6 +25,8 @@ const SAFE_ERROR_MESSAGES = new Set([
   "Keine Objekt-ID angegeben.",
   "Das aktive Objekt wurde nicht gefunden.",
   "Ungültiger Speicherpfad.",
+  "Bilder sind erst nach der Freischaltung dieser Immobilie verfügbar.",
+  "Für dieses Objekt sind bereits 5 Bilder gespeichert.",
   "Für dieses Objekt sind bereits 10 Bilder gespeichert.",
 ]);
 
@@ -73,6 +77,9 @@ export async function POST(
           },
           select: {
             id: true,
+            paymentModel: true,
+            unlockStatus: true,
+            paidAt: true,
           },
         });
 
@@ -81,6 +88,33 @@ export async function POST(
             "Das aktive Objekt wurde nicht gefunden."
           );
         }
+
+        const normalizedPlan =
+          normalizeUserPlan(user.plan);
+
+        const hasSubscriptionImageAccess =
+          normalizedPlan !== "free";
+
+        const hasPaidSingleObjectImageAccess =
+          listing.paymentModel === "single_object" &&
+          (
+            listing.unlockStatus === "paid" ||
+            listing.paidAt !== null
+          );
+
+        if (
+          !hasSubscriptionImageAccess &&
+          !hasPaidSingleObjectImageAccess
+        ) {
+          throw new Error(
+            "Bilder sind erst nach der Freischaltung dieser Immobilie verfügbar."
+          );
+        }
+
+        const maxImageCount =
+          hasSubscriptionImageAccess
+            ? MAX_IMAGE_COUNT
+            : SINGLE_OBJECT_IMAGE_COUNT;
 
         const expectedPathPrefix =
           `listing-images/${listing.id}/`;
@@ -96,9 +130,9 @@ export async function POST(
             },
           });
 
-        if (storedImageCount >= MAX_IMAGE_COUNT) {
+        if (storedImageCount >= maxImageCount) {
           throw new Error(
-            "Für dieses Objekt sind bereits 10 Bilder gespeichert."
+            `Für dieses Objekt sind bereits ${maxImageCount} Bilder gespeichert.`
           );
         }
 
@@ -136,7 +170,12 @@ export async function POST(
         : "Das Bild konnte nicht hochgeladen werden.";
 
     const status =
-      message === "Bitte zuerst einloggen." ? 401 : 400;
+      message === "Bitte zuerst einloggen."
+        ? 401
+        : message ===
+            "Bilder sind erst nach der Freischaltung dieser Immobilie verfügbar."
+          ? 403
+          : 400;
 
     return NextResponse.json(
       {

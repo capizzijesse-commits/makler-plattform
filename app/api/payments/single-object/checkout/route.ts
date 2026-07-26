@@ -625,6 +625,14 @@ export async function POST(request: NextRequest) {
             client_reference_id: listing.id,
             customer_email: user.email,
 
+            branding_settings: {
+              display_name: "Inserat-AI",
+            },
+
+            adaptive_pricing: {
+              enabled: false,
+            },
+
             line_items: [
               {
                 quantity: 1,

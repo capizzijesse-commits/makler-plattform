@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import { normalizeUserPlan } from "@/lib/plans";
 import { getAuthenticatedUser } from "@/lib/session";
 
 export const runtime = "nodejs";
@@ -117,21 +118,36 @@ export async function GET(
       );
     }
 
-  return NextResponse.json({
-  success: true,
-  listing: {
-    ...listing,
-    generatedVariants: parseJsonValue(
-      listing.generatedVariants
-    ),
-    socialVariants: parseJsonValue(
-      listing.socialVariants
-    ),
-    locationData: parseJsonValue(
-      listing.locationData
-    ),
-  },
-});
+    const userPlan = normalizeUserPlan(user.plan);
+
+    const hasCoreAccess =
+      userPlan !== "free" ||
+      listing.unlockStatus === "paid" ||
+      listing.unlockStatus === "included";
+
+    return NextResponse.json({
+      success: true,
+      listing: {
+        ...listing,
+        viewerPlan: userPlan,
+        generatedVariants: hasCoreAccess
+          ? parseJsonValue(listing.generatedVariants)
+          : null,
+        socialVariants: hasCoreAccess
+          ? parseJsonValue(listing.socialVariants)
+          : null,
+        imageAnalysis: hasCoreAccess
+          ? listing.imageAnalysis
+          : null,
+        locationDescription: hasCoreAccess
+          ? listing.locationDescription
+          : null,
+        locationData: hasCoreAccess
+          ? parseJsonValue(listing.locationData)
+          : null,
+        hasCoreAccess,
+      },
+    });
 
   } catch (error) {
     console.error("Fehler beim Laden des Objekts:", error);
@@ -193,6 +209,34 @@ export async function PATCH(
     }
 
     const body = await request.json();
+
+    const userPlan = normalizeUserPlan(user.plan);
+
+    const hasCoreAccess =
+      userPlan !== "free" ||
+      existingListing.unlockStatus === "paid" ||
+      existingListing.unlockStatus === "included";
+
+    const updatesProtectedContent =
+      body.generatedVariants !== undefined ||
+      body.socialVariants !== undefined ||
+      body.imageAnalysis !== undefined ||
+      body.locationDescription !== undefined ||
+      body.locationData !== undefined;
+
+    if (!hasCoreAccess && updatesProtectedContent) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Diese Inhalte sind für das Objekt erst nach der Freischaltung verfügbar.",
+          code: "LISTING_PAYMENT_REQUIRED",
+        },
+        {
+          status: 403,
+        }
+      );
+    }
 
     const location =
       typeof body.location === "string"
@@ -266,15 +310,22 @@ export async function PATCH(
       message: "Objekt wurde erfolgreich aktualisiert.",
       listing: {
         ...updatedListing,
-        generatedVariants: parseJsonValue(
-          updatedListing.generatedVariants
-        ),
-        socialVariants: parseJsonValue(
-          updatedListing.socialVariants
-        ),
-        locationData: parseJsonValue(
-          updatedListing.locationData
-        ),
+        generatedVariants: hasCoreAccess
+          ? parseJsonValue(updatedListing.generatedVariants)
+          : null,
+        socialVariants: hasCoreAccess
+          ? parseJsonValue(updatedListing.socialVariants)
+          : null,
+        imageAnalysis: hasCoreAccess
+          ? updatedListing.imageAnalysis
+          : null,
+        locationDescription: hasCoreAccess
+          ? updatedListing.locationDescription
+          : null,
+        locationData: hasCoreAccess
+          ? parseJsonValue(updatedListing.locationData)
+          : null,
+        hasCoreAccess,
       },
     });
   } catch (error) {
@@ -349,6 +400,11 @@ export async function POST(
       },
     });
 
+    const hasCoreAccess =
+      normalizeUserPlan(user.plan) !== "free" ||
+      listing.unlockStatus === "paid" ||
+      listing.unlockStatus === "included";
+
     return NextResponse.json({
       success: true,
       message: body.archived
@@ -356,9 +412,22 @@ export async function POST(
         : "Objekt wurde wieder aktiviert.",
       listing: {
         ...listing,
-        generatedVariants: parseJsonValue(
-          listing.generatedVariants
-        ),
+        generatedVariants: hasCoreAccess
+          ? parseJsonValue(listing.generatedVariants)
+          : null,
+        socialVariants: hasCoreAccess
+          ? parseJsonValue(listing.socialVariants)
+          : null,
+        imageAnalysis: hasCoreAccess
+          ? listing.imageAnalysis
+          : null,
+        locationDescription: hasCoreAccess
+          ? listing.locationDescription
+          : null,
+        locationData: hasCoreAccess
+          ? parseJsonValue(listing.locationData)
+          : null,
+        hasCoreAccess,
       },
     });
   } catch (error) {

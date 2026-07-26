@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
@@ -14,35 +14,36 @@ type AppShellProps = {
   children: ReactNode;
 };
 
-export default function AppShell({ children }: AppShellProps) {
-  const pathname = usePathname();
+export default function AppShell({
+  children,
+}: AppShellProps) {
+  const pathname = usePathname() || "/";
 
   const isExposePage =
     pathname === "/expose" ||
-    pathname?.startsWith("/expose/");
+    pathname.startsWith("/expose/");
 
-  if (isExposePage) {
-    return (
-      <>
-        <Navbar />
-        {children}
-        <WhatsAppButton />
-        <FeedbackButton />
-        <GuideAssistant />
-        <SupportActionDock />
-      </>
-    );
-  }
+  const showSupportTools =
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/cockpit") ||
+    pathname.startsWith("/konto");
 
   return (
     <>
       <Navbar />
+
       {children}
-      <Footer />
-      <WhatsAppButton />
-      <FeedbackButton />
-      <GuideAssistant />
-      <SupportActionDock />
+
+      {!isExposePage ? <Footer /> : null}
+
+      {showSupportTools ? (
+        <>
+          <WhatsAppButton />
+          <FeedbackButton />
+          <GuideAssistant />
+          <SupportActionDock />
+        </>
+      ) : null}
     </>
   );
 }

@@ -83,6 +83,17 @@ type SaveResponse = {
   };
 };
 
+type SessionResponse = {
+  success?: boolean;
+  authenticated?: boolean;
+  user?: {
+    capabilities?: {
+      canUseHomeStaging?: boolean;
+    };
+  };
+  error?: string;
+};
+
 const ROOM_TYPES: Array<{
   value: RoomType;
   label: string;
@@ -272,23 +283,86 @@ export default function HomeStagingPage() {
   const [savedImageUrl, setSavedImageUrl] =
     useState("");
 
-  useEffect(() => {
-    if (!listingId) {
-      setError("Keine Objekt-ID gefunden.");
-      setLoading(false);
-      return;
-    }
+  const [
+    accessChecked,
+    setAccessChecked,
+  ] = useState(false);
 
+  const [
+    hasHomeStagingAccess,
+    setHasHomeStagingAccess,
+  ] = useState(false);
+
+  const [
+    accessError,
+    setAccessError,
+  ] = useState("");
+
+  useEffect(() => {
     const controller = new AbortController();
 
-    async function loadListing() {
+    let proAccessGranted = false;
+    let redirectingToLogin = false;
+
+    async function loadHomeStaging() {
       try {
         setLoading(true);
         setError("");
+        setAccessError("");
+        setAccessChecked(false);
+
+        const sessionResponse = await fetch(
+          "/api/session",
+          {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store",
+            signal: controller.signal,
+          }
+        );
+
+        if (sessionResponse.status === 401) {
+          redirectingToLogin = true;
+          router.replace("/login");
+          return;
+        }
+
+        const sessionData =
+          (await sessionResponse.json()) as SessionResponse;
+
+        if (
+          !sessionResponse.ok ||
+          !sessionData.success ||
+          !sessionData.authenticated
+        ) {
+          throw new Error(
+            sessionData.error ||
+              "Die Zugriffsberechtigung konnte nicht geprüft werden."
+          );
+        }
+
+        const canUseHomeStaging =
+          sessionData.user?.capabilities
+            ?.canUseHomeStaging === true;
+
+        setHasHomeStagingAccess(
+          canUseHomeStaging
+        );
+
+        if (!canUseHomeStaging) {
+          return;
+        }
+
+        proAccessGranted = true;
+
+        if (!listingId) {
+          setError("Keine Objekt-ID gefunden.");
+          return;
+        }
 
         const response = await fetch(
           `/api/listings/${encodeURIComponent(
-            listingId!
+            listingId
           )}`,
           {
             method: "GET",
@@ -299,6 +373,7 @@ export default function HomeStagingPage() {
         );
 
         if (response.status === 401) {
+          redirectingToLogin = true;
           router.replace("/login");
           return;
         }
@@ -339,7 +414,9 @@ export default function HomeStagingPage() {
             (image) => image.isPrimary
           ) || sortedImages[0];
 
-        setSelectedImageId(primaryImage?.id || "");
+        setSelectedImageId(
+          primaryImage?.id || ""
+        );
       } catch (loadError) {
         if (
           loadError instanceof DOMException &&
@@ -349,23 +426,33 @@ export default function HomeStagingPage() {
         }
 
         console.error(
-          "Home-Staging-Objekt konnte nicht geladen werden:",
+          "Home-Staging-Zugriff konnte nicht geladen werden:",
           loadError
         );
 
-        setError(
+        const message =
           loadError instanceof Error
             ? loadError.message
-            : "Das Objekt konnte nicht geladen werden."
-        );
+            : "Home Staging konnte nicht geladen werden.";
+
+        if (proAccessGranted) {
+          setError(message);
+        } else {
+          setAccessError(message);
+          setHasHomeStagingAccess(false);
+        }
       } finally {
-        if (!controller.signal.aborted) {
+        if (
+          !controller.signal.aborted &&
+          !redirectingToLogin
+        ) {
+          setAccessChecked(true);
           setLoading(false);
         }
       }
     }
 
-    loadListing();
+    void loadHomeStaging();
 
     return () => {
       controller.abort();
@@ -1022,6 +1109,107 @@ export default function HomeStagingPage() {
           <span>
             Objektbilder und Angaben werden geladen.
           </span>
+        </div>
+
+        <PageStyles />
+      </main>
+    );
+  }
+
+  if (accessError) {
+    return (
+      <main className="stagingPage">
+        <div className="statusCard errorCard">
+          <strong>
+            Zugriff konnte nicht geprüft werden
+          </strong>
+
+          <span>{accessError}</span>
+
+          <Link
+            href="/cockpit"
+            className="primaryLink"
+          >
+            Zurück zum Makler-Cockpit
+          </Link>
+        </div>
+
+        <PageStyles />
+      </main>
+    );
+  }
+
+  if (
+    accessChecked &&
+    !hasHomeStagingAccess
+  ) {
+    return (
+      <main className="stagingPage">
+        <div
+          className="statusCard"
+          style={{
+            maxWidth: "720px",
+            textAlign: "center",
+          }}
+        >
+          <span
+            style={{
+              display: "inline-flex",
+              alignSelf: "center",
+              border:
+                "1px solid rgba(34, 211, 238, 0.45)",
+              borderRadius: "999px",
+              padding: "8px 14px",
+              color: "#a5f3fc",
+              background:
+                "rgba(34, 211, 238, 0.1)",
+              fontSize: "12px",
+              fontWeight: 900,
+              letterSpacing: "0.16em",
+            }}
+          >
+            PRO-FUNKTION
+          </span>
+
+          <strong>
+            Virtuelles Home Staging
+          </strong>
+
+          <span>
+            Fotorealistische AI-Visualisierungen und
+            die integrierte Grundrissanalyse gehören
+            zum Pro-Angebot für CHF 79.90 pro Monat.
+          </span>
+
+          <span>
+            Diese Funktionen sind weder im
+            Founder-Angebot für CHF 19.90 pro Monat
+            noch im Einzelobjekt für CHF 9.90
+            enthalten.
+          </span>
+
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: "12px",
+            }}
+          >
+            <Link
+              href="/cockpit"
+              className="primaryLink"
+            >
+              Zurück zum Makler-Cockpit
+            </Link>
+
+            <Link
+              href="/#preise"
+              className="primaryLink"
+            >
+              Pro-Angebot ansehen
+            </Link>
+          </div>
         </div>
 
         <PageStyles />

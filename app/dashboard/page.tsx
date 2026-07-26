@@ -1,5 +1,6 @@
-﻿"use client";
+"use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { upload } from "@vercel/blob/client";
 import {
@@ -10,6 +11,7 @@ import {
   type ChangeEvent,
 } from "react";
 import PortalExportButton from "../components/PortalExportButton";
+import { useAppDialog } from "@/components/AppDialogProvider";
 import {
   SWISS_LOCATIONS,
   SWISS_POSTAL_LOCATIONS,
@@ -93,17 +95,91 @@ const QUICK_STYLES = [
   "renoviert",
   "neuwertig",
 ];
+type ImageAnalysisStatus = "idle" | "analyzing" | "done" | "error";
 
+type ImageAnalysisResult = {
+  status: ImageAnalysisStatus;
+  analysis: string;
+  error: string;
+};
+
+function createEmptyImageAnalysis(): ImageAnalysisResult {
+  return {
+    status: "idle",
+    analysis: "",
+    error: "",
+  };
+}
 export default function DashboardPage() {
-  
-  const [instagramPost, setInstagramPost] = useState("");
+  const router = useRouter();
+  const {
+    notify,
+    confirmAction,
+    chooseAction,
+  } = useAppDialog();
+
+  const [userPlan, setUserPlan] = useState("free");
+  const canUseDashboardImages = userPlan !== "free";
+
+const [instagramPost, setInstagramPost] = useState("");
   const [linkedinPost, setLinkedinPost] = useState("");
   const [facebookPost, setFacebookPost] = useState("");
  
+const [imageAnalyses, setImageAnalyses] = useState<
+  ImageAnalysisResult[]
+>([]);
 
-const [imageAnalysis, setImageAnalysis] = useState("");
 const [analyzingImage, setAnalyzingImage] = useState(false);
-const [userName, setUserName] = useState(""); useEffect(() => {
+
+const [analysisProgressIndex, setAnalysisProgressIndex] = useState<
+  number | null
+>(null);
+
+const [imageAnalysisMessage, setImageAnalysisMessage] = useState("");
+const [userName, setUserName] = useState("");
+
+useEffect(() => {
+  let active = true;
+
+  async function loadSessionPlan() {
+    try {
+      const response = await fetch("/api/session", {
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      const data = await response
+        .json()
+        .catch(() => ({}));
+
+      const nextPlan =
+        typeof data?.user?.plan === "string"
+          ? data.user.plan
+          : "free";
+
+      if (active) {
+        setUserPlan(nextPlan);
+      }
+    } catch (error) {
+      console.error(
+        "PLAN KONNTE NICHT GELADEN WERDEN:",
+        error
+      );
+
+      if (active) {
+        setUserPlan("free");
+      }
+    }
+  }
+
+  loadSessionPlan();
+
+  return () => {
+    active = false;
+  };
+}, []);
+
+useEffect(() => {
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
 const loginExpiresAt = Number(localStorage.getItem("loginExpiresAt"));
 
@@ -125,92 +201,181 @@ localStorage.setItem("loginExpiresAt", nextLoginExpiresAt.toString());
   }
 }, []);
 
-async function analyzeImage() {
-  let imageForAnalysis: File | null = selectedImages[0] || null;
+async function getImageFileForAnalysis(
+  index: number
+): Promise<File | null> {
+  const selectedFile = selectedImages[index];
 
-  // Falls nur noch eine Vorschau vorhanden ist,
-  // versuchen wir daraus wieder eine Bilddatei zu erstellen.
-  if (!imageForAnalysis && imagePreviews[0]) {
-    try {
-      const previewResponse = await fetch(imagePreviews[0]);
-      const imageBlob = await previewResponse.blob();
-
-      imageForAnalysis = new File(
-        [imageBlob],
-        "objektfoto.jpg",
-        {
-          type: imageBlob.type || "image/jpeg",
-        }
-      );
-    } catch (error) {
-      console.error("PREVIEW CONVERSION ERROR:", error);
-    }
+  if (selectedFile) {
+    return selectedFile;
   }
 
-  if (!imageForAnalysis) {
-    alert(
-      "Das Bild ist nur noch als alte Vorschau vorhanden. Bitte das Foto nochmals auswählen."
-    );
-    return;
+  const preview = imagePreviews[index];
+
+  if (!preview) {
+    return null;
   }
 
   try {
-    setAnalyzingImage(true);
-    setImageAnalysis("");
+    const previewResponse = await fetch(preview);
 
-    const formData = new FormData();
-    formData.append("image", imageForAnalysis);
-
-    const response = await fetch("/api/analyze-image", {
-      method: "POST",
-      body: formData,
-    });
-
-    const responseText = await response.text();
-
-    let data: {
-      success?: boolean;
-      analysis?: string;
-      error?: string;
-    };
-
-    try {
-      data = responseText ? JSON.parse(responseText) : {};
-    } catch {
+    if (!previewResponse.ok) {
       throw new Error(
-        responseText ||
-          "Die Bildanalyse hat keine gültige Antwort geliefert."
+        `Die Vorschau von Bild ${index + 1} konnte nicht geladen werden.`
       );
     }
 
-    if (!response.ok) {
-      throw new Error(
-        data.error ||
-          `Bildanalyse fehlgeschlagen – HTTP ${response.status}`
-      );
-    }
+    const imageBlob = await previewResponse.blob();
 
-    if (!data.analysis?.trim()) {
-      throw new Error("Es wurde keine Bildanalyse zurückgegeben.");
-    }
-
-    setImageAnalysis(data.analysis);
-
-    localStorage.setItem(
-      "inseratAiImageAnalysis",
-      data.analysis
+    return new File(
+      [imageBlob],
+      `objektfoto-${index + 1}.jpg`,
+      {
+        type: imageBlob.type || "image/jpeg",
+      }
     );
   } catch (error) {
-    console.error("IMAGE ANALYSIS ERROR:", error);
+    console.error(
+      `PREVIEW CONVERSION ERROR – BILD ${index + 1}:`,
+      error
+    );
 
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Fehler bei der Bildanalyse.";
+    return null;
+  }
+}
 
-    alert(message);
+async function analyzeImage() {
+  const totalImages = imagePreviews.length;
+
+  if (totalImages === 0 || analyzingImage) {
+    return;
+  }
+
+  setAnalyzingImage(true);
+  setImageAnalysisMessage("");
+  setAnalysisProgressIndex(0);
+
+  // Verhindert, dass eine alte Einzelanalyse erneut verwendet wird.
+  localStorage.removeItem("inseratAiImageAnalysis");
+
+  const nextResults = Array.from(
+    { length: totalImages },
+    () => createEmptyImageAnalysis()
+  );
+
+  setImageAnalyses([...nextResults]);
+
+  try {
+    for (let index = 0; index < totalImages; index += 1) {
+      setAnalysisProgressIndex(index);
+
+      nextResults[index] = {
+        status: "analyzing",
+        analysis: "",
+        error: "",
+      };
+
+      setImageAnalyses([...nextResults]);
+
+      try {
+        const imageFile = await getImageFileForAnalysis(index);
+
+        if (!imageFile) {
+          throw new Error(
+            "Das Foto ist nur noch als ungültige Vorschau vorhanden. Bitte dieses Bild nochmals auswählen."
+          );
+        }
+
+        const formData = new FormData();
+        formData.append("image", imageFile);
+
+        const response = await fetch("/api/analyze-image", {
+          method: "POST",
+          body: formData,
+        });
+
+        const responseText = await response.text();
+
+        let data: {
+          success?: boolean;
+          analysis?: string;
+          error?: string;
+        };
+
+        try {
+          data = responseText ? JSON.parse(responseText) : {};
+        } catch {
+          throw new Error(
+            responseText ||
+              "Die Bildanalyse hat keine gültige Antwort geliefert."
+          );
+        }
+
+        if (!response.ok) {
+          throw new Error(
+            data.error ||
+              `Bildanalyse fehlgeschlagen – HTTP ${response.status}`
+          );
+        }
+
+        if (!data.analysis?.trim()) {
+          throw new Error(
+            "Für dieses Bild wurde keine Analyse zurückgegeben."
+          );
+        }
+
+        nextResults[index] = {
+          status: "done",
+          analysis: data.analysis.trim(),
+          error: "",
+        };
+      } catch (error) {
+        console.error(
+          `IMAGE ANALYSIS ERROR – BILD ${index + 1}:`,
+          error
+        );
+
+        nextResults[index] = {
+          status: "error",
+          analysis: "",
+          error:
+            error instanceof Error
+              ? error.message
+              : "Dieses Bild konnte nicht analysiert werden.",
+        };
+      }
+
+      setImageAnalyses([...nextResults]);
+    }
+
+    const successfulAnalyses = nextResults.filter(
+      (item) => item.status === "done"
+    ).length;
+
+    const failedAnalyses = nextResults.filter(
+      (item) => item.status === "error"
+    ).length;
+
+    if (successfulAnalyses === totalImages) {
+      setImageAnalysisMessage(
+        `✓ Alle ${totalImages} ${
+          totalImages === 1 ? "Foto wurde" : "Fotos wurden"
+        } einzeln und erfolgreich analysiert.`
+      );
+    } else if (successfulAnalyses > 0) {
+      setImageAnalysisMessage(
+        `⚠ ${successfulAnalyses} von ${totalImages} Fotos wurden analysiert. ${failedAnalyses} ${
+          failedAnalyses === 1 ? "Analyse ist" : "Analysen sind"
+        } fehlgeschlagen.`
+      );
+    } else {
+      setImageAnalysisMessage(
+        "✕ Keines der ausgewählten Fotos konnte analysiert werden."
+      );
+    }
   } finally {
     setAnalyzingImage(false);
+    setAnalysisProgressIndex(null);
   }
 }
 
@@ -223,6 +388,22 @@ const [styleText, setStyleText] = useState("");
 const [highlights, setHighlights] = useState("");
 const [selectedImages, setSelectedImages] = useState<File[]>([]);
 const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+const imageAnalysis = imageAnalyses
+  .reduce<string[]>((parts, item, index) => {
+    if (item.status !== "done" || !item.analysis.trim()) {
+      return parts;
+    }
+
+    const fileName =
+      selectedImages[index]?.name || `Objektfoto ${index + 1}`;
+
+    parts.push(
+      `Bild ${index + 1} – ${fileName}:\n${item.analysis.trim()}`
+    );
+
+    return parts;
+  }, [])
+  .join("\n\n");
 const [formLoaded, setFormLoaded] = useState(false);
 const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
 const [templateName, setTemplateName] = useState("");
@@ -443,12 +624,12 @@ const saveListingPermanently = async (): Promise<string | null> => {
     localStorage.getItem("userEmail")?.trim().toLowerCase() || "";
 
 if (!userEmail) {
-  window.alert("Bitte zuerst einloggen.");
+  notify("Bitte zuerst einloggen.", "warning");
   return null;
 }
 
 if (!location.trim() || !propertyType.trim()) {
-  window.alert("Bitte mindestens Ort und Objektart ausfüllen.");
+  notify("Bitte mindestens Ort und Objektart ausfüllen.", "warning");
   return null;
 }
 
@@ -497,16 +678,24 @@ if (!listingId) {
 
 if (selectedImages.length > 0) {
   try {
+    setSaveProgress(
+      `${selectedImages.length} ${
+        selectedImages.length === 1 ? "Bild wird" : "Bilder werden"
+      } hochgeladen …`
+    );
+
     await uploadListingImages(listingId);
 
     setSaveProgress(
-  `✓ Objekt und ${selectedImages.length} ${
-    selectedImages.length === 1 ? "Bild" : "Bilder"
-  } erfolgreich gespeichert – Weiterleitung läuft …`
-);
-  
+      `✓ Objekt und ${selectedImages.length} ${
+        selectedImages.length === 1 ? "Bild" : "Bilder"
+      } erfolgreich gespeichert – Weiterleitung läuft …`
+    );
   } catch (imageError) {
-    console.error("BILDER KONNTEN NICHT GESPEICHERT WERDEN:", imageError);
+    console.error(
+      "BILDER KONNTEN NICHT GESPEICHERT WERDEN:",
+      imageError
+    );
 
     const imageMessage =
       imageError instanceof Error
@@ -514,14 +703,17 @@ if (selectedImages.length > 0) {
         : "Die Bilder konnten nicht gespeichert werden.";
 
     setSaveProgress(
-  `✕ Objekt gespeichert, aber Bilder konnten nicht gespeichert werden: ${imageMessage}`
-);
+      `✕ Das Objekt wurde gespeichert, aber der Bild-Upload ist fehlgeschlagen: ${imageMessage}`
+    );
+
+    return null;
   }
 } else {
   setSaveProgress(
-  "✓ Objekt erfolgreich gespeichert – Weiterleitung läuft …"
-);
+    "✓ Objekt erfolgreich gespeichert – Weiterleitung läuft …"
+  );
 }
+
 return listingId;
   } catch (error) {
     const message =
@@ -535,6 +727,94 @@ return null;
     setSavingListing(false);
   }
 };
+const startSingleObjectCheckoutFromDemo =
+  async () => {
+    if (savingListing) {
+      return;
+    }
+
+    const listingId =
+      await saveListingPermanently();
+
+    if (!listingId) {
+      return;
+    }
+
+    try {
+      setSaveProgress(
+        "Sichere Zahlungsseite wird vorbereitet …"
+      );
+
+      const response = await fetch(
+        "/api/payments/single-object/checkout",
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            listingId,
+          }),
+        }
+      );
+
+      if (response.status === 401) {
+        router.push("/login");
+        return;
+      }
+
+      const data =
+        (await response
+          .json()
+          .catch(() => null)) as
+          | {
+              success?: boolean;
+              checkoutUrl?: string;
+              alreadyUnlocked?: boolean;
+              error?: string;
+            }
+          | null;
+
+      if (data?.alreadyUnlocked) {
+        router.push(
+          `/cockpit/${encodeURIComponent(
+            listingId
+          )}`
+        );
+
+        return;
+      }
+
+      if (
+        !response.ok ||
+        !data?.success ||
+        typeof data.checkoutUrl !==
+          "string"
+      ) {
+        throw new Error(
+          data?.error ||
+            "Die Zahlungsseite konnte nicht geöffnet werden."
+        );
+      }
+
+      window.location.href =
+        data.checkoutUrl;
+    } catch (checkoutError) {
+      const message =
+        checkoutError instanceof Error
+          ? checkoutError.message
+          : "Die Zahlungsseite konnte nicht geöffnet werden.";
+
+      setSaveProgress(
+        `✕ ${message}`
+      );
+
+      notify(message, "error");
+    }
+  };
+
 const saveListingAndOpenCockpit = async () => {
   const listingId = await saveListingPermanently();
 
@@ -672,36 +952,11 @@ const [variants, setVariants] = useState<Variant[]>([]);
 const [savingListing, setSavingListing] = useState(false);
 const [saveProgress, setSaveProgress] = useState("");
 const [dailyCount, setDailyCount] = useState(0);
-const [trialExpired, setTrialExpired] = useState(false);
-const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
+
+
 const [activeIndex, setActiveIndex] = useState(0);
 
-useEffect(() => {
-  const trialEndDate = localStorage.getItem("trialEndDate");
-
-  if (!trialEndDate) {
-    setTrialExpired(false);
-    setTrialDaysLeft(null);
-    return;
-  }
-
-  const now = new Date();
-  const end = new Date(trialEndDate);
-
-  if (now > end) {
-    setTrialExpired(true);
-    localStorage.setItem("trialStatus", "expired");
-    setTrialDaysLeft(0);
-    return;
-  }
-
-  const diffTime = end.getTime() - now.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  setTrialExpired(false);
-  setTrialDaysLeft(diffDays);
-}, []);
-  const current = variants[activeIndex];
+const current = variants[activeIndex];
   const getTodayKey = () => {
   const email = localStorage.getItem("userEmail") || "guest";
   const today = new Date().toISOString().slice(0, 10);
@@ -725,12 +980,7 @@ const formatSavedTime = (count: number) => {
 };
 
   async function generateText() {
-    if (trialExpired) {
-  alert("Ihr 30-Tage-Test ist abgelaufen. Bitte aktivieren Sie Ihr Abo, um weiterhin Inserate zu erstellen.");
-  return;
-}
-    
-    try {
+try {
       setLoading(true);
 
       const response = await fetch("/api/generate", {
@@ -756,7 +1006,19 @@ const formatSavedTime = (count: number) => {
       console.log("GENERATE RESPONSE:", data);
 
       if (!response.ok) {
-        throw new Error(data?.error || "Fehler beim Generieren");
+        const requestError = Object.assign(
+          new Error(
+            data?.error || "Fehler beim Generieren"
+          ),
+          {
+            code:
+              typeof data?.code === "string"
+                ? data.code
+                : undefined,
+          }
+        );
+
+        throw requestError;
       }
 
       const newVariants = Array.isArray(data?.variants) ? data.variants : [];
@@ -774,27 +1036,85 @@ const newDailyCount = dailyCount + 1;
 setDailyCount(newDailyCount);
 localStorage.setItem(getTodayKey(), String(newDailyCount));
     } catch (error) {
-  console.error("FRONTEND GENERATE ERROR:", error);
+  const requestError = (
+    error instanceof Error
+      ? error
+      : new Error("Fehler beim Generieren.")
+  ) as Error & {
+    code?: string;
+  };
 
-  const message =
-    error instanceof Error ? error.message : "Fehler beim Generieren.";
+  if (
+    requestError.code ===
+      "DEMO_LIMIT_REACHED"
+  ) {
+    const choice =
+      await chooseAction({
+        title:
+          "Deine kostenlose Demo ist abgeschlossen",
+        message:
+          "Sichere jetzt dieses Inserat inklusive bis zu 5 Bildern, Standard-Bildanalyse, Social-Media-Texten und PDF-Exposé für einmalig CHF 9.90.",
+        confirmLabel:
+          "Für CHF 9.90 freischalten",
+        secondaryLabel:
+          "Founder vergleichen",
+        cancelLabel:
+          "Später weiterarbeiten",
+        tone: "warning",
+        emphasizeConfirmAfterMs: 2500,
+      });
 
-  alert(message);
+    if (choice === "confirm") {
+      await startSingleObjectCheckoutFromDemo();
+      return;
+    }
+
+    if (choice === "secondary") {
+      router.push("/#preise");
+      return;
+    }
+
+    return;
+  }
+
+  console.error(
+    "FRONTEND GENERATE ERROR:",
+    requestError
+  );
+
+  notify(requestError.message, "error");
 } finally {
   setLoading(false);
 }
   }
 
   async function copyActive() {
+  if (userPlan === "free") {
+    const openOffers = await confirmAction({
+      title: "Vorschau erfolgreich erstellt",
+      message:
+        "Das Kopieren des vollständigen Inserattexts ist nach der Freischaltung verfügbar. Das Einzelobjekt kostet einmalig CHF 9.90.",
+      confirmLabel: "Angebote ansehen",
+      cancelLabel: "Später",
+      tone: "warning",
+    });
+
+    if (openOffers) {
+      router.push("/#preise");
+    }
+
+    return;
+  }
+
   if (!variants || variants.length === 0) {
-    alert("Bitte zuerst eine Variante generieren.");
+    notify("Bitte zuerst eine Variante generieren.", "warning");
     return;
   }
 
   const active = variants[activeIndex];
 
   if (!active) {
-    alert("Keine Variante gefunden.");
+    notify("Keine Variante gefunden.", "warning");
     return;
   }
 
@@ -802,22 +1122,39 @@ localStorage.setItem(getTodayKey(), String(newDailyCount));
 
   try {
     await navigator.clipboard.writeText(fullText);
-    alert("Kopiert ✅");
+    notify("Inserattext wurde kopiert.", "success");
   } catch (err) {
     console.error(err);
-    alert("Kopieren fehlgeschlagen ❌");
+    notify("Kopieren ist fehlgeschlagen.", "error");
   }
 }
-  function exportPdf() {
+  async function exportPdf() {
+    if (userPlan === "free") {
+      const openOffers = await confirmAction({
+        title: "PDF nach Freischaltung",
+        message:
+          "Der vollständige PDF-Export gehört zum freigeschalteten Einzelobjekt für einmalig CHF 9.90 sowie zu Founder und Pro.",
+        confirmLabel: "Angebote ansehen",
+        cancelLabel: "Später",
+        tone: "warning",
+      });
+
+      if (openOffers) {
+        router.push("/#preise");
+      }
+
+      return;
+    }
+
     if (!current) {
-      alert("Bitte zuerst eine Variante generieren.");
+      notify("Bitte zuerst eine Variante generieren.", "warning");
       return;
     }
 
     const printWindow = window.open("", "_blank", "width=900,height=1200");
 
     if (!printWindow) {
-      alert("Pop-up blockiert. Bitte Pop-ups erlauben.");
+      notify("Der PDF-Export wurde vom Browser blockiert. Bitte Pop-ups erlauben.", "warning");
       return;
     }
 
@@ -890,17 +1227,36 @@ function handleImageUpload(event: ChangeEvent<HTMLInputElement>) {
 
   if (!files || files.length === 0) return;
 
+  if (!canUseDashboardImages) {
+    notify(
+      "Bilder gehören nicht zur kostenlosen Demo. Nach der Freischaltung für CHF 9.90 kannst du bis zu 5 Bilder für diese Immobilie verwenden.",
+      "warning"
+    );
+
+    event.target.value = "";
+    return;
+  }
+
   const remainingSlots = 10 - selectedImages.length;
 
   if (remainingSlots <= 0) {
-    alert("Du kannst maximal 10 Fotos hochladen.");
+    notify("Du kannst maximal 10 Fotos pro Objekt hochladen.", "warning");
     event.target.value = "";
     return;
   }
 
   const newFiles = Array.from(files).slice(0, remainingSlots);
   const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
+const newAnalysisItems = newFiles.map(() =>
+  createEmptyImageAnalysis()
+);
+setImageAnalyses((currentAnalyses) => [
+  ...currentAnalyses,
+  ...newAnalysisItems,
+]);
 
+setImageAnalysisMessage("");
+localStorage.removeItem("inseratAiImageAnalysis");
   setSelectedImages((currentImages) => [
     ...currentImages,
     ...newFiles,
@@ -928,7 +1284,14 @@ function removeImage(indexToRemove: number) {
   setImagePreviews((current) =>
     current.filter((_, index) => index !== indexToRemove)
   );
+  setImageAnalyses((current) =>
+  current.filter((_, index) => index !== indexToRemove)
+);
+
+setImageAnalysisMessage("");
+localStorage.removeItem("inseratAiImageAnalysis");
 }
+
 return (
 <main
   className="page"
@@ -955,40 +1318,7 @@ return (
   <p className="sectionText">
   Erfasse die wichtigsten Eckdaten der Immobilie. Inserat-AI erstellt daraus professionelle Titel, Beschreibungen und Varianten für dein Inserat.
   </p>
-{trialDaysLeft !== null && !trialExpired && (
-  <div
-    style={{
-      marginBottom: "18px",
-      padding: "14px 16px",
-      borderRadius: "14px",
-      background: "rgba(34, 197, 94, 0.12)",
-      border: "1px solid rgba(34, 197, 94, 0.35)",
-      color: "#bbf7d0",
-      fontWeight: 700,
-      textAlign: "center",
-    }}
-  >
-    Ihr kostenloser Test läuft noch {trialDaysLeft} Tage.
-  </div>
-)}
-
-{trialExpired && (
-  <div
-    style={{
-      marginBottom: "18px",
-      padding: "18px",
-      borderRadius: "16px",
-      background: "rgba(239, 68, 68, 0.12)",
-      border: "1px solid rgba(239, 68, 68, 0.35)",
-      color: "#fecaca",
-      fontWeight: 700,
-      textAlign: "center",
-    }}
-  >
-    Ihr 30-Tage-Test ist abgelaufen. Bitte aktivieren Sie Ihr Abo, um weiterhin Inserate zu erstellen.
-  </div>
-)}
-  <div className="formGrid">
+<div className="formGrid">
     <div
   style={{
     gridColumn: "1 / -1",
@@ -1551,11 +1881,26 @@ return (
     Immobilienfoto
   </div>
 
+{!canUseDashboardImages && (
+  <div className="mb-4 rounded-2xl border border-amber-300/30 bg-amber-400/10 p-4 text-sm leading-6 text-amber-100">
+    <div className="font-black text-amber-300">
+      🔒 Bilder sind in der kostenlosen Demo nicht enthalten
+    </div>
+
+    <div className="mt-1 text-slate-200">
+      Bildfunktionen werden nach der Freischaltung dieser
+      Immobilie für CHF 9.90 aktiviert. Danach kannst du
+      bis zu 5 Bilder hochladen und analysieren lassen.
+    </div>
+  </div>
+)}
+
 <label className="uploadBox">
   <input
     type="file"
     accept="image/*"
     multiple
+    disabled={!canUseDashboardImages}
     onChange={handleImageUpload}
   />
 
@@ -1567,44 +1912,78 @@ return (
 </label>
 
 {imagePreviews.length > 0 && (
-  <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
-    {imagePreviews.map((preview, index) => (
-      <div
-        key={index}
-        className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5"
-      >
-        <button
-          type="button"
-          onClick={() => removeImage(index)}
-          className="absolute right-2 top-2 z-10 rounded-full bg-slate-950/80 px-2 py-1 text-xs font-black text-white transition hover:bg-red-600"
+  <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+    {imagePreviews.map((preview, index) => {
+      const analysisItem =
+        imageAnalyses[index] || createEmptyImageAnalysis();
+
+      return (
+        <div
+          key={`${preview}-${index}`}
+          className="overflow-hidden rounded-2xl border border-white/10 bg-white/5"
         >
-          ✕
-        </button>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => removeImage(index)}
+              disabled={analyzingImage}
+              aria-label={`Bild ${index + 1} entfernen`}
+              className="absolute right-2 top-2 z-10 rounded-full bg-slate-950/80 px-2 py-1 text-xs font-black text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              ✕
+            </button>
 
-          <img
-            src={preview}
-            alt={`Objektfoto ${index + 1}`}
-            className="h-32 w-full object-cover"
-          />
+            <img
+              src={preview}
+              alt={`Objektfoto ${index + 1}`}
+              className="h-44 w-full object-cover"
+            />
+          </div>
 
-        <div className="p-2 text-xs text-slate-300">
-          {selectedImages[index]?.name}
+          <div className="border-t border-white/10 p-3">
+            <div className="text-xs font-black uppercase tracking-wide text-amber-300">
+              Bild {index + 1}
+            </div>
+
+            <div className="mt-1 break-words text-xs text-slate-300">
+              {selectedImages[index]?.name ||
+                `Objektfoto ${index + 1}`}
+            </div>
+
+            {analysisItem.status === "idle" && (
+              <div className="mt-3 rounded-xl border border-white/10 bg-slate-950/20 p-3 text-sm text-slate-400">
+                Dieses Foto wurde noch nicht analysiert.
+              </div>
+            )}
+
+            {analysisItem.status === "analyzing" && (
+              <div className="mt-3 rounded-xl border border-amber-300/30 bg-amber-400/10 p-3 text-sm font-bold text-amber-200">
+                🔍 Dieses Foto wird ausführlich analysiert …
+              </div>
+            )}
+
+            {analysisItem.status === "done" && (
+              <div
+                className="imageAnalysisScroll mt-3 max-h-72 overflow-y-auto rounded-xl border border-white/10 bg-slate-950/30 p-3 text-sm leading-7 text-slate-200"
+                style={{
+                  whiteSpace: "pre-line",
+                }}
+              >
+                {analysisItem.analysis}
+              </div>
+            )}
+
+            {analysisItem.status === "error" && (
+              <div className="mt-3 rounded-xl border border-red-400/30 bg-red-950/30 p-3 text-sm leading-6 text-red-200">
+                ✕ {analysisItem.error}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    ))}
+      );
+    })}
   </div>
 )}
-
-  <button
-  type="button"
-  onClick={analyzeImage}
-  disabled={analyzingImage || imagePreviews.length === 0}
-  className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-300/50 bg-gradient-to-r from-amber-400 to-orange-500 px-5 py-4 text-sm font-black text-slate-950 shadow-[0_14px_32px_rgba(245,158,11,0.2)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
->
-  {analyzingImage
-    ? "🔍 Foto wird analysiert …"
-    : "🔍 Foto analysieren"}
-</button>
 
  
 
@@ -1660,7 +2039,7 @@ return (
   <div className="mainActions">
     <button
       onClick={generateText}
-      disabled={loading || trialExpired}
+      disabled={loading}
       className="btn btn-primary"
       style={{
         background: "linear-gradient(135deg, #f59e0b, #f97316)",
@@ -1669,11 +2048,7 @@ return (
         border: "none",
       }}
     >
-      {trialExpired
-        ? "Test abgelaufen"
-        : loading
-        ? "Generiere..."
-        : "✨ Generieren (3 Varianten)"}
+      {loading ? "Generiere..." : "✨ Generieren (3 Varianten)"}
     </button>
 
  <button
@@ -1763,8 +2138,8 @@ return (
 </div>
 
     <div className="topStat">
-      <div className="topStatValue">30 Tage</div>
-      <div className="topStatLabel">Kostenlos testen</div>
+      <div className="topStatValue">1 Demo</div>
+      <div className="topStatLabel">kostenlose Generierung</div>
     </div>
   </div>
   <div className="outputShell">
