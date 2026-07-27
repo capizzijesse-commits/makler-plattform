@@ -19,6 +19,17 @@ export function getStripe(): Stripe {
     );
   }
 
+  console.info("[STRIPE_RUNTIME_MODE]", {
+    mode: secretKey.startsWith("sk_live_")
+      ? "live"
+      : "test",
+    vercelEnv:
+      process.env.VERCEL_ENV ?? "unknown",
+    commit:
+      process.env.VERCEL_GIT_COMMIT_SHA
+        ?.slice(0, 7) ?? "unknown",
+  });
+
   if (!stripeClient) {
     stripeClient = new Stripe(secretKey);
   }
