@@ -846,7 +846,18 @@ const startSingleObjectCheckoutFromDemo =
   };
 
 const saveListingAndOpenCockpit = async () => {
-  if (userPlan === "free") {
+  const normalizedPlan =
+    (userPlan ?? "").trim().toLowerCase();
+
+  const hasSubscriptionAccess = [
+    "founder",
+    "standard",
+    "pro",
+    "agency",
+    "admin",
+  ].includes(normalizedPlan);
+
+  if (!hasSubscriptionAccess) {
     await startSingleObjectCheckoutFromDemo();
     return;
   }
