@@ -38,6 +38,8 @@ type Listing = {
   style: string | null;
   locationDescription: string | null;
   locationData: LocationAssistantData | null;
+  viewerPlan: string;
+  hasCoreAccess: boolean;
   images: ListingImage[];
 };
 
@@ -79,6 +81,7 @@ export default function EditListingPage() {
   const [locationData, setLocationData] =
     useState<LocationAssistantData | null>(null);
   const [images, setImages] = useState<ListingImage[]>([]);
+  const [imageUploadLimit, setImageUploadLimit] = useState(0);
 const [uploadingImages, setUploadingImages] = useState(false);
 const [uploadMessage, setUploadMessage] = useState("");
 const [deletingImageId, setDeletingImageId] =
@@ -125,6 +128,20 @@ const [settingPrimaryImageId, setSettingPrimaryImageId] =
         }
 
         const listing = data.listing as Listing;
+
+        const normalizedViewerPlan =
+          (listing.viewerPlan || "free")
+            .trim()
+            .toLowerCase();
+
+        const nextImageUploadLimit =
+          normalizedViewerPlan !== "free"
+            ? 10
+            : listing.hasCoreAccess
+              ? 5
+              : 0;
+
+        setImageUploadLimit(nextImageUploadLimit);
 setImages(
   Array.isArray(data.listing?.images)
     ? data.listing.images
@@ -198,11 +215,21 @@ async function handleImageUpload(
     return;
   }
 
-  const availableSlots = Math.max(0, 10 - images.length);
+  if (imageUploadLimit === 0) {
+    setUploadMessage(
+      "Bilder sind nach der CHF-9.90-Freischaltung verfügbar."
+    );
+    return;
+  }
+
+  const availableSlots = Math.max(
+    0,
+    imageUploadLimit - images.length
+  );
 
   if (availableSlots === 0) {
-    window.alert(
-      "Für dieses Objekt sind bereits 10 Bilder gespeichert."
+    setUploadMessage(
+      `Die maximale Anzahl von ${imageUploadLimit} Bildern ist erreicht.`
     );
     return;
   }
@@ -218,7 +245,7 @@ async function handleImageUpload(
   );
 
   if (invalidFile) {
-    window.alert(
+    setUploadMessage(
       "Erlaubt sind JPEG, PNG und WebP mit maximal 10 MB pro Bild."
     );
     return;
@@ -711,7 +738,7 @@ async function deleteListingImage(imageId: string) {
       </p>
     </div>
 
-    <strong>{images.length} / 10 Bilder</strong>
+    <strong>{images.length} / {imageUploadLimit || 5} Bilder</strong>
   </div>
 
   {images.length > 0 && (
@@ -778,7 +805,7 @@ async function deleteListingImage(imageId: string) {
 
   <label
     className={
-      uploadingImages || images.length >= 10
+      imageUploadLimit === 0 || uploadingImages || images.length >= imageUploadLimit
         ? "imageUploadButton disabled"
         : "imageUploadButton"
     }
@@ -787,7 +814,7 @@ async function deleteListingImage(imageId: string) {
       type="file"
       accept="image/jpeg,image/png,image/webp"
       multiple
-      disabled={uploadingImages || images.length >= 10}
+      disabled={imageUploadLimit === 0 || uploadingImages || images.length >= imageUploadLimit}
       onChange={handleImageUpload}
     />
 
