@@ -62,8 +62,6 @@ const plans = [
   },
 ] as const;
 
-const FOUNDER_CHECKOUT_AVAILABLE = true;
-
 export default function PricingSection() {
   const [checkoutLoading, setCheckoutLoading] =
     useState(false);
@@ -335,31 +333,20 @@ export default function PricingSection() {
                 <button
                   type="button"
                   onClick={startFounderCheckout}
-                  disabled={
-                    !FOUNDER_CHECKOUT_AVAILABLE ||
-                    checkoutLoading
-                  }
+                  disabled={checkoutLoading}
                   className="planButton planButtonHighlighted"
                   style={{
                     border: 0,
-                    cursor:
-                      !FOUNDER_CHECKOUT_AVAILABLE
-                        ? "not-allowed"
-                        : checkoutLoading
-                          ? "wait"
-                          : "pointer",
-                    opacity:
-                      FOUNDER_CHECKOUT_AVAILABLE
-                        ? 1
-                        : 0.68,
+                    cursor: checkoutLoading
+                      ? "wait"
+                      : "pointer",
+                    opacity: 1,
                     font: "inherit",
                   }}
                 >
-                  {!FOUNDER_CHECKOUT_AVAILABLE
-                    ? "Founder-Zugang ab morgen verfügbar"
-                    : checkoutLoading
-                      ? "Founder-Checkout wird geöffnet …"
-                      : plan.button}
+                  {checkoutLoading
+                    ? "Founder-Checkout wird geöffnet …"
+                    : plan.button}
                   <span aria-hidden="true">→</span>
                 </button>
               ) : plan.name === "Pro" ? (
