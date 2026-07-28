@@ -818,17 +818,25 @@ async function deleteListingImage(imageId: string) {
       onChange={handleImageUpload}
     />
 
-    <span>＋</span>
+    <span className="imageUploadIcon">＋</span>
 
     <div>
       <strong>
         {uploadingImages
           ? "Bilder werden hochgeladen …"
-          : "Weitere Bilder hinzufügen"}
+          : imageUploadLimit === 0
+            ? "Nach Freischaltung verfügbar"
+            : images.length >= imageUploadLimit
+              ? "Maximale Anzahl erreicht"
+              : "Weitere Bilder hinzufügen"}
       </strong>
 
       <small>
-        JPEG, PNG oder WebP · maximal 10 MB pro Bild
+        {imageUploadLimit === 0
+          ? "Bilder sind nach der CHF-9.90-Freischaltung oder mit einem Makler-Plan verfügbar."
+          : images.length >= imageUploadLimit
+            ? `Für dieses Objekt sind ${images.length} von ${imageUploadLimit} Bildern gespeichert. Lösche ein Bild, um ein anderes hochzuladen.`
+            : "JPEG, PNG oder WebP · maximal 10 MB pro Bild"}
       </small>
     </div>
   </label>
@@ -1239,38 +1247,169 @@ function EditStyles() {
 }
 
 .imageUploadButton {
+  position: relative;
   display: flex;
-  min-height: 52px;
-  margin-top: 18px;
+  width: 100%;
+  min-height: 104px;
+  margin-top: 20px;
+  padding: 20px 24px;
   align-items: center;
   justify-content: center;
-  gap: 9px;
-  border: 1px dashed rgba(251, 191, 36, 0.65);
-  border-radius: 13px;
-  background: rgba(245, 158, 11, 0.08);
-  color: #fbbf24;
+  gap: 16px;
+  overflow: hidden;
+  border: 1px dashed rgba(251, 191, 36, 0.72);
+  border-radius: 18px;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(251, 191, 36, 0.14),
+      transparent 42%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(15, 23, 42, 0.88),
+      rgba(30, 41, 59, 0.7)
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 16px 35px rgba(2, 6, 23, 0.22);
+  color: #ffffff;
   cursor: pointer;
-  font-size: 13px;
-  font-weight: 900;
   transition:
+    transform 0.2s ease,
     border-color 0.2s ease,
     background 0.2s ease,
-    transform 0.2s ease;
+    box-shadow 0.2s ease;
+}
+
+.imageUploadButton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    110deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.05) 48%,
+    transparent 75%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
 }
 
 .imageUploadButton:hover:not(.disabled) {
   transform: translateY(-2px);
   border-color: #fbbf24;
-  background: rgba(245, 158, 11, 0.15);
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(251, 191, 36, 0.22),
+      transparent 44%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(15, 23, 42, 0.94),
+      rgba(40, 52, 78, 0.82)
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 20px 42px rgba(2, 6, 23, 0.3),
+    0 0 24px rgba(251, 191, 36, 0.1);
+}
+
+.imageUploadButton:hover:not(.disabled)::after {
+  transform: translateX(100%);
 }
 
 .imageUploadButton input {
   display: none;
 }
 
+.imageUploadIcon {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  place-items: center;
+  border: 1px solid rgba(251, 191, 36, 0.75);
+  border-radius: 50%;
+  background: rgba(251, 191, 36, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 8px 20px rgba(2, 6, 23, 0.22);
+  color: #fbbf24;
+  font-size: 25px;
+  font-weight: 500;
+  line-height: 1;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.imageUploadButton:hover:not(.disabled) .imageUploadIcon {
+  transform: scale(1.06) rotate(90deg);
+  background: rgba(251, 191, 36, 0.2);
+}
+
+.imageUploadButton > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  text-align: left;
+}
+
+.imageUploadButton strong {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+}
+
+.imageUploadButton small {
+  color: rgba(226, 232, 240, 0.68);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
 .imageUploadButton.disabled {
+  border-color: rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.5);
+  box-shadow: none;
   cursor: not-allowed;
-  opacity: 0.5;
+  opacity: 0.58;
+}
+
+.imageUploadButton.disabled .imageUploadIcon {
+  border-color: rgba(148, 163, 184, 0.35);
+  background: rgba(148, 163, 184, 0.08);
+  color: rgba(226, 232, 240, 0.55);
+}
+
+@media (max-width: 600px) {
+  .imageUploadButton {
+    min-height: 96px;
+    padding: 17px 18px;
+    justify-content: flex-start;
+    gap: 13px;
+  }
+
+  .imageUploadIcon {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+    font-size: 22px;
+  }
+
+  .imageUploadButton strong {
+    font-size: 13px;
+  }
+
+  .imageUploadButton small {
+    font-size: 9px;
+  }
 }
 
 .imageUploadHint {
