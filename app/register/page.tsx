@@ -1,12 +1,28 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { sendGAEvent } from "@next/third-parties/google";
 
 export default function RegisterPage() {
   const router = useRouter();
+
+  const [
+    isFounderRegistration,
+    setIsFounderRegistration,
+  ] = useState(false);
+
+  useEffect(() => {
+    const plan =
+      new URLSearchParams(
+        window.location.search
+      ).get("plan");
+
+    setIsFounderRegistration(
+      plan === "founder"
+    );
+  }, []);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -24,6 +40,13 @@ export default function RegisterPage() {
 
   setLoading(true);
 
+  const requestedPlan =
+    new URLSearchParams(
+      window.location.search
+    ).get("plan") === "founder"
+      ? "founder"
+      : "";
+
   try {
     const response = await fetch("/api/register", {
       method: "POST",
@@ -34,6 +57,7 @@ export default function RegisterPage() {
         name,
         email,
         password,
+        plan: requestedPlan || undefined,
       }),
     });
 
@@ -65,7 +89,11 @@ sendGAEvent("event", "sign_up", {
   method: "email",
 });
 
-router.push("/login?registered=success");
+router.push(
+  requestedPlan === "founder"
+    ? "/login?registered=success&plan=founder"
+    : "/login?registered=success"
+);
 
   } catch (error) {
     alert(
@@ -125,18 +153,42 @@ router.push("/login?registered=success");
 
        <div className="mt-8 hidden max-w-2xl gap-3 sm:grid sm:grid-cols-3">
   <div className="rounded-3xl border border-white/10 bg-slate-950/55 p-4 backdrop-blur sm:p-5">
-    <p className="text-2xl font-semibold text-white">1 Demo</p>
-    <p className="mt-2 text-sm text-slate-300">kostenlose Generierung</p>
+    <p className="text-2xl font-semibold text-white">
+      {isFounderRegistration
+        ? "CHF 19.90"
+        : "1 Demo"}
+    </p>
+    <p className="mt-2 text-sm text-slate-300">
+      {isFounderRegistration
+        ? "pro Monat"
+        : "kostenlose Generierung"}
+    </p>
   </div>
 
   <div className="rounded-3xl border border-white/10 bg-slate-950/55 p-4 backdrop-blur sm:p-5">
-    <p className="text-2xl font-semibold text-white">Sofort</p>
-    <p className="mt-2 text-sm text-slate-300">Dashboard nutzen</p>
+    <p className="text-2xl font-semibold text-white">
+      {isFounderRegistration
+        ? "10 Bilder"
+        : "Sofort"}
+    </p>
+    <p className="mt-2 text-sm text-slate-300">
+      {isFounderRegistration
+        ? "pro Immobilie"
+        : "Dashboard nutzen"}
+    </p>
   </div>
 
   <div className="rounded-3xl border border-white/10 bg-slate-950/55 p-4 backdrop-blur sm:p-5">
-    <p className="text-2xl font-semibold text-white">Keine</p>
-    <p className="mt-2 text-sm text-slate-300">Kreditkarte nötig</p>
+    <p className="text-2xl font-semibold text-white">
+      {isFounderRegistration
+        ? "50 Plätze"
+        : "Keine"}
+    </p>
+    <p className="mt-2 text-sm text-slate-300">
+      {isFounderRegistration
+        ? "limitiertes Angebot"
+        : "Kreditkarte nötig"}
+    </p>
   </div>
 </div>
         </section>
@@ -145,15 +197,21 @@ router.push("/login?registered=success");
   <div className="rounded-[1.5rem] border border-white/15 bg-slate-950/65 p-7 shadow-2xl backdrop-blur-xl md:p-9">
             <div className="mb-8 text-center">
               <p className="text-sm font-bold uppercase tracking-wide text-amber-300">
-                Inserat-AI
+                {isFounderRegistration
+                  ? "FOUNDER-ANGEBOT"
+                  : "Inserat-AI"}
               </p>
 
               <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white">
-                Account erstellen
+                {isFounderRegistration
+                  ? "Founder-Zugang sichern"
+                  : "Account erstellen"}
               </h2>
 
               <p className="mt-3 text-sm leading-6 text-slate-400">
-                Kostenlos starten und direkt dein erstes Inserat generieren.
+                {isFounderRegistration
+                  ? "Konto erstellen und danach das Founder-Abo für CHF 19.90 pro Monat abschliessen."
+                  : "Kostenlos starten und direkt dein erstes Inserat generieren."}
               </p>
             </div>
 
@@ -234,14 +292,22 @@ router.push("/login?registered=success");
                 disabled={loading}
                 className="w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-8 py-4 text-base font-bold text-slate-950 shadow-[0_0_35px_rgba(245,158,11,0.25)] transition hover:scale-[1.01] hover:from-amber-200 hover:to-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {loading ? "Account wird erstellt..." : "Kostenlos starten"}
+                {loading
+                  ? "Account wird erstellt..."
+                  : isFounderRegistration
+                    ? "Founder-Zugang vorbereiten"
+                    : "Kostenlos starten"}
               </button>
             </form>
 
             <p className="mt-6 text-center text-sm text-slate-400">
               Bereits registriert?{" "}
               <Link
-                href="/login"
+                href={
+                  isFounderRegistration
+                    ? "/login?plan=founder"
+                    : "/login"
+                }
                 className="font-bold text-amber-300 transition hover:text-amber-200"
               >
                 Einloggen
@@ -249,9 +315,20 @@ router.push("/login?registered=success");
             </p>
 
             <div className="mt-8 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-5 text-center text-sm leading-6 text-amber-100">
-              Die Registrierung ist kostenlos. Kosten entstehen erst, wenn
-              du ein Angebot auswählst oder eine einzelne Immobilie
-              freischaltest.
+              {isFounderRegistration ? (
+                <>
+                  Die Registrierung ist kostenlos. Nach der
+                  E-Mail-Bestätigung und dem Login wirst du zum
+                  sicheren Stripe-Checkout weitergeleitet. Erst dort
+                  startet das Abo für CHF 19.90 pro Monat.
+                </>
+              ) : (
+                <>
+                  Die Registrierung ist kostenlos. Kosten entstehen
+                  erst, wenn du ein Angebot auswählst oder eine
+                  einzelne Immobilie freischaltest.
+                </>
+              )}
             </div>
           </div>
         </section>

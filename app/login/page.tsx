@@ -98,6 +98,13 @@ if (reset === "success") {
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    const requestedPlan =
+      new URLSearchParams(
+        window.location.search
+      ).get("plan") === "founder"
+        ? "founder"
+        : "";
+
     if (!email.trim() || !password) {
       setMessage("Bitte E-Mail-Adresse und Passwort eingeben.");
       setMessageType("error");
@@ -176,6 +183,56 @@ if (reset === "success") {
         "loginExpiresAt",
         String(loginExpiresAt)
       );
+
+      if (requestedPlan === "founder") {
+        setMessage(
+          "Founder-Checkout wird geöffnet …"
+        );
+        setMessageType("info");
+
+        const checkoutResponse = await fetch(
+          "/api/payments/subscription/checkout",
+          {
+            method: "POST",
+            credentials: "include",
+            cache: "no-store",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              plan: "founder",
+            }),
+          }
+        );
+
+        const checkoutData =
+          (await checkoutResponse
+            .json()
+            .catch(() => null)) as
+            | {
+                success?: boolean;
+                url?: string;
+                error?: string;
+              }
+            | null;
+
+        if (
+          !checkoutResponse.ok ||
+          !checkoutData?.success ||
+          !checkoutData.url
+        ) {
+          throw new Error(
+            checkoutData?.error ||
+              "Der Founder-Checkout konnte nicht geöffnet werden."
+          );
+        }
+
+        window.location.assign(
+          checkoutData.url
+        );
+        return;
+      }
 
       router.push("/dashboard");
     } catch (error) {

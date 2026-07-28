@@ -26,6 +26,7 @@ type MenuItem = {
   href?: string;
   accent: string;
   comingSoon?: boolean;
+  proOnly?: boolean;
 };
 
 const menuItems: MenuItem[] = [
@@ -63,12 +64,14 @@ const menuItems: MenuItem[] = [
     icon: "🎬",
     href: "/dashboard/tour-guide",
     accent: "cyan",
+    proOnly: true,
   },
   {
     label: "Publishing-Center",
     description: "Veröffentlichungen zentral planen",
     icon: "🚀",
     accent: "green",
+    proOnly: true,
     comingSoon: true,
   },
   {
@@ -76,6 +79,7 @@ const menuItems: MenuItem[] = [
     description: "Schweizer Standortdaten ergänzen",
     icon: "📍",
     accent: "turquoise",
+    proOnly: true,
     comingSoon: true,
   },
   {
@@ -83,6 +87,7 @@ const menuItems: MenuItem[] = [
     description: "Diskrete Immobilienvermarktung",
     icon: "🔒",
     accent: "gold",
+    proOnly: true,
     comingSoon: true,
   },
 ];
@@ -152,6 +157,14 @@ export default function Navbar() {
 
   const moduleClass = getModuleClass(pathname);
   const planLabel = getPlanLabel(userPlan);
+
+  const hasProAccess = [
+    "pro",
+    "agency",
+    "admin",
+  ].includes(
+    userPlan.trim().toLowerCase()
+  );
 
   const isAuthenticated =
     sessionStatus === "authenticated";
@@ -577,6 +590,63 @@ export default function Navbar() {
                   item.href
                 );
 
+                const isProLocked =
+                  Boolean(
+                    item.proOnly &&
+                    !hasProAccess
+                  );
+
+                /*
+                 * Fertige Pro-Funktionen bleiben für Founder
+                 * sichtbar und führen als Upgrade-Hinweis
+                 * zur Preisübersicht.
+                 */
+                if (
+                  isProLocked &&
+                  item.href &&
+                  !item.comingSoon
+                ) {
+                  return (
+                    <Link
+                      key={item.label}
+                      href="/#preise"
+                      className={`appMenuItem appMenuItem-${item.accent}`}
+                      onClick={() =>
+                        setMenuOpen(false)
+                      }
+                      aria-label={`${item.label} – nur im Pro-Angebot`}
+                      style={{
+                        border:
+                          "1px solid rgba(167, 139, 250, 0.42)",
+                        background:
+                          "linear-gradient(135deg, rgba(30,41,59,.96), rgba(76,29,149,.34))",
+                      }}
+                    >
+                      <span className="appMenuItemIcon">
+                        {item.icon}
+                      </span>
+
+                      <span className="appMenuItemContent">
+                        <strong>
+                          {item.label}{" "}
+                          <span aria-hidden="true">
+                            🔒
+                          </span>
+                        </strong>
+
+                        <small>
+                          {item.description}
+                          {" · "}Nur im Pro-Angebot
+                        </small>
+                      </span>
+
+                      <span className="appMenuSoon">
+                        PRO
+                      </span>
+                    </Link>
+                  );
+                }
+
                 if (
                   item.comingSoon ||
                   !item.href
@@ -595,11 +665,16 @@ export default function Navbar() {
                         <strong>{item.label}</strong>
                         <small>
                           {item.description}
+                          {item.proOnly
+                            ? " · In Entwicklung"
+                            : ""}
                         </small>
                       </span>
 
                       <span className="appMenuSoon">
-                        Bald
+                        {item.proOnly
+                          ? "PRO"
+                          : "Bald"}
                       </span>
                     </div>
                   );

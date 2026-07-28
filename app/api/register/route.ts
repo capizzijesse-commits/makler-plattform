@@ -13,6 +13,7 @@ type RegisterBody = {
   name?: string;
   email?: string;
   password?: string;
+  plan?: string;
 };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -48,6 +49,12 @@ export async function POST(request: Request) {
      * Leerzeichen können Bestandteil eines Passworts sein.
      */
     const password = body.password ?? "";
+
+    const requestedPlan =
+      typeof body.plan === "string" &&
+      body.plan.trim().toLowerCase() === "founder"
+        ? "founder"
+        : "";
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -217,7 +224,12 @@ export async function POST(request: Request) {
 
     const verificationUrl =
       `${appUrl}/api/verify-email?token=` +
-      encodeURIComponent(rawVerificationToken);
+      encodeURIComponent(rawVerificationToken) +
+      (
+        requestedPlan === "founder"
+          ? "&plan=founder"
+          : ""
+      );
 
     const fromEmail =
       process.env.RESEND_FROM_EMAIL || "info@inserat-ai.ch";

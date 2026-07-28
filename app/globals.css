@@ -3372,7 +3372,7 @@ input:focus::placeholder {
 .appMenuOverlay {
   position: fixed;
   inset: 0;
-  z-index: 190;
+  z-index: 2147483000;
   border: 0;
   background: rgba(2, 6, 23, 0.64);
   backdrop-filter: blur(5px);
@@ -3383,7 +3383,7 @@ input:focus::placeholder {
   position: fixed;
   top: 0;
   right: 0;
-  z-index: 200;
+  z-index: 2147483001;
   display: flex;
   width: min(430px, 94vw);
   height: 100dvh;

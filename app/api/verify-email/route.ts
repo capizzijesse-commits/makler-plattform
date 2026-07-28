@@ -13,26 +13,41 @@ function hashVerificationToken(token: string): string {
 
 function redirectToLogin(
   request: Request,
-  status: string
+  status: string,
+  requestedPlan?: "founder"
 ) {
   const appUrl = getAppUrl(request.url);
 
+  const planQuery =
+    requestedPlan === "founder"
+      ? "&plan=founder"
+      : "";
+
   return NextResponse.redirect(
-    new URL(`/login?verified=${status}`, appUrl)
+    new URL(
+      `/login?verified=${status}${planQuery}`,
+      appUrl
+    )
   );
 }
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const token = searchParams.get("token")?.trim();
+    const token =
+      searchParams.get("token")?.trim();
+
+    const requestedPlan =
+      searchParams.get("plan") === "founder"
+        ? "founder" as const
+        : undefined;
 
     if (!token) {
-      return redirectToLogin(request, "missing");
+      return redirectToLogin(request, "missing", requestedPlan);
     }
 
     if (token.length > 128) {
-      return redirectToLogin(request, "invalid");
+      return redirectToLogin(request, "invalid", requestedPlan);
     }
 
     const tokenHash = hashVerificationToken(token);
@@ -66,7 +81,7 @@ export async function GET(request: Request) {
     });
 
     if (!user) {
-      return redirectToLogin(request, "invalid");
+      return redirectToLogin(request, "invalid", requestedPlan);
     }
 
     /*
@@ -90,10 +105,10 @@ export async function GET(request: Request) {
     });
 
     if (verifiedUser.count !== 1) {
-      return redirectToLogin(request, "invalid");
+      return redirectToLogin(request, "invalid", requestedPlan);
     }
 
-    return redirectToLogin(request, "success");
+    return redirectToLogin(request, "success", requestedPlan);
   } catch (error) {
     console.error("VERIFY EMAIL API ERROR:", error);
 

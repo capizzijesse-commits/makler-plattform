@@ -62,7 +62,7 @@ const plans = [
   },
 ] as const;
 
-const FOUNDER_CHECKOUT_AVAILABLE = false;
+const FOUNDER_CHECKOUT_AVAILABLE = true;
 
 export default function PricingSection() {
   const [checkoutLoading, setCheckoutLoading] =
@@ -122,16 +122,28 @@ export default function PricingSection() {
         !data?.success ||
         !data.url
       ) {
-        throw new Error(
+        const checkoutMessage =
           data?.error ||
-            "Der Founder-Checkout konnte nicht gestartet werden."
+          "Der Founder-Checkout konnte nicht gestartet werden.";
+
+        const founderAlreadyExists =
+          checkoutMessage.includes(
+            "bereits ein Founder-Abonnement"
+          );
+
+        setCheckoutError(
+          founderAlreadyExists
+            ? "Founder-Abonnement bereits vorhanden. Für dieses Konto besteht bereits ein aktives oder begonnenes Founder-Abonnement. Du kannst es unter Mein Konto verwalten."
+            : checkoutMessage
         );
+
+        return;
       }
 
       window.location.assign(data.url);
     } catch (error) {
-      console.error(
-        "FOUNDER CHECKOUT FRONTEND ERROR:",
+      console.warn(
+        "FOUNDER CHECKOUT HINWEIS:",
         error
       );
 
@@ -144,6 +156,11 @@ export default function PricingSection() {
       setCheckoutLoading(false);
     }
   }
+
+  const isFounderExistingNotice =
+    checkoutError.startsWith(
+      "Founder-Abonnement bereits vorhanden."
+    );
 
   return (
     <section id="preise" className="pricingSection">
@@ -227,21 +244,51 @@ export default function PricingSection() {
 
         {checkoutError && (
           <div
-            role="alert"
+            role={
+              isFounderExistingNotice
+                ? "status"
+                : "alert"
+            }
+            aria-live="polite"
             style={{
               maxWidth: 760,
               margin: "0 auto 22px",
-              padding: "14px 16px",
-              border:
-                "1px solid rgba(248,113,113,.55)",
+              padding: "15px 17px",
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 12,
+              border: isFounderExistingNotice
+                ? "1px solid rgba(245,189,33,.58)"
+                : "1px solid rgba(248,113,113,.55)",
               borderRadius: 15,
-              background:
-                "rgba(127,29,29,.88)",
+              background: isFounderExistingNotice
+                ? "linear-gradient(135deg, rgba(15,23,42,.97), rgba(92,63,14,.9))"
+                : "rgba(127,29,29,.88)",
               color: "#fff",
               fontWeight: 800,
+              lineHeight: 1.5,
+              boxShadow: isFounderExistingNotice
+                ? "0 16px 38px rgba(245,189,33,.12)"
+                : "none",
             }}
           >
-            {checkoutError}
+            <span
+              aria-hidden="true"
+              style={{
+                flexShrink: 0,
+                color: isFounderExistingNotice
+                  ? "#f5bd21"
+                  : "#fecaca",
+                fontSize: 18,
+                fontWeight: 950,
+              }}
+            >
+              {isFounderExistingNotice
+                ? "✓"
+                : "!"}
+            </span>
+
+            <span>{checkoutError}</span>
           </div>
         )}
 
