@@ -40,8 +40,8 @@ type Listing = {
   style: string | null;
   generatedVariants: unknown;
   createdAt: string;
-  updatedAt: string;
   archivedAt: string | null;
+  updatedAt: string;
 
   paymentModel: string;
   unlockStatus: string;
