@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { useAppDialog } from "../../../components/AppDialogProvider";
 
@@ -16,48 +17,64 @@ export default function ListingActions({
   unlockStatus,
   singleObjectPriceCents,
 }: ListingActionsProps) {
+  const t = useTranslations("ListingActions");
+  const locale = useLocale();
+  const { confirmAction } = useAppDialog();
   const [busyAction, setBusyAction] = useState<
     "archive" | "delete" | "checkout" | null
   >(null);
-  const { confirmAction } = useAppDialog();
-
-  const requiresPayment =
-    unlockStatus === "locked" ||
-    unlockStatus === "pending";
-
-  const formattedSingleObjectPrice =
-    new Intl.NumberFormat("de-CH", {
-      style: "currency",
-      currency: "CHF",
-    }).format(
-      singleObjectPriceCents / 100
-    );
   const [error, setError] = useState("");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+
+  const intlLocale =
+    locale === "it"
+      ? "it-CH"
+      : locale === "fr"
+        ? "fr-CH"
+        : locale === "en"
+          ? "en-CH"
+          : "de-CH";
+
+  const requiresPayment =
+    unlockStatus === "locked" || unlockStatus === "pending";
+
+  const formattedSingleObjectPrice = new Intl.NumberFormat(
+    intlLocale,
+    {
+      style: "currency",
+      currency: "CHF",
+    }
+  ).format(singleObjectPriceCents / 100);
+
+  const deleteKeyword = t("delete.keyword")
+    .trim()
+    .toLocaleLowerCase(intlLocale);
+
   const deleteConfirmed =
-  deleteConfirmation.trim().toLocaleLowerCase("de-CH") === "löschen";
+    deleteConfirmation.trim().toLocaleLowerCase(intlLocale) ===
+    deleteKeyword;
 
   async function handleArchive() {
     if (busyAction) return;
 
-   const confirmed = await confirmAction({
-  title: archived
-    ? "Objekt reaktivieren?"
-    : "Objekt archivieren?",
-  message: archived
-    ? "Dieses Objekt wird wieder aktiviert und erscheint erneut im Makler-Cockpit."
-    : "Dieses Objekt wird archiviert und bleibt weiterhin gespeichert.",
-  confirmLabel: archived
-    ? "Objekt aktivieren"
-    : "Objekt archivieren",
-  cancelLabel: "Abbrechen",
-  tone: "warning",
-});
+    const confirmed = await confirmAction({
+      title: archived
+        ? t("archive.reactivateTitle")
+        : t("archive.archiveTitle"),
+      message: archived
+        ? t("archive.reactivateMessage")
+        : t("archive.archiveMessage"),
+      confirmLabel: archived
+        ? t("archive.reactivateConfirm")
+        : t("archive.archiveConfirm"),
+      cancelLabel: t("common.cancel"),
+      tone: "warning",
+    });
 
-if (!confirmed) {
-  return;
-}
+    if (!confirmed) {
+      return;
+    }
 
     try {
       setBusyAction("archive");
@@ -85,9 +102,7 @@ if (!confirmed) {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(
-          data.error || "Der Objektstatus konnte nicht geÃ¤ndert werden."
-        );
+        throw new Error(data.error || t("errors.status"));
       }
 
       window.location.reload();
@@ -95,9 +110,8 @@ if (!confirmed) {
       setError(
         archiveError instanceof Error
           ? archiveError.message
-          : "Der Objektstatus konnte nicht geÃ¤ndert werden."
+          : t("errors.status")
       );
-
       setBusyAction(null);
     }
   }
@@ -106,9 +120,7 @@ if (!confirmed) {
     setError("");
 
     if (!archived) {
-      setError(
-        "Bitte archiviere das Objekt zuerst. Aktive Objekte kÃ¶nnen aus SicherheitsgrÃ¼nden nicht gelÃ¶scht werden."
-      );
+      setError(t("delete.archiveFirstError"));
       return;
     }
 
@@ -125,8 +137,8 @@ if (!confirmed) {
 
   async function handleDelete() {
     if (busyAction || !deleteConfirmed) {
-  return;
-}
+      return;
+    }
 
     try {
       setBusyAction("delete");
@@ -148,9 +160,7 @@ if (!confirmed) {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(
-          data.error || "Das Objekt konnte nicht gelÃ¶scht werden."
-        );
+        throw new Error(data.error || t("errors.delete"));
       }
 
       window.location.href = "/cockpit";
@@ -158,9 +168,8 @@ if (!confirmed) {
       setError(
         deleteError instanceof Error
           ? deleteError.message
-          : "Das Objekt konnte nicht gelÃ¶scht werden."
+          : t("errors.delete")
       );
-
       setBusyAction(null);
     }
   }
@@ -180,9 +189,7 @@ if (!confirmed) {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            listingId,
-          }),
+          body: JSON.stringify({ listingId }),
         }
       );
 
@@ -191,15 +198,14 @@ if (!confirmed) {
         return;
       }
 
-      const data =
-        (await response.json().catch(() => null)) as
-          | {
-              success?: boolean;
-              checkoutUrl?: string;
-              alreadyUnlocked?: boolean;
-              error?: string;
-            }
-          | null;
+      const data = (await response.json().catch(() => null)) as
+        | {
+            success?: boolean;
+            checkoutUrl?: string;
+            alreadyUnlocked?: boolean;
+            error?: string;
+          }
+        | null;
 
       if (data?.alreadyUnlocked) {
         window.location.reload();
@@ -211,24 +217,20 @@ if (!confirmed) {
         !data?.success ||
         typeof data.checkoutUrl !== "string"
       ) {
-        throw new Error(
-          data?.error ||
-            "Die Zahlungsseite konnte nicht geöffnet werden."
-        );
+        throw new Error(data?.error || t("errors.checkout"));
       }
 
-      window.location.href =
-        data.checkoutUrl;
+      window.location.href = data.checkoutUrl;
     } catch (checkoutError) {
       setError(
         checkoutError instanceof Error
           ? checkoutError.message
-          : "Die Zahlungsseite konnte nicht geöffnet werden."
+          : t("errors.checkout")
       );
-
       setBusyAction(null);
     }
   }
+
   return (
     <>
       <div
@@ -242,13 +244,11 @@ if (!confirmed) {
           <div
             style={{
               padding: "17px",
-              border:
-                "1px solid rgba(251, 191, 36, 0.46)",
+              border: "1px solid rgba(251, 191, 36, 0.46)",
               borderRadius: "14px",
               background:
                 "linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.94))",
-              boxShadow:
-                "0 16px 36px rgba(2, 6, 23, 0.32)",
+              boxShadow: "0 16px 36px rgba(2, 6, 23, 0.32)",
             }}
           >
             <span
@@ -261,7 +261,7 @@ if (!confirmed) {
                 letterSpacing: "0.14em",
               }}
             >
-              EINZELIMMOBILIE
+              {t("payment.sectionLabel")}
             </span>
 
             <strong
@@ -272,8 +272,8 @@ if (!confirmed) {
               }}
             >
               {unlockStatus === "pending"
-                ? "Zahlung noch offen"
-                : "Immobilie freischalten"}
+                ? t("payment.pendingTitle")
+                : t("payment.unlockTitle")}
             </strong>
 
             <p
@@ -284,9 +284,7 @@ if (!confirmed) {
                 lineHeight: 1.55,
               }}
             >
-              Einmalige Zahlung für Inserat-Texte,
-              Social-Media-Texte und Exposé dieses
-              Objekts. Kein Abonnement.
+              {t("payment.description")}
             </p>
 
             <button
@@ -297,31 +295,29 @@ if (!confirmed) {
                 width: "100%",
                 minHeight: "48px",
                 padding: "0 14px",
-                border:
-                  "1px solid rgba(251, 191, 36, 0.62)",
+                border: "1px solid rgba(251, 191, 36, 0.62)",
                 borderRadius: "11px",
                 background:
                   "linear-gradient(135deg, #fcd34d, #f59e0b, #d97706)",
                 color: "#111827",
                 fontWeight: 900,
-                cursor:
-                  busyAction !== null
-                    ? "wait"
-                    : "pointer",
-                opacity:
-                  busyAction !== null
-                    ? 0.68
-                    : 1,
+                cursor: busyAction !== null ? "wait" : "pointer",
+                opacity: busyAction !== null ? 0.68 : 1,
               }}
             >
               {busyAction === "checkout"
-                ? "Stripe wird geöffnet ..."
+                ? t("payment.openingStripe")
                 : unlockStatus === "pending"
-                  ? `Zahlung fortsetzen – ${formattedSingleObjectPrice}`
-                  : `Für ${formattedSingleObjectPrice} freischalten`}
+                  ? t("payment.continue", {
+                      price: formattedSingleObjectPrice,
+                    })
+                  : t("payment.unlock", {
+                      price: formattedSingleObjectPrice,
+                    })}
             </button>
           </div>
         )}
+
         <button
           type="button"
           onClick={handleArchive}
@@ -337,15 +333,14 @@ if (!confirmed) {
             fontWeight: 900,
             cursor: busyAction ? "wait" : "pointer",
             opacity: busyAction ? 0.68 : 1,
-            boxShadow:
-              "0 12px 25px rgba(245, 158, 11, 0.22)",
+            boxShadow: "0 12px 25px rgba(245, 158, 11, 0.22)",
           }}
         >
           {busyAction === "archive"
-            ? "Status wird geÃ¤ndert ..."
+            ? t("archive.changing")
             : archived
-              ? "Objekt wieder aktivieren"
-              : "Objekt archivieren"}
+              ? t("archive.reactivateButton")
+              : t("archive.archiveButton")}
         </button>
 
         <button
@@ -371,10 +366,10 @@ if (!confirmed) {
           }}
         >
           {busyAction === "delete"
-            ? "Objekt wird gelÃ¶scht ..."
+            ? t("delete.deleting")
             : archived
-              ? "Objekt dauerhaft löschen"
-              : "Zum Löschen zuerst archivieren"}
+              ? t("delete.deleteButton")
+              : t("delete.archiveFirstButton")}
         </button>
 
         {error && (
@@ -422,8 +417,7 @@ if (!confirmed) {
               padding: "26px",
               border: "1px solid rgba(248, 113, 113, 0.34)",
               borderRadius: "22px",
-              background:
-                "linear-gradient(145deg, #111827, #1e293b)",
+              background: "linear-gradient(145deg, #111827, #1e293b)",
               boxShadow: "0 28px 80px rgba(0, 0, 0, 0.5)",
             }}
           >
@@ -437,7 +431,7 @@ if (!confirmed) {
                 letterSpacing: "0.14em",
               }}
             >
-              ENDGÃœLTIG Löschen
+              {t("delete.permanentLabel")}
             </span>
 
             <h3
@@ -448,7 +442,7 @@ if (!confirmed) {
                 fontSize: "25px",
               }}
             >
-              Objekt wirklich löschen?
+              {t("delete.dialogTitle")}
             </h3>
 
             <p
@@ -458,9 +452,7 @@ if (!confirmed) {
                 lineHeight: 1.6,
               }}
             >
-              Alle Objektdaten und gespeicherten Inseratvarianten
-              werden dauerhaft entfernt. Dieser Vorgang kann nicht
-              rÃ¼ckgÃ¤ngig gemacht werden.
+              {t("delete.dialogDescription")}
             </p>
 
             <label
@@ -476,7 +468,9 @@ if (!confirmed) {
                   fontWeight: 800,
                 }}
               >
-                Tippe zur Bestätigung „löschen“ ein:
+                {t("delete.confirmPrompt", {
+                  keyword: t("delete.keyword"),
+                })}
               </span>
 
               <input
@@ -485,13 +479,12 @@ if (!confirmed) {
                   setDeleteConfirmation(event.target.value)
                 }
                 autoFocus
-               placeholder="löschen"
+                placeholder={t("delete.keyword")}
                 style={{
                   width: "100%",
                   minHeight: "48px",
                   padding: "0 14px",
-                  border:
-                    "1px solid rgba(248, 113, 113, 0.38)",
+                  border: "1px solid rgba(248, 113, 113, 0.38)",
                   borderRadius: "12px",
                   outline: "none",
                   background: "rgba(255, 255, 255, 0.06)",
@@ -516,8 +509,7 @@ if (!confirmed) {
                 style={{
                   minHeight: "44px",
                   padding: "0 16px",
-                  border:
-                    "1px solid rgba(255, 255, 255, 0.13)",
+                  border: "1px solid rgba(255, 255, 255, 0.13)",
                   borderRadius: "11px",
                   background: "rgba(255, 255, 255, 0.06)",
                   color: "#ffffff",
@@ -525,37 +517,29 @@ if (!confirmed) {
                   cursor: "pointer",
                 }}
               >
-                Abbrechen
+                {t("common.cancel")}
               </button>
 
               <button
                 type="button"
                 onClick={handleDelete}
-               disabled={busyAction !== null || !deleteConfirmed}
+                disabled={busyAction !== null || !deleteConfirmed}
                 style={{
                   minHeight: "44px",
                   padding: "0 16px",
-                  border:
-                    "1px solid rgba(248, 113, 113, 0.46)",
+                  border: "1px solid rgba(248, 113, 113, 0.46)",
                   borderRadius: "11px",
-                  background:
-                  deleteConfirmed
-                      ? "linear-gradient(135deg, #ef4444, #b91c1c)"
-                      : "rgba(148, 163, 184, 0.12)",
-                  color:
-                   deleteConfirmed
-                      ? "#ffffff"
-                      : "#94a3b8",
+                  background: deleteConfirmed
+                    ? "linear-gradient(135deg, #ef4444, #b91c1c)"
+                    : "rgba(148, 163, 184, 0.12)",
+                  color: deleteConfirmed ? "#ffffff" : "#94a3b8",
                   fontWeight: 900,
-                  cursor:
-                 deleteConfirmed
-                      ? "pointer"
-                      : "not-allowed",
+                  cursor: deleteConfirmed ? "pointer" : "not-allowed",
                 }}
               >
                 {busyAction === "delete"
-                  ? "Wird gelöscht ..."
-: "Endgültig löschen"}
+                  ? t("delete.deletingShort")
+                  : t("delete.finalDelete")}
               </button>
             </div>
           </div>

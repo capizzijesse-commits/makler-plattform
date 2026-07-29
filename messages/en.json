@@ -928,5 +928,144 @@
       "thumbnailsDown": "Move thumbnails down",
       "showImage": "Show property image {index}"
     }
+  },
+  "CockpitDetail": {
+    "errors": {
+      "missingId": "No property ID was found.",
+      "load": "The property could not be loaded."
+    },
+    "payment": {
+      "completedPending": "The payment has been completed. Access is still being verified.",
+      "verifying": "Securely confirming payment …",
+      "notConfirmed": "The payment could not yet be confirmed.",
+      "unlocked": "Payment successful — this property is now unlocked.",
+      "retry": "The payment could not yet be confirmed. Please reload the page."
+    },
+    "loading": {
+      "title": "Loading property …",
+      "description": "The saved property data is being retrieved."
+    },
+    "notFound": {
+      "title": "The property could not be opened",
+      "description": "The property was not found."
+    },
+    "navigation": {
+      "back": "Back to cockpit",
+      "newObject": "Create a new property"
+    },
+    "intro": {
+      "eyebrow": "PROPERTY DETAILS",
+      "titleWithRooms": "{rooms}-room {type} in {location}",
+      "title": "{type} in {location}"
+    },
+    "gallery": {
+      "sectionLabel": "PROPERTY IMAGES",
+      "title": "Image gallery",
+      "previous": "Previous image",
+      "next": "Next image",
+      "showImage": "Show image {index}",
+      "imageAlt": "{type}, image {index}",
+      "empty": "No property images yet"
+    },
+    "insights": {
+      "views": {
+        "label": "Views",
+        "value": "No data yet",
+        "description": "Available once the property is shared publicly."
+      },
+      "social": {
+        "label": "Social Media",
+        "value": "Available after publication",
+        "description": "Likes and comments will be shown here later."
+      }
+    },
+    "facts": {
+      "sectionLabel": "PROPERTY DATA",
+      "title": "Property overview",
+      "propertyType": "Property type",
+      "rooms": "Rooms",
+      "livingArea": "Living area",
+      "style": "Style",
+      "notSpecified": "Not specified",
+      "updated": "Last updated",
+      "highlights": "Highlights",
+      "priceNotSpecified": "Price not specified",
+      "dateUnknown": "Date unknown"
+    },
+    "variants": {
+      "sectionLabel": "INSERAT-AI",
+      "title": "Saved text variants",
+      "count": "{count, plural, one {# variant} other {# variants}}",
+      "empty": "No listing variants have been saved for this property.",
+      "tab": "Variant {index}",
+      "salePrice": "Sale price"
+    },
+    "status": {
+      "sectionLabel": "PROPERTY STATUS",
+      "archivedTitle": "Archived property",
+      "activeTitle": "Active property",
+      "statusLabel": "Status",
+      "archived": "Archived",
+      "active": "Active",
+      "saved": "Saved",
+      "objectId": "Property ID"
+    },
+    "nextSteps": {
+      "sectionLabel": "NEXT STEPS",
+      "title": "Manage property",
+      "description": "Manage this property and create the next marketing materials.",
+      "edit": "Edit property",
+      "social": "Create social media",
+      "expose": "Create brochure",
+      "createTour": "Create 3D video tour",
+      "tour": "3D video tour",
+      "tourProAria": "3D video tour — available with Pro for CHF 79.90",
+      "homeStaging": "Virtual home staging",
+      "homeStagingProAria": "Virtual home staging — available with Pro for CHF 79.90",
+      "proPrice": "Pro CHF 79.90"
+    }
+  },
+  "ListingActions": {
+    "common": {
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "status": "The property status could not be changed.",
+      "delete": "The property could not be deleted.",
+      "checkout": "The payment page could not be opened."
+    },
+    "archive": {
+      "reactivateTitle": "Reactivate property?",
+      "archiveTitle": "Archive property?",
+      "reactivateMessage": "This property will be reactivated and will appear in the broker cockpit again.",
+      "archiveMessage": "This property will be archived and will remain saved.",
+      "reactivateConfirm": "Reactivate property",
+      "archiveConfirm": "Archive property",
+      "changing": "Changing status …",
+      "reactivateButton": "Reactivate property",
+      "archiveButton": "Archive property"
+    },
+    "payment": {
+      "sectionLabel": "SINGLE PROPERTY",
+      "pendingTitle": "Payment still pending",
+      "unlockTitle": "Unlock property",
+      "description": "One-time payment for this property’s listing text, social media text and brochure. No subscription.",
+      "openingStripe": "Opening Stripe …",
+      "continue": "Continue payment – {price}",
+      "unlock": "Unlock for {price}"
+    },
+    "delete": {
+      "keyword": "delete",
+      "archiveFirstError": "Archive the property first. Active properties cannot be deleted for security reasons.",
+      "deleting": "Deleting property …",
+      "deleteButton": "Delete property permanently",
+      "archiveFirstButton": "Archive before deleting",
+      "permanentLabel": "PERMANENT DELETION",
+      "dialogTitle": "Delete this property?",
+      "dialogDescription": "All property data and saved listing variants will be permanently removed. This action cannot be undone.",
+      "confirmPrompt": "To confirm, type “{keyword}”:",
+      "deletingShort": "Deleting …",
+      "finalDelete": "Delete permanently"
+    }
   }
 }

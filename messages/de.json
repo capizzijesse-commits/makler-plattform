@@ -928,5 +928,144 @@
       "thumbnailsDown": "Vorschaubilder nach unten",
       "showImage": "Objektbild {index} anzeigen"
     }
+  },
+  "CockpitDetail": {
+    "errors": {
+      "missingId": "Keine Objekt-ID gefunden.",
+      "load": "Das Objekt konnte nicht geladen werden."
+    },
+    "payment": {
+      "completedPending": "Die Zahlung wurde abgeschlossen. Die Freischaltung wird noch geprüft.",
+      "verifying": "Zahlung wird sicher bestätigt …",
+      "notConfirmed": "Die Zahlung konnte noch nicht bestätigt werden.",
+      "unlocked": "Zahlung erfolgreich – diese Immobilie ist freigeschaltet.",
+      "retry": "Die Zahlung konnte noch nicht bestätigt werden. Bitte lade die Seite erneut."
+    },
+    "loading": {
+      "title": "Objekt wird geladen …",
+      "description": "Die gespeicherten Objektdaten werden abgerufen."
+    },
+    "notFound": {
+      "title": "Objekt konnte nicht geöffnet werden",
+      "description": "Das Objekt wurde nicht gefunden."
+    },
+    "navigation": {
+      "back": "Zurück zum Cockpit",
+      "newObject": "Neues Objekt erstellen"
+    },
+    "intro": {
+      "eyebrow": "OBJEKTDETAILS",
+      "titleWithRooms": "{rooms}-Zimmer-{type} in {location}",
+      "title": "{type} in {location}"
+    },
+    "gallery": {
+      "sectionLabel": "OBJEKTBILDER",
+      "title": "Bildergalerie",
+      "previous": "Vorheriges Bild",
+      "next": "Nächstes Bild",
+      "showImage": "Bild {index} anzeigen",
+      "imageAlt": "{type}, Bild {index}",
+      "empty": "Noch keine Objektbilder"
+    },
+    "insights": {
+      "views": {
+        "label": "Aufrufe",
+        "value": "Noch keine Daten",
+        "description": "Verfügbar, sobald das Objekt öffentlich geteilt wird."
+      },
+      "social": {
+        "label": "Social Media",
+        "value": "Nach Veröffentlichung verfügbar",
+        "description": "Likes und Kommentare werden später hier angezeigt."
+      }
+    },
+    "facts": {
+      "sectionLabel": "OBJEKTDATEN",
+      "title": "Immobilie im Überblick",
+      "propertyType": "Objektart",
+      "rooms": "Zimmer",
+      "livingArea": "Wohnfläche",
+      "style": "Stil",
+      "notSpecified": "Nicht angegeben",
+      "updated": "Zuletzt aktualisiert",
+      "highlights": "Highlights",
+      "priceNotSpecified": "Preis nicht angegeben",
+      "dateUnknown": "Datum unbekannt"
+    },
+    "variants": {
+      "sectionLabel": "INSERAT-AI",
+      "title": "Gespeicherte Textvarianten",
+      "count": "{count, plural, one {# Variante} other {# Varianten}}",
+      "empty": "Für dieses Objekt wurden keine Inseratvarianten gespeichert.",
+      "tab": "Variante {index}",
+      "salePrice": "Verkaufspreis"
+    },
+    "status": {
+      "sectionLabel": "OBJEKTSTATUS",
+      "archivedTitle": "Archiviertes Objekt",
+      "activeTitle": "Aktives Objekt",
+      "statusLabel": "Status",
+      "archived": "Archiviert",
+      "active": "Aktiv",
+      "saved": "Gespeichert",
+      "objectId": "Objekt-ID"
+    },
+    "nextSteps": {
+      "sectionLabel": "NÄCHSTE SCHRITTE",
+      "title": "Objekt verwalten",
+      "description": "Verwalte dieses Objekt und erstelle die nächsten Vermarktungsinhalte.",
+      "edit": "Objekt bearbeiten",
+      "social": "Social Media erstellen",
+      "expose": "Exposé erstellen",
+      "createTour": "3D-Video-Tour erstellen",
+      "tour": "3D-Video-Tour",
+      "tourProAria": "3D-Video-Tour – verfügbar mit Pro für CHF 79.90",
+      "homeStaging": "Virtuelles Home Staging",
+      "homeStagingProAria": "Virtuelles Home Staging – verfügbar mit Pro für CHF 79.90",
+      "proPrice": "Pro CHF 79.90"
+    }
+  },
+  "ListingActions": {
+    "common": {
+      "cancel": "Abbrechen"
+    },
+    "errors": {
+      "status": "Der Objektstatus konnte nicht geändert werden.",
+      "delete": "Das Objekt konnte nicht gelöscht werden.",
+      "checkout": "Die Zahlungsseite konnte nicht geöffnet werden."
+    },
+    "archive": {
+      "reactivateTitle": "Objekt reaktivieren?",
+      "archiveTitle": "Objekt archivieren?",
+      "reactivateMessage": "Dieses Objekt wird wieder aktiviert und erscheint erneut im Makler-Cockpit.",
+      "archiveMessage": "Dieses Objekt wird archiviert und bleibt weiterhin gespeichert.",
+      "reactivateConfirm": "Objekt aktivieren",
+      "archiveConfirm": "Objekt archivieren",
+      "changing": "Status wird geändert …",
+      "reactivateButton": "Objekt wieder aktivieren",
+      "archiveButton": "Objekt archivieren"
+    },
+    "payment": {
+      "sectionLabel": "EINZELIMMOBILIE",
+      "pendingTitle": "Zahlung noch offen",
+      "unlockTitle": "Immobilie freischalten",
+      "description": "Einmalige Zahlung für Inserat-Texte, Social-Media-Texte und Exposé dieses Objekts. Kein Abonnement.",
+      "openingStripe": "Stripe wird geöffnet …",
+      "continue": "Zahlung fortsetzen – {price}",
+      "unlock": "Für {price} freischalten"
+    },
+    "delete": {
+      "keyword": "löschen",
+      "archiveFirstError": "Bitte archiviere das Objekt zuerst. Aktive Objekte können aus Sicherheitsgründen nicht gelöscht werden.",
+      "deleting": "Objekt wird gelöscht …",
+      "deleteButton": "Objekt dauerhaft löschen",
+      "archiveFirstButton": "Zum Löschen zuerst archivieren",
+      "permanentLabel": "ENDGÜLTIG LÖSCHEN",
+      "dialogTitle": "Objekt wirklich löschen?",
+      "dialogDescription": "Alle Objektdaten und gespeicherten Inseratvarianten werden dauerhaft entfernt. Dieser Vorgang kann nicht rückgängig gemacht werden.",
+      "confirmPrompt": "Tippe zur Bestätigung „{keyword}“ ein:",
+      "deletingShort": "Wird gelöscht …",
+      "finalDelete": "Endgültig löschen"
+    }
   }
 }

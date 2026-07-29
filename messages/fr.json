@@ -928,5 +928,144 @@
       "thumbnailsDown": "Faire défiler les aperçus vers le bas",
       "showImage": "Afficher l’image {index}"
     }
+  },
+  "CockpitDetail": {
+    "errors": {
+      "missingId": "Aucun identifiant d’objet n’a été trouvé.",
+      "load": "Le bien n’a pas pu être chargé."
+    },
+    "payment": {
+      "completedPending": "Le paiement est terminé. La confirmation du déverrouillage est encore en cours.",
+      "verifying": "Confirmation sécurisée du paiement …",
+      "notConfirmed": "Le paiement n’a pas encore pu être confirmé.",
+      "unlocked": "Paiement réussi : ce bien est maintenant déverrouillé.",
+      "retry": "Le paiement n’a pas encore pu être confirmé. Rechargez la page."
+    },
+    "loading": {
+      "title": "Chargement du bien …",
+      "description": "Les données enregistrées du bien sont en cours de récupération."
+    },
+    "notFound": {
+      "title": "Impossible d’ouvrir le bien",
+      "description": "Le bien est introuvable."
+    },
+    "navigation": {
+      "back": "Retour au cockpit",
+      "newObject": "Créer un nouveau bien"
+    },
+    "intro": {
+      "eyebrow": "DÉTAILS DU BIEN",
+      "titleWithRooms": "{type} de {rooms} pièces à {location}",
+      "title": "{type} à {location}"
+    },
+    "gallery": {
+      "sectionLabel": "IMAGES DU BIEN",
+      "title": "Galerie d’images",
+      "previous": "Image précédente",
+      "next": "Image suivante",
+      "showImage": "Afficher l’image {index}",
+      "imageAlt": "{type}, image {index}",
+      "empty": "Aucune image du bien"
+    },
+    "insights": {
+      "views": {
+        "label": "Vues",
+        "value": "Aucune donnée disponible",
+        "description": "Disponible dès que le bien est partagé publiquement."
+      },
+      "social": {
+        "label": "Réseaux sociaux",
+        "value": "Disponible après publication",
+        "description": "Les mentions J’aime et les commentaires seront affichés ici ultérieurement."
+      }
+    },
+    "facts": {
+      "sectionLabel": "DONNÉES DU BIEN",
+      "title": "Vue d’ensemble du bien",
+      "propertyType": "Type de bien",
+      "rooms": "Pièces",
+      "livingArea": "Surface habitable",
+      "style": "Style",
+      "notSpecified": "Non indiqué",
+      "updated": "Dernière mise à jour",
+      "highlights": "Points forts",
+      "priceNotSpecified": "Prix non indiqué",
+      "dateUnknown": "Date inconnue"
+    },
+    "variants": {
+      "sectionLabel": "INSERAT-AI",
+      "title": "Variantes de texte enregistrées",
+      "count": "{count, plural, one {# variante} other {# variantes}}",
+      "empty": "Aucune variante d’annonce n’a été enregistrée pour ce bien.",
+      "tab": "Variante {index}",
+      "salePrice": "Prix de vente"
+    },
+    "status": {
+      "sectionLabel": "STATUT DU BIEN",
+      "archivedTitle": "Bien archivé",
+      "activeTitle": "Bien actif",
+      "statusLabel": "Statut",
+      "archived": "Archivé",
+      "active": "Actif",
+      "saved": "Enregistré",
+      "objectId": "ID du bien"
+    },
+    "nextSteps": {
+      "sectionLabel": "PROCHAINES ÉTAPES",
+      "title": "Gérer le bien",
+      "description": "Gérez ce bien et créez les prochains contenus de commercialisation.",
+      "edit": "Modifier le bien",
+      "social": "Créer les réseaux sociaux",
+      "expose": "Créer la brochure",
+      "createTour": "Créer une visite vidéo 3D",
+      "tour": "Visite vidéo 3D",
+      "tourProAria": "Visite vidéo 3D – disponible avec Pro pour CHF 79.90",
+      "homeStaging": "Home staging virtuel",
+      "homeStagingProAria": "Home staging virtuel – disponible avec Pro pour CHF 79.90",
+      "proPrice": "Pro CHF 79.90"
+    }
+  },
+  "ListingActions": {
+    "common": {
+      "cancel": "Annuler"
+    },
+    "errors": {
+      "status": "Le statut du bien n’a pas pu être modifié.",
+      "delete": "Le bien n’a pas pu être supprimé.",
+      "checkout": "La page de paiement n’a pas pu être ouverte."
+    },
+    "archive": {
+      "reactivateTitle": "Réactiver le bien ?",
+      "archiveTitle": "Archiver le bien ?",
+      "reactivateMessage": "Le bien sera réactivé et apparaîtra à nouveau dans le cockpit immobilier.",
+      "archiveMessage": "Le bien sera archivé et restera enregistré.",
+      "reactivateConfirm": "Réactiver le bien",
+      "archiveConfirm": "Archiver le bien",
+      "changing": "Modification du statut …",
+      "reactivateButton": "Réactiver le bien",
+      "archiveButton": "Archiver le bien"
+    },
+    "payment": {
+      "sectionLabel": "BIEN UNIQUE",
+      "pendingTitle": "Paiement encore en attente",
+      "unlockTitle": "Déverrouiller le bien",
+      "description": "Paiement unique pour les textes d’annonce, les contenus pour les réseaux sociaux et la brochure de ce bien. Aucun abonnement.",
+      "openingStripe": "Ouverture de Stripe …",
+      "continue": "Continuer le paiement – {price}",
+      "unlock": "Déverrouiller pour {price}"
+    },
+    "delete": {
+      "keyword": "supprimer",
+      "archiveFirstError": "Archivez d’abord le bien. Pour des raisons de sécurité, les biens actifs ne peuvent pas être supprimés.",
+      "deleting": "Suppression du bien …",
+      "deleteButton": "Supprimer définitivement",
+      "archiveFirstButton": "Archiver avant de supprimer",
+      "permanentLabel": "SUPPRESSION DÉFINITIVE",
+      "dialogTitle": "Supprimer réellement le bien ?",
+      "dialogDescription": "Toutes les données du bien et les variantes d’annonce enregistrées seront définitivement supprimées. Cette opération est irréversible.",
+      "confirmPrompt": "Pour confirmer, saisissez « {keyword} » :",
+      "deletingShort": "Suppression …",
+      "finalDelete": "Supprimer définitivement"
+    }
   }
 }

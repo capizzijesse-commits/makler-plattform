@@ -928,5 +928,144 @@
       "thumbnailsDown": "Anteprime verso il basso",
       "showImage": "Mostra immagine {index}"
     }
+  },
+  "CockpitDetail": {
+    "errors": {
+      "missingId": "Nessun ID dell’immobile trovato.",
+      "load": "Non è stato possibile caricare l’immobile."
+    },
+    "payment": {
+      "completedPending": "Il pagamento è stato completato. La conferma dello sblocco è ancora in corso.",
+      "verifying": "Conferma sicura del pagamento in corso …",
+      "notConfirmed": "Non è stato ancora possibile confermare il pagamento.",
+      "unlocked": "Pagamento riuscito: questo immobile è stato sbloccato.",
+      "retry": "Non è stato ancora possibile confermare il pagamento. Ricarica la pagina."
+    },
+    "loading": {
+      "title": "Caricamento dell’immobile …",
+      "description": "Stiamo recuperando i dati salvati dell’immobile."
+    },
+    "notFound": {
+      "title": "Impossibile aprire l’immobile",
+      "description": "L’immobile non è stato trovato."
+    },
+    "navigation": {
+      "back": "Torna al cockpit",
+      "newObject": "Crea un nuovo immobile"
+    },
+    "intro": {
+      "eyebrow": "DETTAGLI DELL’IMMOBILE",
+      "titleWithRooms": "{type} di {rooms} locali a {location}",
+      "title": "{type} a {location}"
+    },
+    "gallery": {
+      "sectionLabel": "IMMAGINI DELL’IMMOBILE",
+      "title": "Galleria immagini",
+      "previous": "Immagine precedente",
+      "next": "Immagine successiva",
+      "showImage": "Mostra immagine {index}",
+      "imageAlt": "{type}, immagine {index}",
+      "empty": "Nessuna immagine dell’immobile"
+    },
+    "insights": {
+      "views": {
+        "label": "Visualizzazioni",
+        "value": "Nessun dato disponibile",
+        "description": "Disponibile non appena l’immobile viene condiviso pubblicamente."
+      },
+      "social": {
+        "label": "Social Media",
+        "value": "Disponibile dopo la pubblicazione",
+        "description": "Like e commenti verranno mostrati qui in seguito."
+      }
+    },
+    "facts": {
+      "sectionLabel": "DATI DELL’IMMOBILE",
+      "title": "Panoramica dell’immobile",
+      "propertyType": "Tipologia",
+      "rooms": "Locali",
+      "livingArea": "Superficie abitabile",
+      "style": "Stile",
+      "notSpecified": "Non indicato",
+      "updated": "Ultimo aggiornamento",
+      "highlights": "Punti di forza",
+      "priceNotSpecified": "Prezzo non indicato",
+      "dateUnknown": "Data sconosciuta"
+    },
+    "variants": {
+      "sectionLabel": "INSERAT-AI",
+      "title": "Varianti di testo salvate",
+      "count": "{count, plural, one {# variante} other {# varianti}}",
+      "empty": "Per questo immobile non sono state salvate varianti dell’annuncio.",
+      "tab": "Variante {index}",
+      "salePrice": "Prezzo di vendita"
+    },
+    "status": {
+      "sectionLabel": "STATO DELL’IMMOBILE",
+      "archivedTitle": "Immobile archiviato",
+      "activeTitle": "Immobile attivo",
+      "statusLabel": "Stato",
+      "archived": "Archiviato",
+      "active": "Attivo",
+      "saved": "Salvato",
+      "objectId": "ID immobile"
+    },
+    "nextSteps": {
+      "sectionLabel": "PROSSIMI PASSI",
+      "title": "Gestisci l’immobile",
+      "description": "Gestisci questo immobile e crea i prossimi contenuti di marketing.",
+      "edit": "Modifica immobile",
+      "social": "Crea contenuti social",
+      "expose": "Crea brochure",
+      "createTour": "Crea tour video 3D",
+      "tour": "Tour video 3D",
+      "tourProAria": "Tour video 3D – disponibile con Pro a CHF 79.90",
+      "homeStaging": "Home staging virtuale",
+      "homeStagingProAria": "Home staging virtuale – disponibile con Pro a CHF 79.90",
+      "proPrice": "Pro CHF 79.90"
+    }
+  },
+  "ListingActions": {
+    "common": {
+      "cancel": "Annulla"
+    },
+    "errors": {
+      "status": "Non è stato possibile modificare lo stato dell’immobile.",
+      "delete": "Non è stato possibile eliminare l’immobile.",
+      "checkout": "Non è stato possibile aprire la pagina di pagamento."
+    },
+    "archive": {
+      "reactivateTitle": "Riattivare l’immobile?",
+      "archiveTitle": "Archiviare l’immobile?",
+      "reactivateMessage": "L’immobile verrà riattivato e comparirà nuovamente nel cockpit immobiliare.",
+      "archiveMessage": "L’immobile verrà archiviato e rimarrà salvato.",
+      "reactivateConfirm": "Riattiva immobile",
+      "archiveConfirm": "Archivia immobile",
+      "changing": "Modifica dello stato …",
+      "reactivateButton": "Riattiva immobile",
+      "archiveButton": "Archivia immobile"
+    },
+    "payment": {
+      "sectionLabel": "IMMOBILE SINGOLO",
+      "pendingTitle": "Pagamento ancora in sospeso",
+      "unlockTitle": "Sblocca immobile",
+      "description": "Pagamento unico per i testi dell’annuncio, i contenuti social e la brochure di questo immobile. Nessun abbonamento.",
+      "openingStripe": "Apertura di Stripe …",
+      "continue": "Continua il pagamento – {price}",
+      "unlock": "Sblocca per {price}"
+    },
+    "delete": {
+      "keyword": "elimina",
+      "archiveFirstError": "Archivia prima l’immobile. Per motivi di sicurezza, gli immobili attivi non possono essere eliminati.",
+      "deleting": "Eliminazione dell’immobile …",
+      "deleteButton": "Elimina definitivamente",
+      "archiveFirstButton": "Archivia prima di eliminare",
+      "permanentLabel": "ELIMINAZIONE DEFINITIVA",
+      "dialogTitle": "Eliminare davvero l’immobile?",
+      "dialogDescription": "Tutti i dati dell’immobile e le varianti dell’annuncio salvate verranno eliminati definitivamente. L’operazione non può essere annullata.",
+      "confirmPrompt": "Per confermare, digita “{keyword}”:",
+      "deletingShort": "Eliminazione …",
+      "finalDelete": "Elimina definitivamente"
+    }
   }
 }

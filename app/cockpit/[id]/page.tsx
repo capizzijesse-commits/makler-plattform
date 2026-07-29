@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import ListingActions from "./ListingActions";
-import { useAppDialog } from "../../../components/AppDialogProvider";
 
 type Variant = {
   title: string;
@@ -15,6 +15,7 @@ type Variant = {
   linkedinPost?: string;
   facebookPost?: string;
 };
+
 type ListingImage = {
   id: string;
   url: string;
@@ -24,9 +25,7 @@ type ListingImage = {
   sizeBytes: number | null;
   position: number;
   isPrimary: boolean;
-  
 };
-
 
 type Listing = {
   id: string;
@@ -42,7 +41,6 @@ type Listing = {
   createdAt: string;
   archivedAt: string | null;
   updatedAt: string;
-
   paymentModel: string;
   unlockStatus: string;
   singleObjectPriceCents: number;
@@ -62,8 +60,19 @@ function isVariant(value: unknown): value is Variant {
 }
 
 export default function CockpitListingPage() {
-  const params = useParams();
+  const t = useTranslations("CockpitDetail");
+  const locale = useLocale();
   const router = useRouter();
+  const params = useParams();
+
+  const intlLocale =
+    locale === "it"
+      ? "it-CH"
+      : locale === "fr"
+        ? "fr-CH"
+        : locale === "en"
+          ? "en-CH"
+          : "de-CH";
 
   const rawId = params.id;
   const listingId = Array.isArray(rawId) ? rawId[0] : rawId;
@@ -74,15 +83,11 @@ export default function CockpitListingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [paymentNotice, setPaymentNotice] = useState("");
-  const [verifyingPayment, setVerifyingPayment] =
-    useState(false);
-  const [deletingImageId, setDeletingImageId] = useState<string | null>(
-  null
-);
+  const [verifyingPayment, setVerifyingPayment] = useState(false);
 
   useEffect(() => {
     if (!listingId) {
-      setError("Keine Objekt-ID gefunden.");
+      setError(t("errors.missingId"));
       setLoading(false);
       return;
     }
@@ -112,9 +117,7 @@ export default function CockpitListingPage() {
         const data = await response.json();
 
         if (!response.ok || !data.success) {
-          throw new Error(
-            data.error || "Das Objekt konnte nicht geladen werden."
-          );
+          throw new Error(data.error || t("errors.load"));
         }
 
         setListing(data.listing);
@@ -126,12 +129,12 @@ export default function CockpitListingPage() {
           return;
         }
 
-        console.error("Objekt konnte nicht geladen werden:", loadError);
+        console.error("LISTING_LOAD_FAILED", loadError);
 
         setError(
           loadError instanceof Error
             ? loadError.message
-            : "Das Objekt konnte nicht geladen werden."
+            : t("errors.load")
         );
       } finally {
         if (!controller.signal.aborted) {
@@ -140,12 +143,12 @@ export default function CockpitListingPage() {
       }
     }
 
-    loadListing();
+    void loadListing();
 
     return () => {
       controller.abort();
     };
-  }, [listingId, router]);
+  }, [listingId, router, t]);
 
   useEffect(() => {
     if (!listingId) {
@@ -153,21 +156,16 @@ export default function CockpitListingPage() {
     }
 
     const verifiedListingId = listingId;
-
-    const urlParams =
-      new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams(window.location.search);
 
     if (urlParams.get("payment") !== "success") {
       return;
     }
 
-    const sessionId =
-      urlParams.get("session_id")?.trim() ?? "";
+    const sessionId = urlParams.get("session_id")?.trim() ?? "";
 
     if (!sessionId) {
-      setPaymentNotice(
-        "Die Zahlung wurde abgeschlossen. Die Freischaltung wird noch geprüft."
-      );
+      setPaymentNotice(t("payment.completedPending"));
       return;
     }
 
@@ -176,12 +174,9 @@ export default function CockpitListingPage() {
     async function verifyReturnedPayment() {
       try {
         setVerifyingPayment(true);
-        setPaymentNotice(
-          "Zahlung wird sicher bestätigt …"
-        );
+        setPaymentNotice(t("payment.verifying"));
 
-        let lastError =
-          "Die Zahlung konnte noch nicht bestätigt werden.";
+        let lastError = t("payment.notConfirmed");
 
         for (let attempt = 1; attempt <= 3; attempt += 1) {
           const response = await fetch(
@@ -231,29 +226,20 @@ export default function CockpitListingPage() {
                 : currentListing
             );
 
-            setPaymentNotice(
-              "Zahlung erfolgreich – diese Immobilie ist freigeschaltet."
-            );
+            setPaymentNotice(t("payment.unlocked"));
 
             window.history.replaceState(
               null,
               "",
-              `/cockpit/${encodeURIComponent(
-                verifiedListingId
-              )}`
+              `/cockpit/${encodeURIComponent(verifiedListingId)}`
             );
 
             return;
           }
 
-          lastError =
-            data?.error ||
-            "Die Zahlung konnte noch nicht bestätigt werden.";
+          lastError = data?.error || t("payment.notConfirmed");
 
-          if (
-            data?.paymentProcessing &&
-            attempt < 3
-          ) {
+          if (data?.paymentProcessing && attempt < 3) {
             await new Promise((resolve) =>
               window.setTimeout(resolve, 1500)
             );
@@ -273,15 +259,12 @@ export default function CockpitListingPage() {
           return;
         }
 
-        console.error(
-          "Zahlungsprüfung fehlgeschlagen:",
-          verificationError
-        );
+        console.error("PAYMENT_VERIFICATION_FAILED", verificationError);
 
         setPaymentNotice(
           verificationError instanceof Error
             ? verificationError.message
-            : "Die Zahlung konnte noch nicht bestätigt werden. Bitte lade die Seite erneut."
+            : t("payment.retry")
         );
       } finally {
         if (!controller.signal.aborted) {
@@ -295,92 +278,12 @@ export default function CockpitListingPage() {
     return () => {
       controller.abort();
     };
-  }, [listingId, router]);
+  }, [listingId, router, t]);
 
-async function deleteListingImage(imageId: string) {
-  const confirmed = window.confirm(
-    "Dieses Bild wirklich dauerhaft löschen?"
-  );
-
-  if (!confirmed) {
-    return;
-  }
-
-  try {
-    setDeletingImageId(imageId);
-
-    const response = await fetch(
-      `/api/listing-images/${encodeURIComponent(imageId)}`,
-      {
-        method: "DELETE",
-        credentials: "include",
-      }
-    );
-
-    if (response.status === 401) {
-      router.replace("/login");
-      return;
-    }
-
-    const data = (await response.json().catch(() => ({}))) as {
-      success?: boolean;
-      error?: string;
-      nextPrimaryImage?: ListingImage | null;
-    };
-
-    if (!response.ok || !data.success) {
-      throw new Error(
-        data.error || "Das Bild konnte nicht gelöscht werden."
-      );
-    }
-
-    setListing((currentListing) => {
-      if (!currentListing) {
-        return currentListing;
-      }
-
-      const deletedImageWasPrimary =
-        currentListing.images.find(
-          (image) => image.id === imageId
-        )?.isPrimary === true;
-
-      const remainingImages = currentListing.images.filter(
-        (image) => image.id !== imageId
-      );
-
-      if (!deletedImageWasPrimary) {
-        return {
-          ...currentListing,
-          images: remainingImages,
-        };
-      }
-
-      const nextPrimaryId = data.nextPrimaryImage?.id;
-
-      return {
-        ...currentListing,
-        images: remainingImages.map((image) => ({
-          ...image,
-          isPrimary: image.id === nextPrimaryId,
-        })),
-      };
-    });
-  } catch (deleteError) {
-    console.error("Bild konnte nicht gelöscht werden:", deleteError);
-
-    window.alert(
-      deleteError instanceof Error
-        ? deleteError.message
-        : "Das Bild konnte nicht gelöscht werden."
-    );
-  } finally {
-    setDeletingImageId(null);
-  }
-}
   function formatPrice(price: number | null) {
-    if (price === null) return "Preis nicht angegeben";
+    if (price === null) return t("facts.priceNotSpecified");
 
-    return new Intl.NumberFormat("de-CH", {
+    return new Intl.NumberFormat(intlLocale, {
       style: "currency",
       currency: "CHF",
       maximumFractionDigits: 0,
@@ -390,60 +293,64 @@ async function deleteListingImage(imageId: string) {
   function formatNumber(value: number | null, suffix = "") {
     if (value === null) return "–";
 
-    return `${new Intl.NumberFormat("de-CH", {
+    return `${new Intl.NumberFormat(intlLocale, {
       maximumFractionDigits: 1,
     }).format(value)}${suffix}`;
   }
-  function formatFileSize(sizeBytes: number | null) {
-  if (sizeBytes === null) {
-    return "Dateigrösse unbekannt";
-  }
 
-  if (sizeBytes < 1024 * 1024) {
-    return `${Math.round(sizeBytes / 1024)} KB`;
-  }
+  function formatDate(value: string) {
+    const date = new Date(value);
 
-  return `${(sizeBytes / (1024 * 1024)).toFixed(1)} MB`;
-}
+    if (Number.isNaN(date.getTime())) {
+      return t("facts.dateUnknown");
+    }
+
+    return new Intl.DateTimeFormat(intlLocale, {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(date);
+  }
 
   const variants =
     listing && Array.isArray(listing.generatedVariants)
       ? listing.generatedVariants.filter(isVariant)
       : [];
-      const selectedVariant = variants[activeVariant];
+  const selectedVariant = variants[activeVariant];
 
- const galleryImages = listing?.images ?? [];
+  const galleryImages = listing?.images ?? [];
 
-const safeActiveImageIndex =
-  galleryImages.length === 0
-    ? 0
-    : Math.min(activeImageIndex, galleryImages.length - 1);
-
-const activeGalleryImage =
-  galleryImages[safeActiveImageIndex] ?? null;
-  function showPreviousImage() {
-  if (galleryImages.length <= 1) {
-    return;
-  }
-
-  setActiveImageIndex((currentIndex) =>
-    currentIndex === 0
-      ? galleryImages.length - 1
-      : currentIndex - 1
-  );
-}
-
-function showNextImage() {
-  if (galleryImages.length <= 1) {
-    return;
-  }
-
-  setActiveImageIndex((currentIndex) =>
-    currentIndex === galleryImages.length - 1
+  const safeActiveImageIndex =
+    galleryImages.length === 0
       ? 0
-      : currentIndex + 1
-  );
-}
+      : Math.min(activeImageIndex, galleryImages.length - 1);
+
+  const activeGalleryImage =
+    galleryImages[safeActiveImageIndex] ?? null;
+
+  function showPreviousImage() {
+    if (galleryImages.length <= 1) {
+      return;
+    }
+
+    setActiveImageIndex((currentIndex) =>
+      currentIndex === 0
+        ? galleryImages.length - 1
+        : currentIndex - 1
+    );
+  }
+
+  function showNextImage() {
+    if (galleryImages.length <= 1) {
+      return;
+    }
+
+    setActiveImageIndex((currentIndex) =>
+      currentIndex === galleryImages.length - 1
+        ? 0
+        : currentIndex + 1
+    );
+  }
 
   const highlightItems =
     listing?.highlights
@@ -456,8 +363,8 @@ function showNextImage() {
       <main className="detailPage">
         <div className="statusBox">
           <div className="spinner" />
-          <strong>Objekt wird geladen …</strong>
-          <span>Die gespeicherten Objektdaten werden abgerufen.</span>
+          <strong>{t("loading.title")}</strong>
+          <span>{t("loading.description")}</span>
         </div>
 
         <PageStyles />
@@ -469,11 +376,11 @@ function showNextImage() {
     return (
       <main className="detailPage">
         <div className="errorBox">
-          <strong>Objekt konnte nicht geöffnet werden</strong>
-          <span>{error || "Das Objekt wurde nicht gefunden."}</span>
+          <strong>{t("notFound.title")}</strong>
+          <span>{error || t("notFound.description")}</span>
 
           <Link href="/cockpit" className="primaryButton">
-            Zurück zum Cockpit
+            {t("navigation.back")}
           </Link>
         </div>
 
@@ -482,11 +389,9 @@ function showNextImage() {
     );
   }
 
-  const hasProAccess = [
-    "pro",
-    "agency",
-    "admin",
-  ].includes(listing.viewerPlan);
+  const hasProAccess = ["pro", "agency", "admin"].includes(
+    listing.viewerPlan
+  );
 
   return (
     <main className="detailPage">
@@ -502,18 +407,17 @@ function showNextImage() {
             alignItems: "center",
             gap: "12px",
             border:
-              listing?.unlockStatus === "paid"
+              listing.unlockStatus === "paid"
                 ? "1px solid rgba(52, 211, 153, 0.55)"
                 : "1px solid rgba(251, 191, 36, 0.52)",
             borderRadius: "16px",
             background:
-              listing?.unlockStatus === "paid"
+              listing.unlockStatus === "paid"
                 ? "linear-gradient(135deg, rgba(6, 78, 59, 0.94), rgba(15, 23, 42, 0.96))"
                 : "linear-gradient(135deg, rgba(120, 53, 15, 0.92), rgba(15, 23, 42, 0.96))",
             color: "#ffffff",
             fontWeight: 900,
-            boxShadow:
-              "0 16px 38px rgba(0, 0, 0, 0.26)",
+            boxShadow: "0 16px 38px rgba(0, 0, 0, 0.26)",
           }}
         >
           <span
@@ -526,18 +430,18 @@ function showNextImage() {
               height: "34px",
               borderRadius: "11px",
               background:
-                listing?.unlockStatus === "paid"
+                listing.unlockStatus === "paid"
                   ? "rgba(52, 211, 153, 0.2)"
                   : "rgba(251, 191, 36, 0.2)",
               color:
-                listing?.unlockStatus === "paid"
+                listing.unlockStatus === "paid"
                   ? "#6ee7b7"
                   : "#fcd34d",
             }}
           >
             {verifyingPayment
               ? "…"
-              : listing?.unlockStatus === "paid"
+              : listing.unlockStatus === "paid"
                 ? "✓"
                 : "!"}
           </span>
@@ -545,179 +449,185 @@ function showNextImage() {
           <span>{paymentNotice}</span>
         </div>
       )}
+
       <section className="detailContainer">
         <div className="topNavigation">
           <Link href="/cockpit" className="backLink">
-            ← Zurück zum Cockpit
+            ← {t("navigation.back")}
           </Link>
 
           <Link href="/dashboard" className="dashboardLink">
-            Neues Objekt erstellen
+            {t("navigation.newObject")}
           </Link>
         </div>
 
-       <header className="listingIntro">
-  <span className="eyebrow">OBJEKTDETAILS</span>
+        <header className="listingIntro">
+          <span className="eyebrow">{t("intro.eyebrow")}</span>
 
-  <h1>
-    {listing.rooms !== null
-      ? `${formatNumber(listing.rooms)}-Zimmer-`
-      : ""}
-    {listing.propertyType} in {listing.location}
-  </h1>
+          <h1>
+            {listing.rooms !== null
+              ? t("intro.titleWithRooms", {
+                  rooms: formatNumber(listing.rooms),
+                  type: listing.propertyType,
+                  location: listing.location,
+                })
+              : t("intro.title", {
+                  type: listing.propertyType,
+                  location: listing.location,
+                })}
+          </h1>
 
-  <div className="listingIntroMeta">
-    <span>{formatNumber(listing.livingArea, " m²")}</span>
-
-    <span className="listingIntroDivider" />
-
-    <strong>{formatPrice(listing.price)}</strong>
-  </div>
-</header>
+          <div className="listingIntroMeta">
+            <span>{formatNumber(listing.livingArea, " m²")}</span>
+            <span className="listingIntroDivider" />
+            <strong>{formatPrice(listing.price)}</strong>
+          </div>
+        </header>
 
         <div className="layout">
           <div className="mainColumn">
             <section className="objectGalleryCard">
-  <div className="objectGalleryHeading">
-    <div>
-      <span className="sectionLabel">OBJEKTBILDER</span>
-      <h2>Bildergalerie</h2>
-    </div>
+              <div className="objectGalleryHeading">
+                <div>
+                  <span className="sectionLabel">
+                    {t("gallery.sectionLabel")}
+                  </span>
+                  <h2>{t("gallery.title")}</h2>
+                </div>
 
-    {galleryImages.length > 0 && (
-      <span className="galleryCounter">
-        {safeActiveImageIndex + 1} / {galleryImages.length}
-      </span>
-    )}
-  </div>
+                {galleryImages.length > 0 && (
+                  <span className="galleryCounter">
+                    {safeActiveImageIndex + 1} / {galleryImages.length}
+                  </span>
+                )}
+              </div>
 
-  <div className="objectGalleryStage">
-    <button
-      type="button"
-      className="galleryArrow galleryArrowLeft"
-      onClick={showPreviousImage}
-      disabled={galleryImages.length <= 1}
-      aria-label="Vorheriges Bild"
-    >
-      ‹
-    </button>
+              <div className="objectGalleryStage">
+                <button
+                  type="button"
+                  className="galleryArrow galleryArrowLeft"
+                  onClick={showPreviousImage}
+                  disabled={galleryImages.length <= 1}
+                  aria-label={t("gallery.previous")}
+                >
+                  ‹
+                </button>
 
-    {activeGalleryImage ? (
-      <img
-        src={activeGalleryImage.url}
-        alt={
-          activeGalleryImage.fileName ||
-          `${listing.propertyType} Bild ${
-            safeActiveImageIndex + 1
-          }`
-        }
-        className="objectGalleryImage"
-      />
-    ) : (
-      <div className="objectGalleryEmpty">
-        <span>📷</span>
-        <strong>Noch keine Objektbilder</strong>
-      </div>
-    )}
+                {activeGalleryImage ? (
+                  <img
+                    src={activeGalleryImage.url}
+                    alt={
+                      activeGalleryImage.fileName ||
+                      t("gallery.imageAlt", {
+                        type: listing.propertyType,
+                        index: safeActiveImageIndex + 1,
+                      })
+                    }
+                    className="objectGalleryImage"
+                  />
+                ) : (
+                  <div className="objectGalleryEmpty">
+                    <span>📷</span>
+                    <strong>{t("gallery.empty")}</strong>
+                  </div>
+                )}
 
-    <button
-      type="button"
-      className="galleryArrow galleryArrowRight"
-      onClick={showNextImage}
-      disabled={galleryImages.length <= 1}
-      aria-label="Nächstes Bild"
-    >
-      ›
-    </button>
-  </div>
+                <button
+                  type="button"
+                  className="galleryArrow galleryArrowRight"
+                  onClick={showNextImage}
+                  disabled={galleryImages.length <= 1}
+                  aria-label={t("gallery.next")}
+                >
+                  ›
+                </button>
+              </div>
 
-  {galleryImages.length > 1 && (
-    <div className="galleryDots">
-      {galleryImages.map((image, index) => (
-        <button
-          key={image.id}
-          type="button"
-          className={
-            index === safeActiveImageIndex
-              ? "galleryDot active"
-              : "galleryDot"
-          }
-          onClick={() => setActiveImageIndex(index)}
-          aria-label={`Bild ${index + 1} anzeigen`}
-        />
-      ))}
-    </div>
-  )}
-  </section>
-<section className="objectInsightBar">
-  <div className="objectInsightItem">
-    <span className="objectInsightIcon">👁</span>
+              {galleryImages.length > 1 && (
+                <div className="galleryDots">
+                  {galleryImages.map((image, index) => (
+                    <button
+                      key={image.id}
+                      type="button"
+                      className={
+                        index === safeActiveImageIndex
+                          ? "galleryDot active"
+                          : "galleryDot"
+                      }
+                      onClick={() => setActiveImageIndex(index)}
+                      aria-label={t("gallery.showImage", {
+                        index: index + 1,
+                      })}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
 
-    <div>
-      <small>Aufrufe</small>
-      <strong>Noch keine Daten</strong>
-      <p>Verfügbar, sobald das Objekt öffentlich geteilt wird.</p>
-    </div>
-  </div>
+            <section className="objectInsightBar">
+              <div className="objectInsightItem">
+                <span className="objectInsightIcon">👁</span>
+                <div>
+                  <small>{t("insights.views.label")}</small>
+                  <strong>{t("insights.views.value")}</strong>
+                  <p>{t("insights.views.description")}</p>
+                </div>
+              </div>
 
-  <div className="objectInsightItem">
-    <span className="objectInsightIcon">↗</span>
-
-    <div>
-      <small>Social Media</small>
-      <strong>Nach Veröffentlichung verfügbar</strong>
-      <p>Likes und Kommentare werden später hier angezeigt.</p>
-    </div>
-  </div>
-</section>
+              <div className="objectInsightItem">
+                <span className="objectInsightIcon">↗</span>
+                <div>
+                  <small>{t("insights.social.label")}</small>
+                  <strong>{t("insights.social.value")}</strong>
+                  <p>{t("insights.social.description")}</p>
+                </div>
+              </div>
+            </section>
 
             <section className="contentCard">
               <div className="cardHeading">
                 <div>
-                  <span className="sectionLabel">OBJEKTDATEN</span>
-                  <h2>Immobilie im Überblick</h2>
+                  <span className="sectionLabel">
+                    {t("facts.sectionLabel")}
+                  </span>
+                  <h2>{t("facts.title")}</h2>
                 </div>
               </div>
 
               <div className="factsGrid">
                 <div className="fact">
-                  <span>Objektart</span>
+                  <span>{t("facts.propertyType")}</span>
                   <strong>{listing.propertyType}</strong>
                 </div>
 
                 <div className="fact">
-                  <span>Zimmer</span>
+                  <span>{t("facts.rooms")}</span>
                   <strong>{formatNumber(listing.rooms)}</strong>
                 </div>
 
                 <div className="fact">
-                  <span>Wohnfläche</span>
+                  <span>{t("facts.livingArea")}</span>
                   <strong>
                     {formatNumber(listing.livingArea, " m²")}
                   </strong>
                 </div>
 
-                
-
                 <div className="fact">
-                  <span>Stil</span>
-                  <strong>{listing.style || "Nicht angegeben"}</strong>
+                  <span>{t("facts.style")}</span>
+                  <strong>
+                    {listing.style || t("facts.notSpecified")}
+                  </strong>
                 </div>
 
                 <div className="fact">
-                  <span>Zuletzt aktualisiert</span>
-                  <strong>
-                    {new Date(listing.updatedAt).toLocaleDateString(
-                      "de-CH"
-                    )}
-                  </strong>
+                  <span>{t("facts.updated")}</span>
+                  <strong>{formatDate(listing.updatedAt)}</strong>
                 </div>
               </div>
 
               {highlightItems.length > 0 && (
                 <div className="highlightsArea">
-                  <h3>Highlights</h3>
-
+                  <h3>{t("facts.highlights")}</h3>
                   <div className="highlightList">
                     {highlightItems.map((highlight) => (
                       <span key={highlight}>{highlight}</span>
@@ -730,21 +640,22 @@ function showNextImage() {
             <section className="contentCard">
               <div className="cardHeading">
                 <div>
-                  <span className="sectionLabel">INSERAT-AI</span>
-                  <h2>Gespeicherte Textvarianten</h2>
+                  <span className="sectionLabel">
+                    {t("variants.sectionLabel")}
+                  </span>
+                  <h2>{t("variants.title")}</h2>
                 </div>
 
                 {variants.length > 0 && (
                   <span className="variantCount">
-                    {variants.length} Varianten
+                    {t("variants.count", { count: variants.length })}
                   </span>
                 )}
               </div>
 
               {variants.length === 0 ? (
                 <div className="noVariants">
-                  Für dieses Objekt wurden keine Inseratvarianten
-                  gespeichert.
+                  {t("variants.empty")}
                 </div>
               ) : (
                 <>
@@ -760,7 +671,7 @@ function showNextImage() {
                         }
                         onClick={() => setActiveVariant(index)}
                       >
-                        Variante {index + 1}
+                        {t("variants.tab", { index: index + 1 })}
                       </button>
                     ))}
                   </div>
@@ -770,21 +681,21 @@ function showNextImage() {
                       <div className="variantMeta">
                         <div>
                           <span className="variantPriceLabel">
-                            Verkaufspreis
+                            {t("variants.salePrice")}
                           </span>
-
                           <strong className="variantPrice">
                             {formatPrice(listing.price)}
                           </strong>
                         </div>
 
                         <span className="variantNumber">
-                          Variante {activeVariant + 1}
+                          {t("variants.tab", {
+                            index: activeVariant + 1,
+                          })}
                         </span>
                       </div>
 
                       <h3>{selectedVariant.title}</h3>
-
                       <p className="variantText">
                         {selectedVariant.text}
                       </p>
@@ -803,9 +714,7 @@ function showNextImage() {
                         )}
 
                       {selectedVariant.cta && (
-                        <p className="ctaText">
-                          {selectedVariant.cta}
-                        </p>
+                        <p className="ctaText">{selectedVariant.cta}</p>
                       )}
                     </article>
                   )}
@@ -816,25 +725,31 @@ function showNextImage() {
 
           <aside className="sideColumn">
             <section className="sideCard">
-              <span className="sectionLabel">OBJEKTSTATUS</span>
-              <h2>{listing.archivedAt ? "Archiviertes Objekt" : "Aktives Objekt"}</h2>
+              <span className="sectionLabel">
+                {t("status.sectionLabel")}
+              </span>
+              <h2>
+                {listing.archivedAt
+                  ? t("status.archivedTitle")
+                  : t("status.activeTitle")}
+              </h2>
 
               <div className="statusLine">
-                <span>Status</span>
-                <strong>{listing.archivedAt ? "Archiviert" : "Aktiv"}</strong>
-              </div>
-
-              <div className="statusLine">
-                <span>Gespeichert</span>
+                <span>{t("status.statusLabel")}</span>
                 <strong>
-                  {new Date(listing.createdAt).toLocaleDateString(
-                    "de-CH"
-                  )}
+                  {listing.archivedAt
+                    ? t("status.archived")
+                    : t("status.active")}
                 </strong>
               </div>
 
               <div className="statusLine">
-                <span>Objekt-ID</span>
+                <span>{t("status.saved")}</span>
+                <strong>{formatDate(listing.createdAt)}</strong>
+              </div>
+
+              <div className="statusLine">
+                <span>{t("status.objectId")}</span>
                 <strong className="objectId">
                   {listing.id.slice(0, 8)}…
                 </strong>
@@ -842,13 +757,11 @@ function showNextImage() {
             </section>
 
             <section className="sideCard nextSteps">
-              <span className="sectionLabel">NÄCHSTE SCHRITTE</span>
-              <h2>Objekt verwalten</h2>
-
-              <p>
-                Als Nächstes ergänzen wir Bearbeiten, Archivieren und
-                Löschen.
-              </p>
+              <span className="sectionLabel">
+                {t("nextSteps.sectionLabel")}
+              </span>
+              <h2>{t("nextSteps.title")}</h2>
+              <p>{t("nextSteps.description")}</p>
 
               <Link
                 href={`/cockpit/${listing.id}/edit`}
@@ -866,243 +779,232 @@ function showNextImage() {
                   color: "#ffffff",
                   fontWeight: 900,
                   textDecoration: "none",
-                  boxShadow:
-                    "0 12px 26px rgba(249, 115, 22, 0.24)",
+                  boxShadow: "0 12px 26px rgba(249, 115, 22, 0.24)",
                 }}
               >
-                Objekt bearbeiten
+                {t("nextSteps.edit")}
               </Link>
-<Link
-  href={`/dashboard/social-media?listingId=${listing.id}`}
-  style={{
-    display: "inline-flex",
-    width: "100%",
-    minHeight: "42px",
-    marginTop: "10px",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "8px",
-    border: "1px solid rgba(251, 191, 36, 0.65)",
-    borderRadius: "10px",
-    background:
-      "linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(251, 191, 36, 0.08))",
-    color: "#fbbf24",
-    fontWeight: 900,
-    textDecoration: "none",
-    boxShadow: "0 10px 24px rgba(245, 158, 11, 0.14)",
-  }}
->
-  <span>📱</span>
-  Social Media erstellen
-</Link>
 
-<Link
-  href={`/expose/${listing.id}`}
-  style={{
-    display: "inline-flex",
-    width: "100%",
-    minHeight: "46px",
-    marginTop: "10px",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "9px",
-    padding: "10px 16px",
-    border: "1px solid rgba(245, 189, 33, 0.58)",
-    borderRadius: "14px",
-    background:
-      "linear-gradient(135deg, rgba(245, 189, 33, 0.24), rgba(107, 92, 255, 0.22))",
-    color: "#ffffff",
-    fontWeight: 900,
-    textDecoration: "none",
-    boxSizing: "border-box",
-    boxShadow:
-      "0 12px 28px rgba(245, 189, 33, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
-  }}
->
-  <span
-    style={{
-      display: "inline-flex",
-      width: "28px",
-      height: "28px",
-      alignItems: "center",
-      justifyContent: "center",
-      borderRadius: "9px",
-      background:
-        "linear-gradient(135deg, rgba(245, 189, 33, 0.95), rgba(255, 217, 106, 0.9))",
-      color: "#081323",
-      fontSize: "15px",
-      boxShadow: "0 0 18px rgba(245, 189, 33, 0.22)",
-    }}
-  >
-    📄
-  </span>
+              <Link
+                href={`/dashboard/social-media?listingId=${listing.id}`}
+                style={{
+                  display: "inline-flex",
+                  width: "100%",
+                  minHeight: "42px",
+                  marginTop: "10px",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  border: "1px solid rgba(251, 191, 36, 0.65)",
+                  borderRadius: "10px",
+                  background:
+                    "linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(251, 191, 36, 0.08))",
+                  color: "#fbbf24",
+                  fontWeight: 900,
+                  textDecoration: "none",
+                  boxShadow: "0 10px 24px rgba(245, 158, 11, 0.14)",
+                }}
+              >
+                <span>📱</span>
+                {t("nextSteps.social")}
+              </Link>
 
-  Exposé erstellen
-</Link>
+              <Link
+                href={`/expose/${listing.id}`}
+                style={{
+                  display: "inline-flex",
+                  width: "100%",
+                  minHeight: "46px",
+                  marginTop: "10px",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "9px",
+                  padding: "10px 16px",
+                  border: "1px solid rgba(245, 189, 33, 0.58)",
+                  borderRadius: "14px",
+                  background:
+                    "linear-gradient(135deg, rgba(245, 189, 33, 0.24), rgba(107, 92, 255, 0.22))",
+                  color: "#ffffff",
+                  fontWeight: 900,
+                  textDecoration: "none",
+                  boxSizing: "border-box",
+                  boxShadow:
+                    "0 12px 28px rgba(245, 189, 33, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
+                }}
+              >
+                <span
+                  style={{
+                    display: "inline-flex",
+                    width: "28px",
+                    height: "28px",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: "9px",
+                    background:
+                      "linear-gradient(135deg, rgba(245, 189, 33, 0.95), rgba(255, 217, 106, 0.9))",
+                    color: "#081323",
+                    fontSize: "15px",
+                    boxShadow: "0 0 18px rgba(245, 189, 33, 0.22)",
+                  }}
+                >
+                  📄
+                </span>
+                {t("nextSteps.expose")}
+              </Link>
 
-{hasProAccess ? (
-<Link
-  href={`/dashboard/tour-guide?listingId=${listing.id}`}
-  style={{
-    display: "inline-flex",
-    width: "100%",
-    minHeight: "46px",
-    marginTop: "10px",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "8px",
-    padding: "10px 16px",
-    borderRadius: "14px",
-    border: "1px solid rgba(34, 211, 238, 0.35)",
-    background:
-      "linear-gradient(135deg, rgba(8, 145, 178, 0.28), rgba(79, 70, 229, 0.3))",
-    color: "#ffffff",
-    fontWeight: 900,
-    textDecoration: "none",
-    boxSizing: "border-box",
-  }}
->
-  🎬 3D-Video-Tour erstellen
-</Link>
-) : (
-  <Link
-    href="/#preise"
-    aria-label="3D-Video-Tour – verfügbar mit Pro für CHF 79.90"
-    style={{
-      display: "inline-flex",
-      width: "100%",
-      minHeight: "52px",
-      marginTop: "10px",
-      padding: "9px 14px",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: "10px",
-      border:
-        "1px solid rgba(167, 139, 250, 0.5)",
-      borderRadius: "14px",
-      background:
-        "linear-gradient(135deg, rgba(30, 41, 59, 0.96), rgba(76, 29, 149, 0.42))",
-      color: "#ffffff",
-      textDecoration: "none",
-      boxSizing: "border-box",
-      boxShadow:
-        "0 12px 28px rgba(76, 29, 149, 0.18)",
-    }}
-  >
-    <span aria-hidden="true">🔒</span>
+              {hasProAccess ? (
+                <Link
+                  href={`/dashboard/tour-guide?listingId=${listing.id}`}
+                  style={{
+                    display: "inline-flex",
+                    width: "100%",
+                    minHeight: "46px",
+                    marginTop: "10px",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    padding: "10px 16px",
+                    borderRadius: "14px",
+                    border: "1px solid rgba(34, 211, 238, 0.35)",
+                    background:
+                      "linear-gradient(135deg, rgba(8, 145, 178, 0.28), rgba(79, 70, 229, 0.3))",
+                    color: "#ffffff",
+                    fontWeight: 900,
+                    textDecoration: "none",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  🎬 {t("nextSteps.createTour")}
+                </Link>
+              ) : (
+                <Link
+                  href="/#preise"
+                  aria-label={t("nextSteps.tourProAria")}
+                  style={{
+                    display: "inline-flex",
+                    width: "100%",
+                    minHeight: "52px",
+                    marginTop: "10px",
+                    padding: "9px 14px",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "10px",
+                    border: "1px solid rgba(167, 139, 250, 0.5)",
+                    borderRadius: "14px",
+                    background:
+                      "linear-gradient(135deg, rgba(30, 41, 59, 0.96), rgba(76, 29, 149, 0.42))",
+                    color: "#ffffff",
+                    textDecoration: "none",
+                    boxSizing: "border-box",
+                    boxShadow: "0 12px 28px rgba(76, 29, 149, 0.18)",
+                  }}
+                >
+                  <span aria-hidden="true">🔒</span>
+                  <span style={{ textAlign: "left" }}>
+                    <strong
+                      style={{
+                        display: "block",
+                        fontSize: "14px",
+                        fontWeight: 900,
+                      }}
+                    >
+                      {t("nextSteps.tour")}
+                    </strong>
+                    <small
+                      style={{
+                        display: "block",
+                        marginTop: "2px",
+                        color: "#c4b5fd",
+                        fontSize: "11px",
+                        fontWeight: 800,
+                      }}
+                    >
+                      {t("nextSteps.proPrice")}
+                    </small>
+                  </span>
+                </Link>
+              )}
 
-    <span style={{ textAlign: "left" }}>
-      <strong
-        style={{
-          display: "block",
-          fontSize: "14px",
-          fontWeight: 900,
-        }}
-      >
-        3D-Video-Tour
-      </strong>
-
-      <small
-        style={{
-          display: "block",
-          marginTop: "2px",
-          color: "#c4b5fd",
-          fontSize: "11px",
-          fontWeight: 800,
-        }}
-      >
-        Pro CHF 79.90
-      </small>
-    </span>
-  </Link>
-)}
-{hasProAccess ? (
-<Link
-  href={`/cockpit/${listing.id}/home-staging`}
-  style={{
-    display: "inline-flex",
-    width: "100%",
-    minHeight: "48px",
-    marginTop: "10px",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "9px",
-    padding: "10px 16px",
-    border: "1px solid rgba(34, 211, 238, 0.48)",
-    borderRadius: "14px",
-    background:
-      "linear-gradient(135deg, rgba(34, 211, 238, 0.22), rgba(139, 92, 246, 0.28), rgba(245, 189, 33, 0.18))",
-    color: "#ffffff",
-    fontWeight: 900,
-    textDecoration: "none",
-    boxSizing: "border-box",
-    boxShadow: "0 12px 28px rgba(34, 211, 238, 0.12)",
-  }}
->
-  <span aria-hidden="true">🛋️</span>
-  Virtuelles Home Staging
-</Link>
-) : (
-  <Link
-    href="/#preise"
-    aria-label="Virtuelles Home Staging – verfügbar mit Pro für CHF 79.90"
-    style={{
-      display: "inline-flex",
-      width: "100%",
-      minHeight: "52px",
-      marginTop: "10px",
-      padding: "9px 14px",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: "10px",
-      border:
-        "1px solid rgba(34, 211, 238, 0.42)",
-      borderRadius: "14px",
-      background:
-        "linear-gradient(135deg, rgba(30, 41, 59, 0.96), rgba(8, 145, 178, 0.28))",
-      color: "#ffffff",
-      textDecoration: "none",
-      boxSizing: "border-box",
-      boxShadow:
-        "0 12px 28px rgba(8, 145, 178, 0.16)",
-    }}
-  >
-    <span aria-hidden="true">🔒</span>
-
-    <span style={{ textAlign: "left" }}>
-      <strong
-        style={{
-          display: "block",
-          fontSize: "14px",
-          fontWeight: 900,
-        }}
-      >
-        Virtuelles Home Staging
-      </strong>
-
-      <small
-        style={{
-          display: "block",
-          marginTop: "2px",
-          color: "#67e8f9",
-          fontSize: "11px",
-          fontWeight: 800,
-        }}
-      >
-        Pro CHF 79.90
-      </small>
-    </span>
-  </Link>
-)}
+              {hasProAccess ? (
+                <Link
+                  href={`/cockpit/${listing.id}/home-staging`}
+                  style={{
+                    display: "inline-flex",
+                    width: "100%",
+                    minHeight: "48px",
+                    marginTop: "10px",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "9px",
+                    padding: "10px 16px",
+                    border: "1px solid rgba(34, 211, 238, 0.48)",
+                    borderRadius: "14px",
+                    background:
+                      "linear-gradient(135deg, rgba(34, 211, 238, 0.22), rgba(139, 92, 246, 0.28), rgba(245, 189, 33, 0.18))",
+                    color: "#ffffff",
+                    fontWeight: 900,
+                    textDecoration: "none",
+                    boxSizing: "border-box",
+                    boxShadow: "0 12px 28px rgba(34, 211, 238, 0.12)",
+                  }}
+                >
+                  <span aria-hidden="true">🛋️</span>
+                  {t("nextSteps.homeStaging")}
+                </Link>
+              ) : (
+                <Link
+                  href="/#preise"
+                  aria-label={t("nextSteps.homeStagingProAria")}
+                  style={{
+                    display: "inline-flex",
+                    width: "100%",
+                    minHeight: "52px",
+                    marginTop: "10px",
+                    padding: "9px 14px",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "10px",
+                    border: "1px solid rgba(34, 211, 238, 0.42)",
+                    borderRadius: "14px",
+                    background:
+                      "linear-gradient(135deg, rgba(30, 41, 59, 0.96), rgba(8, 145, 178, 0.28))",
+                    color: "#ffffff",
+                    textDecoration: "none",
+                    boxSizing: "border-box",
+                    boxShadow: "0 12px 28px rgba(8, 145, 178, 0.16)",
+                  }}
+                >
+                  <span aria-hidden="true">🔒</span>
+                  <span style={{ textAlign: "left" }}>
+                    <strong
+                      style={{
+                        display: "block",
+                        fontSize: "14px",
+                        fontWeight: 900,
+                      }}
+                    >
+                      {t("nextSteps.homeStaging")}
+                    </strong>
+                    <small
+                      style={{
+                        display: "block",
+                        marginTop: "2px",
+                        color: "#67e8f9",
+                        fontSize: "11px",
+                        fontWeight: 800,
+                      }}
+                    >
+                      {t("nextSteps.proPrice")}
+                    </small>
+                  </span>
+                </Link>
+              )}
 
               <ListingActions
                 listingId={listing.id}
                 archived={Boolean(listing.archivedAt)}
                 unlockStatus={listing.unlockStatus}
-                singleObjectPriceCents={
-                  listing.singleObjectPriceCents
-                }
-
+                singleObjectPriceCents={listing.singleObjectPriceCents}
               />
             </section>
           </aside>
