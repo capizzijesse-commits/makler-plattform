@@ -52,7 +52,7 @@ export default function PricingSection() {
       id: "founder",
       name: "Founder",
       label: t("plans.founder.label"),
-      price: "19.90 CHF",
+      price: t("plans.founder.price"),
       cadence: t("plans.founder.cadence"),
       text: t("plans.founder.description"),
       button: t("plans.founder.button"),

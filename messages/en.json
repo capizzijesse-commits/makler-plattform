@@ -161,10 +161,10 @@
       },
       "founder": {
         "label": "FOR THE FIRST 50 REAL ESTATE PROFESSIONALS",
-        "cadence": "30 days free, then per month",
-        "description": "The complete core workspace for real estate professionals. Try Founder free for 30 days, then CHF 19.90 per month.",
-        "button": "Subscribe to Founder",
-        "loading": "Opening Founder checkout…",
+        "cadence": "then CHF 19.90 / month",
+        "description": "Try Founder free for 30 days. Then CHF 19.90 per month – cancel anytime.",
+        "button": "Secure Founder",
+        "loading": "Opening checkout …",
         "features": {
           "projects": "Multiple properties in the professional cockpit",
           "variants": "3 professional listing variants per property",
@@ -173,8 +173,9 @@
           "social": "Social media copy",
           "expose": "Professional property brochure with PDF export",
           "storage": "Store properties, text and images permanently",
-          "trial": "30-day free trial"
-        }
+          "trial": "30 days free"
+        },
+        "price": "30 days free"
       },
       "pro": {
         "label": "PREMIUM MARKETING",

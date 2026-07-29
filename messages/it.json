@@ -161,10 +161,10 @@
       },
       "founder": {
         "label": "PER I PRIMI 50 AGENTI IMMOBILIARI",
-        "cadence": "30 giorni gratis, poi al mese",
-        "description": "L’area di lavoro completa di base per professionisti immobiliari. Prova Founder gratuitamente per 30 giorni, poi CHF 19.90 al mese.",
-        "button": "Abbonati a Founder",
-        "loading": "Apertura del checkout Founder…",
+        "cadence": "poi CHF 19.90 / mese",
+        "description": "Prova Founder gratuitamente per 30 giorni. Poi CHF 19.90 al mese – annullabile in qualsiasi momento.",
+        "button": "Assicurati Founder",
+        "loading": "Apertura del checkout …",
         "features": {
           "projects": "Più immobili nel cockpit per agenti immobiliari",
           "variants": "3 varianti professionali per ogni immobile",
@@ -173,8 +173,9 @@
           "social": "Testi per i social media",
           "expose": "Dossier di vendita professionale con esportazione PDF",
           "storage": "Salvataggio permanente di immobili, testi e immagini",
-          "trial": "Prova gratuita di 30 giorni"
-        }
+          "trial": "30 giorni gratuiti"
+        },
+        "price": "30 giorni gratuiti"
       },
       "pro": {
         "label": "MARKETING PREMIUM",

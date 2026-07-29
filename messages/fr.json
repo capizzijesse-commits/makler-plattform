@@ -161,10 +161,10 @@
       },
       "founder": {
         "label": "POUR LES 50 PREMIERS COURTIERS",
-        "cadence": "30 jours gratuits, puis par mois",
-        "description": "L’espace de travail de base complet pour les professionnels de l’immobilier. Testez Founder gratuitement pendant 30 jours, puis CHF 19.90 par mois.",
-        "button": "S’abonner à Founder",
-        "loading": "Ouverture du paiement Founder…",
+        "cadence": "puis CHF 19.90 / mois",
+        "description": "Testez Founder gratuitement pendant 30 jours. Puis CHF 19.90 par mois – résiliable à tout moment.",
+        "button": "Réserver Founder",
+        "loading": "Ouverture du paiement …",
         "features": {
           "projects": "Plusieurs biens dans le cockpit professionnel",
           "variants": "3 variantes professionnelles par bien",
@@ -173,8 +173,9 @@
           "social": "Textes pour les réseaux sociaux",
           "expose": "Dossier de vente professionnel avec export PDF",
           "storage": "Enregistrement durable des biens, textes et photos",
-          "trial": "Essai gratuit de 30 jours"
-        }
+          "trial": "30 jours gratuits"
+        },
+        "price": "30 jours gratuits"
       },
       "pro": {
         "label": "COMMERCIALISATION PREMIUM",

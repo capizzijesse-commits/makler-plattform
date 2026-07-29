@@ -161,10 +161,10 @@
       },
       "founder": {
         "label": "FÜR DIE ERSTEN 50 MAKLER",
-        "cadence": "30 Tage gratis, danach pro Monat",
-        "description": "Der vollständige Basis-Arbeitsbereich für Makler. Founder 30 Tage kostenlos testen, danach CHF 19.90 pro Monat.",
-        "button": "Founder abonnieren",
-        "loading": "Founder-Checkout wird geöffnet …",
+        "cadence": "danach 19.90 CHF / Monat",
+        "description": "Teste Founder 30 Tage kostenlos. Danach CHF 19.90 pro Monat – jederzeit kündbar.",
+        "button": "Founder sichern",
+        "loading": "Checkout wird geöffnet …",
         "features": {
           "projects": "Mehrere Immobilien im Makler-Cockpit",
           "variants": "3 professionelle Inserat-Varianten pro Objekt",
@@ -174,7 +174,8 @@
           "expose": "Professionelles Exposé mit PDF-Export",
           "storage": "Objekte, Texte und Bilder dauerhaft speichern",
           "trial": "30 Tage kostenlos testen"
-        }
+        },
+        "price": "30 Tage kostenlos"
       },
       "pro": {
         "label": "PREMIUM-VERMARKTUNG",
