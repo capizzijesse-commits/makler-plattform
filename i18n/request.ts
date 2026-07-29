@@ -10,9 +10,14 @@ export default getRequestConfig(async () => {
   const cookieStore = await cookies();
   const savedLocale = cookieStore.get(localeCookieName)?.value;
 
-  const locale = isAppLocale(savedLocale)
-    ? savedLocale
-    : defaultLocale;
+  const multilingualReleaseEnabled =
+    process.env.NODE_ENV !== "production" ||
+    process.env.NEXT_PUBLIC_MULTILINGUAL_RELEASE === "true";
+
+  const locale =
+    multilingualReleaseEnabled && isAppLocale(savedLocale)
+      ? savedLocale
+      : defaultLocale;
 
   return {
     locale,

@@ -37,6 +37,18 @@ type MenuPosition = {
 };
 
 export default function LanguageSwitcher() {
+  const multilingualReleaseEnabled =
+    process.env.NODE_ENV !== "production" ||
+    process.env.NEXT_PUBLIC_MULTILINGUAL_RELEASE === "true";
+
+  if (!multilingualReleaseEnabled) {
+    return null;
+  }
+
+  return <EnabledLanguageSwitcher />;
+}
+
+function EnabledLanguageSwitcher() {
   const detectedLocale = useLocale();
   const t = useTranslations("Common");
 
