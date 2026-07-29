@@ -1205,5 +1205,73 @@
       "success": "{postalCode} {location} was identified and assigned to the canton of {canton}.",
       "unavailable": "The Swiss location assistant is currently unavailable."
     }
+  },
+  "SocialMedia": {
+    "defaults": {
+      "location": "Winterthur",
+      "propertyType": "Apartment",
+      "style": "high-quality, modern",
+      "highlights": "Balcony, lift, school, kindergarten, railway station"
+    },
+    "header": {
+      "title": "Social Media Studio",
+      "description": "Create professional property posts for Instagram, Facebook, LinkedIn and X, including image references, hashtags and copy functionality.",
+      "back": "Back to dashboard"
+    },
+    "input": {
+      "eyebrow": "INPUT",
+      "title": "Property details",
+      "description": "These details are used only for the social media copy. The main generator remains unchanged."
+    },
+    "fields": {
+      "location": "Location",
+      "propertyType": "Property type",
+      "rooms": "Rooms",
+      "livingArea": "Living space in m²",
+      "price": "Price in CHF",
+      "style": "Style",
+      "highlights": "Highlights"
+    },
+    "images": {
+      "savedLabel": "Saved property images",
+      "label": "Property images",
+      "add": "Add more images",
+      "upload": "Upload photos",
+      "savedImported": "The saved images have already been imported automatically.",
+      "formatHint": "Upload JPG, PNG or WebP files. Maximum 10 images.",
+      "importedNotice": "Imported automatically from the broker cockpit. The primary image appears first.",
+      "alt": "Property photo {number}",
+      "remove": "Remove property photo {number}",
+      "aiHint": "After upload, Inserat-AI automatically considers the images when creating stronger social media posts.",
+      "analysisContext": "{count} property images were uploaded. The social media copy should consider the images and be visually engaging."
+    },
+    "generate": {
+      "loading": "Creating social media posts …",
+      "button": "✨ Generate (3 variants)"
+    },
+    "output": {
+      "eyebrow": "OUTPUT",
+      "title": "Ready-to-use social media posts",
+      "description": "Each text is created in the platform’s style with a call to action and suitable hashtags.",
+      "platformCount": "{count} platforms",
+      "emptyTitle": "Social media posts",
+      "emptyDescription": "Click Generate on the left. Instagram, Facebook, LinkedIn and X will then appear with 3 variants each.",
+      "variant": "Variant {number}",
+      "activeVariant": "{platform} variant {number}"
+    },
+    "platform": {
+      "open": "Open {platform}"
+    },
+    "copy": {
+      "button": "Copy text",
+      "success": "Text copied.",
+      "error": "The text could not be copied."
+    },
+    "errors": {
+      "loadListing": "The selected property could not be loaded.",
+      "save": "The social media texts could not be saved permanently.",
+      "generate": "The social media texts could not be created.",
+      "empty": "No social media variants were created."
+    }
   }
 }

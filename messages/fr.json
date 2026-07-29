@@ -1205,5 +1205,73 @@
       "success": "{postalCode} {location} a été identifié et attribué au canton de {canton}.",
       "unavailable": "L’assistant suisse de localisation est momentanément indisponible."
     }
+  },
+  "SocialMedia": {
+    "defaults": {
+      "location": "Winterthour",
+      "propertyType": "Appartement",
+      "style": "haut de gamme, moderne",
+      "highlights": "Balcon, ascenseur, école, jardin d’enfants, gare"
+    },
+    "header": {
+      "title": "Studio réseaux sociaux",
+      "description": "Créez des publications immobilières professionnelles pour Instagram, Facebook, LinkedIn et X, avec références aux images, hashtags et fonction de copie.",
+      "back": "Retour au tableau de bord"
+    },
+    "input": {
+      "eyebrow": "SAISIE",
+      "title": "Données du bien",
+      "description": "Ces données servent uniquement aux textes pour les réseaux sociaux. Le générateur principal reste inchangé."
+    },
+    "fields": {
+      "location": "Localité / situation",
+      "propertyType": "Type de bien",
+      "rooms": "Pièces",
+      "livingArea": "Surface habitable en m²",
+      "price": "Prix en CHF",
+      "style": "Style",
+      "highlights": "Points forts"
+    },
+    "images": {
+      "savedLabel": "Images enregistrées du bien",
+      "label": "Images du bien",
+      "add": "Ajouter d’autres images",
+      "upload": "Téléverser des photos",
+      "savedImported": "Les images enregistrées ont déjà été reprises automatiquement.",
+      "formatHint": "Téléversez des fichiers JPG, PNG ou WebP. Maximum 10 images.",
+      "importedNotice": "Reprises automatiquement depuis le cockpit courtier. L’image principale apparaît en premier.",
+      "alt": "Photo du bien {number}",
+      "remove": "Supprimer la photo du bien {number}",
+      "aiHint": "Après le téléversement, Inserat-AI tient automatiquement compte des images pour améliorer les publications.",
+      "analysisContext": "{count} images du bien ont été téléversées. Les textes pour les réseaux sociaux doivent en tenir compte et être visuellement attrayants."
+    },
+    "generate": {
+      "loading": "Création des publications pour les réseaux sociaux …",
+      "button": "✨ Générer (3 variantes)"
+    },
+    "output": {
+      "eyebrow": "RÉSULTAT",
+      "title": "Publications prêtes pour les réseaux sociaux",
+      "description": "Chaque texte est créé dans le style de la plateforme, avec un appel à l’action et des hashtags adaptés.",
+      "platformCount": "{count} plateformes",
+      "emptyTitle": "Publications pour les réseaux sociaux",
+      "emptyDescription": "Cliquez sur Générer à gauche. Instagram, Facebook, LinkedIn et X apparaîtront avec 3 variantes chacun.",
+      "variant": "Variante {number}",
+      "activeVariant": "{platform} – variante {number}"
+    },
+    "platform": {
+      "open": "Ouvrir {platform}"
+    },
+    "copy": {
+      "button": "Copier le texte",
+      "success": "Le texte a été copié.",
+      "error": "Le texte n’a pas pu être copié."
+    },
+    "errors": {
+      "loadListing": "Le bien sélectionné n’a pas pu être chargé.",
+      "save": "Les textes pour les réseaux sociaux n’ont pas pu être enregistrés durablement.",
+      "generate": "Les textes pour les réseaux sociaux n’ont pas pu être créés.",
+      "empty": "Aucune variante pour les réseaux sociaux n’a été créée."
+    }
   }
 }

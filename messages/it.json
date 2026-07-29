@@ -1205,5 +1205,73 @@
       "success": "{postalCode} {location} è stata riconosciuta e assegnata al Cantone {canton}.",
       "unavailable": "L’assistente svizzero per la posizione non è momentaneamente raggiungibile."
     }
+  },
+  "SocialMedia": {
+    "defaults": {
+      "location": "Winterthur",
+      "propertyType": "Appartamento",
+      "style": "pregiato, moderno",
+      "highlights": "Balcone, ascensore, scuola, asilo, stazione"
+    },
+    "header": {
+      "title": "Studio social media",
+      "description": "Crea post immobiliari professionali per Instagram, Facebook, LinkedIn e X, con riferimenti alle immagini, hashtag e funzione di copia.",
+      "back": "Torna alla dashboard"
+    },
+    "input": {
+      "eyebrow": "DATI",
+      "title": "Dati dell’immobile",
+      "description": "Questi dati vengono utilizzati solo per i testi dei social media. Il generatore principale rimane invariato."
+    },
+    "fields": {
+      "location": "Località / posizione",
+      "propertyType": "Tipologia di immobile",
+      "rooms": "Locali",
+      "livingArea": "Superficie abitabile in m²",
+      "price": "Prezzo in CHF",
+      "style": "Stile",
+      "highlights": "Punti di forza"
+    },
+    "images": {
+      "savedLabel": "Immagini salvate dell’immobile",
+      "label": "Immagini dell’immobile",
+      "add": "Aggiungi altre immagini",
+      "upload": "Carica foto",
+      "savedImported": "Le immagini salvate sono già state importate automaticamente.",
+      "formatHint": "Carica file JPG, PNG o WebP. Massimo 10 immagini.",
+      "importedNotice": "Importate automaticamente dal cockpit per agenti. L’immagine principale appare per prima.",
+      "alt": "Foto dell’immobile {number}",
+      "remove": "Rimuovi la foto dell’immobile {number}",
+      "aiHint": "Dopo il caricamento, Inserat-AI considera automaticamente le immagini per creare post migliori.",
+      "analysisContext": "Sono state caricate {count} immagini dell’immobile. I testi per i social media devono tenerne conto e risultare visivamente coinvolgenti."
+    },
+    "generate": {
+      "loading": "Creazione dei post per i social media …",
+      "button": "✨ Genera (3 varianti)"
+    },
+    "output": {
+      "eyebrow": "RISULTATO",
+      "title": "Post pronti per i social media",
+      "description": "Ogni testo viene creato nello stile della piattaforma, con call to action e hashtag adatti.",
+      "platformCount": "{count} piattaforme",
+      "emptyTitle": "Post per i social media",
+      "emptyDescription": "Clicca su Genera a sinistra. Appariranno Instagram, Facebook, LinkedIn e X con 3 varianti ciascuno.",
+      "variant": "Variante {number}",
+      "activeVariant": "{platform} – variante {number}"
+    },
+    "platform": {
+      "open": "Apri {platform}"
+    },
+    "copy": {
+      "button": "Copia testo",
+      "success": "Testo copiato.",
+      "error": "Non è stato possibile copiare il testo."
+    },
+    "errors": {
+      "loadListing": "Non è stato possibile caricare l’immobile selezionato.",
+      "save": "Non è stato possibile salvare definitivamente i testi per i social media.",
+      "generate": "Non è stato possibile creare i testi per i social media.",
+      "empty": "Non è stata creata alcuna variante per i social media."
+    }
   }
 }

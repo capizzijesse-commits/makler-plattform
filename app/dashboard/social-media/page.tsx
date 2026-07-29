@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 
 type PlatformName = "Instagram" | "Facebook" | "LinkedIn" | "X";
 
@@ -9,6 +10,7 @@ type SocialVariant = {
   title: string;
   text: string;
 };
+
 type ListingImage = {
   id: string;
   url: string;
@@ -35,200 +37,252 @@ type ListingResponse = {
   error?: string;
 };
 
-const PLATFORM_NAMES: PlatformName[] = ["Instagram", "Facebook", "LinkedIn", "X"];
+const PLATFORM_NAMES: PlatformName[] = [
+  "Instagram",
+  "Facebook",
+  "LinkedIn",
+  "X",
+];
 
 export default function SocialMediaPage() {
-  const [location, setLocation] = useState("Winterthur");
-  const [propertyType, setPropertyType] = useState("Wohnung");
+  const t = useTranslations("SocialMedia");
+  const locale = useLocale();
+
+  const [location, setLocation] = useState(() =>
+    t("defaults.location")
+  );
+  const [propertyType, setPropertyType] = useState(() =>
+    t("defaults.propertyType")
+  );
   const [rooms, setRooms] = useState("4.5");
   const [livingArea, setLivingArea] = useState("150");
   const [price, setPrice] = useState("1000000");
-  const [styleText, setStyleText] = useState("hochwertig, modern");
-  const [highlights, setHighlights] = useState(
-    "Balkon, Lift, Schule, Kindergarten, Bahnhof"
+  const [styleText, setStyleText] = useState(() =>
+    t("defaults.style")
+  );
+  const [highlights, setHighlights] = useState(() =>
+    t("defaults.highlights")
   );
 
   const [imageAnalysis, setImageAnalysis] = useState("");
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-const [sourceListingId, setSourceListingId] = useState<string | null>(
-  null
-);
+  const [sourceListingId, setSourceListingId] = useState<
+    string | null
+  >(null);
   const [variants, setVariants] = useState<SocialVariant[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [copyMessage, setCopyMessage] = useState("");
 
-  const [activeVariantByPlatform, setActiveVariantByPlatform] = useState<
-    Record<PlatformName, number>
-  >({
-    Instagram: 0,
-    Facebook: 0,
-    LinkedIn: 0,
-    X: 0,
-  });
-useEffect(() => {
-  const savedAnalysis = localStorage.getItem("inseratAiImageAnalysis");
+  const [activeVariantByPlatform, setActiveVariantByPlatform] =
+    useState<Record<PlatformName, number>>({
+      Instagram: 0,
+      Facebook: 0,
+      LinkedIn: 0,
+      X: 0,
+    });
 
-  if (savedAnalysis) {
-    setImageAnalysis(savedAnalysis);
-  }
-}, []);
   useEffect(() => {
-    const savedDraft = localStorage.getItem("inseratAiSocialDraft");
+    const savedAnalysis = localStorage.getItem(
+      "inseratAiImageAnalysis"
+    );
 
-    if (!savedDraft) return;
+    if (savedAnalysis) {
+      setImageAnalysis(savedAnalysis);
+    }
+  }, []);
+
+  useEffect(() => {
+    const savedDraft = localStorage.getItem(
+      "inseratAiSocialDraft"
+    );
+
+    if (!savedDraft) {
+      return;
+    }
 
     try {
       const data = JSON.parse(savedDraft);
 
-      if (typeof data.location === "string") setLocation(data.location);
+      if (typeof data.location === "string") {
+        setLocation(data.location);
+      }
+
       if (typeof data.propertyType === "string") {
         setPropertyType(data.propertyType);
       }
-      if (typeof data.rooms === "string") setRooms(data.rooms);
-      if (typeof data.livingArea === "string") setLivingArea(data.livingArea);
-      if (typeof data.price === "string") setPrice(data.price);
-      if (typeof data.highlights === "string") setHighlights(data.highlights);
-      if (typeof data.styleText === "string") setStyleText(data.styleText);
+
+      if (typeof data.rooms === "string") {
+        setRooms(data.rooms);
+      }
+
+      if (typeof data.livingArea === "string") {
+        setLivingArea(data.livingArea);
+      }
+
+      if (typeof data.price === "string") {
+        setPrice(data.price);
+      }
+
+      if (typeof data.highlights === "string") {
+        setHighlights(data.highlights);
+      }
+
+      if (typeof data.styleText === "string") {
+        setStyleText(data.styleText);
+      }
+
       if (typeof data.imageAnalysis === "string") {
         setImageAnalysis(data.imageAnalysis);
       }
     } catch {
-      console.log("Social-Media-Daten konnten nicht geladen werden.");
+      console.warn("SOCIAL_MEDIA_DRAFT_LOAD_FAILED");
     }
   }, []);
-useEffect(() => {
-  const listingId = new URLSearchParams(
-    window.location.search
-  ).get("listingId");
 
-  if (!listingId) {
-    return;
-  }
-setSourceListingId(listingId);
-  const controller = new AbortController();
+  useEffect(() => {
+    const listingId = new URLSearchParams(
+      window.location.search
+    ).get("listingId");
 
-  async function loadListingForSocialMedia() {
-    try {
-      setError("");
+    if (!listingId) {
+      return;
+    }
 
-      const response = await fetch(
-        `/api/listings/${encodeURIComponent(listingId!)}`,
-        {
-          method: "GET",
-          credentials: "include",
-          cache: "no-store",
-          signal: controller.signal,
+    setSourceListingId(listingId);
+
+    const controller = new AbortController();
+
+    async function loadListingForSocialMedia() {
+      try {
+        setError("");
+
+        const response = await fetch(
+          `/api/listings/${encodeURIComponent(listingId!)}`,
+          {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store",
+            signal: controller.signal,
+          }
+        );
+
+        if (response.status === 401) {
+          window.location.href = "/login";
+          return;
         }
-      );
 
-      if (response.status === 401) {
-        window.location.href = "/login";
-        return;
-      }
+        const data = (await response.json()) as ListingResponse;
 
-      const data = (await response.json()) as ListingResponse;
+        if (!response.ok || !data.success || !data.listing) {
+          throw new Error(t("errors.loadListing"));
+        }
 
-      if (!response.ok || !data.success || !data.listing) {
-        throw new Error(
-          data.error ||
-            "Das ausgewählte Objekt konnte nicht geladen werden."
+        const listing = data.listing;
+
+        if (Array.isArray(listing.socialVariants)) {
+          setVariants(listing.socialVariants);
+        }
+
+        setLocation(listing.location || "");
+        setPropertyType(listing.propertyType || "");
+        setRooms(
+          listing.rooms !== null ? String(listing.rooms) : ""
+        );
+        setLivingArea(
+          listing.livingArea !== null
+            ? String(listing.livingArea)
+            : ""
+        );
+        setPrice(
+          listing.price !== null ? String(listing.price) : ""
+        );
+        setHighlights(listing.highlights || "");
+        setStyleText(listing.style || "");
+        setImageAnalysis(listing.imageAnalysis || "");
+
+        const sortedImageUrls = [...(listing.images ?? [])]
+          .sort((firstImage, secondImage) => {
+            if (
+              firstImage.isPrimary !== secondImage.isPrimary
+            ) {
+              return firstImage.isPrimary ? -1 : 1;
+            }
+
+            return firstImage.position - secondImage.position;
+          })
+          .map((image) => image.url);
+
+        setSelectedImages([]);
+
+        setImagePreviews((currentPreviews) => {
+          currentPreviews
+            .filter((preview) => preview.startsWith("blob:"))
+            .forEach((preview) => {
+              URL.revokeObjectURL(preview);
+            });
+
+          return sortedImageUrls;
+        });
+      } catch (loadError) {
+        if (
+          loadError instanceof DOMException &&
+          loadError.name === "AbortError"
+        ) {
+          return;
+        }
+
+        console.error(
+          "SOCIAL_MEDIA_LISTING_LOAD_FAILED:",
+          loadError
+        );
+
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : t("errors.loadListing")
         );
       }
-
-      const listing = data.listing;
-      if (Array.isArray(listing.socialVariants)) {
-  setVariants(listing.socialVariants);
-}
-
-      setLocation(listing.location || "");
-      setPropertyType(listing.propertyType || "");
-
-      setRooms(
-        listing.rooms !== null ? String(listing.rooms) : ""
-      );
-
-      setLivingArea(
-        listing.livingArea !== null
-          ? String(listing.livingArea)
-          : ""
-      );
-
-      setPrice(
-        listing.price !== null ? String(listing.price) : ""
-      );
-
-      setHighlights(listing.highlights || "");
-      setStyleText(listing.style || "");
-      setImageAnalysis(listing.imageAnalysis || "");
-
-      const sortedImageUrls = [...(listing.images ?? [])]
-        .sort((firstImage, secondImage) => {
-          if (firstImage.isPrimary !== secondImage.isPrimary) {
-            return firstImage.isPrimary ? -1 : 1;
-          }
-
-          return firstImage.position - secondImage.position;
-        })
-        .map((image) => image.url);
-
-      setSelectedImages([]);
-
-      setImagePreviews((currentPreviews) => {
-        currentPreviews
-          .filter((preview) => preview.startsWith("blob:"))
-          .forEach((preview) => {
-            URL.revokeObjectURL(preview);
-          });
-
-        return sortedImageUrls;
-      });
-    } catch (loadError) {
-      if (
-        loadError instanceof DOMException &&
-        loadError.name === "AbortError"
-      ) {
-        return;
-      }
-
-      console.error(
-        "SOCIAL-MEDIA-OBJEKT-FEHLER:",
-        loadError
-      );
-
-      setError(
-        loadError instanceof Error
-          ? loadError.message
-          : "Das ausgewählte Objekt konnte nicht geladen werden."
-      );
     }
-  }
 
-  void loadListingForSocialMedia();
-  
+    void loadListingForSocialMedia();
 
-  return () => {
-    controller.abort();
-  };
-}, []);
-  function getPlatformFromTitle(title: string): PlatformName | null {
-    const value = title.toLowerCase();
+    return () => {
+      controller.abort();
+    };
+  }, [t]);
 
-    if (value.includes("instagram")) return "Instagram";
-    if (value.includes("facebook")) return "Facebook";
-    if (value.includes("linkedin")) return "LinkedIn";
-    if (value.includes("x variante") || value.includes("twitter")) return "X";
+  function getPlatformFromTitle(
+    title: string
+  ): PlatformName | null {
+    const value = title.toLocaleLowerCase();
+
+    if (value.includes("instagram")) {
+      return "Instagram";
+    }
+
+    if (value.includes("facebook")) {
+      return "Facebook";
+    }
+
+    if (value.includes("linkedin")) {
+      return "LinkedIn";
+    }
+
+    if (
+      value === "x" ||
+      value.startsWith("x ") ||
+      value.includes("twitter")
+    ) {
+      return "X";
+    }
 
     return null;
   }
 
   function getPlatformButtonLabel(platform: PlatformName) {
-    if (platform === "Instagram") return "Instagram öffnen";
-    if (platform === "Facebook") return "Facebook öffnen";
-    if (platform === "LinkedIn") return "LinkedIn öffnen";
-    if (platform === "X") return "X öffnen";
-
-    return "Plattform öffnen";
+    return t("platform.open", { platform });
   }
 
   function getPlatformButtonIcon(platform: PlatformName) {
@@ -241,213 +295,212 @@ setSourceListingId(listingId);
   }
 
   function getPlatformButtonClass(platform: PlatformName) {
-  const baseClass =
-    "inline-flex items-center justify-center rounded-xl border px-5 py-3 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:scale-[1.02]";
+    const baseClass =
+      "inline-flex items-center justify-center rounded-xl border px-5 py-3 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:scale-[1.02]";
 
-  if (platform === "Instagram") {
-    return `${baseClass} border-fuchsia-300/40 bg-gradient-to-r from-pink-500 via-fuchsia-500 to-orange-400 shadow-fuchsia-500/15 hover:shadow-fuchsia-500/25`;
+    if (platform === "Instagram") {
+      return `${baseClass} border-fuchsia-300/40 bg-gradient-to-r from-pink-500 via-fuchsia-500 to-orange-400 shadow-fuchsia-500/15 hover:shadow-fuchsia-500/25`;
+    }
+
+    if (platform === "Facebook") {
+      return `${baseClass} border-blue-300/40 bg-gradient-to-r from-blue-600 to-blue-500 shadow-blue-500/15 hover:from-blue-500 hover:to-blue-400`;
+    }
+
+    if (platform === "LinkedIn") {
+      return `${baseClass} border-sky-300/40 bg-gradient-to-r from-sky-700 to-blue-600 shadow-sky-500/15 hover:from-sky-600 hover:to-blue-500`;
+    }
+
+    if (platform === "X") {
+      return `${baseClass} border-white/25 bg-gradient-to-r from-slate-950 to-slate-800 shadow-black/20 hover:from-slate-800 hover:to-slate-700`;
+    }
+
+    return `${baseClass} border-amber-400/40 bg-slate-900`;
   }
-
-  if (platform === "Facebook") {
-    return `${baseClass} border-blue-300/40 bg-gradient-to-r from-blue-600 to-blue-500 shadow-blue-500/15 hover:from-blue-500 hover:to-blue-400`;
-  }
-
-  if (platform === "LinkedIn") {
-    return `${baseClass} border-sky-300/40 bg-gradient-to-r from-sky-700 to-blue-600 shadow-sky-500/15 hover:from-sky-600 hover:to-blue-500`;
-  }
-
-  if (platform === "X") {
-    return `${baseClass} border-white/25 bg-gradient-to-r from-slate-950 to-slate-800 shadow-black/20 hover:from-slate-800 hover:to-slate-700`;
-  }
-
-  return `${baseClass} border-amber-400/40 bg-slate-900`;
-}
 
   function getPlatformUrl(platform: PlatformName) {
-    if (platform === "Instagram") return "https://www.instagram.com/";
-    if (platform === "Facebook") return "https://www.facebook.com/";
-    if (platform === "LinkedIn") return "https://www.linkedin.com/";
-    if (platform === "X") return "https://x.com/";
+    if (platform === "Instagram") {
+      return "https://www.instagram.com/";
+    }
+
+    if (platform === "Facebook") {
+      return "https://www.facebook.com/";
+    }
+
+    if (platform === "LinkedIn") {
+      return "https://www.linkedin.com/";
+    }
+
+    if (platform === "X") {
+      return "https://x.com/";
+    }
 
     return "#";
   }
 
   function getVariantsForPlatform(platform: PlatformName) {
     return variants.filter(
-      (variant) => getPlatformFromTitle(variant.title) === platform
+      (variant) =>
+        getPlatformFromTitle(variant.title) === platform
     );
   }
 
-  function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>)
-   {
-    function removeImage(indexToRemove: number) {
-  const previewToRemove = imagePreviews[indexToRemove];
-
-  if (previewToRemove) {
-    URL.revokeObjectURL(previewToRemove);
-  }
-
-  const updatedImages = selectedImages.filter(
-    (_, index) => index !== indexToRemove
-  );
-
-  const updatedPreviews = imagePreviews.filter(
-    (_, index) => index !== indexToRemove
-  );
-
-  setSelectedImages(updatedImages);
-  setImagePreviews(updatedPreviews);
-
-  if (updatedImages.length === 0) {
-    setImageAnalysis("");
-  } else {
+  function updateImageContext(count: number) {
     setImageAnalysis(
-      `${updatedImages.length} Immobilienbilder wurden hochgeladen. Die Social-Media-Texte sollen die Bilder berücksichtigen und visuell ansprechend formuliert werden.`
+      count > 0
+        ? t("images.analysisContext", { count })
+        : ""
     );
   }
-}
 
+  function handleImageUpload(
+    event: React.ChangeEvent<HTMLInputElement>
+  ) {
     const files = event.target.files;
 
-    if (!files || files.length === 0) return;
+    if (!files || files.length === 0) {
+      return;
+    }
 
     const fileArray = Array.from(files).slice(0, 10);
-    const previews = fileArray.map((file) => URL.createObjectURL(file));
+    const previews = fileArray.map((file) =>
+      URL.createObjectURL(file)
+    );
+
+    imagePreviews
+      .filter((preview) => preview.startsWith("blob:"))
+      .forEach((preview) => {
+        URL.revokeObjectURL(preview);
+      });
 
     setSelectedImages(fileArray);
     setImagePreviews(previews);
-
-    setImageAnalysis(
-      `${fileArray.length} Immobilienbilder wurden hochgeladen. Die Social-Media-Texte sollen die Bilder berücksichtigen und visuell ansprechend formuliert werden.`
-    );
-    
+    updateImageContext(previews.length);
+    event.target.value = "";
   }
+
   function removeImage(indexToRemove: number) {
-  const previewToRemove = imagePreviews[indexToRemove];
+    const previewToRemove = imagePreviews[indexToRemove];
 
-  if (previewToRemove) {
-    URL.revokeObjectURL(previewToRemove);
-  }
+    if (previewToRemove?.startsWith("blob:")) {
+      URL.revokeObjectURL(previewToRemove);
+    }
 
-  const updatedImages = selectedImages.filter(
-    (_, index) => index !== indexToRemove
-  );
-
-  const updatedPreviews = imagePreviews.filter(
-    (_, index) => index !== indexToRemove
-  );
-
-  setSelectedImages(updatedImages);
-  setImagePreviews(updatedPreviews);
-
-  if (updatedImages.length === 0) {
-    setImageAnalysis("");
-  } else {
-    setImageAnalysis(
-      `${updatedImages.length} Immobilienbilder wurden hochgeladen. Die Social-Media-Texte sollen die Bilder berücksichtigen und visuell ansprechend formuliert werden.`
+    const updatedImages = selectedImages.filter(
+      (_, index) => index !== indexToRemove
     );
+    const updatedPreviews = imagePreviews.filter(
+      (_, index) => index !== indexToRemove
+    );
+
+    setSelectedImages(updatedImages);
+    setImagePreviews(updatedPreviews);
+    updateImageContext(updatedPreviews.length);
   }
-}
 
   async function copyPost(text: string) {
-    await navigator.clipboard.writeText(text);
-    alert("Text wurde kopiert.");
-  }
-async function saveSocialVariants(
-  listingId: string,
-  generatedVariants: SocialVariant[]
-) {
-  const response = await fetch(
-    `/api/listings/${encodeURIComponent(listingId)}`,
-    {
-      method: "PATCH",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        location,
-        propertyType,
-        rooms,
-        livingArea,
-        price,
-        highlights,
-        style: styleText,
-        imageAnalysis,
-        socialVariants: generatedVariants,
-      }),
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyMessage(t("copy.success"));
+    } catch {
+      setCopyMessage(t("copy.error"));
     }
-  );
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      data?.error ||
-        "Die Social-Media-Texte konnten nicht dauerhaft gespeichert werden."
-    );
+    window.setTimeout(() => {
+      setCopyMessage("");
+    }, 2600);
   }
-}
- async function handleGenerateSocial() {
-  setLoading(true);
-  setError("");
-  setVariants([]);
 
-  try {
-    const response = await fetch("/api/generate-social", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        location,
-        propertyType,
-        rooms,
-        livingArea,
-        price,
-        highlights,
-        styleText,
-        imageAnalysis,
-        listingId: sourceListingId,
-      }),
-    });
-
-    const data = await response.json();
+  async function saveSocialVariants(
+    listingId: string,
+    generatedVariants: SocialVariant[]
+  ) {
+    const response = await fetch(
+      `/api/listings/${encodeURIComponent(listingId)}`,
+      {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          location,
+          propertyType,
+          rooms,
+          livingArea,
+          price,
+          highlights,
+          style: styleText,
+          imageAnalysis,
+          socialVariants: generatedVariants,
+        }),
+      }
+    );
 
     if (!response.ok) {
-      throw new Error(
-        data?.error || "Social-Media-Texte konnten nicht erstellt werden."
-      );
+      throw new Error(t("errors.save"));
     }
-
-    const generatedSocialVariants: SocialVariant[] = Array.isArray(
-      data.variants
-    )
-      ? data.variants
-      : [];
-
-    if (generatedSocialVariants.length === 0) {
-      throw new Error("Es wurden keine Social-Media-Varianten erstellt.");
-    }
-
-    setVariants(generatedSocialVariants);
-
-    if (sourceListingId) {
-      await saveSocialVariants(
-        sourceListingId,
-        generatedSocialVariants
-      );
-    }
-  } catch (err) {
-    setError(
-      err instanceof Error
-        ? err.message
-        : "Social-Media-Texte konnten nicht erstellt werden."
-    );
-  } finally {
-    setLoading(false);
   }
-}
+
+  async function handleGenerateSocial() {
+    setLoading(true);
+    setError("");
+    setCopyMessage("");
+    setVariants([]);
+
+    try {
+      const response = await fetch("/api/generate-social", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          location,
+          propertyType,
+          rooms,
+          livingArea,
+          price,
+          highlights,
+          styleText,
+          imageAnalysis,
+          listingId: sourceListingId,
+          locale,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error || t("errors.generate")
+        );
+      }
+
+      const generatedSocialVariants: SocialVariant[] =
+        Array.isArray(data.variants) ? data.variants : [];
+
+      if (generatedSocialVariants.length === 0) {
+        throw new Error(t("errors.empty"));
+      }
+
+      setVariants(generatedSocialVariants);
+
+      if (sourceListingId) {
+        await saveSocialVariants(
+          sourceListingId,
+          generatedSocialVariants
+        );
+      }
+    } catch (generationError) {
+      setError(
+        generationError instanceof Error
+          ? generationError.message
+          : t("errors.generate")
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
 return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
       <div className="mx-auto max-w-7xl">
@@ -458,12 +511,11 @@ return (
             </p>
 
             <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">
-              Social-Media Studio
+              {t("header.title")}
             </h1>
 
             <p className="mt-3 max-w-2xl text-slate-300">
-              Erstelle professionelle Immobilien-Posts für Instagram, Facebook,
-              LinkedIn und X – inklusive Bildhinweis, Hashtags und Copy-Funktion.
+              {t("header.description")}
             </p>
           </div>
 
@@ -472,7 +524,7 @@ return (
   className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-400/70 bg-gradient-to-r from-amber-500/20 to-yellow-400/10 px-6 py-3 text-sm font-black text-amber-300 shadow-[0_8px_20px_rgba(245,158,11,0.14)] transition hover:-translate-y-0.5 hover:border-amber-300 hover:from-amber-500 hover:to-yellow-400 hover:text-slate-950"
 >
   <span>←</span>
-  Zurück zum Dashboard
+  {t("header.back")}
 </Link>
         </div>
 
@@ -481,21 +533,22 @@ return (
   <div className="min-h-0 flex-1">
 
       <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">
-        Eingabe
+        {t("input.eyebrow")}
       </p>
       </div>
 
-            <h2 className="mt-3 text-3xl font-black">Objektdaten</h2>
+            <h2 className="mt-3 text-3xl font-black">
+              {t("input.title")}
+            </h2>
 
             <p className="mt-2 text-sm leading-6 text-slate-300">
-              Diese Daten werden nur für die Social-Media-Texte verwendet. Der
-              Hauptgenerator bleibt unverändert.
+              {t("input.description")}
             </p>
 
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               <div>
                 <label className="mb-2 block text-sm font-bold text-slate-200">
-                  Ort / Lage
+                  {t("fields.location")}
                 </label>
                 <input
                   value={location}
@@ -506,7 +559,7 @@ return (
 
               <div>
                 <label className="mb-2 block text-sm font-bold text-slate-200">
-                  Objektart
+                  {t("fields.propertyType")}
                 </label>
                 <input
                   value={propertyType}
@@ -517,7 +570,7 @@ return (
 
               <div>
                 <label className="mb-2 block text-sm font-bold text-slate-200">
-                  Zimmer
+                  {t("fields.rooms")}
                 </label>
                 <input
                   value={rooms}
@@ -528,7 +581,7 @@ return (
 
               <div>
                 <label className="mb-2 block text-sm font-bold text-slate-200">
-                  Wohnfläche m²
+                  {t("fields.livingArea")}
                 </label>
                 <input
                   value={livingArea}
@@ -539,7 +592,7 @@ return (
 
               <div>
                 <label className="mb-2 block text-sm font-bold text-slate-200">
-                  Preis
+                  {t("fields.price")}
                 </label>
                 <input
                   value={price}
@@ -550,7 +603,7 @@ return (
 
               <div>
                 <label className="mb-2 block text-sm font-bold text-slate-200">
-                  Stil
+                  {t("fields.style")}
                 </label>
                 <input
                   value={styleText}
@@ -562,7 +615,7 @@ return (
 
             <div className="mt-4">
               <label className="mb-2 block text-sm font-bold text-slate-200">
-                Highlights
+                {t("fields.highlights")}
               </label>
 
               <input
@@ -575,8 +628,8 @@ return (
             <div className="mt-4">
               <label className="mb-2 block text-sm font-bold text-slate-200">
   {sourceListingId
-    ? "Gespeicherte Objektbilder"
-    : "Objektbilder"}
+    ? t("images.savedLabel")
+    : t("images.label")}
 </label>
 
               <label
@@ -597,21 +650,20 @@ return (
 
                  <div className="mt-3 text-lg font-black text-white">
   {sourceListingId
-    ? "Weitere Bilder hinzufügen"
-    : "Fotos hochladen"}
+    ? t("images.add")
+    : t("images.upload")}
 </div>
 
 <div className="mt-2 text-sm leading-6 text-slate-400">
   {sourceListingId
-    ? "Die gespeicherten Bilder wurden bereits automatisch übernommen."
-    : "JPG, PNG oder WEBP hochladen. Maximal 10 Bilder."}
+    ? t("images.savedImported")
+    : t("images.formatHint")}
 </div>
                 </div>
               </label>
 {sourceListingId && imagePreviews.length > 0 && (
   <div className="mt-4 rounded-2xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm font-bold text-amber-200">
-    ✓ Automatisch aus dem Makler-Cockpit übernommen. Das Hauptbild
-    erscheint zuerst.
+    ✓ {t("images.importedNotice")}
   </div>
 )}
               {imagePreviews.length > 0 && (
@@ -625,12 +677,17 @@ return (
     type="button"
     onClick={() => removeImage(index)}
     className="absolute right-2 top-2 z-10 rounded-full bg-slate-950/80 px-2 py-1 text-xs font-black text-white transition hover:bg-red-600"
+    aria-label={t("images.remove", {
+      number: index + 1,
+    })}
   >
     ✕
   </button>
                       <img
                         src={preview}
-                        alt={`Objektfoto ${index + 1}`}
+                        alt={t("images.alt", {
+                          number: index + 1,
+                        })}
                         className="h-32 w-full object-cover"
                       />
 
@@ -643,8 +700,7 @@ return (
               )}
 
               <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.05] p-4 text-sm leading-6 text-slate-300">
-                🤖 Nach dem Hochladen berücksichtigt Inserat-AI die Bilder
-                automatisch für bessere Social-Media-Posts.
+                🤖 {t("images.aiHint")}
               </div>
             </div>
                 
@@ -655,8 +711,8 @@ return (
            className="sticky bottom-0 z-20 mt-6 w-full flex-shrink-0 rounded-full border border-amber-200/50 bg-gradient-to-r from-yellow-300 to-orange-500 px-8 py-5 text-base font-black text-slate-950 shadow-[0_-12px_28px_rgba(2,6,23,0.75)] transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading
-                ? "Social-Media-Posts werden erstellt..."
-                : "✨ Generieren (3 Varianten)"}
+                ? t("generate.loading")
+                : t("generate.button")}
             </button>
 
             {error && (
@@ -668,28 +724,39 @@ return (
 
           <section className="flex max-h-[760px] min-h-[760px] flex-col overflow-hidden rounded-[2rem] border border-amber-400/30 bg-gradient-to-br from-slate-950 via-slate-900 to-[#111d4a] p-6 text-white shadow-2xl">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">
-              Ausgabe
+              {t("output.eyebrow")}
             </p>
 
           <h2 className="mt-3 text-3xl font-black text-white">
-              Fertige Social-Media-Posts
+              {t("output.title")}
             </h2>
 
            <p className="mt-2 text-sm leading-6 text-slate-300">
-  Jeder Text wird mit Plattform-Stil, Call-to-Action und passenden
-  Hashtags erstellt.
+  {t("output.description")}
 </p>
 
-<div className="mt-5 inline-flex w-fit rounded-full border border-amber-400/40 bg-amber-400/10 px-4 py-2 text-sm font-black text-amber-200">              4 Plattformen
+<div className="mt-5 inline-flex w-fit rounded-full border border-amber-400/40 bg-amber-400/10 px-4 py-2 text-sm font-black text-amber-200">
+              {t("output.platformCount", { count: 4 })}
             </div>
+
+            {copyMessage && (
+              <div
+                className="mt-4 rounded-2xl border border-emerald-400/35 bg-emerald-500/10 px-4 py-3 text-sm font-bold text-emerald-200"
+                role="status"
+                aria-live="polite"
+              >
+                {copyMessage}
+              </div>
+            )}
 
             {variants.length === 0 ? (
               <div className="mt-8 rounded-3xl border border-amber-400/30 bg-white/[0.05] p-6">
-<p className="text-sm font-black uppercase tracking-wide text-amber-300">                  Social-Media-Posts
+<p className="text-sm font-black uppercase tracking-wide text-amber-300">
+                  {t("output.emptyTitle")}
                 </p>
 
-<p className="mt-4 text-sm leading-7 text-slate-300">                  Klicke links auf Generieren. Danach erscheinen Instagram,
-                  Facebook, LinkedIn und X mit je 3 Varianten.
+<p className="mt-4 text-sm leading-7 text-slate-300">
+                  {t("output.emptyDescription")}
                 </p>
               </div>
             ) : (
@@ -729,7 +796,9 @@ className="rounded-3xl border border-amber-400/30 bg-gradient-to-br from-white/[
                  : "border-white/10 bg-white/[0.05] text-slate-300 hover:border-amber-400/50 hover:bg-amber-400/10 hover:text-amber-200"
               }`}
             >
-              Variante {index + 1}
+              {t("output.variant", {
+                number: index + 1,
+              })}
             </button>
           );
         })}
@@ -737,7 +806,10 @@ className="rounded-3xl border border-amber-400/30 bg-gradient-to-br from-white/[
 
       <div className="mt-6 rounded-3xl border border-white/10 bg-slate-950/45 p-6 shadow-inner">
        <p className="text-lg font-black uppercase tracking-wide text-amber-300">
-          {platform} Variante {activeIndex + 1}
+          {t("output.activeVariant", {
+            platform,
+            number: activeIndex + 1,
+          })}
         </p>
 
 <p className="mt-6 whitespace-pre-line text-sm leading-7 text-slate-200">          {activeVariant.text}
@@ -749,7 +821,7 @@ className="rounded-3xl border border-amber-400/30 bg-gradient-to-br from-white/[
           type="button"
           onClick={() => copyPost(activeVariant.text)}
 className="inline-flex items-center justify-center rounded-xl border border-amber-400/60 bg-amber-400/10 px-5 py-3 text-sm font-black text-amber-200 shadow-[0_8px_20px_rgba(245,158,11,0.12)] transition hover:-translate-y-0.5 hover:bg-gradient-to-r hover:from-amber-500 hover:to-yellow-400 hover:text-slate-950"        >
-          📋 Text kopieren
+          📋 {t("copy.button")}
         </button>
 
         <button

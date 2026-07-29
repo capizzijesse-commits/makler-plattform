@@ -1205,5 +1205,73 @@
       "success": "{postalCode} {location} wurde erkannt und dem Kanton {canton} zugeordnet.",
       "unavailable": "Der Schweizer Standort-Assistent ist momentan nicht erreichbar."
     }
+  },
+  "SocialMedia": {
+    "defaults": {
+      "location": "Winterthur",
+      "propertyType": "Wohnung",
+      "style": "hochwertig, modern",
+      "highlights": "Balkon, Lift, Schule, Kindergarten, Bahnhof"
+    },
+    "header": {
+      "title": "Social-Media Studio",
+      "description": "Erstelle professionelle Immobilien-Posts für Instagram, Facebook, LinkedIn und X – inklusive Bildhinweisen, Hashtags und Kopierfunktion.",
+      "back": "Zurück zum Dashboard"
+    },
+    "input": {
+      "eyebrow": "EINGABE",
+      "title": "Objektdaten",
+      "description": "Diese Daten werden nur für die Social-Media-Texte verwendet. Der Hauptgenerator bleibt unverändert."
+    },
+    "fields": {
+      "location": "Ort / Lage",
+      "propertyType": "Objektart",
+      "rooms": "Zimmer",
+      "livingArea": "Wohnfläche in m²",
+      "price": "Preis in CHF",
+      "style": "Stil",
+      "highlights": "Highlights"
+    },
+    "images": {
+      "savedLabel": "Gespeicherte Objektbilder",
+      "label": "Objektbilder",
+      "add": "Weitere Bilder hinzufügen",
+      "upload": "Fotos hochladen",
+      "savedImported": "Die gespeicherten Bilder wurden bereits automatisch übernommen.",
+      "formatHint": "JPG, PNG oder WebP hochladen. Maximal 10 Bilder.",
+      "importedNotice": "Automatisch aus dem Makler-Cockpit übernommen. Das Hauptbild erscheint zuerst.",
+      "alt": "Objektfoto {number}",
+      "remove": "Objektfoto {number} entfernen",
+      "aiHint": "Nach dem Hochladen berücksichtigt Inserat-AI die Bilder automatisch für bessere Social-Media-Posts.",
+      "analysisContext": "{count} Immobilienbilder wurden hochgeladen. Die Social-Media-Texte sollen die Bilder berücksichtigen und visuell ansprechend formuliert werden."
+    },
+    "generate": {
+      "loading": "Social-Media-Posts werden erstellt …",
+      "button": "✨ Generieren (3 Varianten)"
+    },
+    "output": {
+      "eyebrow": "AUSGABE",
+      "title": "Fertige Social-Media-Posts",
+      "description": "Jeder Text wird im Stil der jeweiligen Plattform mit Call-to-Action und passenden Hashtags erstellt.",
+      "platformCount": "{count} Plattformen",
+      "emptyTitle": "Social-Media-Posts",
+      "emptyDescription": "Klicke links auf Generieren. Danach erscheinen Instagram, Facebook, LinkedIn und X mit je 3 Varianten.",
+      "variant": "Variante {number}",
+      "activeVariant": "{platform} Variante {number}"
+    },
+    "platform": {
+      "open": "{platform} öffnen"
+    },
+    "copy": {
+      "button": "Text kopieren",
+      "success": "Text wurde kopiert.",
+      "error": "Der Text konnte nicht kopiert werden."
+    },
+    "errors": {
+      "loadListing": "Das ausgewählte Objekt konnte nicht geladen werden.",
+      "save": "Die Social-Media-Texte konnten nicht dauerhaft gespeichert werden.",
+      "generate": "Social-Media-Texte konnten nicht erstellt werden.",
+      "empty": "Es wurden keine Social-Media-Varianten erstellt."
+    }
   }
 }
