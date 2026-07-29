@@ -1067,5 +1067,143 @@
       "deletingShort": "Suppression …",
       "finalDelete": "Supprimer définitivement"
     }
+  },
+  "CockpitEdit": {
+    "loading": "Chargement des données du bien …",
+    "navigation": {
+      "back": "Retour au bien",
+      "secure": "Enregistrement sécurisé"
+    },
+    "header": {
+      "eyebrow": "GÉRER LE BIEN",
+      "title": "Modifier le bien",
+      "description": "Adaptez les informations enregistrées. Vos variantes d’annonce créées avec AI restent disponibles."
+    },
+    "basic": {
+      "sectionLabel": "DONNÉES DE BASE",
+      "title": "Bien immobilier"
+    },
+    "marketing": {
+      "sectionLabel": "COMMERCIALISATION",
+      "title": "Points forts et style"
+    },
+    "fields": {
+      "location": {
+        "label": "Localité *",
+        "placeholder": "p. ex. Lausanne"
+      },
+      "postalCode": {
+        "label": "NPA",
+        "placeholder": "p. ex. 1000"
+      },
+      "propertyType": {
+        "label": "Type de bien *",
+        "placeholder": "p. ex. appartement"
+      },
+      "rooms": {
+        "label": "Pièces",
+        "placeholder": "p. ex. 4.5"
+      },
+      "livingArea": {
+        "label": "Surface habitable en m²",
+        "placeholder": "p. ex. 120"
+      },
+      "price": {
+        "label": "Prix en CHF",
+        "placeholder": "p. ex. 1450000"
+      },
+      "highlights": {
+        "label": "Points forts",
+        "placeholder": "Balcon, vue sur le lac, garage, situation calme",
+        "hint": "Séparez plusieurs points forts par une virgule."
+      },
+      "style": {
+        "label": "Style de l’annonce",
+        "placeholder": "p. ex. exclusif, moderne et émotionnel"
+      }
+    },
+    "errors": {
+      "missingId": "Aucun identifiant de bien trouvé.",
+      "load": "Le bien n’a pas pu être chargé.",
+      "required": "La localité et le type de bien sont obligatoires.",
+      "save": "Le bien n’a pas pu être enregistré."
+    },
+    "actions": {
+      "cancel": "Annuler",
+      "saving": "Enregistrement des modifications …",
+      "save": "Enregistrer les modifications"
+    },
+    "images": {
+      "sectionLabel": "IMAGES DU BIEN",
+      "title": "Gérer les images",
+      "description": "Ajoutez d’autres images. Elles apparaîtront automatiquement dans la galerie du bien.",
+      "counter": "{count} / {limit} images",
+      "imageAlt": "Image du bien {number}",
+      "primaryBadge": "Image principale",
+      "setPrimary": "Définir comme principale",
+      "settingPrimary": "Modification …",
+      "delete": "Supprimer",
+      "deleting": "Suppression …",
+      "uploading": "Téléversement des images …",
+      "unlockAvailable": "Disponible après déverrouillage",
+      "maximumReached": "Nombre maximal atteint",
+      "addMore": "Ajouter d’autres images",
+      "unlockHint": "Les images sont disponibles après le déverrouillage à CHF 9.90 ou avec un forfait pour courtiers.",
+      "maximumHint": "{count} images sur {limit} sont enregistrées pour ce bien. Supprimez-en une pour en téléverser une autre.",
+      "formatHint": "JPEG, PNG ou WebP · 10 MB maximum par image",
+      "messages": {
+        "unlockRequired": "Les images sont disponibles après le déverrouillage à CHF 9.90.",
+        "limitReached": "Le nombre maximal de {limit} images est atteint.",
+        "invalidFile": "Les formats JPEG, PNG et WebP sont autorisés, avec 10 MB maximum par image.",
+        "uploadingProgress": "Téléversement de l’image {current} sur {total} …",
+        "saveFileError": "L’image «{fileName}» n’a pas pu être enregistrée.",
+        "saved": "{count, plural, =1 {1 nouvelle image a été enregistrée.} other {# nouvelles images ont été enregistrées.}}",
+        "uploadError": "Les images n’ont pas pu être téléversées.",
+        "primaryError": "L’image principale n’a pas pu être modifiée.",
+        "primaryUpdated": "L’image principale a été mise à jour.",
+        "deleteError": "L’image n’a pas pu être supprimée.",
+        "deleted": "L’image a été supprimée définitivement."
+      },
+      "deleteDialog": {
+        "title": "Supprimer définitivement l’image ?",
+        "message": "Cette image sera définitivement retirée du bien. Cette action est irréversible.",
+        "confirm": "Supprimer l’image"
+      }
+    }
+  },
+  "LocationAssistant": {
+    "header": {
+      "eyebrow": "ASSISTANT SUISSE DE LOCALISATION",
+      "title": "Préparer automatiquement la localisation",
+      "description": "Identifie le NPA, la localité et le canton à partir du répertoire officiel des localités et crée un texte de situation modifiable pour le bien et l’exposé."
+    },
+    "button": {
+      "analyzing": "Vérification de la localisation …",
+      "analyze": "Analyser la localisation"
+    },
+    "match": {
+      "location": "LOCALISATION IDENTIFIÉE",
+      "canton": "CANTON",
+      "source": "SOURCE"
+    },
+    "description": {
+      "label": "Texte de situation",
+      "placeholder": "Après l’analyse, le texte professionnel de situation apparaîtra ici.",
+      "hint": "Le texte reste modifiable et est associé durablement au bien lors de l’enregistrement."
+    },
+    "categoryIcons": {
+      "publicTransport": "TP",
+      "schools": "É",
+      "shopping": "C",
+      "leisure": "L"
+    },
+    "messages": {
+      "enterLocation": "Veuillez d’abord saisir un NPA ou une localité.",
+      "suggestions": " Suggestions : {suggestions}.",
+      "notRecognized": "La localisation n’a pas pu être identifiée.",
+      "incomplete": "L’analyse de la localisation a fourni des données incomplètes.",
+      "success": "{postalCode} {location} a été identifié et attribué au canton de {canton}.",
+      "unavailable": "L’assistant suisse de localisation est momentanément indisponible."
+    }
   }
 }

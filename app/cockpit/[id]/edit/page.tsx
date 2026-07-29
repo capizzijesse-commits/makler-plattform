@@ -6,6 +6,8 @@ import LocationAssistantPanel, {
 } from "./LocationAssistantPanel";
 
 import { useParams, useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import { useAppDialog } from "@/components/AppDialogProvider";
 
 import { upload } from "@vercel/blob/client";
 import {
@@ -68,6 +70,18 @@ const EMPTY_FORM: EditForm = {
 export default function EditListingPage() {
   const params = useParams();
   const router = useRouter();
+  const locale = useLocale();
+  const t = useTranslations("CockpitEdit");
+  const { confirmAction } = useAppDialog();
+
+  const intlLocale =
+    locale === "it"
+      ? "it-CH"
+      : locale === "fr"
+        ? "fr-CH"
+        : locale === "en"
+          ? "en-CH"
+          : "de-CH";
 
   const rawId = params.id;
   const listingId = Array.isArray(rawId) ? rawId[0] : rawId;
@@ -92,7 +106,7 @@ const [settingPrimaryImageId, setSettingPrimaryImageId] =
 
   useEffect(() => {
     if (!listingId) {
-      setError("Keine Objekt-ID gefunden.");
+      setError(t("errors.missingId"));
       setLoading(false);
       return;
     }
@@ -123,7 +137,7 @@ const [settingPrimaryImageId, setSettingPrimaryImageId] =
 
         if (!response.ok || !data.success) {
           throw new Error(
-            data.error || "Das Objekt konnte nicht geladen werden."
+            data.error || t("errors.load")
           );
         }
 
@@ -177,7 +191,7 @@ setImages(
         setError(
           loadError instanceof Error
             ? loadError.message
-            : "Das Objekt konnte nicht geladen werden."
+            : t("errors.load")
         );
       } finally {
         if (!controller.signal.aborted) {
@@ -216,9 +230,7 @@ async function handleImageUpload(
   }
 
   if (imageUploadLimit === 0) {
-    setUploadMessage(
-      "Bilder sind nach der CHF-9.90-Freischaltung verfügbar."
-    );
+    setUploadMessage(t("images.messages.unlockRequired"));
     return;
   }
 
@@ -229,7 +241,9 @@ async function handleImageUpload(
 
   if (availableSlots === 0) {
     setUploadMessage(
-      `Die maximale Anzahl von ${imageUploadLimit} Bildern ist erreicht.`
+      t("images.messages.limitReached", {
+        limit: imageUploadLimit,
+      })
     );
     return;
   }
@@ -245,9 +259,7 @@ async function handleImageUpload(
   );
 
   if (invalidFile) {
-    setUploadMessage(
-      "Erlaubt sind JPEG, PNG und WebP mit maximal 10 MB pro Bild."
-    );
+    setUploadMessage(t("images.messages.invalidFile"));
     return;
   }
 
@@ -261,7 +273,10 @@ async function handleImageUpload(
       const file = filesToUpload[index];
 
       setUploadMessage(
-        `Bild ${index + 1} von ${filesToUpload.length} wird hochgeladen …`
+        t("images.messages.uploadingProgress", {
+          current: index + 1,
+          total: filesToUpload.length,
+        })
       );
 
       const safeFileName = file.name
@@ -310,7 +325,9 @@ async function handleImageUpload(
       if (!imageResponse.ok || !imageData.image) {
         throw new Error(
           imageData.error ||
-            `Das Bild „${file.name}“ konnte nicht gespeichert werden.`
+            t("images.messages.saveFileError", {
+              fileName: file.name,
+            })
         );
       }
 
@@ -325,9 +342,9 @@ async function handleImageUpload(
     );
 
     setUploadMessage(
-      uploadedImages.length === 1
-        ? "1 neues Bild wurde gespeichert."
-        : `${uploadedImages.length} neue Bilder wurden gespeichert.`
+      t("images.messages.saved", {
+        count: uploadedImages.length,
+      })
     );
   } catch (uploadError) {
     console.error(
@@ -338,7 +355,7 @@ async function handleImageUpload(
     setUploadMessage(
       uploadError instanceof Error
         ? uploadError.message
-        : "Die Bilder konnten nicht hochgeladen werden."
+        : t("images.messages.uploadError")
     );
   } finally {
     setUploadingImages(false);
@@ -377,7 +394,7 @@ async function setPrimaryImage(imageId: string) {
     if (!response.ok || !data.success || !data.image) {
       throw new Error(
         data.error ||
-          "Das Hauptbild konnte nicht geändert werden."
+          t("images.messages.primaryError")
       );
     }
 
@@ -395,7 +412,7 @@ async function setPrimaryImage(imageId: string) {
         )
     );
 
-    setUploadMessage("Das Hauptbild wurde aktualisiert.");
+    setUploadMessage(t("images.messages.primaryUpdated"));
   } catch (primaryImageError) {
     console.error(
       "Hauptbild konnte nicht geändert werden:",
@@ -405,7 +422,7 @@ async function setPrimaryImage(imageId: string) {
     setUploadMessage(
       primaryImageError instanceof Error
         ? primaryImageError.message
-        : "Das Hauptbild konnte nicht geändert werden."
+        : t("images.messages.primaryError")
     );
   } finally {
     setSettingPrimaryImageId(null);
@@ -413,11 +430,19 @@ async function setPrimaryImage(imageId: string) {
 }
 
 async function deleteListingImage(imageId: string) {
-  const confirmed = window.confirm(
-    "Dieses Bild wirklich dauerhaft löschen?"
-  );
+  if (deletingImageId || settingPrimaryImageId) {
+    return;
+  }
 
-  if (!confirmed || deletingImageId || settingPrimaryImageId) {
+  const confirmed = await confirmAction({
+    title: t("images.deleteDialog.title"),
+    message: t("images.deleteDialog.message"),
+    confirmLabel: t("images.deleteDialog.confirm"),
+    cancelLabel: t("actions.cancel"),
+    tone: "danger",
+  });
+
+  if (!confirmed) {
     return;
   }
 
@@ -448,7 +473,7 @@ async function deleteListingImage(imageId: string) {
 
     if (!response.ok || !data.success) {
       throw new Error(
-        data.error || "Das Bild konnte nicht gelöscht werden."
+        data.error || t("images.messages.deleteError")
       );
     }
 
@@ -475,7 +500,7 @@ async function deleteListingImage(imageId: string) {
         );
     });
 
-    setUploadMessage("Das Bild wurde dauerhaft gelöscht.");
+    setUploadMessage(t("images.messages.deleted"));
   } catch (deleteImageError) {
     console.error(
       "Bild konnte nicht gelöscht werden:",
@@ -485,7 +510,7 @@ async function deleteListingImage(imageId: string) {
     setUploadMessage(
       deleteImageError instanceof Error
         ? deleteImageError.message
-        : "Das Bild konnte nicht gelöscht werden."
+        : t("images.messages.deleteError")
     );
   } finally {
     setDeletingImageId(null);
@@ -497,7 +522,7 @@ async function deleteListingImage(imageId: string) {
     if (!listingId || saving) return;
 
     if (!form.location.trim() || !form.propertyType.trim()) {
-      setError("Ort und Objektart sind erforderlich.");
+      setError(t("errors.required"));
       return;
     }
 
@@ -537,7 +562,7 @@ async function deleteListingImage(imageId: string) {
 
       if (!response.ok || !data.success) {
         throw new Error(
-          data.error || "Das Objekt konnte nicht gespeichert werden."
+          data.error || t("errors.save")
         );
       }
 
@@ -547,7 +572,7 @@ async function deleteListingImage(imageId: string) {
       setError(
         saveError instanceof Error
           ? saveError.message
-          : "Das Objekt konnte nicht gespeichert werden."
+          : t("errors.save")
       );
     } finally {
       setSaving(false);
@@ -556,10 +581,10 @@ async function deleteListingImage(imageId: string) {
 
   if (loading) {
     return (
-      <main className="editPage">
+      <main className="editPage" lang={locale}>
         <div className="statusCard">
           <div className="spinner" />
-          <strong>Objektdaten werden geladen …</strong>
+          <strong>{t("loading")}</strong>
         </div>
 
         <EditStyles />
@@ -568,106 +593,103 @@ async function deleteListingImage(imageId: string) {
   }
 
   return (
-    <main className="editPage">
-      <section className="editContainer">
+    <main className="editPage" lang={locale}>
+      <section className="editContainer" data-intl-locale={intlLocale}>
         <div className="topRow">
           <Link
             href={`/cockpit/${listingId}`}
             className="backLink"
           >
-            ← Zurück zum Objekt
+            ← {t("navigation.back")}
           </Link>
 
           <span className="secureBadge">
-            Sicher gespeichert
+            {t("navigation.secure")}
           </span>
         </div>
 
         <header className="editHeader">
-          <span>OBJEKT VERWALTEN</span>
-          <h1>Objekt bearbeiten</h1>
-          <p>
-            Passe die gespeicherten Angaben an. Deine vorhandenen
-            AI-Inseratvarianten bleiben erhalten.
-          </p>
+          <span>{t("header.eyebrow")}</span>
+          <h1>{t("header.title")}</h1>
+          <p>{t("header.description")}</p>
         </header>
 
         <form className="editCard" onSubmit={handleSubmit}>
           <div className="formSection">
             <div className="sectionHeading">
-              <span>GRUNDDATEN</span>
-              <h2>Immobilie</h2>
+              <span>{t("basic.sectionLabel")}</span>
+              <h2>{t("basic.title")}</h2>
             </div>
 
             <div className="formGrid">
               <label>
-                <span>Ort *</span>
+                <span>{t("fields.location.label")}</span>
                 <input
                   value={form.location}
                   onChange={(event) =>
                     updateField("location", event.target.value)
                   }
-                  placeholder="z. B. Winterthur"
+                  placeholder={t("fields.location.placeholder")}
                   required
                 />
               </label>
 
               <label>
-                <span>PLZ</span>
+                <span>{t("fields.postalCode.label")}</span>
                 <input
                   value={form.postalCode}
                   onChange={(event) =>
                     updateField("postalCode", event.target.value)
                   }
-                  placeholder="z. B. 8400"
+                  placeholder={t("fields.postalCode.placeholder")}
                   inputMode="numeric"
                 />
               </label>
 
               <label>
-                <span>Objektart *</span>
+                <span>{t("fields.propertyType.label")}</span>
                 <input
                   value={form.propertyType}
                   onChange={(event) =>
                     updateField("propertyType", event.target.value)
                   }
-                  placeholder="z. B. Wohnung"
+                  placeholder={t("fields.propertyType.placeholder")}
                   required
                 />
               </label>
 
               <label>
-                <span>Zimmer</span>
+                <span>{t("fields.rooms.label")}</span>
                 <input
                   value={form.rooms}
                   onChange={(event) =>
                     updateField("rooms", event.target.value)
                   }
-                  placeholder="z. B. 4.5"
+                  placeholder={t("fields.rooms.placeholder")}
                   inputMode="decimal"
                 />
               </label>
 
               <label>
-                <span>Wohnfläche in m²</span>
+                <span>{t("fields.livingArea.label")}</span>
                 <input
                   value={form.livingArea}
                   onChange={(event) =>
                     updateField("livingArea", event.target.value)
                   }
-                  placeholder="z. B. 120"
+                  placeholder={t("fields.livingArea.placeholder")}
                   inputMode="decimal"
                 />
               </label>
 
               <label>
-                <span>Preis in CHF</span>
+                <span>{t("fields.price.label")}</span>
                 <input
                   value={form.price}
                   onChange={(event) =>
                     updateField("price", event.target.value)
                   }
-                  placeholder="z. B. 1450000"
+                  placeholder={t("fields.price.placeholder")}
                   inputMode="numeric"
                 />
               </label>
@@ -687,36 +709,35 @@ async function deleteListingImage(imageId: string) {
             }
             onDescriptionChange={setLocationDescription}
             onDataChange={setLocationData}
+            locale={locale}
           />
           <div className="formSection">
             <div className="sectionHeading">
-              <span>VERMARKTUNG</span>
-              <h2>Highlights und Stil</h2>
+              <span>{t("marketing.sectionLabel")}</span>
+              <h2>{t("marketing.title")}</h2>
             </div>
 
             <label className="fullField">
-              <span>Highlights</span>
+              <span>{t("fields.highlights.label")}</span>
               <textarea
                 value={form.highlights}
                 onChange={(event) =>
                   updateField("highlights", event.target.value)
                 }
-                placeholder="Balkon, Seesicht, Garage, ruhige Lage"
+                placeholder={t("fields.highlights.placeholder")}
                 rows={5}
               />
-              <small>
-                Mehrere Highlights mit Komma trennen.
-              </small>
+              <small>{t("fields.highlights.hint")}</small>
             </label>
 
             <label className="fullField">
-              <span>Inseratstil</span>
+              <span>{t("fields.style.label")}</span>
               <input
                 value={form.style}
                 onChange={(event) =>
                   updateField("style", event.target.value)
                 }
-                placeholder="z. B. Exklusiv, modern und emotional"
+                placeholder={t("fields.style.placeholder")}
               />
             </label>
           </div>
@@ -730,15 +751,19 @@ async function deleteListingImage(imageId: string) {
          <div className="formSection imageManagementSection">
   <div className="sectionHeading imageSectionHeading">
     <div>
-      <span>OBJEKTBILDER</span>
-      <h2>Bilder verwalten</h2>
+      <span>{t("images.sectionLabel")}</span>
+      <h2>{t("images.title")}</h2>
       <p className="imageSectionDescription">
-        Füge weitere Bilder hinzu. Sie erscheinen automatisch in der
-        Bildergalerie des Objekts.
+        {t("images.description")}
       </p>
     </div>
 
-    <strong>{images.length} / {imageUploadLimit || 5} Bilder</strong>
+    <strong>
+      {t("images.counter", {
+        count: images.length,
+        limit: imageUploadLimit || 5,
+      })}
+    </strong>
   </div>
 
   {images.length > 0 && (
@@ -750,20 +775,21 @@ async function deleteListingImage(imageId: string) {
               src={image.url}
               alt={
                 image.fileName ||
-                `Objektbild ${index + 1}`
+                t("images.imageAlt", { number: index + 1 })
               }
             />
 
             {image.isPrimary && (
               <span className="editPrimaryBadge">
-                Hauptbild
+                {t("images.primaryBadge")}
               </span>
             )}
           </div>
 
          <div className="editImageInfo">
   <strong>
-    {image.fileName || `Objektbild ${index + 1}`}
+    {image.fileName ||
+      t("images.imageAlt", { number: index + 1 })}
   </strong>
 
   <div className="editImageActions">
@@ -778,8 +804,8 @@ async function deleteListingImage(imageId: string) {
         onClick={() => setPrimaryImage(image.id)}
       >
         {settingPrimaryImageId === image.id
-          ? "Wird geändert …"
-          : "Als Hauptbild"}
+          ? t("images.settingPrimary")
+          : t("images.setPrimary")}
       </button>
     )}
 
@@ -793,8 +819,8 @@ async function deleteListingImage(imageId: string) {
       onClick={() => deleteListingImage(image.id)}
     >
       {deletingImageId === image.id
-        ? "Wird gelöscht …"
-        : "Löschen"}
+        ? t("images.deleting")
+        : t("images.delete")}
     </button>
   </div>
 </div>
@@ -823,20 +849,23 @@ async function deleteListingImage(imageId: string) {
     <div>
       <strong>
         {uploadingImages
-          ? "Bilder werden hochgeladen …"
+          ? t("images.uploading")
           : imageUploadLimit === 0
-            ? "Nach Freischaltung verfügbar"
+            ? t("images.unlockAvailable")
             : images.length >= imageUploadLimit
-              ? "Maximale Anzahl erreicht"
-              : "Weitere Bilder hinzufügen"}
+              ? t("images.maximumReached")
+              : t("images.addMore")}
       </strong>
 
       <small>
         {imageUploadLimit === 0
-          ? "Bilder sind nach der CHF-9.90-Freischaltung oder mit einem Makler-Plan verfügbar."
+          ? t("images.unlockHint")
           : images.length >= imageUploadLimit
-            ? `Für dieses Objekt sind ${images.length} von ${imageUploadLimit} Bildern gespeichert. Lösche ein Bild, um ein anderes hochzuladen.`
-            : "JPEG, PNG oder WebP · maximal 10 MB pro Bild"}
+            ? t("images.maximumHint", {
+                count: images.length,
+                limit: imageUploadLimit,
+              })
+            : t("images.formatHint")}
       </small>
     </div>
   </label>
@@ -851,7 +880,7 @@ async function deleteListingImage(imageId: string) {
     href={`/cockpit/${listingId}`}
     className="cancelButton"
   >
-    Abbrechen
+    {t("actions.cancel")}
   </Link>
 
   <button
@@ -860,8 +889,8 @@ async function deleteListingImage(imageId: string) {
     disabled={saving}
   >
     {saving
-      ? "Änderungen werden gespeichert …"
-      : "Änderungen speichern"}
+      ? t("actions.saving")
+      : t("actions.save")}
   </button>
 </div>  
 </form>

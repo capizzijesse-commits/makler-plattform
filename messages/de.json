@@ -1067,5 +1067,143 @@
       "deletingShort": "Wird gelöscht …",
       "finalDelete": "Endgültig löschen"
     }
+  },
+  "CockpitEdit": {
+    "loading": "Objektdaten werden geladen …",
+    "navigation": {
+      "back": "Zurück zum Objekt",
+      "secure": "Sicher gespeichert"
+    },
+    "header": {
+      "eyebrow": "OBJEKT VERWALTEN",
+      "title": "Objekt bearbeiten",
+      "description": "Passe die gespeicherten Angaben an. Deine vorhandenen AI-Inseratvarianten bleiben erhalten."
+    },
+    "basic": {
+      "sectionLabel": "GRUNDDATEN",
+      "title": "Immobilie"
+    },
+    "marketing": {
+      "sectionLabel": "VERMARKTUNG",
+      "title": "Highlights und Stil"
+    },
+    "fields": {
+      "location": {
+        "label": "Ort *",
+        "placeholder": "z. B. Winterthur"
+      },
+      "postalCode": {
+        "label": "PLZ",
+        "placeholder": "z. B. 8400"
+      },
+      "propertyType": {
+        "label": "Objektart *",
+        "placeholder": "z. B. Wohnung"
+      },
+      "rooms": {
+        "label": "Zimmer",
+        "placeholder": "z. B. 4.5"
+      },
+      "livingArea": {
+        "label": "Wohnfläche in m²",
+        "placeholder": "z. B. 120"
+      },
+      "price": {
+        "label": "Preis in CHF",
+        "placeholder": "z. B. 1450000"
+      },
+      "highlights": {
+        "label": "Highlights",
+        "placeholder": "Balkon, Seesicht, Garage, ruhige Lage",
+        "hint": "Mehrere Highlights mit Komma trennen."
+      },
+      "style": {
+        "label": "Inseratstil",
+        "placeholder": "z. B. exklusiv, modern und emotional"
+      }
+    },
+    "errors": {
+      "missingId": "Keine Objekt-ID gefunden.",
+      "load": "Das Objekt konnte nicht geladen werden.",
+      "required": "Ort und Objektart sind erforderlich.",
+      "save": "Das Objekt konnte nicht gespeichert werden."
+    },
+    "actions": {
+      "cancel": "Abbrechen",
+      "saving": "Änderungen werden gespeichert …",
+      "save": "Änderungen speichern"
+    },
+    "images": {
+      "sectionLabel": "OBJEKTBILDER",
+      "title": "Bilder verwalten",
+      "description": "Füge weitere Bilder hinzu. Sie erscheinen automatisch in der Bildergalerie des Objekts.",
+      "counter": "{count} / {limit} Bilder",
+      "imageAlt": "Objektbild {number}",
+      "primaryBadge": "Hauptbild",
+      "setPrimary": "Als Hauptbild",
+      "settingPrimary": "Wird geändert …",
+      "delete": "Löschen",
+      "deleting": "Wird gelöscht …",
+      "uploading": "Bilder werden hochgeladen …",
+      "unlockAvailable": "Nach Freischaltung verfügbar",
+      "maximumReached": "Maximale Anzahl erreicht",
+      "addMore": "Weitere Bilder hinzufügen",
+      "unlockHint": "Bilder sind nach der CHF-9.90-Freischaltung oder mit einem Makler-Plan verfügbar.",
+      "maximumHint": "Für dieses Objekt sind {count} von {limit} Bildern gespeichert. Lösche ein Bild, um ein anderes hochzuladen.",
+      "formatHint": "JPEG, PNG oder WebP · maximal 10 MB pro Bild",
+      "messages": {
+        "unlockRequired": "Bilder sind nach der CHF-9.90-Freischaltung verfügbar.",
+        "limitReached": "Die maximale Anzahl von {limit} Bildern ist erreicht.",
+        "invalidFile": "Erlaubt sind JPEG, PNG und WebP mit maximal 10 MB pro Bild.",
+        "uploadingProgress": "Bild {current} von {total} wird hochgeladen …",
+        "saveFileError": "Das Bild «{fileName}» konnte nicht gespeichert werden.",
+        "saved": "{count, plural, =1 {1 neues Bild wurde gespeichert.} other {# neue Bilder wurden gespeichert.}}",
+        "uploadError": "Die Bilder konnten nicht hochgeladen werden.",
+        "primaryError": "Das Hauptbild konnte nicht geändert werden.",
+        "primaryUpdated": "Das Hauptbild wurde aktualisiert.",
+        "deleteError": "Das Bild konnte nicht gelöscht werden.",
+        "deleted": "Das Bild wurde dauerhaft gelöscht."
+      },
+      "deleteDialog": {
+        "title": "Bild dauerhaft löschen?",
+        "message": "Dieses Bild wird endgültig aus dem Objekt entfernt. Diese Aktion kann nicht rückgängig gemacht werden.",
+        "confirm": "Bild löschen"
+      }
+    }
+  },
+  "LocationAssistant": {
+    "header": {
+      "eyebrow": "SCHWEIZER STANDORT-ASSISTENT",
+      "title": "Standort automatisch aufbereiten",
+      "description": "Erkennt PLZ, Ort und Kanton aus dem amtlichen Ortschaftenverzeichnis und erstellt einen editierbaren Lagetext für das Objekt und das Exposé."
+    },
+    "button": {
+      "analyzing": "Standort wird geprüft …",
+      "analyze": "Standort analysieren"
+    },
+    "match": {
+      "location": "ERKANNTER STANDORT",
+      "canton": "KANTON",
+      "source": "QUELLE"
+    },
+    "description": {
+      "label": "Lagetext",
+      "placeholder": "Nach der Standortanalyse erscheint hier der professionelle Lagetext.",
+      "hint": "Der Text bleibt editierbar und wird beim Speichern dauerhaft dem Objekt zugeordnet."
+    },
+    "categoryIcons": {
+      "publicTransport": "ÖV",
+      "schools": "S",
+      "shopping": "E",
+      "leisure": "F"
+    },
+    "messages": {
+      "enterLocation": "Bitte zuerst eine PLZ oder einen Ort eingeben.",
+      "suggestions": " Vorschläge: {suggestions}.",
+      "notRecognized": "Der Standort konnte nicht erkannt werden.",
+      "incomplete": "Die Standortanalyse hat unvollständige Daten geliefert.",
+      "success": "{postalCode} {location} wurde erkannt und dem Kanton {canton} zugeordnet.",
+      "unavailable": "Der Schweizer Standort-Assistent ist momentan nicht erreichbar."
+    }
   }
 }

@@ -1067,5 +1067,143 @@
       "deletingShort": "Deleting …",
       "finalDelete": "Delete permanently"
     }
+  },
+  "CockpitEdit": {
+    "loading": "Loading property data …",
+    "navigation": {
+      "back": "Back to property",
+      "secure": "Saved securely"
+    },
+    "header": {
+      "eyebrow": "MANAGE PROPERTY",
+      "title": "Edit property",
+      "description": "Update the saved details. Your existing AI listing variants remain available."
+    },
+    "basic": {
+      "sectionLabel": "BASIC DETAILS",
+      "title": "Property"
+    },
+    "marketing": {
+      "sectionLabel": "MARKETING",
+      "title": "Highlights and style"
+    },
+    "fields": {
+      "location": {
+        "label": "Location *",
+        "placeholder": "e.g. Zurich"
+      },
+      "postalCode": {
+        "label": "Postcode",
+        "placeholder": "e.g. 8000"
+      },
+      "propertyType": {
+        "label": "Property type *",
+        "placeholder": "e.g. apartment"
+      },
+      "rooms": {
+        "label": "Rooms",
+        "placeholder": "e.g. 4.5"
+      },
+      "livingArea": {
+        "label": "Living area in m²",
+        "placeholder": "e.g. 120"
+      },
+      "price": {
+        "label": "Price in CHF",
+        "placeholder": "e.g. 1450000"
+      },
+      "highlights": {
+        "label": "Highlights",
+        "placeholder": "Balcony, lake view, garage, quiet location",
+        "hint": "Separate multiple highlights with commas."
+      },
+      "style": {
+        "label": "Listing style",
+        "placeholder": "e.g. exclusive, modern and emotive"
+      }
+    },
+    "errors": {
+      "missingId": "No property ID was found.",
+      "load": "The property could not be loaded.",
+      "required": "Location and property type are required.",
+      "save": "The property could not be saved."
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "saving": "Saving changes …",
+      "save": "Save changes"
+    },
+    "images": {
+      "sectionLabel": "PROPERTY IMAGES",
+      "title": "Manage images",
+      "description": "Add more images. They will automatically appear in the property gallery.",
+      "counter": "{count} / {limit} images",
+      "imageAlt": "Property image {number}",
+      "primaryBadge": "Primary image",
+      "setPrimary": "Set as primary",
+      "settingPrimary": "Updating …",
+      "delete": "Delete",
+      "deleting": "Deleting …",
+      "uploading": "Uploading images …",
+      "unlockAvailable": "Available after unlocking",
+      "maximumReached": "Maximum reached",
+      "addMore": "Add more images",
+      "unlockHint": "Images are available after the CHF 9.90 unlock or with a broker plan.",
+      "maximumHint": "{count} of {limit} images are saved for this property. Delete one to upload another.",
+      "formatHint": "JPEG, PNG or WebP · maximum 10 MB per image",
+      "messages": {
+        "unlockRequired": "Images are available after the CHF 9.90 unlock.",
+        "limitReached": "The maximum of {limit} images has been reached.",
+        "invalidFile": "JPEG, PNG and WebP files up to 10 MB per image are allowed.",
+        "uploadingProgress": "Uploading image {current} of {total} …",
+        "saveFileError": "The image “{fileName}” could not be saved.",
+        "saved": "{count, plural, =1 {1 new image was saved.} other {# new images were saved.}}",
+        "uploadError": "The images could not be uploaded.",
+        "primaryError": "The primary image could not be changed.",
+        "primaryUpdated": "The primary image was updated.",
+        "deleteError": "The image could not be deleted.",
+        "deleted": "The image was permanently deleted."
+      },
+      "deleteDialog": {
+        "title": "Permanently delete image?",
+        "message": "This image will be permanently removed from the property. This action cannot be undone.",
+        "confirm": "Delete image"
+      }
+    }
+  },
+  "LocationAssistant": {
+    "header": {
+      "eyebrow": "SWISS LOCATION ASSISTANT",
+      "title": "Prepare location automatically",
+      "description": "Identifies the postcode, location and canton from the official directory of localities and creates an editable location description for the property and brochure."
+    },
+    "button": {
+      "analyzing": "Checking location …",
+      "analyze": "Analyse location"
+    },
+    "match": {
+      "location": "IDENTIFIED LOCATION",
+      "canton": "CANTON",
+      "source": "SOURCE"
+    },
+    "description": {
+      "label": "Location description",
+      "placeholder": "The professional location description will appear here after analysis.",
+      "hint": "The text remains editable and is permanently linked to the property when you save."
+    },
+    "categoryIcons": {
+      "publicTransport": "PT",
+      "schools": "S",
+      "shopping": "SH",
+      "leisure": "L"
+    },
+    "messages": {
+      "enterLocation": "Please enter a postcode or location first.",
+      "suggestions": " Suggestions: {suggestions}.",
+      "notRecognized": "The location could not be identified.",
+      "incomplete": "The location analysis returned incomplete data.",
+      "success": "{postalCode} {location} was identified and assigned to the canton of {canton}.",
+      "unavailable": "The Swiss location assistant is currently unavailable."
+    }
   }
 }

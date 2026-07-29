@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
 export type LocationAssistantCategory = {
@@ -48,6 +49,7 @@ type LocationAssistantPanelProps = {
   onLocationChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onDataChange: (value: LocationAssistantData | null) => void;
+  locale: string;
 };
 
 export default function LocationAssistantPanel({
@@ -59,7 +61,9 @@ export default function LocationAssistantPanel({
   onLocationChange,
   onDescriptionChange,
   onDataChange,
+  locale,
 }: LocationAssistantPanelProps) {
+  const t = useTranslations("LocationAssistant");
   const [analyzing, setAnalyzing] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<
@@ -80,7 +84,7 @@ export default function LocationAssistantPanel({
     }
 
     if (!postalCode.trim() && !location.trim()) {
-      setMessage("Bitte zuerst eine PLZ oder einen Ort eingeben.");
+      setMessage(t("messages.enterLocation"));
       setMessageType("error");
       return;
     }
@@ -99,6 +103,7 @@ export default function LocationAssistantPanel({
         body: JSON.stringify({
           postalCode,
           location,
+          locale,
         }),
       });
 
@@ -112,17 +117,19 @@ export default function LocationAssistantPanel({
 
       if (!response.ok || !data.success) {
         const suggestionText = data.suggestions?.length
-          ? ` Vorschläge: ${data.suggestions
-              .slice(0, 3)
-              .map(
-                (suggestion) =>
-                  `${suggestion.zip} ${suggestion.name}`
-              )
-              .join(", ")}.`
+          ? t("messages.suggestions", {
+              suggestions: data.suggestions
+                .slice(0, 3)
+                .map(
+                  (suggestion) =>
+                    `${suggestion.zip} ${suggestion.name}`
+                )
+                .join(", "),
+            })
           : "";
 
         setMessage(
-          `${data.error || "Der Standort konnte nicht erkannt werden."}${suggestionText}`
+          `${data.error || t("messages.notRecognized")}${suggestionText}`
         );
         setMessageType("error");
         return;
@@ -133,9 +140,7 @@ export default function LocationAssistantPanel({
         !data.locationDescription ||
         !data.locationData
       ) {
-        setMessage(
-          "Die Standortanalyse hat unvollständige Daten geliefert."
-        );
+        setMessage(t("messages.incomplete"));
         setMessageType("error");
         return;
       }
@@ -146,13 +151,15 @@ export default function LocationAssistantPanel({
       onDataChange(data.locationData);
 
       setMessage(
-        `${data.match.zip} ${data.match.name} wurde erkannt und dem Kanton ${data.match.cantonName} zugeordnet.`
+        t("messages.success", {
+          postalCode: data.match.zip,
+          location: data.match.name,
+          canton: data.match.cantonName,
+        })
       );
       setMessageType("success");
     } catch {
-      setMessage(
-        "Der Schweizer Standort-Assistent ist momentan nicht erreichbar."
-      );
+      setMessage(t("messages.unavailable"));
       setMessageType("error");
     } finally {
       setAnalyzing(false);
@@ -160,18 +167,14 @@ export default function LocationAssistantPanel({
   }
 
   return (
-    <section className="locationAssistant">
+    <section className="locationAssistant" lang={locale}>
       <div className="locationAssistant__glow" />
 
       <div className="locationAssistant__header">
         <div>
-          <span>SCHWEIZER STANDORT-ASSISTENT</span>
-          <h2>Standort automatisch aufbereiten</h2>
-          <p>
-            Erkennt PLZ, Ort und Kanton aus dem amtlichen
-            Ortschaftenverzeichnis und erstellt einen editierbaren
-            Lagetext für das Objekt und das Exposé.
-          </p>
+          <span>{t("header.eyebrow")}</span>
+          <h2>{t("header.title")}</h2>
+          <p>{t("header.description")}</p>
         </div>
 
         <button
@@ -181,47 +184,44 @@ export default function LocationAssistantPanel({
           disabled={analyzing}
         >
           <span aria-hidden="true">⌖</span>
-          {analyzing ? "Standort wird geprüft …" : "Standort analysieren"}
+          {analyzing ? t("button.analyzing") : t("button.analyze")}
         </button>
       </div>
 
       {locationData && (
         <div className="locationAssistant__match">
           <div>
-            <span>ERKANNTER STANDORT</span>
+            <span>{t("match.location")}</span>
             <strong>
               {locationData.postalCode} {locationData.location}
             </strong>
           </div>
 
           <div>
-            <span>KANTON</span>
+            <span>{t("match.canton")}</span>
             <strong>
               {locationData.cantonName} ({locationData.canton})
             </strong>
           </div>
 
           <div>
-            <span>QUELLE</span>
+            <span>{t("match.source")}</span>
             <strong>swisstopo</strong>
           </div>
         </div>
       )}
 
       <label className="locationAssistant__text">
-        <span>Lagetext</span>
+        <span>{t("description.label")}</span>
         <textarea
           value={locationDescription}
           onChange={(event) =>
             onDescriptionChange(event.target.value)
           }
-          placeholder="Nach der Standortanalyse erscheint hier der professionelle Lagetext."
+          placeholder={t("description.placeholder")}
           rows={6}
         />
-        <small>
-          Der Text bleibt editierbar und wird beim Speichern dauerhaft
-          dem Objekt zugeordnet.
-        </small>
+        <small>{t("description.hint")}</small>
       </label>
 
       {categories.length > 0 && (
@@ -230,12 +230,12 @@ export default function LocationAssistantPanel({
             <article key={category.key}>
               <span className="locationAssistant__categoryIcon">
                 {category.key === "publicTransport"
-                  ? "ÖV"
+                  ? t("categoryIcons.publicTransport")
                   : category.key === "schools"
-                    ? "S"
+                    ? t("categoryIcons.schools")
                     : category.key === "shopping"
-                      ? "E"
-                      : "F"}
+                      ? t("categoryIcons.shopping")
+                      : t("categoryIcons.leisure")}
               </span>
 
               <div>
