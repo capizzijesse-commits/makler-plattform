@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 
 type ListingImage = {
   id: string;
@@ -68,15 +69,27 @@ const VOICE_API_IDS: Record<string, string> = {
   jonas: "echo",
 };
 
-function formatNumber(value: number | null) {
+function formatNumber(value: number | null, locale: string) {
   if (value === null) {
     return "–";
   }
 
-  return new Intl.NumberFormat("de-CH").format(value);
+  const numberLocale =
+    locale === "de"
+      ? "de-CH"
+      : locale === "it"
+        ? "it-CH"
+        : locale === "fr"
+          ? "fr-CH"
+          : "en-CH";
+
+  return new Intl.NumberFormat(numberLocale).format(value);
 }
 
 export default function TourGuidePage() {
+  const t = useTranslations("TourGuide");
+  const locale = useLocale();
+
   const [listing, setListing] = useState<TourListing | null>(null);
   const [listingImages, setListingImages] = useState<ListingImage[]>([]);
   const [activeSceneIndex, setActiveSceneIndex] = useState(0);
@@ -95,6 +108,7 @@ export default function TourGuidePage() {
   const [tourSections, setTourSections] = useState<TourSection[]>([]);
   const [isGeneratingTour, setIsGeneratingTour] = useState(false);
   const [tourError, setTourError] = useState("");
+  const [copyStatus, setCopyStatus] = useState("");
   const [generatedAudioUrl, setGeneratedAudioUrl] = useState("");
   const [tourAudioStatus, setTourAudioStatus] =
     useState<TourAudioStatus>("idle");
@@ -119,32 +133,32 @@ export default function TourGuidePage() {
     {
       id: "lea",
       name: "Lea",
-      description: "Ruhig & hochwertig",
+      description: t("voices.lea"),
     },
     {
       id: "nora",
       name: "Nora",
-      description: "Warm & freundlich",
+      description: t("voices.nora"),
     },
     {
       id: "luca",
       name: "Luca",
-      description: "Modern & klar",
+      description: t("voices.luca"),
     },
     {
       id: "sofia",
       name: "Sofia",
-      description: "Elegant & ruhig",
+      description: t("voices.sofia"),
     },
     {
       id: "marco",
       name: "Marco",
-      description: "Souverän & seriös",
+      description: t("voices.marco"),
     },
     {
       id: "jonas",
       name: "Jonas",
-      description: "Natürlich & direkt",
+      description: t("voices.jonas"),
     },
   ];
 
@@ -197,7 +211,7 @@ export default function TourGuidePage() {
         ) {
           throw new Error(
             sessionData.error ||
-              "Die Zugriffsberechtigung konnte nicht geprüft werden."
+              t("errors.accessCheck")
           );
         }
 
@@ -218,7 +232,7 @@ export default function TourGuidePage() {
 
         if (!listingId) {
           setListingError(
-            "Öffne das Virtual Tour Studio über ein gespeichertes Objekt im Makler-Cockpit."
+            t("errors.openFromCockpit")
           );
           return;
         }
@@ -243,7 +257,7 @@ export default function TourGuidePage() {
         if (!response.ok || !data.success || !data.listing) {
           throw new Error(
             data.error ||
-              "Das gespeicherte Objekt konnte nicht geladen werden."
+              t("errors.loadListing")
           );
         }
 
@@ -268,7 +282,7 @@ export default function TourGuidePage() {
         const message =
           error instanceof Error
             ? error.message
-            : "Das Virtual Tour Studio konnte nicht geladen werden.";
+            : t("errors.loadStudio");
 
         if (accessGranted) {
           setListingError(message);
@@ -385,59 +399,58 @@ export default function TourGuidePage() {
     setCustomRoom("");
   }
 
+  function getRoomLabel(room: string) {
+    if (room === "Eingang") return t("rooms.entrance");
+    if (room === "Wohnzimmer") return t("rooms.livingRoom");
+    if (room === "Küche") return t("rooms.kitchen");
+    if (room === "Schlafzimmer") return t("rooms.bedroom");
+    if (room === "Badezimmer") return t("rooms.bathroom");
+    if (room === "Balkon / Terrasse") return t("rooms.balconyTerrace");
+
+    return room;
+  }
+
   function getRoomInstruction(room: string) {
     const roomKey = room.toLowerCase();
 
     if (roomKey.includes("eingang")) {
       return {
-        audio:
-          "Der Eingangsbereich vermittelt den ersten Eindruck der Immobilie und schafft einen angenehmen Übergang in die weiteren Räume.",
-        video:
-          "Beginne mit einer ruhigen Aufnahme des Eingangs. Führe die Kamera langsam vom Zugang in Richtung des nächsten Raumes.",
+        audio: t("script.instructions.entrance.audio"),
+        video: t("script.instructions.entrance.video"),
       };
     }
 
     if (roomKey.includes("wohn")) {
       return {
-        audio:
-          "Das Wohnzimmer bildet den Mittelpunkt des Wohnens. Achten Sie auf die Raumwirkung, das natürliche Licht und die verschiedenen Möglichkeiten zur Möblierung.",
-        video:
-          "Filme vom Eingang des Wohnzimmers langsam in Richtung Fenster. Zeige Raumtiefe, Boden, Licht und den Übergang zu angrenzenden Bereichen.",
+        audio: t("script.instructions.livingRoom.audio"),
+        video: t("script.instructions.livingRoom.video"),
       };
     }
 
     if (roomKey.includes("küche") || roomKey.includes("kueche")) {
       return {
-        audio:
-          "Die Küche verbindet Funktionalität mit dem täglichen Wohnkomfort. Arbeitsflächen, Stauraum und die Verbindung zum Wohnbereich stehen hier im Mittelpunkt.",
-        video:
-          "Zeige zuerst die Küche als Ganzes. Filme danach Arbeitsfläche, Geräte, Stauraum und den Übergang zum Wohn- oder Essbereich.",
+        audio: t("script.instructions.kitchen.audio"),
+        video: t("script.instructions.kitchen.video"),
       };
     }
 
     if (roomKey.includes("schlaf")) {
       return {
-        audio:
-          "Das Schlafzimmer bietet einen ruhigen Rückzugsort. Die Raumaufteilung ermöglicht eine komfortable Nutzung und persönliche Einrichtung.",
-        video:
-          "Filme ruhig vom Eingang in Richtung Fenster. Zeige Stellflächen, Lichtverhältnisse und die angenehme Rückzugsatmosphäre.",
+        audio: t("script.instructions.bedroom.audio"),
+        video: t("script.instructions.bedroom.video"),
       };
     }
 
     if (roomKey.includes("bad")) {
       return {
-        audio:
-          "Das Badezimmer ist funktional gestaltet und ergänzt den Wohnkomfort dieser Immobilie.",
-        video:
-          "Zeige zuerst das Badezimmer als Ganzes. Filme danach Armaturen, Dusche oder Badewanne, Platten und besondere Details.",
+        audio: t("script.instructions.bathroom.audio"),
+        video: t("script.instructions.bathroom.video"),
       };
     }
 
     return {
-      audio:
-        "Dieser Aussenbereich erweitert den Wohnraum und bietet Platz für Erholung, Privatsphäre und individuelle Nutzungsmöglichkeiten.",
-      video:
-        "Filme den Übergang von innen nach aussen. Zeige Fläche, Aussicht, Privatsphäre und mögliche Möblierung.",
+      audio: t("script.instructions.outdoor.audio"),
+      video: t("script.instructions.outdoor.video"),
     };
   }
 
@@ -446,60 +459,72 @@ export default function TourGuidePage() {
       return [];
     }
 
-    const location = listing.location || "der angegebenen Lage";
-    const propertyType = listing.propertyType || "Immobilie";
+    const location = listing.location || t("script.locationFallback");
+    const propertyType =
+      listing.propertyType || t("script.propertyFallback");
 
     const roomDescription =
-      listing.rooms !== null ? `${listing.rooms}-Zimmer-` : "";
+      listing.rooms !== null
+        ? t("script.roomDescription", {
+            rooms: String(listing.rooms),
+          })
+        : "";
 
     const livingAreaDescription =
       listing.livingArea !== null
-        ? `mit rund ${formatNumber(listing.livingArea)} Quadratmetern Wohnfläche`
+        ? t("script.livingAreaDescription", {
+            area: formatNumber(listing.livingArea, locale),
+          })
         : "";
 
     const priceDescription =
       listing.price !== null
-        ? `Der Angebotspreis beträgt CHF ${formatNumber(listing.price)}.`
-        : "Der Preis ist auf Anfrage erhältlich.";
+        ? t("script.price", {
+            price: formatNumber(listing.price, locale),
+          })
+        : t("script.priceOnRequest");
 
     const highlights =
-      listing.highlights?.trim() ||
-      "die angenehme Raumwirkung und die vielseitigen Nutzungsmöglichkeiten";
+      listing.highlights?.trim() || t("script.highlightsFallback");
 
     const intro: TourSection = {
-      room: "Begrüssung",
-      title: `Willkommen in ${location}`,
-      audioText:
-        `Willkommen zur digitalen Besichtigung dieser ${roomDescription}${propertyType} in ${location} ` +
-        `${livingAreaDescription}. Besonders hervorzuheben sind ${highlights}. ` +
-        "Wir führen Sie jetzt Schritt für Schritt durch die Immobilie.",
-      videoText:
-        "Starte mit dem Hauptbild oder einer ruhigen Aussenaufnahme. Zeige anschliessend den Zugang und leite sanft in den Rundgang über.",
+      room: t("script.intro.room"),
+      title: t("script.intro.title", { location }),
+      audioText: t("script.intro.audio", {
+        roomDescription,
+        propertyType,
+        location,
+        livingAreaDescription,
+        highlights,
+      }),
+      videoText: t("script.intro.video"),
     };
 
     const roomSections = selectedRooms.map((room) => {
       const instruction = getRoomInstruction(room);
+      const roomLabel = getRoomLabel(room);
 
       return {
-        room,
-        title: `${room} entdecken`,
-        audioText:
-          `Sie befinden sich jetzt im Bereich ${room}. ` +
-          `${instruction.audio} ` +
-          `Die wichtigsten Merkmale des Objekts sind ${highlights}.`,
+        room: roomLabel,
+        title: t("script.room.title", { room: roomLabel }),
+        audioText: t("script.room.audio", {
+          room: roomLabel,
+          instruction: instruction.audio,
+          highlights,
+        }),
         videoText: instruction.video,
       };
     });
 
     const outro: TourSection = {
-      room: "Abschluss",
-      title: "Ihr nächster Schritt",
-      audioText:
-        `Damit endet die digitale Besichtigung dieser ${propertyType} in ${location}. ` +
-        `${priceDescription} Für weitere Informationen oder eine persönliche Besichtigung ` +
-        "wenden Sie sich bitte an den zuständigen Immobilienmakler.",
-      videoText:
-        "Zeige zum Abschluss nochmals den stärksten Bereich der Immobilie. Beende die Tour mit einer ruhigen, hochwertigen Schlussaufnahme.",
+      room: t("script.outro.room"),
+      title: t("script.outro.title"),
+      audioText: t("script.outro.audio", {
+        propertyType,
+        location,
+        priceDescription,
+      }),
+      videoText: t("script.outro.video"),
     };
 
     return [intro, ...roomSections, outro];
@@ -507,16 +532,12 @@ export default function TourGuidePage() {
 
   async function generateTourGuide() {
     if (!listing) {
-      setTourError(
-        "Das Objekt ist noch nicht geladen. Öffne das Studio über das Makler-Cockpit."
-      );
+      setTourError(t("errors.objectNotLoaded"));
       return;
     }
 
     if (selectedRooms.length === 0) {
-      setTourError(
-        "Wähle mindestens einen Raum für die 3D-Video-Tour aus."
-      );
+      setTourError(t("errors.selectRoom"));
       return;
     }
 
@@ -551,6 +572,7 @@ export default function TourGuidePage() {
         body: JSON.stringify({
           text: fullAudioText,
           voice: VOICE_API_IDS[selectedVoice] || "marin",
+          locale,
         }),
       });
 
@@ -560,8 +582,7 @@ export default function TourGuidePage() {
       }
 
       if (!response.ok) {
-        let errorMessage =
-          "Das Drehbuch wurde erstellt, aber die AI-Stimme konnte nicht erzeugt werden.";
+        let errorMessage = t("errors.voiceAfterScript");
 
         try {
           const data = (await response.json()) as { error?: string };
@@ -583,7 +604,7 @@ export default function TourGuidePage() {
       setTourError(
         error instanceof Error
           ? error.message
-          : "Die AI-Stimme konnte nicht erzeugt werden."
+          : t("errors.voiceFailed")
       );
     } finally {
       setIsGeneratingTour(false);
@@ -595,12 +616,18 @@ export default function TourGuidePage() {
       .map(
         (section, index) =>
           `${index + 1}. ${section.title}\n\n` +
-          `Audio-Text:\n${section.audioText}\n\n` +
-          `Videoanweisung:\n${section.videoText}`
+          `${t("production.audioLabel")}:\n${section.audioText}\n\n` +
+          `${t("production.videoLabel")}:\n${section.videoText}`
       )
       .join("\n\n--------------------\n\n");
 
-    await navigator.clipboard.writeText(fullTourText);
+    try {
+      await navigator.clipboard.writeText(fullTourText);
+      setCopyStatus(t("production.copySuccess"));
+      window.setTimeout(() => setCopyStatus(""), 2600);
+    } catch {
+      setTourError(t("errors.copyFailed"));
+    }
   }
   async function startFinishedTour() {
     const audio = finishedTourAudioRef.current;
@@ -624,9 +651,7 @@ export default function TourGuidePage() {
       await audio.play();
       setIsTourPlaying(true);
     } catch {
-      setTourError(
-        "Die Tour konnte nicht gestartet werden. Bitte versuche es erneut."
-      );
+      setTourError(t("errors.tourStart"));
     }
   }
 
@@ -654,36 +679,36 @@ export default function TourGuidePage() {
 
   const objectValues = [
     {
-      label: "Ort / Lage",
+      label: t("object.location"),
       value: listing?.location || "–",
     },
     {
-      label: "Objektart",
+      label: t("object.propertyType"),
       value: listing?.propertyType || "–",
     },
     {
-      label: "Zimmer",
+      label: t("object.rooms"),
       value:
         listing?.rooms !== null && listing?.rooms !== undefined
           ? String(listing.rooms)
           : "–",
     },
     {
-      label: "Wohnfläche",
+      label: t("object.livingArea"),
       value:
         listing?.livingArea !== null && listing?.livingArea !== undefined
-          ? `${formatNumber(listing.livingArea)} m²`
+          ? `${formatNumber(listing.livingArea, locale)} m²`
           : "–",
     },
     {
-      label: "Preis",
+      label: t("object.price"),
       value:
         listing?.price !== null && listing?.price !== undefined
-          ? `CHF ${formatNumber(listing.price)}`
+          ? `CHF ${formatNumber(listing.price, locale)}`
           : "–",
     },
     {
-      label: "Stil",
+      label: t("object.style"),
       value: listing?.style || "–",
     },
   ];
@@ -697,11 +722,11 @@ export default function TourGuidePage() {
           </p>
 
           <h1 className="mt-4 text-2xl font-black sm:text-3xl">
-            Virtual Tour Studio wird vorbereitet
+            {t("states.checking.title")}
           </h1>
 
           <p className="mt-4 text-sm leading-7 text-slate-300">
-            Deine Sitzung und die Pro-Berechtigung werden sicher geprüft.
+            {t("states.checking.description")}
           </p>
         </section>
       </main>
@@ -713,11 +738,11 @@ export default function TourGuidePage() {
       <main className="grid min-h-screen place-items-center bg-[#050819] px-4 py-10 text-white">
         <section className="w-full max-w-xl rounded-[2rem] border border-red-300/35 bg-white/[0.055] p-8 text-center shadow-2xl">
           <p className="text-xs font-black uppercase tracking-[0.2em] text-red-300">
-            Zugriff konnte nicht geprüft werden
+            {t("states.accessError.eyebrow")}
           </p>
 
           <h1 className="mt-4 text-2xl font-black sm:text-3xl">
-            Virtual Tour Studio momentan nicht verfügbar
+            {t("states.accessError.title")}
           </h1>
 
           <p className="mt-4 text-sm leading-7 text-slate-300">
@@ -728,7 +753,7 @@ export default function TourGuidePage() {
             href="/cockpit"
             className="mt-7 inline-flex min-h-12 items-center justify-center rounded-xl border border-amber-300/50 bg-amber-300/10 px-6 py-3 text-sm font-black text-amber-100 transition hover:bg-amber-300/20"
           >
-            Zurück zum Makler-Cockpit
+            {t("common.backCockpit")}
           </Link>
         </section>
       </main>
@@ -740,17 +765,15 @@ export default function TourGuidePage() {
       <main className="grid min-h-screen place-items-center bg-[#050819] px-4 py-10 text-white">
         <section className="w-full max-w-2xl rounded-[2rem] border-2 border-amber-300/45 bg-gradient-to-br from-[#081127] to-[#09091c] p-8 text-center shadow-2xl sm:p-10">
           <span className="inline-flex rounded-full border border-cyan-300/40 bg-cyan-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-cyan-200">
-            Pro-Funktion
+            {t("states.upgrade.badge")}
           </span>
 
           <h1 className="mt-6 text-3xl font-black sm:text-4xl">
-            Virtual Tour Studio
+            {t("states.upgrade.title")}
           </h1>
 
           <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-slate-300 sm:text-base">
-            Die 3D-Video-Tour mit AI-Stimmen gehört zum Pro-Angebot für
-            CHF 79.90 pro Monat. Sie ist weder im Founder-Angebot für
-            CHF 19.90 noch im Einzelobjekt für CHF 9.90 enthalten.
+            {t("states.upgrade.description")}
           </p>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-2">
@@ -758,14 +781,14 @@ export default function TourGuidePage() {
               href="/cockpit"
               className="inline-flex min-h-12 items-center justify-center rounded-xl border border-slate-500/50 bg-white/[0.045] px-6 py-3 text-sm font-black text-white transition hover:bg-white/[0.08]"
             >
-              Zurück zum Makler-Cockpit
+              {t("common.backCockpit")}
             </Link>
 
             <Link
               href="/#preise"
               className="inline-flex min-h-12 items-center justify-center rounded-xl border border-amber-300/60 bg-amber-300 px-6 py-3 text-sm font-black text-slate-950 transition hover:brightness-110"
             >
-              Angebote ansehen
+              {t("states.upgrade.offers")}
             </Link>
           </div>
         </section>
@@ -949,12 +972,14 @@ main > div.relative.mx-auto > section:first-of-type:hover,
               </p>
 
               <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">
-                Virtual Tour <span className="text-cyan-300">Studio</span>
+                {t("hero.titlePrefix")}{" "}
+                <span className="text-cyan-300">
+                  {t("hero.titleAccent")}
+                </span>
               </h1>
 
               <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">
-                Aus einem gespeicherten Objekt entsteht eine geführte
-                Immobilienbesichtigung mit Szenen, Kamerafahrt und AI-Stimme.
+                {t("hero.description")}
               </p>
             </div>
 
@@ -963,14 +988,14 @@ main > div.relative.mx-auto > section:first-of-type:hover,
                 href="/cockpit"
                 className="rounded-xl border-2 border-amber-300/40 bg-white/[0.06] px-5 py-3 text-sm font-black text-white transition hover:bg-white/[0.1]"
               >
-                Zurück zum Makler-Cockpit
+                {t("common.backCockpit")}
               </Link>
 
               <Link
                 href="/dashboard"
                 className="rounded-xl bg-gradient-to-r from-cyan-300 to-indigo-500 px-5 py-3 text-sm font-black text-slate-950"
               >
-                Zum Dashboard
+                {t("common.dashboard")}
               </Link>
             </div>
           </div>
@@ -981,24 +1006,27 @@ main > div.relative.mx-auto > section:first-of-type:hover,
             <section className="flex h-full flex-col overflow-hidden rounded-[2rem] border-2 border-amber-300/40 bg-gradient-to-b from-white/[0.07] to-white/[0.035] shadow-2xl">
               <div className="border-b border-amber-300/40 p-6">
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300">
-                  Steuerung
+                  {t("controls.eyebrow")}
                 </p>
 
-                <h2 className="mt-2 text-2xl font-black">Tour vorbereiten</h2>
+                <h2 className="mt-2 text-2xl font-black">
+                  {t("controls.title")}
+                </h2>
 
                 <p className="mt-3 text-sm leading-6 text-slate-400">
-                  Stimme und Szenendauer wählen. Danach wird dieselbe Vorschau
-                  direkt zur fertigen Tour.
+                  {t("controls.description")}
                 </p>
               </div>
 
               <div className="flex-1 space-y-5 p-6">
                 <div className="rounded-2xl border-2 border-amber-300/40 bg-slate-950/35 p-5">
                   <p className="text-xs font-black uppercase tracking-[0.15em] text-slate-500">
-                    AI-Stimme
+                    {t("controls.voiceEyebrow")}
                   </p>
 
-                  <p className="mt-2 font-black text-white">Stimme auswählen</p>
+                  <p className="mt-2 font-black text-white">
+                    {t("controls.voiceTitle")}
+                  </p>
 
                   <div className="mt-4 grid gap-2 sm:grid-cols-3 xl:grid-cols-1">
                     {visibleVoiceOptions.map((voice) => {
@@ -1046,18 +1074,18 @@ main > div.relative.mx-auto > section:first-of-type:hover,
                     className="mt-3 w-full rounded-xl border-2 border-amber-300/40 bg-white/[0.035] px-3 py-2 text-xs font-black text-slate-300 transition hover:bg-white/[0.07]"
                   >
                     {showAllVoices
-                      ? "Weniger Stimmen anzeigen"
-                      : "Weitere Stimmen anzeigen"}
+                      ? t("controls.showLessVoices")
+                      : t("controls.showMoreVoices")}
                   </button>
                 </div>
 
                 <div className="rounded-2xl border-2 border-amber-300/40 bg-slate-950/35 p-5">
                   <p className="text-xs font-black uppercase tracking-[0.15em] text-slate-500">
-                    Einstellungen
+                    {t("controls.settingsEyebrow")}
                   </p>
 
                   <p className="mt-2 text-sm font-black text-white">
-                    Dauer pro Szene
+                    {t("controls.durationTitle")}
                   </p>
 
                   <div className="mt-4 grid grid-cols-3 gap-2">
@@ -1075,7 +1103,9 @@ main > div.relative.mx-auto > section:first-of-type:hover,
                               : "border-amber-300/40 bg-white/[0.05] text-slate-300 hover:bg-white/[0.08]"
                           }`}
                         >
-                          {duration} Sek.
+                          {t("controls.secondsShort", {
+                            seconds: duration,
+                          })}
                         </button>
                       );
                     })}
@@ -1084,7 +1114,7 @@ main > div.relative.mx-auto > section:first-of-type:hover,
                   <div className="mt-4 grid gap-2">
                     <div className="rounded-xl border-2 border-amber-300/40 bg-white/[0.04] px-4 py-3">
                       <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">
-                        Stimme
+                        {t("controls.voiceSummary")}
                       </p>
                       <p className="mt-1 text-sm font-black text-white">
                         {selectedVoiceOption.name}
@@ -1093,10 +1123,12 @@ main > div.relative.mx-auto > section:first-of-type:hover,
 
                     <div className="rounded-xl border-2 border-amber-300/40 bg-white/[0.04] px-4 py-3">
                       <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">
-                        Geschwindigkeit
+                        {t("controls.speedSummary")}
                       </p>
                       <p className="mt-1 text-sm font-black text-white">
-                        {sceneDuration} Sekunden pro Szene
+                        {t("controls.secondsPerScene", {
+                          seconds: sceneDuration,
+                        })}
                       </p>
                     </div>
                   </div>
@@ -1113,10 +1145,10 @@ main > div.relative.mx-auto > section:first-of-type:hover,
                   className="w-full rounded-2xl bg-gradient-to-r from-cyan-300 to-indigo-500 px-5 py-4 text-sm font-black text-slate-950 shadow-lg transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {isGeneratingTour
-                    ? "3D-Video-Tour wird erstellt ..."
+                    ? t("controls.createLoading")
                     : tourSections.length > 0
-                      ? "✨ 3D-Video-Tour neu erstellen"
-                      : "✨ 3D-Video-Tour erstellen"}
+                      ? t("controls.recreate")
+                      : t("controls.create")}
                 </button>
               </div>
             </section>
@@ -1126,14 +1158,16 @@ main > div.relative.mx-auto > section:first-of-type:hover,
             <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch">
               <section className="flex self-stretch flex-col rounded-[2rem] border-2 border-amber-300/40 bg-white/[0.055] p-6 shadow-2xl lg:w-[42%] lg:shrink-0">
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300">
-                  Objekt
+                  {t("objectCard.eyebrow")}
                 </p>
-                <h2 className="mt-2 text-2xl font-black">Objekt & Tour-Daten</h2>
+                <h2 className="mt-2 text-2xl font-black">
+                  {t("objectCard.title")}
+                </h2>
 
                 {loadingListing ? (
                   <div className="mt-6 grid flex-1 place-items-center rounded-2xl border-2 border-amber-300/40 bg-slate-950/35 p-8">
                     <p className="text-sm font-bold text-slate-400">
-                      Objekt wird geladen …
+                      {t("objectCard.loading")}
                     </p>
                   </div>
                 ) : (
@@ -1153,7 +1187,7 @@ main > div.relative.mx-auto > section:first-of-type:hover,
 
                     <div className="mt-4">
                       <p className="mb-2 text-xs font-black text-slate-500">
-                        Highlights
+                        {t("object.highlights")}
                       </p>
                       <div className="min-h-24 rounded-xl border-2 border-amber-300/40 bg-slate-950/45 px-4 py-3 text-sm leading-6 text-slate-300">
                         {listing?.highlights || "–"}
@@ -1173,18 +1207,22 @@ main > div.relative.mx-auto > section:first-of-type:hover,
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300">
-                      {tourSections.length > 0 ? "3D-Video-Tour" : "Vorschau"}
+                      {tourSections.length > 0
+                        ? t("preview.eyebrowTour")
+                        : t("preview.eyebrowPreview")}
                     </p>
                     <h2 className="mt-2 text-2xl font-black">
                       {tourSections.length > 0
-                        ? "Deine geführte Immobilienbesichtigung"
-                        : "Tour-Szenen vorbereiten"}
+                        ? t("preview.titleTour")
+                        : t("preview.titlePreview")}
                     </h2>
                   </div>
 
                   <div className="flex flex-wrap gap-2">
                     <span className="rounded-full border-2 border-amber-300/55 bg-cyan-300/10 px-3 py-2 text-xs font-black text-cyan-200">
-                      {listingImages.length} Szenen
+                      {t("preview.sceneCount", {
+                        count: listingImages.length,
+                      })}
                     </span>
                     <button
   type="button"
@@ -1197,8 +1235,8 @@ main > div.relative.mx-auto > section:first-of-type:hover,
   }`}
 >
   {privacyMode
-    ? "🔒 Privatsphäre aktiv"
-    : "🔓 Privatsphäre"}
+    ? t("preview.privacyActive")
+    : t("preview.privacy")}
 </button>
                     {tourSections.length > 0 && (
                       <span className="rounded-full border-2 border-amber-300/40 bg-white/[0.06] px-3 py-2 text-xs font-black text-slate-300">
@@ -1213,7 +1251,9 @@ main > div.relative.mx-auto > section:first-of-type:hover,
                     <img
                       key={`${activeImage.id}-${activeSceneIndex}`}
                       src={activeImage.url}
-                      alt={`Tour-Szene ${activeSceneIndex + 1}`}
+                      alt={t("preview.imageAlt", {
+                        number: activeSceneIndex + 1,
+                      })}
                       className={`h-full w-full object-cover ${
                         isTourPlaying ? "tourImagePlaying" : ""
                       }`}
@@ -1230,11 +1270,10 @@ main > div.relative.mx-auto > section:first-of-type:hover,
                           🏠
                         </div>
                         <p className="mt-5 text-xl font-black">
-                          Noch keine Objektbilder
+                          {t("preview.emptyTitle")}
                         </p>
                         <p className="mt-2 text-sm leading-6 text-slate-400">
-                          Öffne das Studio über ein Objekt mit gespeicherten
-                          Bildern im Makler-Cockpit.
+                          {t("preview.emptyDescription")}
                         </p>
                       </div>
                     </div>
@@ -1246,25 +1285,35 @@ main > div.relative.mx-auto > section:first-of-type:hover,
 
                       <div className="pointer-events-none absolute left-4 top-4 flex flex-wrap gap-2 sm:left-5 sm:top-5">
                         <span className="rounded-full border-2 border-amber-300/45 bg-slate-950/70 px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white backdrop-blur">
-                          Szene {activeSceneIndex + 1} von {listingImages.length}
+                          {t("preview.scenePosition", {
+                            current: activeSceneIndex + 1,
+                            total: listingImages.length,
+                          })}
                         </span>
                         {isTourPlaying && (
                           <span className="rounded-full bg-red-500 px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white">
-                            ● Läuft
+                            {t("preview.running")}
                           </span>
                         )}
                       </div>
 
                       <div className="pointer-events-none absolute bottom-0 left-0 right-0 p-5 sm:p-7">
                         <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300">
-                          {listing?.propertyType || "Immobilie"} in {listing?.location || "der Schweiz"}
+                          {t("preview.propertyIn", {
+                            propertyType:
+                              listing?.propertyType ||
+                              t("script.propertyFallback"),
+                            location:
+                              listing?.location ||
+                              t("preview.locationFallback"),
+                          })}
                         </p>
                         <h3 className="mt-2 text-xl font-black text-white sm:text-3xl">
-                          {activeTourSection?.title || "Tour-Vorschau"}
+                          {activeTourSection?.title || t("preview.tourPreview")}
                         </h3>
                         <p className="mt-2 line-clamp-2 max-w-3xl text-xs leading-5 text-slate-200 sm:text-sm">
                           {activeTourSection?.audioText ||
-                            "Wähle die gewünschten Räume und erstelle danach die geführte Tour."}
+                            t("preview.fallbackDescription")}
                         </p>
                       </div>
                     </>
@@ -1304,7 +1353,7 @@ main > div.relative.mx-auto > section:first-of-type:hover,
                     disabled={listingImages.length <= 1}
                     className="rounded-xl border-2 border-amber-300/40 bg-white/[0.055] px-3 py-3 text-xs font-black text-white disabled:cursor-not-allowed disabled:opacity-30"
                   >
-                    ← Zurück
+                    {t("preview.previous")}
                   </button>
 
                   <button
@@ -1320,10 +1369,10 @@ main > div.relative.mx-auto > section:first-of-type:hover,
                     className="rounded-xl bg-gradient-to-r from-cyan-300 to-indigo-500 px-3 py-3 text-xs font-black text-slate-950 transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-30"
                   >
                     {isTourPlaying
-                      ? "⏸ Pause"
+                      ? t("preview.pause")
                       : tourSections.length > 0
-                        ? "▶ Tour starten"
-                        : "▶ Vorschau starten"}
+                        ? t("preview.startTour")
+                        : t("preview.startPreview")}
                   </button>
 
                   <button
@@ -1336,7 +1385,7 @@ main > div.relative.mx-auto > section:first-of-type:hover,
                     disabled={listingImages.length === 0}
                     className="rounded-xl border border-red-300/20 bg-red-400/10 px-3 py-3 text-xs font-black text-red-100 transition hover:bg-red-400/20 disabled:cursor-not-allowed disabled:opacity-30"
                   >
-                    ⏹ Stop
+                    {t("preview.stop")}
                   </button>
 
                   <button
@@ -1345,7 +1394,7 @@ main > div.relative.mx-auto > section:first-of-type:hover,
                     disabled={listingImages.length <= 1}
                     className="rounded-xl border-2 border-amber-300/40 bg-white/[0.055] px-3 py-3 text-xs font-black text-white disabled:cursor-not-allowed disabled:opacity-30"
                   >
-                    Weiter →
+                    {t("preview.next")}
                   </button>
                 </div>
 
@@ -1353,10 +1402,10 @@ main > div.relative.mx-auto > section:first-of-type:hover,
                   <div className="mt-4 border-t border-amber-300/40 pt-4">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <p className="text-xs font-black uppercase tracking-[0.15em] text-slate-500">
-                        Tour-Szenen
+                        {t("preview.scenesLabel")}
                       </p>
                       <span className="text-[10px] font-bold text-slate-500">
-                        Auswahl aus der Objektgalerie
+                        {t("preview.scenesSource")}
                       </span>
                     </div>
 
@@ -1374,7 +1423,9 @@ main > div.relative.mx-auto > section:first-of-type:hover,
                         >
                           <img
                             src={image.url}
-                            alt={`Szene ${index + 1}`}
+                            alt={t("preview.sceneAlt", {
+                              number: index + 1,
+                            })}
                             className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                           />
                           <span className="absolute left-2 top-2 rounded-full bg-slate-950/80 px-2 py-1 text-[10px] font-black text-white">
@@ -1382,7 +1433,7 @@ main > div.relative.mx-auto > section:first-of-type:hover,
                           </span>
                           {image.isPrimary && (
                             <span className="absolute bottom-2 right-2 rounded-full bg-amber-400 px-2 py-1 text-[9px] font-black text-slate-950">
-                              Hauptbild
+                              {t("preview.primary")}
                             </span>
                           )}
                         </button>
@@ -1395,7 +1446,7 @@ main > div.relative.mx-auto > section:first-of-type:hover,
                   <div className="mt-4 flex items-center gap-3 rounded-xl border-2 border-amber-300/55 bg-cyan-300/10 px-4 py-3">
                     <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-cyan-300" />
                     <p className="text-xs font-bold text-cyan-100">
-                      AI-Stimme wird produziert …
+                      {t("preview.audioLoading")}
                     </p>
                   </div>
                 )}
@@ -1410,30 +1461,37 @@ main > div.relative.mx-auto > section:first-of-type:hover,
 
             <section className="rounded-[2rem] border-2 border-amber-300/40 bg-white/[0.055] p-6 shadow-2xl">
               <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300">
-                Material
+                {t("material.eyebrow")}
               </p>
-              <h2 className="mt-2 text-2xl font-black">Video & Räume</h2>
+              <h2 className="mt-2 text-2xl font-black">
+                {t("material.title")}
+              </h2>
 
               <div className="mt-6 flex flex-col gap-5 lg:flex-row">
                 <div className="rounded-2xl border border-dashed border-cyan-300/25 bg-cyan-300/[0.05] p-5 lg:w-[38%]">
-                  <p className="font-black text-white">Eigenes Rundgang-Video</p>
+                  <p className="font-black text-white">
+                    {t("material.ownVideoTitle")}
+                  </p>
                   <p className="mt-2 text-sm text-slate-400">
-                    Optionales Smartphone-Video. Der Upload folgt in einem
-                    eigenen, klar getrennten Schritt.
+                    {t("material.ownVideoDescription")}
                   </p>
                 </div>
 
                 <div className="min-w-0 flex-1 rounded-2xl border-2 border-amber-300/40 bg-slate-950/35 p-5">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <p className="font-black text-white">Räume der Besichtigung</p>
+                      <p className="font-black text-white">
+                        {t("material.roomsTitle")}
+                      </p>
                       <p className="mt-1 text-xs leading-5 text-slate-400">
-                        Nur ausgewählte Räume werden in die Tour übernommen.
+                        {t("material.roomsDescription")}
                       </p>
                     </div>
 
                     <span className="rounded-full border-2 border-amber-300/55 bg-cyan-300/10 px-3 py-2 text-[10px] font-black text-cyan-200">
-                      {selectedRooms.length} ausgewählt
+                      {t("material.selectedCount", {
+                        count: selectedRooms.length,
+                      })}
                     </span>
                   </div>
 
@@ -1453,7 +1511,7 @@ main > div.relative.mx-auto > section:first-of-type:hover,
                           }`}
                         >
                           {isSelected ? "✓ " : "+ "}
-                          {room}
+                          {getRoomLabel(room)}
                         </button>
                       );
                     })}
@@ -1470,7 +1528,7 @@ main > div.relative.mx-auto > section:first-of-type:hover,
                           addCustomTourRoom();
                         }
                       }}
-                      placeholder="Eigener Raum, z. B. Büro"
+                      placeholder={t("material.customRoomPlaceholder")}
                       className="min-w-0 flex-1 rounded-xl border-2 border-amber-300/40 bg-white/[0.045] px-4 py-3 text-sm font-bold text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/60"
                     />
 
@@ -1480,13 +1538,13 @@ main > div.relative.mx-auto > section:first-of-type:hover,
                       disabled={!customRoom.trim()}
                       className="rounded-xl border-2 border-amber-300/40 bg-white/[0.08] px-4 py-3 text-xs font-black text-white transition hover:bg-white/[0.13] disabled:cursor-not-allowed disabled:opacity-30"
                     >
-                      Raum hinzufügen
+                      {t("material.addRoom")}
                     </button>
                   </div>
 
                   {selectedRooms.length === 0 && (
                     <div className="mt-4 rounded-xl border-2 border-amber-300/40 bg-amber-300/10 px-4 py-3 text-xs font-bold leading-5 text-amber-100">
-                      Wähle mindestens einen Raum aus.
+                      {t("material.selectAtLeast")}
                     </div>
                   )}
                 </div>
@@ -1503,14 +1561,13 @@ main > div.relative.mx-auto > section:first-of-type:hover,
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">
-                Produktion
+                {t("production.eyebrow")}
               </p>
               <h2 className="mt-2 text-2xl font-black sm:text-3xl">
-                Tour-Ausgabe
+                {t("production.title")}
               </h2>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
-                Keine zweite Bildergalerie: Hier befinden sich nur Drehbuch und
-                Audio-Download.
+                {t("production.description")}
               </p>
             </div>
 
@@ -1520,7 +1577,7 @@ main > div.relative.mx-auto > section:first-of-type:hover,
                 download="inserat-ai-tour-stimme.mp3"
                 className="rounded-xl border-2 border-amber-300/55 bg-cyan-300/10 px-5 py-3 text-center text-sm font-black text-cyan-100 transition hover:bg-cyan-300/20"
               >
-                Stimme als MP3 speichern
+                {t("production.download")}
               </a>
             )}
           </div>
@@ -1528,9 +1585,9 @@ main > div.relative.mx-auto > section:first-of-type:hover,
           {tourSections.length === 0 ? (
             <div className="mt-6 grid gap-4 md:grid-cols-3">
               {[
-                "Objektdaten prüfen",
-                "Stimme und Räume wählen",
-                "3D-Video-Tour erstellen",
+                t("production.steps.checkObject"),
+                t("production.steps.choose"),
+                t("production.steps.create"),
               ].map((title, index) => (
                 <div
                   key={title}
@@ -1546,7 +1603,7 @@ main > div.relative.mx-auto > section:first-of-type:hover,
           ) : (
             <details className="mt-6 overflow-hidden rounded-2xl border-2 border-amber-300/40 bg-slate-950/35">
               <summary className="cursor-pointer px-5 py-4 text-sm font-black text-slate-300 transition hover:bg-white/[0.04]">
-                Drehbuch ansehen und kopieren
+                {t("production.summary")}
               </summary>
 
               <div className="max-h-[460px] space-y-3 overflow-y-auto border-t border-amber-300/40 p-4 sm:p-5">
@@ -1572,8 +1629,17 @@ main > div.relative.mx-auto > section:first-of-type:hover,
                   onClick={() => void copyFullTour()}
                   className="w-full rounded-xl border-2 border-amber-300/40 bg-white/[0.06] px-4 py-3 text-xs font-black text-white transition hover:bg-white/[0.1]"
                 >
-                  Komplettes Drehbuch kopieren
+                  {t("production.copyAll")}
                 </button>
+
+                {copyStatus && (
+                  <p
+                    className="rounded-xl border border-emerald-300/30 bg-emerald-300/10 px-4 py-3 text-center text-xs font-black text-emerald-100"
+                    role="status"
+                  >
+                    {copyStatus}
+                  </p>
+                )}
               </div>
             </details>
           )}

@@ -1273,5 +1273,200 @@
       "generate": "Non è stato possibile creare i testi per i social media.",
       "empty": "Non è stata creata alcuna variante per i social media."
     }
+  },
+  "TourGuide": {
+    "common": {
+      "backCockpit": "Torna al cockpit immobiliare",
+      "dashboard": "Vai alla dashboard"
+    },
+    "errors": {
+      "accessCheck": "Non è stato possibile verificare l’autorizzazione di accesso.",
+      "openFromCockpit": "Apri il Virtual Tour Studio da un immobile salvato nel cockpit immobiliare.",
+      "loadListing": "Non è stato possibile caricare l’immobile salvato.",
+      "loadStudio": "Non è stato possibile caricare il Virtual Tour Studio.",
+      "objectNotLoaded": "L’immobile non è ancora stato caricato. Apri lo studio dal cockpit immobiliare.",
+      "selectRoom": "Seleziona almeno un ambiente per il tour video 3D.",
+      "voiceAfterScript": "Il copione è stato creato, ma non è stato possibile generare la voce AI.",
+      "voiceFailed": "Non è stato possibile generare la voce AI.",
+      "tourStart": "Non è stato possibile avviare il tour. Riprova.",
+      "copyFailed": "Non è stato possibile copiare il copione."
+    },
+    "rooms": {
+      "entrance": "Ingresso",
+      "livingRoom": "Soggiorno",
+      "kitchen": "Cucina",
+      "bedroom": "Camera da letto",
+      "bathroom": "Bagno",
+      "balconyTerrace": "Balcone / Terrazza"
+    },
+    "voices": {
+      "lea": "Calma & raffinata",
+      "nora": "Calda & cordiale",
+      "luca": "Moderna & chiara",
+      "sofia": "Elegante & tranquilla",
+      "marco": "Sicura & professionale",
+      "jonas": "Naturale & diretta"
+    },
+    "states": {
+      "checking": {
+        "title": "Preparazione del Virtual Tour Studio",
+        "description": "La sessione e l’autorizzazione Pro vengono verificate in modo sicuro."
+      },
+      "accessError": {
+        "eyebrow": "Impossibile verificare l’accesso",
+        "title": "Virtual Tour Studio momentaneamente non disponibile"
+      },
+      "upgrade": {
+        "badge": "Funzione Pro",
+        "title": "Virtual Tour Studio",
+        "description": "Il tour video 3D con voci AI fa parte dell’offerta Pro da CHF 79.90 al mese. Non è incluso né nell’offerta Founder da CHF 19.90 né nell’immobile singolo da CHF 9.90.",
+        "offers": "Vedi le offerte"
+      }
+    },
+    "hero": {
+      "titlePrefix": "Virtual Tour",
+      "titleAccent": "Studio",
+      "description": "Da un immobile salvato nasce una visita guidata con scene, movimenti di camera e voce AI."
+    },
+    "controls": {
+      "eyebrow": "Controlli",
+      "title": "Prepara il tour",
+      "description": "Scegli la voce e la durata delle scene. La stessa anteprima diventerà direttamente il tour completo.",
+      "voiceEyebrow": "Voce AI",
+      "voiceTitle": "Seleziona la voce",
+      "showLessVoices": "Mostra meno voci",
+      "showMoreVoices": "Mostra altre voci",
+      "settingsEyebrow": "Impostazioni",
+      "durationTitle": "Durata per scena",
+      "secondsShort": "{seconds} sec.",
+      "voiceSummary": "Voce",
+      "speedSummary": "Velocità",
+      "secondsPerScene": "{seconds} secondi per scena",
+      "createLoading": "Creazione del tour video 3D …",
+      "recreate": "✨ Ricrea il tour video 3D",
+      "create": "✨ Crea il tour video 3D"
+    },
+    "object": {
+      "location": "Località / Posizione",
+      "propertyType": "Tipo di immobile",
+      "rooms": "Locali",
+      "livingArea": "Superficie abitabile",
+      "price": "Prezzo",
+      "style": "Stile",
+      "highlights": "Punti di forza"
+    },
+    "objectCard": {
+      "eyebrow": "Immobile",
+      "title": "Immobile & dati del tour",
+      "loading": "Caricamento dell’immobile …"
+    },
+    "preview": {
+      "eyebrowTour": "Tour video 3D",
+      "eyebrowPreview": "Anteprima",
+      "titleTour": "La tua visita immobiliare guidata",
+      "titlePreview": "Prepara le scene del tour",
+      "sceneCount": "{count} scene",
+      "privacyActive": "🔒 Privacy attiva",
+      "privacy": "🔓 Privacy",
+      "imageAlt": "Scena del tour {number}",
+      "emptyTitle": "Nessuna immagine dell’immobile",
+      "emptyDescription": "Apri lo studio da un immobile con immagini salvate nel cockpit immobiliare.",
+      "scenePosition": "Scena {current} di {total}",
+      "running": "● In corso",
+      "propertyIn": "{propertyType} a {location}",
+      "locationFallback": "Svizzera",
+      "tourPreview": "Anteprima del tour",
+      "fallbackDescription": "Scegli gli ambienti desiderati e crea quindi il tour guidato.",
+      "previous": "← Indietro",
+      "pause": "⏸ Pausa",
+      "startTour": "▶ Avvia tour",
+      "startPreview": "▶ Avvia anteprima",
+      "stop": "⏹ Stop",
+      "next": "Avanti →",
+      "scenesLabel": "Scene del tour",
+      "scenesSource": "Selezione dalla galleria dell’immobile",
+      "sceneAlt": "Scena {number}",
+      "primary": "Immagine principale",
+      "audioLoading": "Produzione della voce AI …"
+    },
+    "material": {
+      "eyebrow": "Materiale",
+      "title": "Video & ambienti",
+      "ownVideoTitle": "Video personale della visita",
+      "ownVideoDescription": "Video opzionale da smartphone. Il caricamento seguirà in un passaggio separato e ben definito.",
+      "roomsTitle": "Ambienti della visita",
+      "roomsDescription": "Nel tour verranno inclusi solo gli ambienti selezionati.",
+      "selectedCount": "{count} selezionati",
+      "customRoomPlaceholder": "Ambiente personalizzato, ad es. ufficio",
+      "addRoom": "Aggiungi ambiente",
+      "selectAtLeast": "Seleziona almeno un ambiente."
+    },
+    "production": {
+      "eyebrow": "Produzione",
+      "title": "Risultato del tour",
+      "description": "Nessuna seconda galleria: qui trovi solo il copione e il download audio.",
+      "download": "Salva la voce come MP3",
+      "steps": {
+        "checkObject": "Controlla i dati dell’immobile",
+        "choose": "Scegli voce e ambienti",
+        "create": "Crea il tour video 3D"
+      },
+      "summary": "Visualizza e copia il copione",
+      "copyAll": "Copia il copione completo",
+      "copySuccess": "Copione copiato.",
+      "audioLabel": "Testo audio",
+      "videoLabel": "Istruzione video"
+    },
+    "script": {
+      "locationFallback": "nella località indicata",
+      "propertyFallback": "immobile",
+      "roomDescription": "{rooms} locali – ",
+      "livingAreaDescription": "con circa {area} m² di superficie abitabile",
+      "price": "Il prezzo proposto è di CHF {price}.",
+      "priceOnRequest": "Il prezzo è disponibile su richiesta.",
+      "highlightsFallback": "la piacevole percezione degli spazi e le molteplici possibilità di utilizzo",
+      "intro": {
+        "room": "Benvenuto",
+        "title": "Benvenuti a {location}",
+        "audio": "Benvenuti alla visita digitale di questo {roomDescription}{propertyType} a {location} {livingAreaDescription}. Tra i principali punti di forza figurano {highlights}. Ora vi accompagneremo passo dopo passo attraverso l’immobile.",
+        "video": "Inizia con l’immagine principale o con una tranquilla ripresa esterna. Mostra quindi l’accesso e introduci dolcemente la visita."
+      },
+      "room": {
+        "title": "Scopri {room}",
+        "audio": "Ora ti trovi nell’area {room}. {instruction} I principali punti di forza dell’immobile sono {highlights}."
+      },
+      "outro": {
+        "room": "Conclusione",
+        "title": "Il prossimo passo",
+        "audio": "La visita digitale di questo {propertyType} a {location} termina qui. {priceDescription} Per ulteriori informazioni o per una visita personale, contatta l’agente immobiliare responsabile.",
+        "video": "Concludi mostrando nuovamente la zona più forte dell’immobile. Termina il tour con una ripresa tranquilla e di alta qualità."
+      },
+      "instructions": {
+        "entrance": {
+          "audio": "L’ingresso trasmette la prima impressione dell’immobile e crea un passaggio piacevole verso gli altri ambienti.",
+          "video": "Inizia con una ripresa tranquilla dell’ingresso. Muovi lentamente la camera dall’accesso verso l’ambiente successivo."
+        },
+        "livingRoom": {
+          "audio": "Il soggiorno rappresenta il cuore della casa. Osserva la percezione dello spazio, la luce naturale e le diverse possibilità di arredamento.",
+          "video": "Filma lentamente dall’ingresso del soggiorno verso la finestra. Mostra profondità, pavimento, luce e collegamento con le zone adiacenti."
+        },
+        "kitchen": {
+          "audio": "La cucina unisce funzionalità e comfort quotidiano. Superfici di lavoro, spazi contenitivi e collegamento con la zona giorno sono al centro.",
+          "video": "Mostra prima la cucina nel suo insieme. Riprendi poi piano di lavoro, elettrodomestici, spazi contenitivi e passaggio verso soggiorno o zona pranzo."
+        },
+        "bedroom": {
+          "audio": "La camera da letto offre un luogo tranquillo in cui ritirarsi. La disposizione permette un utilizzo confortevole e una personalizzazione individuale.",
+          "video": "Filma con calma dall’ingresso verso la finestra. Mostra le superfici disponibili, la luce e l’atmosfera rilassante."
+        },
+        "bathroom": {
+          "audio": "Il bagno è progettato in modo funzionale e completa il comfort abitativo dell’immobile.",
+          "video": "Mostra prima il bagno nel suo insieme. Riprendi poi rubinetteria, doccia o vasca, rivestimenti e dettagli particolari."
+        },
+        "outdoor": {
+          "audio": "Questo spazio esterno amplia la zona abitativa e offre spazio per relax, privacy e usi personali.",
+          "video": "Filma il passaggio dall’interno all’esterno. Mostra superficie, vista, privacy e possibili soluzioni di arredo."
+        }
+      }
+    }
   }
 }

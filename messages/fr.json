@@ -1273,5 +1273,200 @@
       "generate": "Les textes pour les réseaux sociaux n’ont pas pu être créés.",
       "empty": "Aucune variante pour les réseaux sociaux n’a été créée."
     }
+  },
+  "TourGuide": {
+    "common": {
+      "backCockpit": "Retour au cockpit immobilier",
+      "dashboard": "Accéder au tableau de bord"
+    },
+    "errors": {
+      "accessCheck": "L’autorisation d’accès n’a pas pu être vérifiée.",
+      "openFromCockpit": "Ouvrez le Virtual Tour Studio depuis un bien enregistré dans le cockpit immobilier.",
+      "loadListing": "Le bien enregistré n’a pas pu être chargé.",
+      "loadStudio": "Le Virtual Tour Studio n’a pas pu être chargé.",
+      "objectNotLoaded": "Le bien n’est pas encore chargé. Ouvrez le studio depuis le cockpit immobilier.",
+      "selectRoom": "Sélectionnez au moins une pièce pour la visite vidéo 3D.",
+      "voiceAfterScript": "Le scénario a été créé, mais la voix AI n’a pas pu être générée.",
+      "voiceFailed": "La voix AI n’a pas pu être générée.",
+      "tourStart": "La visite n’a pas pu démarrer. Veuillez réessayer.",
+      "copyFailed": "Le scénario n’a pas pu être copié."
+    },
+    "rooms": {
+      "entrance": "Entrée",
+      "livingRoom": "Séjour",
+      "kitchen": "Cuisine",
+      "bedroom": "Chambre",
+      "bathroom": "Salle de bains",
+      "balconyTerrace": "Balcon / Terrasse"
+    },
+    "voices": {
+      "lea": "Calme & raffinée",
+      "nora": "Chaleureuse & amicale",
+      "luca": "Moderne & claire",
+      "sofia": "Élégante & posée",
+      "marco": "Assurée & sérieuse",
+      "jonas": "Naturelle & directe"
+    },
+    "states": {
+      "checking": {
+        "title": "Préparation du Virtual Tour Studio",
+        "description": "Votre session et votre autorisation Pro sont vérifiées de manière sécurisée."
+      },
+      "accessError": {
+        "eyebrow": "Impossible de vérifier l’accès",
+        "title": "Virtual Tour Studio momentanément indisponible"
+      },
+      "upgrade": {
+        "badge": "Fonction Pro",
+        "title": "Virtual Tour Studio",
+        "description": "La visite vidéo 3D avec voix AI fait partie de l’offre Pro à CHF 79.90 par mois. Elle n’est incluse ni dans l’offre Founder à CHF 19.90 ni dans l’objet individuel à CHF 9.90.",
+        "offers": "Voir les offres"
+      }
+    },
+    "hero": {
+      "titlePrefix": "Virtual Tour",
+      "titleAccent": "Studio",
+      "description": "Un bien enregistré devient une visite immobilière guidée avec scènes, mouvements de caméra et voix AI."
+    },
+    "controls": {
+      "eyebrow": "Commandes",
+      "title": "Préparer la visite",
+      "description": "Choisissez la voix et la durée des scènes. Le même aperçu devient ensuite directement la visite finale.",
+      "voiceEyebrow": "Voix AI",
+      "voiceTitle": "Sélectionner la voix",
+      "showLessVoices": "Afficher moins de voix",
+      "showMoreVoices": "Afficher d’autres voix",
+      "settingsEyebrow": "Réglages",
+      "durationTitle": "Durée par scène",
+      "secondsShort": "{seconds} s",
+      "voiceSummary": "Voix",
+      "speedSummary": "Vitesse",
+      "secondsPerScene": "{seconds} secondes par scène",
+      "createLoading": "Création de la visite vidéo 3D …",
+      "recreate": "✨ Recréer la visite vidéo 3D",
+      "create": "✨ Créer la visite vidéo 3D"
+    },
+    "object": {
+      "location": "Localité / Situation",
+      "propertyType": "Type de bien",
+      "rooms": "Pièces",
+      "livingArea": "Surface habitable",
+      "price": "Prix",
+      "style": "Style",
+      "highlights": "Points forts"
+    },
+    "objectCard": {
+      "eyebrow": "Bien",
+      "title": "Bien & données de la visite",
+      "loading": "Chargement du bien …"
+    },
+    "preview": {
+      "eyebrowTour": "Visite vidéo 3D",
+      "eyebrowPreview": "Aperçu",
+      "titleTour": "Votre visite immobilière guidée",
+      "titlePreview": "Préparer les scènes",
+      "sceneCount": "{count} scènes",
+      "privacyActive": "🔒 Confidentialité active",
+      "privacy": "🔓 Confidentialité",
+      "imageAlt": "Scène de visite {number}",
+      "emptyTitle": "Aucune image du bien",
+      "emptyDescription": "Ouvrez le studio depuis un bien comprenant des images enregistrées dans le cockpit immobilier.",
+      "scenePosition": "Scène {current} sur {total}",
+      "running": "● En cours",
+      "propertyIn": "{propertyType} à {location}",
+      "locationFallback": "Suisse",
+      "tourPreview": "Aperçu de la visite",
+      "fallbackDescription": "Sélectionnez les pièces souhaitées, puis créez la visite guidée.",
+      "previous": "← Retour",
+      "pause": "⏸ Pause",
+      "startTour": "▶ Démarrer la visite",
+      "startPreview": "▶ Démarrer l’aperçu",
+      "stop": "⏹ Stop",
+      "next": "Suivant →",
+      "scenesLabel": "Scènes de la visite",
+      "scenesSource": "Sélection depuis la galerie du bien",
+      "sceneAlt": "Scène {number}",
+      "primary": "Image principale",
+      "audioLoading": "Production de la voix AI …"
+    },
+    "material": {
+      "eyebrow": "Matériel",
+      "title": "Vidéo & pièces",
+      "ownVideoTitle": "Votre propre vidéo de visite",
+      "ownVideoDescription": "Vidéo facultative réalisée avec un smartphone. Le téléchargement suivra dans une étape séparée et clairement définie.",
+      "roomsTitle": "Pièces de la visite",
+      "roomsDescription": "Seules les pièces sélectionnées seront intégrées à la visite.",
+      "selectedCount": "{count} sélectionnées",
+      "customRoomPlaceholder": "Pièce personnalisée, p. ex. bureau",
+      "addRoom": "Ajouter une pièce",
+      "selectAtLeast": "Sélectionnez au moins une pièce."
+    },
+    "production": {
+      "eyebrow": "Production",
+      "title": "Résultat de la visite",
+      "description": "Pas de deuxième galerie : vous trouvez ici uniquement le scénario et le téléchargement audio.",
+      "download": "Enregistrer la voix en MP3",
+      "steps": {
+        "checkObject": "Vérifier les données du bien",
+        "choose": "Choisir la voix et les pièces",
+        "create": "Créer la visite vidéo 3D"
+      },
+      "summary": "Afficher et copier le scénario",
+      "copyAll": "Copier le scénario complet",
+      "copySuccess": "Scénario copié.",
+      "audioLabel": "Texte audio",
+      "videoLabel": "Instruction vidéo"
+    },
+    "script": {
+      "locationFallback": "à l’emplacement indiqué",
+      "propertyFallback": "bien immobilier",
+      "roomDescription": "{rooms} pièces – ",
+      "livingAreaDescription": "avec environ {area} m² habitables",
+      "price": "Le prix proposé est de CHF {price}.",
+      "priceOnRequest": "Le prix est disponible sur demande.",
+      "highlightsFallback": "la sensation d’espace agréable et les nombreuses possibilités d’utilisation",
+      "intro": {
+        "room": "Accueil",
+        "title": "Bienvenue à {location}",
+        "audio": "Bienvenue dans la visite numérique de ce {roomDescription}{propertyType} à {location} {livingAreaDescription}. Parmi ses principaux atouts figurent {highlights}. Nous allons maintenant vous guider pas à pas à travers le bien.",
+        "video": "Commencez par l’image principale ou une prise de vue extérieure calme. Montrez ensuite l’accès et introduisez doucement la visite."
+      },
+      "room": {
+        "title": "Découvrir {room}",
+        "audio": "Vous vous trouvez maintenant dans l’espace {room}. {instruction} Les principaux atouts du bien sont {highlights}."
+      },
+      "outro": {
+        "room": "Conclusion",
+        "title": "Votre prochaine étape",
+        "audio": "La visite numérique de ce {propertyType} à {location} se termine ici. {priceDescription} Pour obtenir plus d’informations ou organiser une visite personnelle, veuillez contacter l’agente ou l’agent immobilier responsable.",
+        "video": "Pour terminer, montrez à nouveau la partie la plus forte du bien. Achevez la visite par une prise de vue calme et de grande qualité."
+      },
+      "instructions": {
+        "entrance": {
+          "audio": "L’entrée donne la première impression du bien et crée une transition agréable vers les autres pièces.",
+          "video": "Commencez par une prise de vue calme de l’entrée. Déplacez lentement la caméra depuis l’accès vers la pièce suivante."
+        },
+        "livingRoom": {
+          "audio": "Le séjour constitue le cœur de l’habitation. Observez la sensation d’espace, la lumière naturelle et les différentes possibilités d’ameublement.",
+          "video": "Filmez lentement depuis l’entrée du séjour vers la fenêtre. Montrez la profondeur, le sol, la lumière et la transition vers les zones voisines."
+        },
+        "kitchen": {
+          "audio": "La cuisine associe fonctionnalité et confort quotidien. Les plans de travail, les rangements et le lien avec l’espace de vie sont ici essentiels.",
+          "video": "Montrez d’abord la cuisine dans son ensemble. Filmez ensuite le plan de travail, les appareils, les rangements et la transition vers le séjour ou l’espace repas."
+        },
+        "bedroom": {
+          "audio": "La chambre offre un lieu de retrait paisible. Son agencement permet une utilisation confortable et un aménagement personnel.",
+          "video": "Filmez calmement depuis l’entrée vers la fenêtre. Montrez les surfaces disponibles, la lumière et l’atmosphère reposante."
+        },
+        "bathroom": {
+          "audio": "La salle de bains est aménagée de manière fonctionnelle et complète le confort du bien.",
+          "video": "Montrez d’abord la salle de bains dans son ensemble. Filmez ensuite la robinetterie, la douche ou la baignoire, les revêtements et les détails particuliers."
+        },
+        "outdoor": {
+          "audio": "Cet espace extérieur prolonge l’espace de vie et offre de la place pour la détente, l’intimité et des usages personnalisés.",
+          "video": "Filmez la transition de l’intérieur vers l’extérieur. Montrez la surface, la vue, l’intimité et les possibilités d’ameublement."
+        }
+      }
+    }
   }
 }
