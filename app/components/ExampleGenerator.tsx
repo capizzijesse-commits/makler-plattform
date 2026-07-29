@@ -1,38 +1,85 @@
 "use client";
 
 import { useState } from "react";
+import {
+  useLocale,
+  useTranslations,
+} from "next-intl";
 
 export default function ExampleGenerator() {
-  const [rooms, setRooms] = useState("4.5");
-  const [propertyType, setPropertyType] = useState("Wohnung");
-  const [location, setLocation] = useState("Winterthur, ZH");
-  const [livingSpace, setLivingSpace] = useState("112 m²");
-  const [price, setPrice] = useState("CHF 1'450'000.–");
+  const locale = useLocale();
+  const t = useTranslations("ExampleGenerator");
+
+  const [rooms, setRooms] = useState(
+    () => t("defaults.rooms")
+  );
+
+  const [propertyType, setPropertyType] = useState(
+    () => t("defaults.propertyType")
+  );
+
+  const [location, setLocation] = useState(
+    () => t("defaults.location")
+  );
+
+  const [livingSpace, setLivingSpace] = useState(
+    () => t("defaults.livingSpace")
+  );
+
+  const [price, setPrice] = useState(
+    () => t("defaults.price")
+  );
+
   const [highlights, setHighlights] = useState(
-    "Balkon, offene Küche, Parkettboden, ruhige Lage"
+    () => t("defaults.highlights")
   );
 
   const [title, setTitle] = useState(
-    "Stilvolle 4.5-Zimmer-Wohnung mit Balkon in Winterthur"
+    () => t("defaults.title")
   );
 
   const [description, setDescription] = useState(
-    "Diese attraktive Wohnung überzeugt durch helle Räume, eine moderne offene Küche und einen gemütlichen Balkon. Der hochwertige Parkettboden verleiht dem Zuhause eine warme und gepflegte Atmosphäre."
+    () => t("defaults.description")
   );
 
-  const generateExample = () => {
-    const cleanLocation = location.replace(", ZH", "").trim();
+  function generateExample() {
+    const locationWithoutRegion =
+      location.split(",")[0]?.trim();
+
+    const cleanLocation =
+      locationWithoutRegion ||
+      location.trim() ||
+      t("defaults.location");
+
     const firstHighlight =
-      highlights.split(",")[0]?.trim() || "besonderen Highlights";
+      highlights.split(",")[0]?.trim() ||
+      t("defaults.fallbackHighlight");
+
+    const propertyTypeLower =
+      propertyType.toLocaleLowerCase(locale);
 
     setTitle(
-      `Stilvolle ${rooms}-Zimmer-${propertyType} mit ${firstHighlight} in ${cleanLocation}`
+      t("generated.title", {
+        rooms,
+        propertyType,
+        propertyTypeLower,
+        firstHighlight,
+        location: cleanLocation,
+      })
     );
 
     setDescription(
-      `Diese attraktive ${rooms}-Zimmer-${propertyType.toLowerCase()} in ${cleanLocation} verbindet ein angenehmes Wohngefühl mit einer durchdachten Raumaufteilung. Besonders hervorzuheben sind ${highlights}. Mit ${livingSpace} Wohnfläche und einem Kaufpreis von ${price} eignet sich das Objekt ideal für Interessenten, die Wert auf Komfort, Lage und eine professionelle Präsentation legen.`
+      t("generated.description", {
+        rooms,
+        propertyType,
+        propertyTypeLower,
+        location: cleanLocation,
+        highlights,
+        livingSpace,
+        price,
+      })
     );
-  };
+  }
 
   return (
     <section className="relative overflow-hidden bg-slate-950 px-6 py-28">
@@ -42,16 +89,15 @@ export default function ExampleGenerator() {
       <div className="relative mx-auto max-w-7xl">
         <div className="mb-14 max-w-3xl">
           <span className="inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-5 py-2 text-sm font-bold uppercase tracking-wide text-amber-300">
-            Live-Beispiel
+            {t("intro.eyebrow")}
           </span>
 
           <h2 className="mt-7 text-4xl font-light tracking-tight text-white md:text-6xl">
-            Teste direkt, wie Inserat-AI aus wenigen Angaben ein Inserat macht.
+            {t("intro.title")}
           </h2>
 
           <p className="mt-6 text-lg leading-8 text-slate-300">
-            Gib ein paar Objektdaten ein und sieh sofort, wie daraus ein
-            professioneller Titel und eine hochwertige Beschreibung entstehen.
+            {t("intro.description")}
           </p>
         </div>
 
@@ -60,127 +106,158 @@ export default function ExampleGenerator() {
             <div className="mb-8 flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-bold uppercase tracking-wide text-amber-300">
-                  Eingabe
+                  {t("input.eyebrow")}
                 </p>
+
                 <h3 className="mt-2 text-2xl font-semibold text-white">
-                  Objektangaben
+                  {t("input.title")}
                 </h3>
               </div>
 
               <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300">
-                Demo
+                {t("input.demo")}
               </div>
             </div>
 
             <div className="grid gap-5 md:grid-cols-2">
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-300">
-                  Zimmer
+                  {t("input.labels.rooms")}
                 </label>
+
                 <input
                   value={rooms}
-                  onChange={(e) => setRooms(e.target.value)}
+                  onChange={(event) =>
+                    setRooms(event.target.value)
+                  }
                   className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.14]"
                 />
               </div>
 
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-300">
-                  Objektart
+                  {t("input.labels.propertyType")}
                 </label>
+
                 <input
                   value={propertyType}
-                  onChange={(e) => setPropertyType(e.target.value)}
+                  onChange={(event) =>
+                    setPropertyType(event.target.value)
+                  }
                   className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.14]"
                 />
               </div>
 
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-300">
-                  Ort
+                  {t("input.labels.location")}
                 </label>
+
                 <input
                   value={location}
-                  onChange={(e) => setLocation(e.target.value)}
+                  onChange={(event) =>
+                    setLocation(event.target.value)
+                  }
                   className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.14]"
                 />
               </div>
 
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-300">
-                  Wohnfläche
+                  {t("input.labels.livingSpace")}
                 </label>
+
                 <input
                   value={livingSpace}
-                  onChange={(e) => setLivingSpace(e.target.value)}
+                  onChange={(event) =>
+                    setLivingSpace(event.target.value)
+                  }
                   className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.14]"
                 />
               </div>
 
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-300">
-                  Preis
+                  {t("input.labels.price")}
                 </label>
+
                 <input
                   value={price}
-                  onChange={(e) => setPrice(e.target.value)}
+                  onChange={(event) =>
+                    setPrice(event.target.value)
+                  }
                   className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.14]"
                 />
               </div>
 
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-300">
-                  Highlights
+                  {t("input.labels.highlights")}
                 </label>
+
                 <input
                   value={highlights}
-                  onChange={(e) => setHighlights(e.target.value)}
+                  onChange={(event) =>
+                    setHighlights(event.target.value)
+                  }
                   className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.14]"
                 />
               </div>
             </div>
 
             <button
+              type="button"
               onClick={generateExample}
               className="mt-8 w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-8 py-4 text-base font-bold text-slate-950 shadow-[0_0_35px_rgba(245,158,11,0.25)] transition hover:scale-[1.01] hover:from-amber-200 hover:to-amber-400"
             >
-              Beispiel-Inserat erstellen
+              {t("input.generateButton")}
             </button>
 
             <p className="mt-4 text-center text-sm text-slate-400">
-             Ohne Anmeldung testen – im kostenlosen Account warten weitere Funktionen.
+              {t("input.note")}
             </p>
 
             <div className="mt-8 rounded-3xl border border-white/10 bg-white/[0.04] p-5">
               <p className="text-xs font-bold uppercase tracking-wide text-amber-300">
-                Was Inserat-AI erstellt
+                {t("creates.eyebrow")}
               </p>
 
               <div className="mt-4 grid gap-3">
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
                   <p className="font-semibold text-white">
-                    Professioneller Titel
+                    {t(
+                      "creates.professionalTitle.title"
+                    )}
                   </p>
+
                   <p className="mt-1 text-sm text-slate-400">
-                    Kurz, verkaufsstark und passend für Immobilienportale.
+                    {t(
+                      "creates.professionalTitle.description"
+                    )}
                   </p>
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
                   <p className="font-semibold text-white">
-                    Emotionale Beschreibung
+                    {t(
+                      "creates.emotionalDescription.title"
+                    )}
                   </p>
+
                   <p className="mt-1 text-sm text-slate-400">
-                    Hochwertig formuliert im Stil eines Maklers.
+                    {t(
+                      "creates.emotionalDescription.description"
+                    )}
                   </p>
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
                   <p className="font-semibold text-white">
-                    Highlights & Social Media
+                    {t("creates.social.title")}
                   </p>
+
                   <p className="mt-1 text-sm text-slate-400">
-                    Inhalte für Exposé, Portaltext und Social-Media-Beiträge.
+                    {t("creates.social.description")}
                   </p>
                 </div>
               </div>
@@ -189,12 +266,15 @@ export default function ExampleGenerator() {
                 <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
                   Homegate
                 </span>
+
                 <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
                   ImmoScout24
                 </span>
+
                 <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
-                  Exposé
+                  {t("creates.expose")}
                 </span>
+
                 <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
                   Social Media
                 </span>
@@ -206,21 +286,22 @@ export default function ExampleGenerator() {
             <div className="mb-8 flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-bold uppercase tracking-wide text-amber-300">
-                  Generiertes Inserat
+                  {t("output.eyebrow")}
                 </p>
+
                 <h3 className="mt-2 text-2xl font-semibold text-white">
-                  Generiertes Inserat
+                  {t("output.title")}
                 </h3>
               </div>
 
               <span className="rounded-full bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-300">
-                Bereit
+                {t("output.ready")}
               </span>
             </div>
 
             <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
               <p className="text-sm uppercase tracking-wide text-slate-400">
-                Titel
+                {t("output.titleLabel")}
               </p>
 
               <h4 className="mt-3 text-3xl font-light leading-tight text-white">
@@ -229,17 +310,23 @@ export default function ExampleGenerator() {
 
               <div className="mt-6 flex flex-wrap gap-3 text-sm text-slate-300">
                 <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
-                  {rooms} Zimmer
+                  {t("output.roomsValue", {
+                    rooms,
+                  })}
                 </span>
+
                 <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
                   {propertyType}
                 </span>
+
                 <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
                   {livingSpace}
                 </span>
+
                 <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
                   {location}
                 </span>
+
                 <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
                   {price}
                 </span>
@@ -247,7 +334,7 @@ export default function ExampleGenerator() {
 
               <div className="mt-8 border-t border-white/10 pt-8">
                 <p className="text-sm uppercase tracking-wide text-slate-400">
-                  Beschreibung
+                  {t("output.descriptionLabel")}
                 </p>
 
                 <p className="mt-4 text-lg leading-8 text-slate-300">
@@ -257,35 +344,37 @@ export default function ExampleGenerator() {
 
               <div className="mt-8 border-t border-white/10 pt-8">
                 <p className="text-sm uppercase tracking-wide text-slate-400">
-                  Highlights
+                  {t("output.highlightsLabel")}
                 </p>
 
                 <div className="mt-4 flex flex-wrap gap-3">
-                  {highlights.split(",").map((item) => (
-                    <span
-                      key={item}
-                      className="rounded-full bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-200"
-                    >
-                      {item.trim()}
-                    </span>
-                  ))}
+                  {highlights
+                    .split(",")
+                    .map((item, index) => (
+                      <span
+                        key={item + index}
+                        className="rounded-full bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-200"
+                      >
+                        {item.trim()}
+                      </span>
+                    ))}
                 </div>
               </div>
             </div>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-             <a
-  href="/register"
-  className="inline-flex flex-1 items-center justify-center rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-6 py-4 font-bold text-slate-950 shadow-[0_0_35px_rgba(245,158,11,0.25)] transition hover:scale-[1.01] hover:from-amber-200 hover:to-amber-400"
->
-  Kostenlos registrieren
-</a>
+              <a
+                href="/register"
+                className="inline-flex flex-1 items-center justify-center rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-6 py-4 font-bold text-slate-950 shadow-[0_0_35px_rgba(245,158,11,0.25)] transition hover:scale-[1.01] hover:from-amber-200 hover:to-amber-400"
+              >
+                {t("output.register")}
+              </a>
 
               <a
                 href="#preise"
                 className="inline-flex flex-1 items-center justify-center rounded-full border border-white/15 px-6 py-4 font-bold text-white transition hover:bg-white/10"
               >
-                Preise ansehen
+                {t("output.prices")}
               </a>
             </div>
           </div>

@@ -15,6 +15,16 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const FOUNDER_LIMIT = 50;
+const FOUNDER_TRIAL_DAYS = 30;
+
+const LOCALE_COOKIE_NAME = "INSERAT_AI_LOCALE";
+
+const FOUNDER_PRODUCT_DESCRIPTIONS = {
+  de: "30 Tage kostenlos, danach CHF 19.90 pro Monat – monatlich kündbar.",
+  it: "30 giorni gratuiti, poi CHF 19.90 al mese – disdetta mensile.",
+  fr: "30 jours gratuits, puis CHF 19.90 par mois – résiliable chaque mois.",
+  en: "30 days free, then CHF 19.90 per month – cancel monthly.",
+} as const;
 
 const ACTIVE_SUBSCRIPTION_STATUSES = [
   "active",
@@ -336,14 +346,21 @@ export async function POST(
         limit: 10,
       });
 
-    const existingCheckout =
-      openSessions.data.find(
+    const matchingOpenSessions =
+      openSessions.data.filter(
         (session) =>
           session.mode === "subscription" &&
           session.metadata?.userId ===
             billingUser.id &&
           session.metadata?.plan ===
-            "founder" &&
+            "founder"
+      );
+
+    const existingCheckout =
+      matchingOpenSessions.find(
+        (session) =>
+          session.metadata?.trialPeriodDays ===
+            String(FOUNDER_TRIAL_DAYS) &&
           typeof session.url === "string"
       );
 
@@ -354,6 +371,32 @@ export async function POST(
         url: existingCheckout.url,
       });
     }
+
+    /*
+     * Offene Checkout-Sitzungen aus der Zeit vor
+     * dem 30-Tage-Test dürfen nicht wiederverwendet
+     * werden, weil sie sofort kostenpflichtig wären.
+     */
+    const staleOpenSessions =
+      matchingOpenSessions.filter(
+        (session) =>
+          session.metadata?.trialPeriodDays !==
+          String(FOUNDER_TRIAL_DAYS)
+      );
+
+    await Promise.all(
+      staleOpenSessions.map((session) =>
+        stripe.checkout.sessions
+          .expire(session.id)
+          .catch((error) => {
+            console.warn(
+              "ALTER FOUNDER-CHECKOUT KONNTE NICHT ABGELAUFEN WERDEN:",
+              session.id,
+              error
+            );
+          })
+      )
+    );
 
     /*
      * Verhindert ein zweites Abonnement, falls Stripe
@@ -396,6 +439,28 @@ export async function POST(
 
     const appUrl = getAppUrl(request.url);
 
+    const localeCookie =
+      request.cookies
+        .get(LOCALE_COOKIE_NAME)
+        ?.value
+        .trim()
+        .toLowerCase() ?? "";
+
+    const checkoutLocale =
+      localeCookie === "de" ||
+      localeCookie === "it" ||
+      localeCookie === "fr" ||
+      localeCookie === "en"
+        ? localeCookie
+        : "auto";
+
+    const productDescription =
+      checkoutLocale === "auto"
+        ? FOUNDER_PRODUCT_DESCRIPTIONS.de
+        : FOUNDER_PRODUCT_DESCRIPTIONS[
+            checkoutLocale
+          ];
+
     const checkoutSession =
       await stripe.checkout.sessions.create({
         mode: "subscription",
@@ -412,6 +477,7 @@ export async function POST(
         },
 
         allow_promotion_codes: false,
+        payment_method_collection: "always",
 
         line_items: [
           {
@@ -426,7 +492,7 @@ export async function POST(
                 name:
                   "Inserat-AI Founder",
                 description:
-                  "Founder-Basiszugang für Immobilienmakler – monatlich kündbar.",
+                  productDescription,
               },
             },
           },
@@ -439,9 +505,21 @@ export async function POST(
           expectedAmountCents:
             String(amountCents),
           expectedCurrency: "chf",
+          trialPeriodDays:
+            String(FOUNDER_TRIAL_DAYS),
         },
 
         subscription_data: {
+          trial_period_days:
+            FOUNDER_TRIAL_DAYS,
+
+          trial_settings: {
+            end_behavior: {
+              missing_payment_method:
+                "cancel",
+            },
+          },
+
           metadata: {
             userId: billingUser.id,
             plan: "founder",
@@ -450,6 +528,8 @@ export async function POST(
             expectedAmountCents:
               String(amountCents),
             expectedCurrency: "chf",
+            trialPeriodDays:
+              String(FOUNDER_TRIAL_DAYS),
           },
         },
 
@@ -463,7 +543,7 @@ export async function POST(
           "?subscription=cancelled" +
           "#preise",
 
-        locale: "de",
+        locale: checkoutLocale,
       });
 
     if (!checkoutSession.url) {

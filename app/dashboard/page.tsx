@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 
 import { upload } from "@vercel/blob/client";
 import {
@@ -37,64 +38,10 @@ type ObjectTemplate = {
   styleText: string;
   highlights: string;
 };
-const EXTRA_HIGHLIGHT_SUGGESTIONS = [
-  "Balkon",
-  "Terrasse",
-  "Garten",
-  "Sitzplatz",
-  "Garage",
-  "Tiefgarage",
-  "Aussenparkplatz",
-  "Lift",
-  "Keller",
-  "Reduit",
-  "Cheminée",
-  "Seesicht",
-  "Bergsicht",
-  "Ruhige Lage",
-  "Zentrale Lage",
-  "Bahnhof in der Nähe",
-  "Bushaltestelle in der Nähe",
-  "Schule in der Nähe",
-  "Kindergarten in der Nähe",
-  "Einkaufsmöglichkeiten in der Nähe",
-  "Kinderfreundlich",
-  "Haustiere erlaubt",
-  "Rollstuhlgängig",
-  "Minergie-Standard",
-  "Neuwertig",
-  "Renoviert",
-  
-];
-const QUICK_PROPERTY_TYPES = [
-  "Wohnung",
-  "Haus",
-  "Einfamilienhaus",
-  "Mehrfamilienhaus",
-  "Attikawohnung",
-  "Maisonette",
-  "Doppeleinfamilienhaus",
-  "Reihenhaus",
-  "Villa",
-  "Bauland",
-  "Gewerbe",
-];
-
 const QUICK_ROOMS = ["1.5", "2.5", "3.5", "4.5", "5.5", "6.5"];
 
 const QUICK_LIVING_AREAS = ["60", "80", "100", "120", "150", "180", "200", "250"];
 
-const QUICK_STYLES = [
-  "modern",
-  "hochwertig",
-  "luxuriös",
-  "familienfreundlich",
-  "ruhig",
-  "zentral",
-  "hell",
-  "renoviert",
-  "neuwertig",
-];
 type ImageAnalysisStatus = "idle" | "analyzing" | "done" | "error";
 
 type ImageAnalysisResult = {
@@ -112,6 +59,73 @@ function createEmptyImageAnalysis(): ImageAnalysisResult {
 }
 export default function DashboardPage() {
   const router = useRouter();
+  const t = useTranslations("Dashboard");
+  const locale = useLocale();
+
+  const localizedApiError = (
+    apiError: unknown,
+    fallback: string
+  ) =>
+    locale === "de" &&
+    typeof apiError === "string" &&
+    apiError.trim()
+      ? apiError
+      : fallback;
+
+  const extraHighlightSuggestions = [
+    t("suggestions.highlights.balcony"),
+    t("suggestions.highlights.terrace"),
+    t("suggestions.highlights.garden"),
+    t("suggestions.highlights.patio"),
+    t("suggestions.highlights.garage"),
+    t("suggestions.highlights.undergroundGarage"),
+    t("suggestions.highlights.outdoorParking"),
+    t("suggestions.highlights.lift"),
+    t("suggestions.highlights.cellar"),
+    t("suggestions.highlights.storageRoom"),
+    t("suggestions.highlights.fireplace"),
+    t("suggestions.highlights.lakeView"),
+    t("suggestions.highlights.mountainView"),
+    t("suggestions.highlights.quietLocation"),
+    t("suggestions.highlights.centralLocation"),
+    t("suggestions.highlights.nearStation"),
+    t("suggestions.highlights.nearBus"),
+    t("suggestions.highlights.nearSchool"),
+    t("suggestions.highlights.nearKindergarten"),
+    t("suggestions.highlights.nearShopping"),
+    t("suggestions.highlights.familyFriendly"),
+    t("suggestions.highlights.petsAllowed"),
+    t("suggestions.highlights.wheelchairAccessible"),
+    t("suggestions.highlights.minergie"),
+    t("suggestions.highlights.likeNew"),
+    t("suggestions.highlights.renovated"),
+  ];
+
+  const quickPropertyTypes = [
+    t("suggestions.propertyTypes.apartment"),
+    t("suggestions.propertyTypes.house"),
+    t("suggestions.propertyTypes.detachedHouse"),
+    t("suggestions.propertyTypes.multiFamilyHouse"),
+    t("suggestions.propertyTypes.penthouse"),
+    t("suggestions.propertyTypes.maisonette"),
+    t("suggestions.propertyTypes.semiDetachedHouse"),
+    t("suggestions.propertyTypes.terracedHouse"),
+    t("suggestions.propertyTypes.villa"),
+    t("suggestions.propertyTypes.buildingLand"),
+    t("suggestions.propertyTypes.commercial"),
+  ];
+
+  const quickStyles = [
+    t("suggestions.styles.modern"),
+    t("suggestions.styles.premium"),
+    t("suggestions.styles.luxurious"),
+    t("suggestions.styles.familyFriendly"),
+    t("suggestions.styles.quiet"),
+    t("suggestions.styles.central"),
+    t("suggestions.styles.bright"),
+    t("suggestions.styles.renovated"),
+    t("suggestions.styles.likeNew"),
+  ];
   const {
     notify,
     confirmAction,
@@ -221,7 +235,7 @@ async function getImageFileForAnalysis(
 
     if (!previewResponse.ok) {
       throw new Error(
-        `Die Vorschau von Bild ${index + 1} konnte nicht geladen werden.`
+        t("imageAnalysis.previewLoadError", { index: index + 1 })
       );
     }
 
@@ -229,7 +243,7 @@ async function getImageFileForAnalysis(
 
     return new File(
       [imageBlob],
-      `objektfoto-${index + 1}.jpg`,
+      `property-photo-${index + 1}.jpg`,
       {
         type: imageBlob.type || "image/jpeg",
       }
@@ -282,7 +296,7 @@ async function analyzeImage() {
 
         if (!imageFile) {
           throw new Error(
-            "Das Foto ist nur noch als ungültige Vorschau vorhanden. Bitte dieses Bild nochmals auswählen."
+            t("imageAnalysis.invalidPreview")
           );
         }
 
@@ -306,21 +320,26 @@ async function analyzeImage() {
           data = responseText ? JSON.parse(responseText) : {};
         } catch {
           throw new Error(
-            responseText ||
-              "Die Bildanalyse hat keine gültige Antwort geliefert."
+            locale === "de" && responseText
+              ? responseText
+              : t("imageAnalysis.invalidResponse")
           );
         }
 
         if (!response.ok) {
           throw new Error(
-            data.error ||
-              `Bildanalyse fehlgeschlagen – HTTP ${response.status}`
+            localizedApiError(
+              data.error,
+              t("imageAnalysis.httpError", {
+                status: response.status,
+              })
+            )
           );
         }
 
         if (!data.analysis?.trim()) {
           throw new Error(
-            "Für dieses Bild wurde keine Analyse zurückgegeben."
+            t("imageAnalysis.noResult")
           );
         }
 
@@ -341,7 +360,7 @@ async function analyzeImage() {
           error:
             error instanceof Error
               ? error.message
-              : "Dieses Bild konnte nicht analysiert werden.",
+              : t("imageAnalysis.genericError"),
         };
       }
 
@@ -358,19 +377,21 @@ async function analyzeImage() {
 
     if (successfulAnalyses === totalImages) {
       setImageAnalysisMessage(
-        `✓ Alle ${totalImages} ${
-          totalImages === 1 ? "Foto wurde" : "Fotos wurden"
-        } einzeln und erfolgreich analysiert.`
+        t("imageAnalysis.allSuccess", {
+          count: totalImages,
+        })
       );
     } else if (successfulAnalyses > 0) {
       setImageAnalysisMessage(
-        `⚠ ${successfulAnalyses} von ${totalImages} Fotos wurden analysiert. ${failedAnalyses} ${
-          failedAnalyses === 1 ? "Analyse ist" : "Analysen sind"
-        } fehlgeschlagen.`
+        t("imageAnalysis.partial", {
+          successful: successfulAnalyses,
+          total: totalImages,
+          failed: failedAnalyses,
+        })
       );
     } else {
       setImageAnalysisMessage(
-        "✕ Keines der ausgewählten Fotos konnte analysiert werden."
+        t("imageAnalysis.none")
       );
     }
   } finally {
@@ -395,10 +416,14 @@ const imageAnalysis = imageAnalyses
     }
 
     const fileName =
-      selectedImages[index]?.name || `Objektfoto ${index + 1}`;
+      selectedImages[index]?.name ||
+      t("images.defaultName", { index: index + 1 });
 
     parts.push(
-      `Bild ${index + 1} – ${fileName}:\n${item.analysis.trim()}`
+      `${t("imageAnalysis.resultHeading", {
+        index: index + 1,
+        fileName,
+      })}:\n${item.analysis.trim()}`
     );
 
     return parts;
@@ -534,7 +559,9 @@ useEffect(() => {
 const saveObjectTemplate = () => {
   const cleanName =
     templateName.trim() ||
-    `${propertyType || "Objekt"} ${location || "ohne Ort"}`.trim();
+    `${propertyType || t("templates.defaultObject")} ${
+      location || t("templates.withoutLocation")
+    }`.trim();
 
   const newTemplate: ObjectTemplate = {
   id: crypto.randomUUID(),
@@ -613,8 +640,10 @@ async function uploadListingImages(listingId: string) {
 
     if (!imageResponse.ok) {
       throw new Error(
-        imageData.error ||
-          `Das Bild „${file.name}“ konnte nicht gespeichert werden.`
+        localizedApiError(
+          imageData.error,
+          t("images.saveError", { fileName: file.name })
+        )
       );
     }
   }
@@ -626,18 +655,18 @@ const saveListingPermanently = async (
     localStorage.getItem("userEmail")?.trim().toLowerCase() || "";
 
 if (!userEmail) {
-  notify("Bitte zuerst einloggen.", "warning");
+  notify(t("validation.loginFirst"), "warning");
   return null;
 }
 
 if (!location.trim() || !propertyType.trim()) {
-  notify("Bitte mindestens Ort und Objektart ausfüllen.", "warning");
+  notify(t("validation.locationAndType"), "warning");
   return null;
 }
 
   try {
     setSavingListing(true);
-    setSaveProgress("Objekt wird sicher gespeichert …");
+    setSaveProgress(t("save.savingSecurely"));
 
     const response = await fetch("/api/listings", {
       method: "POST",
@@ -663,7 +692,7 @@ if (!location.trim() || !propertyType.trim()) {
 
     if (!response.ok) {
       throw new Error(
-        data.error || "Das Objekt konnte nicht gespeichert werden."
+        localizedApiError(data.error, t("save.genericError"))
       );
     }
 
@@ -674,24 +703,28 @@ if (!location.trim() || !propertyType.trim()) {
 
 if (!listingId) {
   throw new Error(
-    "Das Objekt wurde gespeichert, aber es wurde keine Objekt-ID zurückgegeben."
+    t("save.missingId")
   );
 }
 
 if (uploadImages && selectedImages.length > 0) {
   try {
     setSaveProgress(
-      `${selectedImages.length} ${
-        selectedImages.length === 1 ? "Bild wird" : "Bilder werden"
-      } hochgeladen …`
+      selectedImages.length === 1
+        ? t("save.uploadingOne")
+        : t("save.uploadingMany", {
+            count: selectedImages.length,
+          })
     );
 
     await uploadListingImages(listingId);
 
     setSaveProgress(
-      `✓ Objekt und ${selectedImages.length} ${
-        selectedImages.length === 1 ? "Bild" : "Bilder"
-      } erfolgreich gespeichert – Weiterleitung läuft …`
+      selectedImages.length === 1
+        ? t("save.successWithOne")
+        : t("save.successWithMany", {
+            count: selectedImages.length,
+          })
     );
   } catch (imageError) {
     console.error(
@@ -702,17 +735,19 @@ if (uploadImages && selectedImages.length > 0) {
     const imageMessage =
       imageError instanceof Error
         ? imageError.message
-        : "Die Bilder konnten nicht gespeichert werden.";
+        : t("save.imageError");
 
     setSaveProgress(
-      `✕ Das Objekt wurde gespeichert, aber der Bild-Upload ist fehlgeschlagen: ${imageMessage}`
+      `✕ ${t("save.partialFailure", {
+        message: imageMessage,
+      })}`
     );
 
     return null;
   }
 } else {
   setSaveProgress(
-    "✓ Objekt erfolgreich gespeichert – Weiterleitung läuft …"
+    t("save.success")
   );
 }
 
@@ -721,7 +756,7 @@ return listingId;
     const message =
       error instanceof Error
         ? error.message
-        : "Das Objekt konnte nicht gespeichert werden.";
+        : t("save.genericError");
 
    setSaveProgress(`✕ ${message}`);
 return null;
@@ -744,7 +779,7 @@ const startSingleObjectCheckoutFromDemo =
 
     try {
       setSaveProgress(
-        "Sichere Zahlungsseite wird vorbereitet …"
+        t("save.preparingPayment")
       );
 
       const response = await fetch(
@@ -783,8 +818,10 @@ const startSingleObjectCheckoutFromDemo =
         if (selectedImages.length > 0) {
           setSaveProgress(
             selectedImages.length === 1
-              ? "Bild wird gespeichert …"
-              : `${selectedImages.length} Bilder werden gespeichert …`
+              ? t("save.savingOne")
+              : t("save.savingMany", {
+                  count: selectedImages.length,
+                })
           );
 
           await uploadListingImages(
@@ -808,16 +845,20 @@ const startSingleObjectCheckoutFromDemo =
           "string"
       ) {
         throw new Error(
-          data?.error ||
-            "Die Zahlungsseite konnte nicht geöffnet werden."
+          localizedApiError(
+            data?.error,
+            t("save.paymentOpenError")
+          )
         );
       }
 
       if (selectedImages.length > 0) {
         setSaveProgress(
           selectedImages.length === 1
-            ? "Bild wird vor der Zahlung sicher gespeichert …"
-            : `${selectedImages.length} Bilder werden vor der Zahlung sicher gespeichert …`
+            ? t("save.savingBeforePaymentOne")
+            : t("save.savingBeforePaymentMany", {
+                count: selectedImages.length,
+              })
         );
 
         await uploadListingImages(
@@ -826,7 +867,7 @@ const startSingleObjectCheckoutFromDemo =
       }
 
       setSaveProgress(
-        "Weiterleitung zur sicheren Zahlungsseite …"
+        t("save.redirectPayment")
       );
 
       window.location.href =
@@ -835,7 +876,7 @@ const startSingleObjectCheckoutFromDemo =
       const message =
         checkoutError instanceof Error
           ? checkoutError.message
-          : "Die Zahlungsseite konnte nicht geöffnet werden.";
+          : t("save.paymentOpenError");
 
       setSaveProgress(
         `✕ ${message}`
@@ -1015,14 +1056,19 @@ const formatSavedTime = (count: number) => {
   const minutes = totalMinutes % 60;
 
   if (hours > 0 && minutes > 0) {
-    return `${hours} Std. ${minutes} Min.`;
+    return t("time.hoursMinutes", {
+      hours,
+      minutes,
+    });
   }
 
   if (hours > 0) {
-    return `${hours} Std.`;
+    return t("time.hours", { hours });
   }
 
-  return `${totalMinutes} Min.`;
+  return t("time.minutes", {
+    minutes: totalMinutes,
+  });
 };
 
   async function generateText() {
@@ -1035,6 +1081,7 @@ try {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+  locale,
   location,
   rooms,
   livingArea,
@@ -1054,7 +1101,10 @@ try {
       if (!response.ok) {
         const requestError = Object.assign(
           new Error(
-            data?.error || "Fehler beim Generieren"
+            localizedApiError(
+              data?.error,
+              t("generate.error")
+            )
           ),
           {
             code:
@@ -1070,7 +1120,7 @@ try {
       const newVariants = Array.isArray(data?.variants) ? data.variants : [];
 
       if (!newVariants.length) {
-        throw new Error("Keine Varianten erhalten");
+        throw new Error(t("generate.noVariants"));
       }
 
       setVariants(newVariants);
@@ -1085,7 +1135,7 @@ localStorage.setItem(getTodayKey(), String(newDailyCount));
   const requestError = (
     error instanceof Error
       ? error
-      : new Error("Fehler beim Generieren.")
+      : new Error(t("generate.error"))
   ) as Error & {
     code?: string;
   };
@@ -1097,15 +1147,15 @@ localStorage.setItem(getTodayKey(), String(newDailyCount));
     const choice =
       await chooseAction({
         title:
-          "Deine kostenlose Demo ist abgeschlossen",
+          t("demo.limitTitle"),
         message:
-          "Sichere jetzt dieses Inserat inklusive bis zu 5 Bildern, Standard-Bildanalyse, Social-Media-Texten und PDF-Exposé für einmalig CHF 9.90.",
+          t("demo.limitMessage"),
         confirmLabel:
-          "Für CHF 9.90 freischalten",
+          t("demo.unlock"),
         secondaryLabel:
-          "Founder vergleichen",
+          t("demo.compareFounder"),
         cancelLabel:
-          "Später weiterarbeiten",
+          t("demo.later"),
         tone: "warning",
         emphasizeConfirmAfterMs: 2500,
       });
@@ -1137,11 +1187,11 @@ localStorage.setItem(getTodayKey(), String(newDailyCount));
   async function copyActive() {
   if (userPlan === "free") {
     const openOffers = await confirmAction({
-      title: "Vorschau erfolgreich erstellt",
+      title: t("demo.previewTitle"),
       message:
-        "Das Kopieren des vollständigen Inserattexts ist nach der Freischaltung verfügbar. Das Einzelobjekt kostet einmalig CHF 9.90.",
-      confirmLabel: "Angebote ansehen",
-      cancelLabel: "Später",
+        t("demo.copyMessage"),
+      confirmLabel: t("demo.viewOffers"),
+      cancelLabel: t("demo.laterShort"),
       tone: "warning",
     });
 
@@ -1153,14 +1203,14 @@ localStorage.setItem(getTodayKey(), String(newDailyCount));
   }
 
   if (!variants || variants.length === 0) {
-    notify("Bitte zuerst eine Variante generieren.", "warning");
+    notify(t("copy.generateFirst"), "warning");
     return;
   }
 
   const active = variants[activeIndex];
 
   if (!active) {
-    notify("Keine Variante gefunden.", "warning");
+    notify(t("copy.noVariant"), "warning");
     return;
   }
 
@@ -1168,20 +1218,20 @@ localStorage.setItem(getTodayKey(), String(newDailyCount));
 
   try {
     await navigator.clipboard.writeText(fullText);
-    notify("Inserattext wurde kopiert.", "success");
+    notify(t("copy.success"), "success");
   } catch (err) {
     console.error(err);
-    notify("Kopieren ist fehlgeschlagen.", "error");
+    notify(t("copy.error"), "error");
   }
 }
   async function exportPdf() {
     if (userPlan === "free") {
       const openOffers = await confirmAction({
-        title: "PDF nach Freischaltung",
+        title: t("demo.pdfTitle"),
         message:
-          "Der vollständige PDF-Export gehört zum freigeschalteten Einzelobjekt für einmalig CHF 9.90 sowie zu Founder und Pro.",
-        confirmLabel: "Angebote ansehen",
-        cancelLabel: "Später",
+          t("demo.pdfMessage"),
+        confirmLabel: t("demo.viewOffers"),
+        cancelLabel: t("demo.laterShort"),
         tone: "warning",
       });
 
@@ -1193,24 +1243,26 @@ localStorage.setItem(getTodayKey(), String(newDailyCount));
     }
 
     if (!current) {
-      notify("Bitte zuerst eine Variante generieren.", "warning");
+      notify(t("copy.generateFirst"), "warning");
       return;
     }
 
     const printWindow = window.open("", "_blank", "width=900,height=1200");
 
     if (!printWindow) {
-      notify("Der PDF-Export wurde vom Browser blockiert. Bitte Pop-ups erlauben.", "warning");
+      notify(t("pdf.popupBlocked"), "warning");
       return;
     }
 
     const title = current.title;
     const text = current.text.replace(/\n/g, "<br>");
+    const pdfMeta = t("pdf.meta");
+    const pdfHighlights = t("pdf.highlights");
     const bulletHtml =
       current.highlights && current.highlights.length > 0
         ? `
           <div style="margin-top:24px;">
-            <div style="font-weight:700;font-size:16px;margin-bottom:10px;">Highlights</div>
+            <div style="font-weight:700;font-size:16px;margin-bottom:10px;">${pdfHighlights}</div>
             <ul style="margin:0;padding-left:20px;line-height:1.8;">
               ${current.highlights.map((h) => `<li>${h}</li>`).join("")}
             </ul>
@@ -1252,7 +1304,7 @@ localStorage.setItem(getTodayKey(), String(newDailyCount));
         </head>
         <body>
           <div class="container">
-            <div class="meta">Inserat - AI – PDF Export</div>
+            <div class="meta">${pdfMeta}</div>
             <h1>${title}</h1>
             <div class="content">${text}</div>
             ${bulletHtml}
@@ -1281,7 +1333,9 @@ function handleImageUpload(event: ChangeEvent<HTMLInputElement>) {
 
   if (remainingSlots <= 0) {
     notify(
-      `Du kannst maximal ${imageLimit} Fotos pro Objekt hochladen.`,
+      t("images.maxPhotos", {
+        count: imageLimit,
+      }),
       "warning"
     );
     event.target.value = "";
@@ -1346,20 +1400,16 @@ return (
     <div className="shell">
 
     <div className="hero">
-        <h1>Inserat Generator für Immobilienmakler</h1>
-        <p>
-          Erstelle in Sekunden hochwertige Immobilieninserate für Homegate, ImmoScout24,
-          Exposés und Social Media. Professionell formuliert, strukturiert aufgebaut und
-          auf maximale Wirkung bei Käufern ausgelegt.
-        </p>
+        <h1>{t("hero.title")}</h1>
+        <p>{t("hero.description")}</p>
       </div>
 
         <div className="grid">
          <section className="leftCard">
   <div className="leftCardScroll">
-    <h2>Eingabe</h2>
+    <h2>{t("input.title")}</h2>
   <p className="sectionText">
-  Erfasse die wichtigsten Eckdaten der Immobilie. Inserat-AI erstellt daraus professionelle Titel, Beschreibungen und Varianten für dein Inserat.
+    {t("input.description")}
   </p>
 <div className="formGrid">
     <div
@@ -1390,7 +1440,7 @@ return (
           fontSize: "0.95rem",
         }}
       >
-        Objekt-Vorlagen
+        {t("templates.title")}
       </div>
       <div
         style={{
@@ -1399,7 +1449,7 @@ return (
           marginTop: "3px",
         }}
       >
-        Speichere häufige Objektangaben und lade sie später mit einem Klick.
+        {t("templates.description")}
       </div>
     </div>
   </div>
@@ -1414,7 +1464,9 @@ return (
   >
     <input
       value={templateName}
-      placeholder={`${propertyType || "Objekt"} ${location || "ohne Ort"}`}
+      placeholder={`${propertyType || t("templates.defaultObject")} ${
+        location || t("templates.withoutLocation")
+      }`}
       className="input bg-transparent text-white placeholder-gray-400/60"
       onChange={(e) => setTemplateName(e.target.value)}
     />
@@ -1462,7 +1514,7 @@ return (
         whiteSpace: "nowrap",
       }}
     >
-      Vorlage speichern
+      {t("templates.save")}
     </button>
   </div>
 
@@ -1506,9 +1558,9 @@ return (
                 marginTop: "2px",
               }}
             >
-              {template.propertyType || "Objekt"} ·{" "}
+              {template.propertyType || t("templates.defaultObject")} ·{" "}
 {template.postalCode ? `${template.postalCode} ` : ""}
-{template.location || "ohne Ort"}
+{template.location || t("templates.withoutLocation")}
             </div>
           </div>
 
@@ -1532,7 +1584,7 @@ return (
                 cursor: "pointer",
               }}
             >
-              Laden
+              {t("templates.load")}
             </button>
 
             <button
@@ -1548,7 +1600,7 @@ return (
                 cursor: "pointer",
               }}
             >
-              Löschen
+              {t("templates.delete")}
             </button>
           </div>
         </div>
@@ -1585,7 +1637,7 @@ return (
             fontSize: "0.95rem",
           }}
         >
-          Was möchten Sie noch ergänzen?
+          {t("additional.title")}
         </div>
         <div
           style={{
@@ -1594,7 +1646,7 @@ return (
             marginTop: "3px",
           }}
         >
-          Klicken Sie passende Punkte an. Sie werden automatisch zu den Highlights hinzugefügt.
+          {t("additional.description")}
         </div>
       </div>
 
@@ -1611,7 +1663,7 @@ return (
           cursor: "pointer",
         }}
       >
-        Schliessen
+        {t("additional.close")}
       </button>
       
     </div>
@@ -1627,10 +1679,10 @@ return (
 >
   <div>
     <div style={{ color: "#f8fafc", fontWeight: 900, marginBottom: "8px" }}>
-      Objektart
+      {t("fields.propertyType")}
     </div>
     <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-      {QUICK_PROPERTY_TYPES.map((item) => (
+      {quickPropertyTypes.map((item) => (
         <button
           key={item}
           type="button"
@@ -1645,7 +1697,7 @@ return (
 
   <div>
     <div style={{ color: "#f8fafc", fontWeight: 900, marginBottom: "8px" }}>
-      Zimmer
+      {t("fields.rooms")}
     </div>
     <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
       {QUICK_ROOMS.map((item) => (
@@ -1663,7 +1715,7 @@ return (
 
   <div>
     <div style={{ color: "#f8fafc", fontWeight: 900, marginBottom: "8px" }}>
-      Wohnfläche
+      {t("fields.livingAreaShort")}
     </div>
     <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
       {QUICK_LIVING_AREAS.map((item) => (
@@ -1681,10 +1733,10 @@ return (
 
   <div>
     <div style={{ color: "#f8fafc", fontWeight: 900, marginBottom: "8px" }}>
-      Stil
+      {t("fields.style")}
     </div>
     <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-      {QUICK_STYLES.map((item) => (
+      {quickStyles.map((item) => (
         <button
           key={item}
           type="button"
@@ -1704,7 +1756,7 @@ return (
         gap: "8px",
       }}
     >
-      {EXTRA_HIGHLIGHT_SUGGESTIONS.map((suggestion) => (
+      {extraHighlightSuggestions.map((suggestion) => (
         <button
           key={suggestion}
           type="button"
@@ -1727,7 +1779,7 @@ return (
   </div>
 )}
 </div>
-  <Field label="Ort / Lage">
+  <Field label={t("fields.location")}>
   <div style={{ position: "relative" }}>
     <input
   value={location}
@@ -1820,17 +1872,17 @@ return (
   </div>
 </Field>
 
-    <Field label="Objektart">
+    <Field label={t("fields.propertyType")}>
       <input
         value={propertyType}
-        placeholder="Wohnung"
+        placeholder={t("placeholders.propertyType")}
         onChange={(e) => setPropertyType(e.target.value)}
         className="input"
         
       />
     </Field>
 
- <Field label="Zimmer">
+ <Field label={t("fields.rooms")}>
   <div style={{ display: "grid", gap: "10px" }}>
     <input
       value={rooms}
@@ -1855,7 +1907,7 @@ return (
   </div>
 </Field>
 
-<Field label="Wohnfläche (m²)">
+<Field label={t("fields.livingArea")}>
   <div style={{ display: "grid", gap: "10px" }}>
     <input
       value={livingArea}
@@ -1882,29 +1934,29 @@ return (
 
   
 
-<Field label="Preis">
+<Field label={t("fields.price")}>
   <input
     value={price}
-    placeholder="z.B. 1'450'000"
+    placeholder={t("placeholders.price")}
     onChange={(e) => setPrice(e.target.value)}
     className="input"
   />
 </Field>
 
-<Field label="Stil">
+<Field label={t("fields.style")}>
   <input
     value={styleText}
-    placeholder="z.B. hochwertig, modern oder sachlich"
+    placeholder={t("placeholders.style")}
     onChange={(e) => setStyleText(e.target.value)}
     className="input"
   />
 </Field>
 
-    <Field label="Highlights (mit Komma trennen)">
+    <Field label={t("fields.highlights")}>
       <input
       ref={highlightsInputRef}
         value={highlights}
-        placeholder="Balkon, Lift, Garage, ruhige Lage"
+        placeholder={t("placeholders.highlights")}
         onChange={(e) => setHighlights(e.target.value)}
         className="input"
       />
@@ -1921,19 +1973,17 @@ return (
       letterSpacing: "0.01em",
     }}
   >
-    Immobilienfoto
+    {t("fields.image")}
   </div>
 
 {!canUseDashboardImages && (
   <div className="mb-4 rounded-2xl border border-amber-300/30 bg-amber-400/10 p-4 text-sm leading-6 text-amber-100">
     <div className="font-black text-amber-300">
-      📷 Bilder für das CHF-9.90-Objekt vorbereiten
+      📷 {t("images.singleObjectTitle")}
     </div>
 
     <div className="mt-1 text-slate-200">
-      Du kannst bereits bis zu 5 Bilder auswählen. Sie werden
-      sicher gespeichert, bevor Stripe geöffnet wird. Die
-      Bildanalyse wird nach der Zahlung freigeschaltet.
+      {t("images.singleObjectDescription")}
     </div>
   </div>
 )}
@@ -1949,8 +1999,10 @@ return (
 
   <span>
     {selectedImages.length > 0
-      ? `${selectedImages.length} Fotos ausgewählt`
-      : "📷 Fotos auswählen"}
+      ? t("images.selected", {
+          count: selectedImages.length,
+        })
+      : `📷 ${t("images.select")}`}
   </span>
 </label>
 
@@ -1970,7 +2022,7 @@ return (
               type="button"
               onClick={() => removeImage(index)}
               disabled={analyzingImage}
-              aria-label={`Bild ${index + 1} entfernen`}
+              aria-label={t("images.remove", { index: index + 1 })}
               className="absolute right-2 top-2 z-10 rounded-full bg-slate-950/80 px-2 py-1 text-xs font-black text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               ✕
@@ -1978,30 +2030,32 @@ return (
 
             <img
               src={preview}
-              alt={`Objektfoto ${index + 1}`}
+              alt={t("images.defaultName", { index: index + 1 })}
               className="h-44 w-full object-cover"
             />
           </div>
 
           <div className="border-t border-white/10 p-3">
             <div className="text-xs font-black uppercase tracking-wide text-amber-300">
-              Bild {index + 1}
+              {t("images.imageLabel", { index: index + 1 })}
             </div>
 
             <div className="mt-1 break-words text-xs text-slate-300">
               {selectedImages[index]?.name ||
-                `Objektfoto ${index + 1}`}
+                t("images.defaultName", {
+                  index: index + 1,
+                })}
             </div>
 
             {analysisItem.status === "idle" && (
               <div className="mt-3 rounded-xl border border-white/10 bg-slate-950/20 p-3 text-sm text-slate-400">
-                Dieses Foto wurde noch nicht analysiert.
+                {t("images.notAnalyzed")}
               </div>
             )}
 
             {analysisItem.status === "analyzing" && (
               <div className="mt-3 rounded-xl border border-amber-300/30 bg-amber-400/10 p-3 text-sm font-bold text-amber-200">
-                🔍 Dieses Foto wird ausführlich analysiert …
+                🔍 {t("images.analyzing")}
               </div>
             )}
 
@@ -2091,7 +2145,7 @@ return (
         border: "none",
       }}
     >
-      {loading ? "Generiere..." : "✨ Generieren (3 Varianten)"}
+      {loading ? t("generate.loading") : `✨ ${t("generate.button")}`}
     </button>
 
  <button
@@ -2105,13 +2159,13 @@ return (
   className="saveCockpitButton"
 >
   <span className="saveCockpitButtonLabel">
-    Objekt speichern
+    {t("actions.objectLabel")}
   </span>
 
   <span className="saveCockpitButtonText">
     {savingListing
-      ? "Objekt wird gespeichert..."
-      : "Speichern & Cockpit öffnen"}
+      ? t("actions.objectSaving")
+      : t("actions.saveOpen")}
   </span>
 </button>
   </div>
@@ -2122,7 +2176,7 @@ return (
       disabled={!current}
       className="btn btn-secondary"
     >
-      Copy
+      {t("copy.button")}
     </button>
 
     <button
@@ -2130,7 +2184,7 @@ return (
       onClick={clearForm}
       className="btn btn-secondary"
     >
-      Neues Objekt
+      {t("actions.newObject")}
     </button>
 
     <button
@@ -2138,7 +2192,7 @@ return (
       disabled={!current}
       className="btn btn-secondary"
     >
-      PDF
+      {t("actions.pdf")}
     </button>
 
     <PortalExportButton
@@ -2160,9 +2214,18 @@ return (
 </div>
 
   <div className="miniStats">
-    <MiniStat title="Markt" value="Schweiz" />
-    <MiniStat title="Output" value=" Varianten" />
-    <MiniStat title="Stil" value="Hochwertig" />
+    <MiniStat
+      title={t("stats.market")}
+      value={t("stats.switzerland")}
+    />
+    <MiniStat
+      title={t("stats.output")}
+      value={t("stats.variants")}
+    />
+    <MiniStat
+      title={t("stats.style")}
+      value={t("stats.quality")}
+    />
   </div>
 </section>
 
@@ -2172,27 +2235,29 @@ return (
   <div className="topStats">
     <div className="topStat">
   <div className="topStatValue">{dailyCount}</div>
-  <div className="topStatLabel">Inserate heute</div>
+  <div className="topStatLabel">{t("stats.listingsToday")}</div>
 </div>
 
     <div className="topStat">
   <div className="topStatValue">{formatSavedTime(dailyCount)}</div>
-  <div className="topStatLabel">Geschätzte Zeitersparnis heute</div>
+  <div className="topStatLabel">{t("stats.timeSaved")}</div>
 </div>
 
     <div className="topStat">
-      <div className="topStatValue">1 Demo</div>
-      <div className="topStatLabel">kostenlose Generierung</div>
+      <div className="topStatValue">{t("stats.demoValue")}</div>
+      <div className="topStatLabel">{t("stats.freeGeneration")}</div>
     </div>
   </div>
   <div className="outputShell">
     <div className="outputTop">
       <div>
-        <div className="outputBadge">Output</div>
+        <div className="outputBadge">{t("output.badge")}</div>
         <div className="outputState">
          {(variants?.length ?? 0) > 0
-  ? `Variante ${activeIndex + 1} aktiv`
-  : "Noch nichts generiert"}
+  ? t("output.activeVariant", {
+      index: activeIndex + 1,
+    })
+  : t("output.nothing")}
         </div>
       </div>
 
@@ -2203,7 +2268,7 @@ return (
       onClick={() => setActiveIndex(i)}
       className={`variantButton ${activeIndex === i ? "active" : ""}`}
     >
-      Variante {i + 1}
+      {t("output.variant", { index: i + 1 })}
     </button>
   ))}
 </div>
@@ -2212,9 +2277,9 @@ return (
     <div className="outputCard">
       {variants.length === 0 ? (
         <div className="emptyState">
-          <div className="emptyTitle">Noch keine Variante vorhanden</div>
+          <div className="emptyTitle">{t("output.emptyTitle")}</div>
           <div className="emptyText">
-           Gib links die Objektdaten ein und klicke auf „Generieren (3 Varianten)“.
+            {t("output.emptyText")}
           </div>
         </div>
       ) : (

@@ -1,73 +1,105 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
-const plans = [
-  {
-    name: "Demo",
-    label: "Kostenlos kennenlernen",
-    price: "0 CHF",
-    cadence: "ohne Abonnement",
-    text: "Teste Inserat-AI mit einer kostenlosen Textgenerierung und drei Varianten. Bilder, Bildanalyse und vollständige Exporte sind nicht Bestandteil der Demo.",
-    button: "Kostenlos registrieren",
-    href: "/register",
-    external: false,
-    highlighted: false,
-    features: [
-      "Kostenlose Registrierung",
-      "1 kostenlose Textgenerierung mit 3 Varianten",
-      "Keine Bilder und keine Bildanalyse",
-      "Keine automatische Abbuchung",
-    ],
-  },
-  {
-    name: "Founder",
-    label: "Für die ersten 50 Makler",
-    price: "19.90 CHF",
-    cadence: "pro Monat",
-    text: "Der vollständige Basis-Arbeitsbereich für Makler, die mehrere Immobilien professionell vermarkten.",
-    button: "Founder abonnieren",
-    href: "#",
-    external: false,
-    highlighted: true,
-    features: [
-      "Mehrere Immobilien im Makler-Cockpit",
-      "3 professionelle Inserat-Varianten pro Objekt",
-      "Bis zu 10 Objektbilder pro Immobilie",
-      "Standard-Bildanalyse und Bildverwaltung",
-      "Social-Media-Texte",
-      "Professionelles Exposé mit PDF-Export",
-      "Objekte, Texte und Bilder dauerhaft speichern",
-    ],
-  },
-  {
-    name: "Pro",
-    label: "Premium-Vermarktung",
-    price: "79.90 CHF",
-    cadence: "pro Monat",
-    text: "Für Makler, die zusätzlich AI-Bildfunktionen, Video-Touren und Premium-Automatisierungen einsetzen.",
-    button: "Pro in Vorbereitung",
-    href: "#preise",
-    external: false,
-    highlighted: false,
-    features: [
-      "Alles aus Founder",
-      "Bis zu 10 Objektbilder pro Immobilie",
-      "Virtuelles Home Staging",
-      "3D-Video-Tour mit AI-Stimmen",
-      "Erweiterte Bildanalyse",
-      "3 Inserate gleichzeitig = 9 Varianten",
-      "Publishing-Center und Secret Marketing – in Entwicklung",
-    ],
-  },
-] as const;
+type CheckoutError =
+  | "existing"
+  | "generic"
+  | null;
+
+type Plan = {
+  id: "demo" | "founder" | "pro";
+  name: string;
+  label: string;
+  price: string;
+  cadence: string;
+  text: string;
+  button: string;
+  href: string;
+  highlighted: boolean;
+  features: string[];
+};
 
 export default function PricingSection() {
+  const t = useTranslations("Pricing");
+
   const [checkoutLoading, setCheckoutLoading] =
     useState(false);
 
   const [checkoutError, setCheckoutError] =
-    useState("");
+    useState<CheckoutError>(null);
+
+  const plans: Plan[] = [
+    {
+      id: "demo",
+      name: "Demo",
+      label: t("plans.demo.label"),
+      price: "0 CHF",
+      cadence: t("plans.demo.cadence"),
+      text: t("plans.demo.description"),
+      button: t("plans.demo.button"),
+      href: "/register",
+      highlighted: false,
+      features: [
+        t("plans.demo.features.registration"),
+        t("plans.demo.features.generation"),
+        t("plans.demo.features.noImages"),
+        t("plans.demo.features.noBilling"),
+      ],
+    },
+    {
+      id: "founder",
+      name: "Founder",
+      label: t("plans.founder.label"),
+      price: "19.90 CHF",
+      cadence: t("plans.founder.cadence"),
+      text: t("plans.founder.description"),
+      button: t("plans.founder.button"),
+      href: "#",
+      highlighted: true,
+      features: [
+        t("plans.founder.features.trial"),
+        t("plans.founder.features.projects"),
+        t("plans.founder.features.variants"),
+        t("plans.founder.features.images"),
+        t("plans.founder.features.analysis"),
+        t("plans.founder.features.social"),
+        t("plans.founder.features.expose"),
+        t("plans.founder.features.storage"),
+      ],
+    },
+    {
+      id: "pro",
+      name: "Pro",
+      label: t("plans.pro.label"),
+      price: "79.90 CHF",
+      cadence: t("plans.pro.cadence"),
+      text: t("plans.pro.description"),
+      button: t("plans.pro.button"),
+      href: "#preise",
+      highlighted: false,
+      features: [
+        t("plans.pro.features.founder"),
+        t("plans.pro.features.images"),
+        t("plans.pro.features.staging"),
+        t("plans.pro.features.tour"),
+        t("plans.pro.features.analysis"),
+        t("plans.pro.features.parallel"),
+        t("plans.pro.features.development"),
+      ],
+    },
+  ];
+
+  const singleObjectFeatures = [
+    t("singleObject.features.property"),
+    t("singleObject.features.variants"),
+    t("singleObject.features.images"),
+    t("singleObject.features.social"),
+    t("singleObject.features.expose"),
+    t("singleObject.features.storage"),
+    t("singleObject.features.noMonthlyCosts"),
+  ];
 
   async function startFounderCheckout() {
     if (checkoutLoading) {
@@ -76,7 +108,7 @@ export default function PricingSection() {
 
     try {
       setCheckoutLoading(true);
-      setCheckoutError("");
+      setCheckoutError(null);
 
       const response = await fetch(
         "/api/payments/subscription/checkout",
@@ -112,6 +144,7 @@ export default function PricingSection() {
         window.location.assign(
           "/register?plan=founder"
         );
+
         return;
       }
 
@@ -120,19 +153,25 @@ export default function PricingSection() {
         !data?.success ||
         !data.url
       ) {
-        const checkoutMessage =
-          data?.error ||
-          "Der Founder-Checkout konnte nicht gestartet werden.";
+        const message =
+          typeof data?.error === "string"
+            ? data.error.toLocaleLowerCase(
+                "de-CH"
+              )
+            : "";
 
         const founderAlreadyExists =
-          checkoutMessage.includes(
-            "bereits ein Founder-Abonnement"
+          message.includes("founder") &&
+          (
+            message.includes("bereits") ||
+            message.includes("vorhanden") ||
+            message.includes("already")
           );
 
         setCheckoutError(
           founderAlreadyExists
-            ? "Founder-Abonnement bereits vorhanden. Für dieses Konto besteht bereits ein aktives oder begonnenes Founder-Abonnement. Du kannst es unter Mein Konto verwalten."
-            : checkoutMessage
+            ? "existing"
+            : "generic"
         );
 
         return;
@@ -145,77 +184,68 @@ export default function PricingSection() {
         error
       );
 
-      setCheckoutError(
-        error instanceof Error
-          ? error.message
-          : "Der Founder-Checkout konnte nicht gestartet werden."
-      );
+      setCheckoutError("generic");
     } finally {
       setCheckoutLoading(false);
     }
   }
 
   const isFounderExistingNotice =
-    checkoutError.startsWith(
-      "Founder-Abonnement bereits vorhanden."
-    );
+    checkoutError === "existing";
+
+  const checkoutErrorMessage =
+    checkoutError === "existing"
+      ? t("errors.founderExisting")
+      : checkoutError === "generic"
+        ? t("errors.checkoutStart")
+        : "";
 
   return (
-    <section id="preise" className="pricingSection">
+    <section
+      id="preise"
+      className="pricingSection"
+    >
       <div className="pricingShell">
         <header className="pricingHeader">
           <span className="pricingEyebrow">
-            TRANSPARENTE PREISE
+            {t("header.eyebrow")}
           </span>
 
-          <h2>Das passende Angebot für deinen Bedarf</h2>
+          <h2>{t("header.title")}</h2>
 
-          <p>
-            Wähle zwischen einer einzelnen Immobilie ohne
-            Abonnement, dem Founder-Basiszugang für Makler oder
-            dem Pro-Angebot mit Premiumfunktionen.
-          </p>
+          <p>{t("header.description")}</p>
         </header>
 
         <article className="singleObjectCard">
           <div className="singleObjectMain">
             <div className="singleObjectBadge">
-              OHNE ABONNEMENT
+              {t("singleObject.badge")}
             </div>
 
-            <h3>Einzelimmobilie</h3>
+            <h3>{t("singleObject.name")}</h3>
 
             <p className="singleObjectDescription">
-              Ein hochwertiger Arbeitsbereich für genau eine
-              Immobilie. Einmal CHF 9.90 bezahlen und nur dieses
-              konkrete Objekt mit bis zu 5 Objektbildern
-              freischalten – ohne Abonnement.
+              {t("singleObject.description")}
             </p>
 
             <div className="singleObjectFeatures">
-              {[
-                "1 konkrete Immobilie freischalten",
-                "3 professionelle Inserat-Varianten",
-                "Bis zu 5 Objektbilder mit Standard-Bildanalyse",
-                "Social-Media-Texte",
-                "Professionelles Exposé mit PDF-Export",
-                "Objekt, Texte und Bilder dauerhaft speichern",
-                "Keine monatlichen Kosten",
-              ].map((feature) => (
-                <div
-                  className="singleObjectFeature"
-                  key={feature}
-                >
-                  <span>✓</span>
-                  <span>{feature}</span>
-                </div>
-              ))}
+              {singleObjectFeatures.map(
+                (feature) => (
+                  <div
+                    className="singleObjectFeature"
+                    key={feature}
+                  >
+                    <span>{"\u2713"}</span>
+                    <span>{feature}</span>
+                  </div>
+                )
+              )}
             </div>
           </div>
 
           <div className="singleObjectPriceBox">
             <span className="singleObjectPriceLabel">
-              EINMALIG
+              {t("singleObject.priceLabel")}
             </span>
 
             <div className="singleObjectPrice">
@@ -223,24 +253,27 @@ export default function PricingSection() {
               <strong>9.90</strong>
             </div>
 
-            <p>pro Immobilie</p>
+            <p>
+              {t("singleObject.perProperty")}
+            </p>
 
             <a
               href="/register?plan=single-object"
               className="singleObjectButton"
             >
-              Einzelimmobilie starten
-              <span aria-hidden="true">→</span>
+              {t("singleObject.button")}
+              <span aria-hidden="true">
+                {"\u2192"}
+              </span>
             </a>
 
             <small>
-              Kein Makler-Abonnement und kein Zugriff auf
-              Pro-Funktionen.
+              {t("singleObject.note")}
             </small>
           </div>
         </article>
 
-        {checkoutError && (
+        {checkoutErrorMessage ? (
           <div
             role={
               isFounderExistingNotice
@@ -282,18 +315,18 @@ export default function PricingSection() {
               }}
             >
               {isFounderExistingNotice
-                ? "✓"
+                ? "\u2713"
                 : "!"}
             </span>
 
-            <span>{checkoutError}</span>
+            <span>{checkoutErrorMessage}</span>
           </div>
-        )}
+        ) : null}
 
         <div className="plansGrid">
           {plans.map((plan) => (
             <article
-              key={plan.name}
+              key={plan.id}
               className={
                 plan.highlighted
                   ? "planCard planCardHighlighted"
@@ -323,13 +356,13 @@ export default function PricingSection() {
               <ul className="planFeatures">
                 {plan.features.map((feature) => (
                   <li key={feature}>
-                    <span>✓</span>
+                    <span>{"\u2713"}</span>
                     <span>{feature}</span>
                   </li>
                 ))}
               </ul>
 
-              {plan.name === "Founder" ? (
+              {plan.id === "founder" ? (
                 <button
                   type="button"
                   onClick={startFounderCheckout}
@@ -345,11 +378,14 @@ export default function PricingSection() {
                   }}
                 >
                   {checkoutLoading
-                    ? "Founder-Checkout wird geöffnet …"
+                    ? t("plans.founder.loading")
                     : plan.button}
-                  <span aria-hidden="true">→</span>
+
+                  <span aria-hidden="true">
+                    {"\u2192"}
+                  </span>
                 </button>
-              ) : plan.name === "Pro" ? (
+              ) : plan.id === "pro" ? (
                 <button
                   type="button"
                   disabled
@@ -362,7 +398,10 @@ export default function PricingSection() {
                   }}
                 >
                   {plan.button}
-                  <span aria-hidden="true">🔒</span>
+
+                  <span aria-hidden="true">
+                    {"\u{1F512}"}
+                  </span>
                 </button>
               ) : (
                 <a
@@ -370,7 +409,10 @@ export default function PricingSection() {
                   className="planButton"
                 >
                   {plan.button}
-                  <span aria-hidden="true">→</span>
+
+                  <span aria-hidden="true">
+                    {"\u2192"}
+                  </span>
                 </a>
               )}
             </article>
@@ -380,25 +422,23 @@ export default function PricingSection() {
         <div className="agencyTeaser">
           <div>
             <span className="agencyLabel">
-              FÜR TEAMS UND IMMOBILIENBÜROS
+              {t("agency.label")}
             </span>
 
             <strong>Agency</strong>
 
-            <p>
-              Mehrere Benutzer, gemeinsame Objekte,
-              Berechtigungen und Firmenbranding.
-            </p>
+            <p>{t("agency.description")}</p>
           </div>
 
           <div className="agencyStatus">
-            <span>149.90 CHF / Monat</span>
-            <strong>Demnächst verfügbar</strong>
+            <span>149.90 CHF / {t("agency.month")}</span>
+            <strong>{t("agency.status")}</strong>
           </div>
         </div>
       </div>
 
       <style jsx>{`
+
         .pricingSection {
           width: 100%;
           padding: 78px 20px;
@@ -843,6 +883,7 @@ export default function PricingSection() {
             text-align: left;
           }
         }
+
       `}</style>
     </section>
   );

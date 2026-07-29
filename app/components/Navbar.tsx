@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import PrivacyModeButton from "../../components/PrivacyModeButton";
+import LanguageSwitcher from "@/app/components/LanguageSwitcher";
 
 type SessionResponse = {
   success?: boolean;
@@ -28,69 +30,6 @@ type MenuItem = {
   comingSoon?: boolean;
   proOnly?: boolean;
 };
-
-const menuItems: MenuItem[] = [
-  {
-    label: "Dashboard",
-    description: "Inserate und Bilder erstellen",
-    icon: "✨",
-    href: "/dashboard",
-    accent: "orange",
-  },
- {
-  label: "Meine Projekte",
-  description: "Immobilien öffnen, bearbeiten und verwalten",
-  icon: "🏠",
-  href: "/cockpit",
-  accent: "blue",
-},
-{
-  label: "Mein Konto",
-  description: "Kontaktdaten für Exposés verwalten",
-  icon: "👤",
-  href: "/konto",
-  accent: "gold",
-},
-{
-  label: "Social Media",
-    description: "Beiträge pro Objekt vorbereiten",
-    icon: "📱",
-    href: "/dashboard/social-media",
-    accent: "violet",
-  },
-  {
-    label: "3D-Video-Tour",
-    description: "Virtuelle Besichtigungen erstellen",
-    icon: "🎬",
-    href: "/dashboard/tour-guide",
-    accent: "cyan",
-    proOnly: true,
-  },
-  {
-    label: "Publishing-Center",
-    description: "Veröffentlichungen zentral planen",
-    icon: "🚀",
-    accent: "green",
-    proOnly: true,
-    comingSoon: true,
-  },
-  {
-    label: "Standort-Assistent",
-    description: "Schweizer Standortdaten ergänzen",
-    icon: "📍",
-    accent: "turquoise",
-    proOnly: true,
-    comingSoon: true,
-  },
-  {
-    label: "Secret Marketing",
-    description: "Diskrete Immobilienvermarktung",
-    icon: "🔒",
-    accent: "gold",
-    proOnly: true,
-    comingSoon: true,
-  },
-];
 
 function getModuleClass(pathname: string | null): string {
   if (pathname?.startsWith("/dashboard/tour-guide")) {
@@ -140,6 +79,70 @@ function isMenuItemActive(
 
 export default function Navbar() {
   const pathname = usePathname();
+  const t = useTranslations("Navbar");
+
+  const menuItems: MenuItem[] = [
+    {
+      label: t("items.dashboard.label"),
+      description: t("items.dashboard.description"),
+      icon: "\u2728",
+      href: "/dashboard",
+      accent: "orange",
+    },
+    {
+      label: t("items.projects.label"),
+      description: t("items.projects.description"),
+      icon: "\u{1F3E0}",
+      href: "/cockpit",
+      accent: "blue",
+    },
+    {
+      label: t("items.account.label"),
+      description: t("items.account.description"),
+      icon: "\u{1F464}",
+      href: "/konto",
+      accent: "gold",
+    },
+    {
+      label: t("items.social.label"),
+      description: t("items.social.description"),
+      icon: "\u{1F4F1}",
+      href: "/dashboard/social-media",
+      accent: "violet",
+    },
+    {
+      label: t("items.tour.label"),
+      description: t("items.tour.description"),
+      icon: "\u{1F3AC}",
+      href: "/dashboard/tour-guide",
+      accent: "cyan",
+      proOnly: true,
+    },
+    {
+      label: t("items.publishing.label"),
+      description: t("items.publishing.description"),
+      icon: "\u{1F680}",
+      accent: "green",
+      proOnly: true,
+      comingSoon: true,
+    },
+    {
+      label: t("items.location.label"),
+      description: t("items.location.description"),
+      icon: "\u{1F4CD}",
+      accent: "turquoise",
+      proOnly: true,
+      comingSoon: true,
+    },
+    {
+      label: t("items.secretMarketing.label"),
+      description: t("items.secretMarketing.description"),
+      icon: "\u{1F512}",
+      accent: "gold",
+      proOnly: true,
+      comingSoon: true,
+    },
+  ];
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -172,7 +175,7 @@ export default function Navbar() {
   const displayUserName =
     userName.trim() ||
     userEmail.trim() ||
-    "Mein Konto";
+    t("account.fallback");
 
   useEffect(() => {
     setMenuOpen(false);
@@ -302,7 +305,7 @@ export default function Navbar() {
 
       if (!response.ok || !data.success) {
         throw new Error(
-          data.error || "Logout fehlgeschlagen."
+          data.error || t("logoutError")
         );
       }
 
@@ -320,7 +323,7 @@ export default function Navbar() {
       window.alert(
         error instanceof Error
           ? error.message
-          : "Logout fehlgeschlagen."
+          : t("logoutError")
       );
 
       setLoggingOut(false);
@@ -373,13 +376,15 @@ export default function Navbar() {
   <PrivacyModeButton />
 </span>
 
+<LanguageSwitcher />
+
   {isLoggedInArea ? (
               
               <>
                 <Link
                   href="/konto"
                   title={displayUserName}
-                  aria-label={`Mein Konto: ${displayUserName}`}
+                  aria-label={t("account.ariaLabel", {name: displayUserName})}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -450,10 +455,10 @@ export default function Navbar() {
                     className="appMenuButtonIcon"
                     aria-hidden="true"
                   >
-                    ☰
+                    {"\u2630"}
                   </span>
 
-                  <span>Menü</span>
+                  <span>{t("menuButton")}</span>
                 </button>
               </>
             ) : sessionStatus === "loading" ? (
@@ -485,14 +490,14 @@ export default function Navbar() {
                   className="siteCtaButton publicMobileCta"
                 >
                   <span className="siteCtaDesktopText">
-                    Zum Dashboard
+                    {t("dashboardCta")}
                   </span>
 
                   <span className="siteCtaMobileText">
-                    Dashboard
+                    {t("dashboardShort")}
                   </span>
 
-                  <span aria-hidden="true">→</span>
+                  <span aria-hidden="true">{"\u2192"}</span>
                 </Link>
               </>
             ) : (
@@ -501,7 +506,7 @@ export default function Navbar() {
                   href="/login"
                   className="siteLoginLink publicMobileLogin"
                 >
-                  Login
+                  {t("login")}
                 </Link>
 
                 <Link
@@ -509,14 +514,14 @@ export default function Navbar() {
                   className="siteCtaButton publicMobileCta"
                 >
                   <span className="siteCtaDesktopText">
-                    Kostenlos registrieren
+                    {t("register")}
                   </span>
 
                   <span className="siteCtaMobileText">
-                    Kostenlos registrieren
+                    {t("register")}
                   </span>
 
-                  <span aria-hidden="true">→</span>
+                  <span aria-hidden="true">{"\u2192"}</span>
                 </Link>
               </>
             )}
@@ -530,13 +535,13 @@ export default function Navbar() {
             type="button"
             className="appMenuOverlay"
             onClick={() => setMenuOpen(false)}
-            aria-label="Menü schliessen"
+            aria-label={t("closeMenu")}
           />
 
           <aside
             id="inserat-ai-app-menu"
             className="appMenuDrawer"
-            aria-label="Inserat-AI Menü"
+            aria-label={t("drawerLabel")}
           >
             <div className="appMenuHeader">
               <div>
@@ -544,21 +549,21 @@ export default function Navbar() {
                   INSERAT-AI
                 </span>
 
-                <h2>Arbeitsbereiche</h2>
+                <h2>{t("workspaces")}</h2>
               </div>
 
               <button
                 type="button"
                 className="appMenuCloseButton"
                 onClick={() => setMenuOpen(false)}
-                aria-label="Menü schliessen"
+                aria-label={t("closeMenu")}
               >
-                ×
+                {"\u00D7"}
               </button>
             </div>
 
             <div className="appMenuPlanCard">
-              <span>Aktueller Plan</span>
+              <span>{t("currentPlan")}</span>
               <strong>{planLabel}</strong>
 
               {userPlan !== "pro" &&
@@ -569,16 +574,14 @@ export default function Navbar() {
                       setMenuOpen(false)
                     }
                   >
-                    Auf Pro wechseln →
+                    {t("upgradeToPro")}
                   </Link>
                 )}
             </div>
 <div className="appMenuPrivacyCard">
   <div className="appMenuPrivacyText">
-    <strong>Privatsphäre-Modus</strong>
-    <small>
-      Objektbilder bei Kundenterminen vorübergehend schützen
-    </small>
+    <strong>{t("privacyTitle")}</strong>
+    <small>{t("privacyDescription")}</small>
   </div>
 
   <PrivacyModeButton />
@@ -614,7 +617,7 @@ export default function Navbar() {
                       onClick={() =>
                         setMenuOpen(false)
                       }
-                      aria-label={`${item.label} – nur im Pro-Angebot`}
+                      aria-label={t("proOnlyAria", {label: item.label})}
                       style={{
                         border:
                           "1px solid rgba(167, 139, 250, 0.42)",
@@ -630,13 +633,14 @@ export default function Navbar() {
                         <strong>
                           {item.label}{" "}
                           <span aria-hidden="true">
-                            🔒
+                            {"\u{1F512}"}
                           </span>
                         </strong>
 
                         <small>
                           {item.description}
-                          {" · "}Nur im Pro-Angebot
+                          {" \u00B7 "}
+                          {t("proOnly")}
                         </small>
                       </span>
 
@@ -666,7 +670,7 @@ export default function Navbar() {
                         <small>
                           {item.description}
                           {item.proOnly
-                            ? " · In Entwicklung"
+                            ? ` \u00B7 ${t("inDevelopment")}`
                             : ""}
                         </small>
                       </span>
@@ -674,7 +678,7 @@ export default function Navbar() {
                       <span className="appMenuSoon">
                         {item.proOnly
                           ? "PRO"
-                          : "Bald"}
+                          : t("soon")}
                       </span>
                     </div>
                   );
@@ -705,7 +709,7 @@ export default function Navbar() {
                     </span>
 
                     <span className="appMenuArrow">
-                      →
+                      {"\u2192"}
                     </span>
                   </Link>
                 );
@@ -720,8 +724,8 @@ export default function Navbar() {
                 className="appLogoutButton"
               >
                 {loggingOut
-                  ? "Abmeldung läuft ..."
-                  : "Abmelden"}
+                  ? t("loggingOut")
+                  : t("logout")}
               </button>
             </div>
           </aside>

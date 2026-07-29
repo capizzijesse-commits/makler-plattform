@@ -76,6 +76,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
+          code: "MISSING_CREDENTIALS",
           error: "Bitte E-Mail-Adresse und Passwort eingeben.",
         },
         { status: 400 }
@@ -86,6 +87,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
+          code: "INVALID_CREDENTIALS",
           error: INVALID_LOGIN_MESSAGE,
         },
         { status: 401 }
@@ -102,6 +104,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
+          code: "INVALID_CREDENTIALS",
           error: INVALID_LOGIN_MESSAGE,
         },
         { status: 401 }
@@ -117,6 +120,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
+          code: "INVALID_CREDENTIALS",
           error: INVALID_LOGIN_MESSAGE,
         },
         { status: 401 }
@@ -159,6 +163,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         success: false,
+        code: "LOGIN_UNAVAILABLE",
         error:
           "Die Anmeldung konnte momentan nicht verarbeitet werden.",
       },

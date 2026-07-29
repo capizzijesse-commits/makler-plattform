@@ -6,6 +6,9 @@ import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 
 const FOUNDER_LIMIT = 50;
+const FOUNDER_TRIAL_DAYS = 30;
+const SECONDS_PER_DAY = 24 * 60 * 60;
+const TRIAL_WINDOW_TOLERANCE_SECONDS = 5 * 60;
 
 const FOUNDER_ACCESS_STATUSES = [
   "active",
@@ -281,6 +284,83 @@ function validateFounderSubscription(
   }
 }
 
+function validateFounderCheckoutCompletion(
+  session: Stripe.Checkout.Session,
+  subscription: Stripe.Subscription,
+  expectedAmountCents: number
+): void {
+  if (
+    session.currency?.toLowerCase() !==
+    "chf"
+  ) {
+    throw new Error(
+      "Die Stripe-Founder-Währung ist ungültig."
+    );
+  }
+
+  const paidCheckoutIsValid =
+    session.payment_status === "paid" &&
+    session.amount_total ===
+      expectedAmountCents &&
+    subscription.status === "active";
+
+  const sessionTrialDays = Number(
+    session.metadata?.trialPeriodDays
+  );
+
+  const subscriptionTrialDays = Number(
+    subscription.metadata?.trialPeriodDays
+  );
+
+  const trialStart =
+    subscription.trial_start;
+
+  const trialEnd =
+    subscription.trial_end;
+
+  const expectedTrialSeconds =
+    FOUNDER_TRIAL_DAYS *
+    SECONDS_PER_DAY;
+
+  const actualTrialSeconds =
+    typeof trialStart === "number" &&
+    typeof trialEnd === "number"
+      ? trialEnd - trialStart
+      : null;
+
+  const trialWindowIsValid =
+    actualTrialSeconds !== null &&
+    Math.abs(
+      actualTrialSeconds -
+        expectedTrialSeconds
+    ) <=
+      TRIAL_WINDOW_TOLERANCE_SECONDS;
+
+  const trialPaymentStatusIsValid =
+    session.payment_status === "paid" ||
+    session.payment_status ===
+      "no_payment_required";
+
+  const trialCheckoutIsValid =
+    trialPaymentStatusIsValid &&
+    session.amount_total === 0 &&
+    subscription.status === "trialing" &&
+    sessionTrialDays ===
+      FOUNDER_TRIAL_DAYS &&
+    subscriptionTrialDays ===
+      FOUNDER_TRIAL_DAYS &&
+    trialWindowIsValid;
+
+  if (
+    !paidCheckoutIsValid &&
+    !trialCheckoutIsValid
+  ) {
+    throw new Error(
+      "Der Founder-Checkout besitzt keinen gültigen Zahlungs- oder Teststatus."
+    );
+  }
+}
+
 async function createEventRecord(
   transaction: Prisma.TransactionClient,
   event: Stripe.Event,
@@ -377,11 +457,10 @@ export async function processSuccessfulSubscriptionCheckout(
 
   if (
     session.mode !== "subscription" ||
-    session.status !== "complete" ||
-    session.payment_status !== "paid"
+    session.status !== "complete"
   ) {
     throw new Error(
-      "Der Founder-Checkout wurde nicht vollständig bezahlt."
+      "Der Founder-Checkout wurde nicht vollständig abgeschlossen."
     );
   }
 
@@ -391,17 +470,6 @@ export async function processSuccessfulSubscriptionCheckout(
   ) {
     throw new Error(
       "Stripe-Referenz und Benutzer-ID stimmen nicht überein."
-    );
-  }
-
-  if (
-    session.currency?.toLowerCase() !==
-      "chf" ||
-    session.amount_total !==
-      metadata.expectedAmountCents
-  ) {
-    throw new Error(
-      "Der Founder-Checkout besitzt einen ungültigen Betrag."
     );
   }
 
@@ -433,6 +501,12 @@ export async function processSuccessfulSubscriptionCheckout(
     metadata,
     customerId,
     subscriptionId
+  );
+
+  validateFounderCheckoutCompletion(
+    session,
+    subscription,
+    metadata.expectedAmountCents
   );
 
   const price =
@@ -613,11 +687,10 @@ export async function verifyAndActivateFounderCheckout(
 
   if (
     session.mode !== "subscription" ||
-    session.status !== "complete" ||
-    session.payment_status !== "paid"
+    session.status !== "complete"
   ) {
     throw new Error(
-      "Das Founder-Abonnement wurde nicht vollständig bezahlt."
+      "Das Founder-Abonnement wurde nicht vollständig abgeschlossen."
     );
   }
 
@@ -627,17 +700,6 @@ export async function verifyAndActivateFounderCheckout(
   ) {
     throw new Error(
       "Die Stripe-Referenz stimmt nicht mit dem Benutzerkonto überein."
-    );
-  }
-
-  if (
-    session.currency?.toLowerCase() !==
-      "chf" ||
-    session.amount_total !==
-      OFFER_PRICES_CENTS.founder
-  ) {
-    throw new Error(
-      "Der Founder-Checkout besitzt einen ungültigen Betrag."
     );
   }
 
@@ -669,6 +731,12 @@ export async function verifyAndActivateFounderCheckout(
     metadata,
     customerId,
     subscriptionId
+  );
+
+  validateFounderCheckoutCompletion(
+    session,
+    subscription,
+    metadata.expectedAmountCents
   );
 
   if (

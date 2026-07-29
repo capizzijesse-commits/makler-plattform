@@ -1,6 +1,8 @@
 import "./globals.css";
-import type { Metadata, Viewport } from "next";
-import { GoogleAnalytics } from "@next/third-parties/google";
+import type {Metadata, Viewport} from "next";
+import {GoogleAnalytics} from "@next/third-parties/google";
+import {NextIntlClientProvider} from "next-intl";
+import {getLocale} from "next-intl/server";
 import AppDialogProvider from "@/components/AppDialogProvider";
 import AppShell from "@/app/components/AppShell";
 
@@ -17,19 +19,22 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const locale = await getLocale();
 
   return (
-    <html lang="de">
+    <html lang={locale}>
       <body>
-        <AppDialogProvider>
-          <AppShell>{children}</AppShell>
-        </AppDialogProvider>
+        <NextIntlClientProvider>
+          <AppDialogProvider>
+            <AppShell>{children}</AppShell>
+          </AppDialogProvider>
+        </NextIntlClientProvider>
       </body>
 
       {gaMeasurementId ? (

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 type AccountUser = {
   id: string;
@@ -46,6 +47,8 @@ function getPlanLabel(plan: string): string {
 }
 
 export default function AccountPage() {
+  const t = useTranslations("Account");
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
@@ -77,7 +80,7 @@ export default function AccountPage() {
 
         if (!response.ok || !data?.user) {
           throw new Error(
-            data?.error || "Die Kontodaten konnten nicht geladen werden."
+            t("messages.loadError")
           );
         }
 
@@ -96,10 +99,7 @@ export default function AccountPage() {
 
         setNotice({
           type: "error",
-          text:
-            error instanceof Error
-              ? error.message
-              : "Die Kontodaten konnten nicht geladen werden.",
+          text: t("messages.loadError"),
         });
       } finally {
         if (!controller.signal.aborted) {
@@ -130,7 +130,7 @@ export default function AccountPage() {
       setNotice({
         type: "success",
         text:
-          "Founder-Abonnement erfolgreich aktiviert.",
+          t("messages.subscriptionActivated"),
       });
 
       window.history.replaceState(
@@ -156,7 +156,7 @@ export default function AccountPage() {
       setNotice({
         type: "error",
         text:
-          "Die Stripe-Checkout-ID fehlt.",
+          t("messages.missingSession"),
       });
 
       return;
@@ -183,7 +183,7 @@ export default function AccountPage() {
         setNotice({
           type: "success",
           text:
-            "Dein Founder-Abonnement wird bestätigt …",
+            t("messages.subscriptionVerifying"),
         });
 
         const response = await fetch(
@@ -217,8 +217,7 @@ export default function AccountPage() {
           !data?.success
         ) {
           throw new Error(
-            data?.error ||
-              "Das Founder-Abonnement konnte nicht bestätigt werden."
+            t("messages.subscriptionVerifyError")
           );
         }
 
@@ -235,7 +234,7 @@ export default function AccountPage() {
         window.location.replace(
           "/konto?subscription=activated"
         );
-      } catch (error) {
+      } catch {
         sessionStorage.removeItem(
           verificationKey
         );
@@ -243,9 +242,7 @@ export default function AccountPage() {
         setNotice({
           type: "error",
           text:
-            error instanceof Error
-              ? error.message
-              : "Das Founder-Abonnement konnte nicht bestätigt werden.",
+            t("messages.subscriptionVerifyError"),
         });
       }
     }
@@ -284,7 +281,7 @@ export default function AccountPage() {
 
       if (!response.ok || !data?.user) {
         throw new Error(
-          data?.error || "Die Kontodaten konnten nicht gespeichert werden."
+          t("messages.saveError")
         );
       }
 
@@ -299,15 +296,12 @@ export default function AccountPage() {
 
       setNotice({
         type: "success",
-        text: data.message || "Kontaktdaten wurden gespeichert.",
+        text: t("messages.saved"),
       });
-    } catch (error) {
+    } catch {
       setNotice({
         type: "error",
-        text:
-          error instanceof Error
-            ? error.message
-            : "Die Kontodaten konnten nicht gespeichert werden.",
+        text: t("messages.saveError"),
       });
     } finally {
       setSaving(false);
@@ -322,16 +316,15 @@ export default function AccountPage() {
       <section className="account-shell">
         <header className="account-hero">
           <div>
-            <span className="account-eyebrow">MAKLERPROFIL</span>
-            <h1>Kontaktdaten verwalten</h1>
-            <p>
-              Diese Angaben erscheinen automatisch in deinen Exposés und
-              PDF-Dokumenten.
-            </p>
+            <span className="account-eyebrow">
+              {t("hero.eyebrow")}
+            </span>
+            <h1>{t("hero.title")}</h1>
+            <p>{t("hero.description")}</p>
           </div>
 
           <div className="account-plan">
-            <span>AKTUELLER PLAN</span>
+            <span>{t("plan.current")}</span>
             <strong>{getPlanLabel(plan)}</strong>
           </div>
         </header>
@@ -348,35 +341,35 @@ export default function AccountPage() {
             </div>
 
             <div>
-              <span>DEIN MAKLERPROFIL</span>
-              <h2>{name || "Noch kein Name hinterlegt"}</h2>
-              <p>{company || "Noch keine Firma hinterlegt"}</p>
+              <span>{t("profile.eyebrow")}</span>
+              <h2>{name || t("profile.noName")}</h2>
+              <p>{company || t("profile.noCompany")}</p>
             </div>
 
             <div className="account-feature-list">
               <div>
                 <span className="account-check">✓</span>
-                <p>Name und E-Mail im Exposé</p>
+                <p>{t("profile.features.nameEmail")}</p>
               </div>
               <div>
                 <span className="account-check">✓</span>
-                <p>Firma und Telefon im PDF</p>
+                <p>{t("profile.features.companyPhone")}</p>
               </div>
               <div>
                 <span className="account-check">✓</span>
-                <p>Dauerhaft in PostgreSQL gespeichert</p>
+                <p>{t("profile.features.stored")}</p>
               </div>
             </div>
 
             <Link href="/cockpit" className="account-back-link">
-              ← Zu meinen Projekten
+              {"\u2190"} {t("profile.back")}
             </Link>
           </aside>
 
           <form className="account-form-card" onSubmit={saveAccount}>
             <div className="account-form-heading">
-              <span>KONTAKTANGABEN</span>
-              <h2>Angaben für Exposé und PDF</h2>
+              <span>{t("form.eyebrow")}</span>
+              <h2>{t("form.title")}</h2>
             </div>
 
             {notice && (
@@ -392,12 +385,12 @@ export default function AccountPage() {
 
             <div className="account-field-grid">
               <label className="account-field">
-                <span>Name</span>
+                <span>{t("fields.name")}</span>
                 <input
                   type="text"
                   value={name}
                   onChange={(event) => setName(event.target.value)}
-                  placeholder="Vor- und Nachname"
+                  placeholder={t("fields.namePlaceholder")}
                   minLength={2}
                   maxLength={80}
                   required
@@ -406,19 +399,19 @@ export default function AccountPage() {
               </label>
 
               <label className="account-field">
-                <span>Firma</span>
+                <span>{t("fields.company")}</span>
                 <input
                   type="text"
                   value={company}
                   onChange={(event) => setCompany(event.target.value)}
-                  placeholder="Immobilienfirma oder Maklerbüro"
+                  placeholder={t("fields.companyPlaceholder")}
                   maxLength={120}
                   disabled={loading || saving}
                 />
               </label>
 
               <label className="account-field">
-                <span>E-Mail</span>
+                <span>{t("fields.email")}</span>
                 <input
                   type="email"
                   value={email}
@@ -426,12 +419,12 @@ export default function AccountPage() {
                   disabled
                 />
                 <small>
-                  Die Login-E-Mail kann hier nicht geändert werden.
+                  {t("fields.emailLocked")}
                 </small>
               </label>
 
               <label className="account-field">
-                <span>Telefon</span>
+                <span>{t("fields.phone")}</span>
                 <input
                   type="tel"
                   value={phone}
@@ -444,10 +437,7 @@ export default function AccountPage() {
             </div>
 
             <div className="account-form-footer">
-              <p>
-                Firma und Telefonnummer sind optional, werden aber für ein
-                vollständiges Exposé empfohlen.
-              </p>
+              <p>{t("form.optionalHint")}</p>
 
               <button
                 type="submit"
@@ -456,10 +446,10 @@ export default function AccountPage() {
               >
                 <span aria-hidden="true">✓</span>
                 {saving
-                  ? "Wird gespeichert …"
+                  ? t("actions.saving")
                   : loading
-                    ? "Wird geladen …"
-                    : "Kontaktdaten speichern"}
+                    ? t("actions.loading")
+                    : t("actions.save")}
               </button>
             </div>
           </form>

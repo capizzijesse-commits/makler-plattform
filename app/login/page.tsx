@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 
 type MessageType = "success" | "error" | "info";
@@ -23,6 +24,7 @@ type LoginResponse = {
 
 export default function LoginPage() {
   const router = useRouter();
+  const t = useTranslations("Login");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,64 +38,54 @@ export default function LoginPage() {
     useState<MessageType>("info");
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-const registered = searchParams.get("registered");
-const verified = searchParams.get("verified");
-   
-const reset = searchParams.get("reset");
-if (reset === "success") {
-  setMessage(
-    "Dein Passwort wurde erfolgreich geändert. Du kannst dich jetzt anmelden."
-  );
-  setMessageType("success");
-  return;
-}
+    const searchParams = new URLSearchParams(
+      window.location.search
+    );
+    const registered = searchParams.get("registered");
+    const verified = searchParams.get("verified");
+    const reset = searchParams.get("reset");
+
+    if (reset === "success") {
+      setMessage(t("messages.resetSuccess"));
+      setMessageType("success");
+      return;
+    }
+
     if (registered === "success") {
-      setMessage(
-        "Registrierung erfolgreich. Bitte prÃ¼fe dein E-Mail-Postfach und bestÃ¤tige dein Konto."
-      );
+      setMessage(t("messages.registrationSuccess"));
       setMessageType("success");
       return;
     }
 
     if (verified === "success") {
-      setMessage(
-        "Deine E-Mail-Adresse wurde erfolgreich bestÃ¤tigt. Du kannst dich jetzt einloggen."
-      );
+      setMessage(t("messages.verificationSuccess"));
       setMessageType("success");
       return;
     }
 
     if (verified === "expired") {
-      setMessage(
-        "Der BestÃ¤tigungslink ist abgelaufen. Bitte registriere dich erneut, um einen neuen Link zu erhalten."
-      );
+      setMessage(t("messages.verificationExpired"));
       setMessageType("error");
       return;
     }
 
     if (verified === "invalid") {
-      setMessage(
-        "Der BestÃ¤tigungslink ist ungÃ¼ltig oder wurde bereits verwendet."
-      );
+      setMessage(t("messages.verificationInvalid"));
       setMessageType("error");
       return;
     }
 
     if (verified === "missing") {
-      setMessage("Im BestÃ¤tigungslink fehlt der notwendige Token.");
+      setMessage(t("messages.verificationMissing"));
       setMessageType("error");
       return;
     }
 
     if (verified === "error") {
-      setMessage(
-        "Die E-Mail-Adresse konnte nicht bestÃ¤tigt werden. Bitte versuche es spÃ¤ter erneut."
-      );
+      setMessage(t("messages.verificationError"));
       setMessageType("error");
     }
-  }, []);
- 
+  }, [t]);
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -106,7 +98,7 @@ if (reset === "success") {
         : "";
 
     if (!email.trim() || !password) {
-      setMessage("Bitte E-Mail-Adresse und Passwort eingeben.");
+      setMessage(t("messages.missingCredentials"));
       setMessageType("error");
       return;
     }
@@ -133,32 +125,29 @@ if (reset === "success") {
       try {
         data = responseText ? JSON.parse(responseText) : {};
       } catch {
-        setMessage(
-          "Die Anmeldung hat keine gültige Antwort geliefert."
-        );
+        setMessage(t("messages.invalidResponse"));
+        setMessageType("error");
         return;
       }
 
       if (!response.ok) {
-        if (data.code === "EMAIL_NOT_VERIFIED") {
-          setMessage(
-            data.error ||
-              "Bitte bestätige zuerst deine E-Mail-Adresse."
-          );
-          return;
-        }
+        const errorKey =
+          data.code === "EMAIL_NOT_VERIFIED"
+            ? "messages.emailNotVerified"
+            : data.code === "MISSING_CREDENTIALS"
+              ? "messages.missingCredentials"
+              : data.code === "LOGIN_UNAVAILABLE"
+                ? "messages.loginUnavailable"
+                : "messages.invalidCredentials";
 
-        setMessage(
-          data.error ||
-            `Anmeldung fehlgeschlagen – HTTP ${response.status}`
-        );
+        setMessage(t(errorKey));
+        setMessageType("error");
         return;
       }
 
       if (!data.user?.email) {
-        setMessage(
-          "Die Benutzerdaten konnten nicht geladen werden."
-        );
+        setMessage(t("messages.userLoadError"));
+        setMessageType("error");
         return;
       }
 
@@ -186,7 +175,7 @@ if (reset === "success") {
 
       if (requestedPlan === "founder") {
         setMessage(
-          "Founder-Checkout wird geöffnet …"
+          t("messages.founderCheckoutOpening")
         );
         setMessageType("info");
 
@@ -223,8 +212,7 @@ if (reset === "success") {
           !checkoutData.url
         ) {
           throw new Error(
-            checkoutData?.error ||
-              "Der Founder-Checkout konnte nicht geöffnet werden."
+            t("messages.founderCheckoutError")
           );
         }
 
@@ -241,7 +229,7 @@ if (reset === "success") {
       setMessage(
         error instanceof Error
           ? error.message
-          : "Die Anmeldung ist fehlgeschlagen."
+          : t("messages.genericError")
       );
       setMessageType("error");
     } finally {
@@ -306,7 +294,7 @@ if (reset === "success") {
               letterSpacing: "-0.04em",
             }}
           >
-            Willkommen zurück
+            {t("hero.title")}
           </h1>
 
           <p
@@ -317,8 +305,7 @@ if (reset === "success") {
               margin: 0,
             }}
           >
-            Melden Sie sich an und erstellen Sie professionelle
-            Immobilieninserate in Sekunden.
+            {t("hero.description")}
           </p>
         </div>
 
@@ -349,7 +336,7 @@ if (reset === "success") {
               marginBottom: "8px",
             }}
           >
-            E-Mail
+            {t("fields.email")}
           </label>
 
          <input
@@ -386,7 +373,7 @@ if (reset === "success") {
     marginBottom: "8px",
   }}
 >
-  Passwort
+  {t("fields.password")}
 </label>
 
           <div style={{ position: "relative" }}>
@@ -394,7 +381,7 @@ if (reset === "success") {
     className="loginInput"
     id="login-password"
     type={showPassword ? "text" : "password"}
-    placeholder="Passwort"
+    placeholder={t("fields.passwordPlaceholder")}
     value={password}
     onChange={(event) =>
       setPassword(event.target.value)
@@ -421,8 +408,8 @@ if (reset === "success") {
               }
               aria-label={
                 showPassword
-                  ? "Passwort ausblenden"
-                  : "Passwort anzeigen"
+                  ? t("fields.hidePassword")
+                  : t("fields.showPassword")
               }
               style={{
                 position: "absolute",
@@ -487,7 +474,7 @@ if (reset === "success") {
                 textDecoration: "none",
               }}
             >
-              Passwort vergessen?
+              {t("actions.forgotPassword")}
             </Link>
           </div>
 
@@ -513,7 +500,9 @@ if (reset === "success") {
                 "0 18px 40px rgba(249, 115, 22, 0.35)",
             }}
           >
-            {loading ? "Anmeldung läuft..." : "Einloggen"}
+            {loading
+              ? t("actions.submitting")
+              : t("actions.submit")}
           </button>
         </form>
 
@@ -525,7 +514,7 @@ if (reset === "success") {
             fontSize: "15px",
           }}
         >
-          Noch keinen Account?{" "}
+          {t("account.prompt")}{" "}
           <Link
             href="/register"
             style={{
@@ -534,7 +523,7 @@ if (reset === "success") {
               textDecoration: "none",
             }}
           >
-            Kostenlos registrieren
+            {t("account.register")}
           </Link>
         </p>
 
@@ -552,8 +541,7 @@ if (reset === "success") {
             textAlign: "center",
           }}
         >
-          Inserat-AI erstellt aus wenigen Angaben professionelle
-          Immobilieninserate fÃ¼r Portale, Website und Social Media.
+          {t("info.description")}
         </div>
       </div>
     </main>
