@@ -5,6 +5,7 @@ import { canUseListingCoreForUser } from "@/lib/listing-access";
 import { getAuthenticatedUser } from "@/lib/session";
 
 type SupportedLocale = "de" | "it" | "fr" | "en";
+type GenerationPhase = "initial" | "remaining" | "all";
 
 type SocialVariant = {
   title: string;
@@ -115,6 +116,18 @@ function normalizeLocale(value: unknown): SupportedLocale {
   }
 
   return "de";
+}
+
+function normalizePhase(value: unknown): GenerationPhase {
+  if (
+    value === "initial" ||
+    value === "remaining" ||
+    value === "all"
+  ) {
+    return value;
+  }
+
+  return "all";
 }
 
 function cleanValue(value: unknown, fallback = "") {
@@ -765,6 +778,49 @@ function fallbackPosts(
   return germanFallback(data);
 }
 
+function getVariantNumber(title: string) {
+  const match = title.match(/(\d+)\s*$/);
+  return match ? Number(match[1]) : 0;
+}
+
+function expectedTitlesForPhase(
+  phase: GenerationPhase
+) {
+  const variantNumbers =
+    phase === "initial"
+      ? [1]
+      : phase === "remaining"
+        ? [2, 3]
+        : [1, 2, 3];
+
+  return [
+    "Instagram",
+    "Facebook",
+    "LinkedIn",
+    "X",
+  ].flatMap((platform) =>
+    variantNumbers.map(
+      (number) => `${platform} Variant ${number}`
+    )
+  );
+}
+
+function selectVariantsForPhase(
+  variants: SocialVariant[],
+  phase: GenerationPhase
+) {
+  if (phase === "all") {
+    return variants;
+  }
+
+  const allowedNumbers =
+    phase === "initial" ? new Set([1]) : new Set([2, 3]);
+
+  return variants.filter((variant) =>
+    allowedNumbers.has(getVariantNumber(variant.title))
+  );
+}
+
 function normalizeVariants(rawVariants: unknown): SocialVariant[] {
   if (!Array.isArray(rawVariants)) {
     return [];
@@ -805,21 +861,44 @@ function extractJson(content: string): SocialResponse | null {
 
 function buildPrompt(
   locale: SupportedLocale,
-  data: SocialInput
+  data: SocialInput,
+  phase: GenerationPhase
 ) {
   const copy = API_COPY[locale];
+  const expectedTitles = expectedTitlesForPhase(phase);
+  const requestedVariants =
+    phase === "initial"
+      ? `Create exactly:
+- 1 variant for Instagram
+- 1 variant for Facebook
+- 1 variant for LinkedIn
+- 1 variant for X / Twitter`
+      : phase === "remaining"
+        ? `Create exactly:
+- Instagram variants 2 and 3
+- Facebook variants 2 and 3
+- LinkedIn variants 2 and 3
+- X / Twitter variants 2 and 3`
+        : `Create exactly:
+- 3 variants for Instagram
+- 3 variants for Facebook
+- 3 variants for LinkedIn
+- 3 variants for X / Twitter`;
+
+  const titleTemplate = expectedTitles
+    .map(
+      (title) =>
+        `    { "title": "${title}", "text": "..." }`
+    )
+    .join(",\n");
 
   return `
-Create EXACTLY 12 high-quality social media texts for marketing a Swiss property.
+Create EXACTLY ${expectedTitles.length} high-quality social media texts for marketing a Swiss property.
 
 Output language: ${copy.languageName}.
 Use natural terminology appropriate for the Swiss real estate market in that language.
 
-Create exactly:
-- 3 variants for Instagram
-- 3 variants for Facebook
-- 3 variants for LinkedIn
-- 3 variants for X / Twitter
+${requestedVariants}
 
 Use ONLY these details:
 - Location: ${data.location}
@@ -852,18 +931,7 @@ Quality requirements:
 Use these exact title values so the platforms can be grouped reliably:
 {
   "variants": [
-    { "title": "Instagram Variant 1", "text": "..." },
-    { "title": "Instagram Variant 2", "text": "..." },
-    { "title": "Instagram Variant 3", "text": "..." },
-    { "title": "Facebook Variant 1", "text": "..." },
-    { "title": "Facebook Variant 2", "text": "..." },
-    { "title": "Facebook Variant 3", "text": "..." },
-    { "title": "LinkedIn Variant 1", "text": "..." },
-    { "title": "LinkedIn Variant 2", "text": "..." },
-    { "title": "LinkedIn Variant 3", "text": "..." },
-    { "title": "X Variant 1", "text": "..." },
-    { "title": "X Variant 2", "text": "..." },
-    { "title": "X Variant 3", "text": "..." }
+${titleTemplate}
   ]
 }
 `;
@@ -875,6 +943,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
     locale = normalizeLocale(body?.locale);
+    const phase = normalizePhase(body?.phase);
     const copy = API_COPY[locale];
 
     const user = await getAuthenticatedUser(request);
@@ -938,7 +1007,10 @@ export async function POST(request: NextRequest) {
 
     if (!apiKey) {
       return NextResponse.json({
-        variants: fallbackPosts(input, locale),
+        variants: selectVariantsForPhase(
+          fallbackPosts(input, locale),
+          phase
+        ),
       });
     }
 
@@ -960,7 +1032,11 @@ export async function POST(request: NextRequest) {
             },
             {
               role: "user",
-              content: buildPrompt(locale, input),
+              content: buildPrompt(
+                locale,
+                input,
+                phase
+              ),
             },
           ],
         }),
@@ -969,7 +1045,10 @@ export async function POST(request: NextRequest) {
 
     if (!openAiResponse.ok) {
       return NextResponse.json({
-        variants: fallbackPosts(input, locale),
+        variants: selectVariantsForPhase(
+          fallbackPosts(input, locale),
+          phase
+        ),
       });
     }
 
@@ -979,21 +1058,35 @@ export async function POST(request: NextRequest) {
 
     if (typeof content !== "string") {
       return NextResponse.json({
-        variants: fallbackPosts(input, locale),
+        variants: selectVariantsForPhase(
+          fallbackPosts(input, locale),
+          phase
+        ),
       });
     }
 
     const parsed = extractJson(content);
-    const variants = normalizeVariants(parsed?.variants);
+    const expectedTitles = new Set(
+      expectedTitlesForPhase(phase)
+    );
+    const variants = normalizeVariants(
+      parsed?.variants
+    ).filter((variant) =>
+      expectedTitles.has(variant.title)
+    );
 
-    if (variants.length < 12) {
+    if (variants.length < expectedTitles.size) {
       return NextResponse.json({
-        variants: fallbackPosts(input, locale),
+        variants: selectVariantsForPhase(
+          fallbackPosts(input, locale),
+          phase
+        ),
       });
     }
 
     return NextResponse.json({
       variants,
+      phase,
     });
   } catch (error) {
     console.error("generate-social error:", error);

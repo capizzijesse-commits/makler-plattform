@@ -11,6 +11,8 @@ type SocialVariant = {
   text: string;
 };
 
+type GenerationPhase = "initial" | "remaining";
+
 type ListingImage = {
   id: string;
   url: string;
@@ -344,6 +346,42 @@ export default function SocialMediaPage() {
     );
   }
 
+  function getVariantNumber(title: string) {
+    const match = title.match(/(\d+)\s*$/);
+    return match ? Number(match[1]) : 0;
+  }
+
+  function mergeSocialVariants(
+    ...variantGroups: SocialVariant[][]
+  ) {
+    const uniqueVariants = new Map<string, SocialVariant>();
+
+    variantGroups.flat().forEach((variant) => {
+      uniqueVariants.set(variant.title, variant);
+    });
+
+    return [...uniqueVariants.values()].sort(
+      (firstVariant, secondVariant) => {
+        const firstPlatform =
+          getPlatformFromTitle(firstVariant.title);
+        const secondPlatform =
+          getPlatformFromTitle(secondVariant.title);
+        const firstPlatformIndex = firstPlatform
+          ? PLATFORM_NAMES.indexOf(firstPlatform)
+          : PLATFORM_NAMES.length;
+        const secondPlatformIndex = secondPlatform
+          ? PLATFORM_NAMES.indexOf(secondPlatform)
+          : PLATFORM_NAMES.length;
+
+        return (
+          firstPlatformIndex - secondPlatformIndex ||
+          getVariantNumber(firstVariant.title) -
+            getVariantNumber(secondVariant.title)
+        );
+      }
+    );
+  }
+
   function updateImageContext(count: number) {
     setImageAnalysis(
       count > 0
@@ -441,6 +479,49 @@ export default function SocialMediaPage() {
     }
   }
 
+  async function requestSocialVariants(
+    phase: GenerationPhase
+  ) {
+    const response = await fetch("/api/generate-social", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        location,
+        propertyType,
+        rooms,
+        livingArea,
+        price,
+        highlights,
+        styleText,
+        imageAnalysis,
+        listingId: sourceListingId,
+        locale,
+        phase,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data?.error || t("errors.generate")
+      );
+    }
+
+    const generatedSocialVariants: SocialVariant[] =
+      Array.isArray(data.variants) ? data.variants : [];
+
+    const expectedCount = phase === "initial" ? 4 : 8;
+
+    if (generatedSocialVariants.length < expectedCount) {
+      throw new Error(t("errors.empty"));
+    }
+
+    return generatedSocialVariants;
+  }
+
   async function handleGenerateSocial() {
     setLoading(true);
     setError("");
@@ -448,47 +529,53 @@ export default function SocialMediaPage() {
     setVariants([]);
 
     try {
-      const response = await fetch("/api/generate-social", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          location,
-          propertyType,
-          rooms,
-          livingArea,
-          price,
-          highlights,
-          styleText,
-          imageAnalysis,
-          listingId: sourceListingId,
-          locale,
+      const remainingRequest = requestSocialVariants(
+        "remaining"
+      ).then(
+        (generatedVariants) => ({
+          generatedVariants,
+          error: null,
         }),
-      });
+        (requestError: unknown) => ({
+          generatedVariants: [] as SocialVariant[],
+          error: requestError,
+        })
+      );
 
-      const data = await response.json();
+      const initialVariants = mergeSocialVariants(
+        await requestSocialVariants("initial")
+      );
 
-      if (!response.ok) {
-        throw new Error(
-          data?.error || t("errors.generate")
-        );
+      setVariants(initialVariants);
+
+      const remainingResult = await remainingRequest;
+
+      if (remainingResult.error) {
+        throw remainingResult.error;
       }
 
-      const generatedSocialVariants: SocialVariant[] =
-        Array.isArray(data.variants) ? data.variants : [];
+      const allVariants = mergeSocialVariants(
+        initialVariants,
+        remainingResult.generatedVariants
+      );
 
-      if (generatedSocialVariants.length === 0) {
+      if (allVariants.length < 12) {
         throw new Error(t("errors.empty"));
       }
 
-      setVariants(generatedSocialVariants);
+      setVariants(allVariants);
 
       if (sourceListingId) {
-        await saveSocialVariants(
+        void saveSocialVariants(
           sourceListingId,
-          generatedSocialVariants
-        );
+          allVariants
+        ).catch((saveError: unknown) => {
+          setError(
+            saveError instanceof Error
+              ? saveError.message
+              : t("errors.save")
+          );
+        });
       }
     } catch (generationError) {
       setError(
