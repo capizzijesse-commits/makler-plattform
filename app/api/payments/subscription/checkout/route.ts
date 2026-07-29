@@ -20,10 +20,10 @@ const FOUNDER_TRIAL_DAYS = 30;
 const LOCALE_COOKIE_NAME = "INSERAT_AI_LOCALE";
 
 const FOUNDER_PRODUCT_DESCRIPTIONS = {
-  de: "30 Tage kostenlos, danach CHF 19.90 pro Monat – monatlich kündbar.",
-  it: "30 giorni gratuiti, poi CHF 19.90 al mese – disdetta mensile.",
-  fr: "30 jours gratuits, puis CHF 19.90 par mois – résiliable chaque mois.",
-  en: "30 days free, then CHF 19.90 per month – cancel monthly.",
+  de: "30 Tage kostenlos. Die ersten 50 Founder-Kunden behalten CHF 19.90 pro Monat dauerhaft, solange das Abonnement ohne Unterbruch aktiv bleibt. Danach regulär CHF 39.90 pro Monat.",
+  it: "30 giorni gratuiti. I primi 50 clienti Founder mantengono CHF 19.90 al mese finché l’abbonamento rimane attivo senza interruzioni. Successivamente il prezzo regolare è di CHF 39.90 al mese.",
+  fr: "30 jours gratuits. Les 50 premiers clients Founder conservent le tarif de CHF 19.90 par mois tant que l’abonnement reste actif sans interruption. Ensuite, le tarif régulier est de CHF 39.90 par mois.",
+  en: "30 days free. The first 50 Founder customers keep CHF 19.90 per month for as long as the subscription remains continuously active. The regular price afterwards is CHF 39.90 per month.",
 } as const;
 
 const ACTIVE_SUBSCRIPTION_STATUSES = [

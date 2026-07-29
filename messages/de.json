@@ -162,7 +162,7 @@
       "founder": {
         "label": "FÜR DIE ERSTEN 50 MAKLER",
         "cadence": "danach 19.90 CHF / Monat",
-        "description": "Teste Founder 30 Tage kostenlos. Danach CHF 19.90 pro Monat – jederzeit kündbar.",
+        "description": "30 Tage kostenlos testen. Die ersten 50 Founder-Kunden sichern sich CHF 19.90 pro Monat dauerhaft, solange das Abonnement ohne Unterbruch aktiv bleibt. Danach beträgt der reguläre Preis CHF 39.90 pro Monat.",
         "button": "Founder sichern",
         "loading": "Checkout wird geöffnet …",
         "features": {
@@ -173,7 +173,9 @@
           "social": "Social-Media-Texte",
           "expose": "Professionelles Exposé mit PDF-Export",
           "storage": "Objekte, Texte und Bilder dauerhaft speichern",
-          "trial": "30 Tage kostenlos testen"
+          "trial": "30 Tage kostenlos testen",
+          "founderGuarantee": "Founder-Preisgarantie: CHF 19.90 pro Monat dauerhaft bei ununterbrochen aktivem Abonnement",
+          "regularPrice": "Limitiert auf die ersten 50 Kunden – danach regulär CHF 39.90 pro Monat"
         },
         "price": "30 Tage kostenlos"
       },
@@ -291,15 +293,15 @@
       "founder": {
         "eyebrow": "FOUNDER-ANGEBOT",
         "title": "Founder-Zugang sichern",
-        "description": "Konto erstellen und Founder 30 Tage kostenlos testen. Danach CHF 19.90 pro Monat.",
+        "description": "Konto erstellen und Founder 30 Tage kostenlos testen. Die ersten 50 Kunden sichern sich CHF 19.90 pro Monat dauerhaft. Danach beträgt der reguläre Preis CHF 39.90 pro Monat.",
         "submit": "Founder-Zugang vorbereiten",
-        "note": "Die Registrierung ist kostenlos. Nach der E-Mail-Bestätigung und dem Login wirst du zum sicheren Stripe-Checkout weitergeleitet. Dort beginnt der kostenlose Testzeitraum von 30 Tagen. Danach kostet Founder CHF 19.90 pro Monat.",
+        "note": "Die Registrierung ist kostenlos. Nach der E-Mail-Bestätigung und dem Login wirst du zum sicheren Stripe-Checkout weitergeleitet. Dort beginnt der kostenlose Testzeitraum von 30 Tagen. Die ersten 50 Founder-Kunden behalten CHF 19.90 pro Monat dauerhaft, solange das Abonnement ohne Unterbruch aktiv bleibt. Danach beträgt der reguläre Preis CHF 39.90 pro Monat.",
         "statPrice": "pro Monat",
         "statImages": "Bilder pro Immobilie",
-        "statPlaces": "limitierte Plätze",
+        "statPlaces": "Founder-Plätze – danach CHF 39.90",
         "statTrialValue": "30 Tage",
         "statTrialLabel": "kostenlos testen",
-        "statAfterTrial": "danach pro Monat"
+        "statAfterTrial": "dauerhaft bei aktivem Abo"
       },
       "singleObject": {
         "eyebrow": "EINZELIMMOBILIE",

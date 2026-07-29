@@ -60,6 +60,8 @@ export default function PricingSection() {
       highlighted: true,
       features: [
         t("plans.founder.features.trial"),
+        t("plans.founder.features.founderGuarantee"),
+        t("plans.founder.features.regularPrice"),
         t("plans.founder.features.projects"),
         t("plans.founder.features.variants"),
         t("plans.founder.features.images"),

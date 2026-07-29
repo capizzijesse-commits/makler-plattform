@@ -162,7 +162,7 @@
       "founder": {
         "label": "FOR THE FIRST 50 REAL ESTATE PROFESSIONALS",
         "cadence": "then CHF 19.90 / month",
-        "description": "Try Founder free for 30 days. Then CHF 19.90 per month – cancel anytime.",
+        "description": "Try Founder free for 30 days. The first 50 customers keep CHF 19.90 per month for as long as the subscription remains continuously active. The regular price afterwards is CHF 39.90 per month.",
         "button": "Secure Founder",
         "loading": "Opening checkout …",
         "features": {
@@ -173,7 +173,9 @@
           "social": "Social media copy",
           "expose": "Professional property brochure with PDF export",
           "storage": "Store properties, text and images permanently",
-          "trial": "30 days free"
+          "trial": "30 days free",
+          "founderGuarantee": "Founder price guarantee: CHF 19.90 per month while the subscription remains continuously active",
+          "regularPrice": "Limited to the first 50 customers – then CHF 39.90 per month"
         },
         "price": "30 days free"
       },
@@ -291,15 +293,15 @@
       "founder": {
         "eyebrow": "FOUNDER OFFER",
         "title": "Secure Founder access",
-        "description": "Create your account and try Founder free for 30 days. Then CHF 19.90 per month.",
+        "description": "Create your account and try Founder free for 30 days. The first 50 customers keep CHF 19.90 per month. The regular price afterwards is CHF 39.90 per month.",
         "submit": "Prepare Founder access",
-        "note": "Registration is free. After confirming your email address and logging in, you will be redirected to the secure Stripe checkout. Your 30-day free trial will begin there. Founder will then cost CHF 19.90 per month.",
+        "note": "Registration is free. After confirming your email address and logging in, you will be redirected to the secure Stripe checkout. Your 30-day free trial will begin there. The first 50 Founder customers keep CHF 19.90 per month for as long as the subscription remains continuously active. The regular price afterwards is CHF 39.90 per month.",
         "statPrice": "per month",
         "statImages": "images per property",
-        "statPlaces": "limited places",
+        "statPlaces": "Founder places – then CHF 39.90",
         "statTrialValue": "30 days",
         "statTrialLabel": "free trial",
-        "statAfterTrial": "then per month"
+        "statAfterTrial": "guaranteed while subscription is active"
       },
       "singleObject": {
         "eyebrow": "SINGLE PROPERTY",
