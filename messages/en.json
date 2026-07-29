@@ -737,5 +737,61 @@
     "email": {
       "subject": "Question about Inserat-AI"
     }
+  },
+  "Privacy": {
+    "title": "Privacy Policy",
+    "intro": "This website enables users to create property listings with the assistance of AI.",
+    "sections": {
+      "controller": {
+        "title": "1. Data controller",
+        "text": "The person responsible for processing data on this website is:"
+      },
+      "processedData": {
+        "title": "2. Data processed",
+        "text": "Personal data may be processed when visiting and using this website. This includes, in particular, names, email addresses, telephone numbers, login details and information entered through forms."
+      },
+      "purpose": {
+        "title": "3. Purpose of processing",
+        "text": "The data is used to provide Inserat-AI’s functions, manage user accounts, respond to enquiries, generate property listings and operate the website securely and reliably."
+      },
+      "aiContent": {
+        "title": "4. AI-generated content",
+        "text": "Information entered to create property listings may be transmitted to an AI service for text generation. Confidential or particularly sensitive data should not be entered."
+      },
+      "contactForm": {
+        "title": "5. Contact form",
+        "text": "When you contact us through a form, we use the information provided to process your enquiry and respond to any follow-up questions."
+      },
+      "storage": {
+        "title": "6. Storage and security",
+        "text": "Personal data is stored only for as long as required for the relevant purpose or by statutory retention obligations. We take appropriate technical and organisational measures to protect the data."
+      },
+      "thirdParties": {
+        "title": "7. Disclosure to third parties",
+        "text": "Data may be disclosed to technical service providers where this is necessary to operate the website, provide its functions or process payments."
+      },
+      "rights": {
+        "title": "8. Rights of data subjects",
+        "text": "Data subjects may request information about their stored data and, where applicable, request its correction or deletion. Requests may be sent to info@inserat-ai.ch."
+      },
+      "changes": {
+        "title": "9. Changes",
+        "text": "We may amend this Privacy Policy at any time. The version published on this website applies."
+      }
+    }
+  },
+  "Imprint": {
+    "title": "Legal notice",
+    "companyType": "Sole proprietorship",
+    "labels": {
+      "owner": "Owner",
+      "address": "Address",
+      "contact": "Contact",
+      "phone": "Phone",
+      "email": "Email",
+      "website": "Website"
+    },
+    "country": "Switzerland",
+    "productNotice": "Inserat-AI is a product of Helvetic Immobilien Capizzi."
   }
 }

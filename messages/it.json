@@ -737,5 +737,61 @@
     "email": {
       "subject": "Richiesta su Inserat-AI"
     }
+  },
+  "Privacy": {
+    "title": "Informativa sulla protezione dei dati",
+    "intro": "Questo sito web consente di creare annunci immobiliari con il supporto dell’AI.",
+    "sections": {
+      "controller": {
+        "title": "1. Titolare del trattamento",
+        "text": "Il responsabile del trattamento dei dati su questo sito web è:"
+      },
+      "processedData": {
+        "title": "2. Dati trattati",
+        "text": "Durante la visita e l’utilizzo di questo sito web possono essere trattati dati personali. Tra questi rientrano in particolare nome, indirizzo e-mail, numero di telefono, dati di accesso e informazioni inserite tramite i moduli."
+      },
+      "purpose": {
+        "title": "3. Finalità del trattamento",
+        "text": "I dati vengono utilizzati per mettere a disposizione le funzioni di Inserat-AI, gestire gli account, rispondere alle richieste, generare annunci immobiliari e garantire il funzionamento tecnico e sicuro del sito web."
+      },
+      "aiContent": {
+        "title": "4. Contenuti generati dall’AI",
+        "text": "Le informazioni inserite per creare annunci immobiliari possono essere trasmesse a un servizio AI per la generazione dei testi. Non devono essere inseriti dati confidenziali o particolarmente sensibili."
+      },
+      "contactForm": {
+        "title": "5. Modulo di contatto",
+        "text": "Quando ci contatti tramite un modulo, utilizziamo i dati forniti per elaborare la richiesta e per eventuali domande successive."
+      },
+      "storage": {
+        "title": "6. Conservazione e sicurezza",
+        "text": "I dati personali vengono conservati solo per il tempo necessario alla rispettiva finalità o richiesto dagli obblighi legali di conservazione. Adottiamo misure tecniche e organizzative adeguate per proteggere i dati."
+      },
+      "thirdParties": {
+        "title": "7. Trasmissione a terzi",
+        "text": "I dati possono essere trasmessi a fornitori tecnici nella misura necessaria per il funzionamento del sito web, la fornitura delle funzionalità o l’elaborazione dei pagamenti."
+      },
+      "rights": {
+        "title": "8. Diritti delle persone interessate",
+        "text": "Le persone interessate possono richiedere informazioni sui dati conservati e, se necessario, la loro rettifica o cancellazione. Le richieste possono essere inviate a info@inserat-ai.ch."
+      },
+      "changes": {
+        "title": "9. Modifiche",
+        "text": "Possiamo modificare questa informativa in qualsiasi momento. Fa fede la versione pubblicata sul sito web."
+      }
+    }
+  },
+  "Imprint": {
+    "title": "Note legali",
+    "companyType": "Ditta individuale",
+    "labels": {
+      "owner": "Titolare",
+      "address": "Indirizzo",
+      "contact": "Contatto",
+      "phone": "Telefono",
+      "email": "E-mail",
+      "website": "Sito web"
+    },
+    "country": "Svizzera",
+    "productNotice": "Inserat-AI è un prodotto di Helvetic Immobilien Capizzi."
   }
 }
