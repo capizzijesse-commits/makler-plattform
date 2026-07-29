@@ -793,5 +793,140 @@
     },
     "country": "Svizzera",
     "productNotice": "Inserat-AI è un prodotto di Helvetic Immobilien Capizzi."
+  },
+  "CockpitOverview": {
+    "navigation": {
+      "dashboard": "Dashboard"
+    },
+    "wordmark": {
+      "prefix": "Cockpit ",
+      "accent": "immobiliare"
+    },
+    "hero": {
+      "eyebrow": "IL TUO COCKPIT IMMOBILIARE",
+      "fallbackTitle": "I miei progetti",
+      "description": "Crea annunci, gestisci immobili e prepara contenuti per i social media in un unico posto.",
+      "newListing": "Nuovo annuncio"
+    },
+    "stats": {
+      "saved": {
+        "title": "Immobili salvati",
+        "description": "Immobili nel tuo cockpit"
+      },
+      "generated": {
+        "title": "Annunci creati",
+        "description": "Immobili con varianti di testo"
+      },
+      "social": {
+        "title": "Social Media",
+        "description": "Contenuti preparati"
+      },
+      "plan": {
+        "title": "Piano attuale",
+        "value": "Accesso Inserat-AI",
+        "description": "Funzioni incluse nell’offerta scelta"
+      }
+    },
+    "objects": {
+      "sectionLabel": "IMMOBILI",
+      "count": "{count, plural, =0 {Nessun immobile salvato} one {# immobile salvato} other {# immobili salvati}}",
+      "position": "Immobile {index}",
+      "propertyTitle": "{type} a {location}",
+      "priceOnRequest": "Prezzo su richiesta",
+      "recentlyEdited": "Modificato di recente",
+      "updatedOn": "Modificato il {date}",
+      "open": "Apri immobile →"
+    },
+    "filters": {
+      "searchLabel": "Cerca immobile",
+      "searchPlaceholder": "Località, NPA, tipologia o caratteristica",
+      "statusLabel": "Stato",
+      "all": "Tutti gli immobili",
+      "active": "Solo attivi",
+      "archived": "Solo archiviati",
+      "sortLabel": "Ordinamento",
+      "updatedDesc": "Modificati di recente",
+      "updatedAsc": "Modificati meno di recente"
+    },
+    "states": {
+      "loadingTitle": "Caricamento immobili",
+      "loadingDescription": "Inserat-AI si sta collegando al database.",
+      "errorTitle": "Impossibile caricare gli immobili",
+      "emptyTitle": "Nessun immobile disponibile",
+      "emptyDescription": "Salva il tuo primo immobile nel generatore di annunci.",
+      "createFirst": "Crea il primo immobile"
+    },
+    "status": {
+      "active": "Attivo",
+      "archived": "Archiviato"
+    },
+    "images": {
+      "sectionLabel": "IMMAGINI DELL’IMMOBILE",
+      "count": "{count, plural, =0 {Nessuna immagine salvata} one {# immagine salvata} other {# immagini salvate}}",
+      "mainAlt": "{type} a {location}",
+      "empty": "Nessuna immagine dell’immobile",
+      "thumbnailAlt": "Anteprima {index}"
+    },
+    "facts": {
+      "rooms": "Locali",
+      "livingArea": "Superficie abitabile",
+      "salePrice": "Prezzo di vendita",
+      "highlights": "Punti di forza"
+    },
+    "quick": {
+      "sectionLabel": "ACCESSO RAPIDO",
+      "title": "Cosa vuoi fare?",
+      "newListing": {
+        "title": "Nuovo annuncio",
+        "description": "Inserisci i dati dell’immobile e crea tre varianti professionali.",
+        "action": "Crea annuncio →"
+      },
+      "images": {
+        "title": "Analizza immagini",
+        "description": "Carica le immagini dell’immobile e genera descrizioni automatiche.",
+        "action": "Carica immagini →"
+      },
+      "manage": {
+        "title": "Gestisci immobili",
+        "description": "Apri, controlla e modifica gli immobili salvati.",
+        "action": "Mostra immobili →"
+      }
+    },
+    "checklist": {
+      "sectionLabel": "OGGI",
+      "title": "La tua checklist",
+      "reset": "Reimposta",
+      "completedPercent": "{percent}% completato",
+      "items": {
+        "listing": {
+          "title": "Crea annuncio",
+          "description": "Prepara un nuovo annuncio immobiliare."
+        },
+        "social": {
+          "title": "Prepara post social",
+          "description": "Crea un contenuto per i tuoi canali."
+        },
+        "images": {
+          "title": "Analizza immagini",
+          "description": "Genera descrizioni automatiche delle immagini."
+        },
+        "objects": {
+          "title": "Controlla immobili",
+          "description": "Verifica o modifica gli immobili salvati."
+        }
+      }
+    },
+    "errors": {
+      "loadListings": "Non è stato possibile caricare gli immobili salvati."
+    },
+    "aria": {
+      "previousListing": "Immobile precedente",
+      "nextListing": "Immobile successivo",
+      "previousImage": "Immagine precedente",
+      "nextImage": "Immagine successiva",
+      "thumbnailsUp": "Anteprime verso l’alto",
+      "thumbnailsDown": "Anteprime verso il basso",
+      "showImage": "Mostra immagine {index}"
+    }
   }
 }

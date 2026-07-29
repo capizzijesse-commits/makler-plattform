@@ -793,5 +793,140 @@
     },
     "country": "Suisse",
     "productNotice": "Inserat-AI est un produit de Helvetic Immobilien Capizzi."
+  },
+  "CockpitOverview": {
+    "navigation": {
+      "dashboard": "Tableau de bord"
+    },
+    "wordmark": {
+      "prefix": "Cockpit ",
+      "accent": "immobilier"
+    },
+    "hero": {
+      "eyebrow": "VOTRE COCKPIT IMMOBILIER",
+      "fallbackTitle": "Mes projets",
+      "description": "Créez des annonces, gérez vos biens et préparez vos contenus pour les réseaux sociaux depuis un seul endroit.",
+      "newListing": "Nouvelle annonce"
+    },
+    "stats": {
+      "saved": {
+        "title": "Biens enregistrés",
+        "description": "Biens dans votre cockpit"
+      },
+      "generated": {
+        "title": "Annonces créées",
+        "description": "Biens avec variantes de texte"
+      },
+      "social": {
+        "title": "Réseaux sociaux",
+        "description": "Publications préparées"
+      },
+      "plan": {
+        "title": "Offre actuelle",
+        "value": "Accès Inserat-AI",
+        "description": "Fonctions selon l’offre choisie"
+      }
+    },
+    "objects": {
+      "sectionLabel": "BIENS IMMOBILIERS",
+      "count": "{count, plural, =0 {Aucun bien enregistré} one {# bien enregistré} other {# biens enregistrés}}",
+      "position": "Bien {index}",
+      "propertyTitle": "{type} à {location}",
+      "priceOnRequest": "Prix sur demande",
+      "recentlyEdited": "Modifié récemment",
+      "updatedOn": "Modifié le {date}",
+      "open": "Ouvrir le bien →"
+    },
+    "filters": {
+      "searchLabel": "Rechercher un bien",
+      "searchPlaceholder": "Localité, NPA, type de bien ou atout",
+      "statusLabel": "Statut",
+      "all": "Tous les biens",
+      "active": "Actifs uniquement",
+      "archived": "Archivés uniquement",
+      "sortLabel": "Tri",
+      "updatedDesc": "Modifiés récemment",
+      "updatedAsc": "Modifiés le moins récemment"
+    },
+    "states": {
+      "loadingTitle": "Chargement des biens",
+      "loadingDescription": "Inserat-AI se connecte à votre base de données.",
+      "errorTitle": "Impossible de charger les biens",
+      "emptyTitle": "Aucun bien disponible",
+      "emptyDescription": "Enregistrez votre premier bien dans le générateur d’annonces.",
+      "createFirst": "Créer le premier bien"
+    },
+    "status": {
+      "active": "Actif",
+      "archived": "Archivé"
+    },
+    "images": {
+      "sectionLabel": "PHOTOS DU BIEN",
+      "count": "{count, plural, =0 {Aucune image enregistrée} one {# image enregistrée} other {# images enregistrées}}",
+      "mainAlt": "{type} à {location}",
+      "empty": "Aucune photo du bien",
+      "thumbnailAlt": "Aperçu {index}"
+    },
+    "facts": {
+      "rooms": "Pièces",
+      "livingArea": "Surface habitable",
+      "salePrice": "Prix de vente",
+      "highlights": "Points forts"
+    },
+    "quick": {
+      "sectionLabel": "ACCÈS RAPIDE",
+      "title": "Que souhaitez-vous faire ?",
+      "newListing": {
+        "title": "Nouvelle annonce",
+        "description": "Saisissez les données du bien et créez trois variantes professionnelles.",
+        "action": "Créer l’annonce →"
+      },
+      "images": {
+        "title": "Analyser les images",
+        "description": "Importez les photos du bien et générez automatiquement des descriptions.",
+        "action": "Importer les images →"
+      },
+      "manage": {
+        "title": "Gérer les biens",
+        "description": "Ouvrez, contrôlez et modifiez les biens enregistrés.",
+        "action": "Afficher les biens →"
+      }
+    },
+    "checklist": {
+      "sectionLabel": "AUJOURD’HUI",
+      "title": "Votre checklist",
+      "reset": "Réinitialiser",
+      "completedPercent": "{percent}% terminé",
+      "items": {
+        "listing": {
+          "title": "Créer une annonce",
+          "description": "Préparer une nouvelle annonce immobilière."
+        },
+        "social": {
+          "title": "Préparer une publication",
+          "description": "Créer un contenu pour vos canaux."
+        },
+        "images": {
+          "title": "Analyser les images",
+          "description": "Générer automatiquement des descriptions d’images."
+        },
+        "objects": {
+          "title": "Contrôler les biens",
+          "description": "Vérifier ou modifier les biens enregistrés."
+        }
+      }
+    },
+    "errors": {
+      "loadListings": "Les biens enregistrés n’ont pas pu être chargés."
+    },
+    "aria": {
+      "previousListing": "Bien précédent",
+      "nextListing": "Bien suivant",
+      "previousImage": "Image précédente",
+      "nextImage": "Image suivante",
+      "thumbnailsUp": "Faire défiler les aperçus vers le haut",
+      "thumbnailsDown": "Faire défiler les aperçus vers le bas",
+      "showImage": "Afficher l’image {index}"
+    }
   }
 }

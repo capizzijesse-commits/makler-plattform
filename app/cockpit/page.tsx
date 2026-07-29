@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 type ListingImage = {
   id: string;
   url: string;
@@ -33,64 +34,75 @@ type ListingStatusFilter = "all" | "active" | "archived";
 
 type ListingSortOrder = "updated-desc" | "updated-asc";
 
+type ChecklistItemId =
+  | "listing"
+  | "social"
+  | "images"
+  | "objects";
+
 type ChecklistItem = {
-  id: string;
-  title: string;
-  description: string;
+  id: ChecklistItemId;
   completed: boolean;
 };
 
 const DEFAULT_CHECKLIST: ChecklistItem[] = [
-  {
-    id: "listing",
-    title: "Inserat erstellen",
-    description: "Ein neues Immobilien-Inserat vorbereiten.",
-    completed: false,
-  },
-  {
-    id: "social",
-    title: "Social Post vorbereiten",
-    description: "Einen Beitrag für deine Kanäle erstellen.",
-    completed: false,
-  },
-  {
-    id: "images",
-    title: "Bilder analysieren",
-    description: "Immobilienbilder automatisch beschreiben lassen.",
-    completed: false,
-  },
-  {
-    id: "objects",
-    title: "Objekte kontrollieren",
-    description: "Gespeicherte Immobilien prüfen oder bearbeiten.",
-    completed: false,
-  },
+  { id: "listing", completed: false },
+  { id: "social", completed: false },
+  { id: "images", completed: false },
+  { id: "objects", completed: false },
 ];
+
+const CHECKLIST_TRANSLATION_KEYS = {
+  listing: {
+    title: "checklist.items.listing.title",
+    description: "checklist.items.listing.description",
+  },
+  social: {
+    title: "checklist.items.social.title",
+    description: "checklist.items.social.description",
+  },
+  images: {
+    title: "checklist.items.images.title",
+    description: "checklist.items.images.description",
+  },
+  objects: {
+    title: "checklist.items.objects.title",
+    description: "checklist.items.objects.description",
+  },
+} as const;
 
 function hasGeneratedVariants(value: unknown): boolean {
   return Array.isArray(value) && value.length > 0;
 }
 
-function formatPrice(price: number | null): string {
+function formatPrice(
+  price: number | null,
+  locale: string,
+  priceOnRequest: string
+): string {
   if (price === null) {
-    return "Preis auf Anfrage";
+    return priceOnRequest;
   }
 
-  return new Intl.NumberFormat("de-CH", {
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: "CHF",
     maximumFractionDigits: 0,
   }).format(price);
 }
 
-function formatDate(value: string): string {
+function formatDate(
+  value: string,
+  locale: string,
+  fallback: string
+): string {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return "Kürzlich bearbeitet";
+    return fallback;
   }
 
-  return new Intl.DateTimeFormat("de-CH", {
+  return new Intl.DateTimeFormat(locale, {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -98,9 +110,19 @@ function formatDate(value: string): string {
 }
 
 export default function CockpitPage() {
-  const [userName, setUserName] = useState("Makler");
+  const t = useTranslations("CockpitOverview");
+  const locale = useLocale();
+  const intlLocale =
+    locale === "it"
+      ? "it-CH"
+      : locale === "fr"
+        ? "fr-CH"
+        : locale === "en"
+          ? "en-CH"
+          : "de-CH";
+
+  const [userName, setUserName] = useState("");
   const [companyName, setCompanyName] = useState("");
-  const [greeting, setGreeting] = useState("Willkommen");
   const [currentDate, setCurrentDate] = useState("");
 
   const [listings, setListings] = useState<Listing[]>([]);
@@ -121,7 +143,7 @@ const [sortOrder, setSortOrder] =
 
   const normalizedSearchQuery = searchQuery
   .trim()
-  .toLocaleLowerCase("de-CH");
+  .toLocaleLowerCase(intlLocale);
 
 const filteredListings = listings
   .filter((listing) => {
@@ -136,7 +158,7 @@ const filteredListings = listings
       normalizedSearchQuery.length === 0 ||
       searchableValues.some((value) =>
         value
-          ?.toLocaleLowerCase("de-CH")
+          ?.toLocaleLowerCase(intlLocale)
           .includes(normalizedSearchQuery)
       );
 
@@ -279,25 +301,15 @@ useEffect(() => {
       setCompanyName(storedCompany.trim());
     }
 
-    const hour = new Date().getHours();
-
-    if (hour < 12) {
-      setGreeting("Guten Morgen");
-    } else if (hour < 18) {
-      setGreeting("Guten Tag");
-    } else {
-      setGreeting("Guten Abend");
-    }
-
     setCurrentDate(
-      new Intl.DateTimeFormat("de-CH", {
+      new Intl.DateTimeFormat(intlLocale, {
         weekday: "long",
         day: "2-digit",
         month: "long",
         year: "numeric",
       }).format(new Date())
     );
-  }, []);
+  }, [intlLocale]);
 
 useEffect(() => {
   const controller = new AbortController();
@@ -378,10 +390,24 @@ useEffect(() => {
     try {
       const parsedChecklist = JSON.parse(
         savedChecklist
-      ) as ChecklistItem[];
+      ) as Array<{
+        id?: unknown;
+        completed?: unknown;
+      }>;
 
       if (Array.isArray(parsedChecklist)) {
-        setChecklist(parsedChecklist);
+        setChecklist(
+          DEFAULT_CHECKLIST.map((defaultItem) => {
+            const savedItem = parsedChecklist.find(
+              (item) => item?.id === defaultItem.id
+            );
+
+            return {
+              id: defaultItem.id,
+              completed: savedItem?.completed === true,
+            };
+          })
+        );
       }
     } catch {
       localStorage.removeItem("inseratAiCockpitChecklist");
@@ -413,7 +439,7 @@ useEffect(() => {
         if (!response.ok || !data.success) {
           throw new Error(
             data.error ||
-              "Die gespeicherten Objekte konnten nicht geladen werden."
+              t("errors.loadListings")
           );
         }
 
@@ -428,7 +454,7 @@ useEffect(() => {
         setListingsError(
           error instanceof Error
             ? error.message
-            : "Die gespeicherten Objekte konnten nicht geladen werden."
+            : t("errors.loadListings")
         );
       } finally {
         if (!controller.signal.aborted) {
@@ -442,9 +468,9 @@ useEffect(() => {
     return () => {
       controller.abort();
     };
-  }, []);
+  }, [t]);
 
-  function toggleChecklistItem(id: string) {
+  function toggleChecklistItem(id: ChecklistItemId) {
     setChecklist((currentChecklist) => {
       const updatedChecklist = currentChecklist.map((item) =>
         item.id === id
@@ -504,12 +530,12 @@ justifySelf: "start",
   }}
 >
   <span>←</span>
-  Dashboard
+  {t("navigation.dashboard")}
 </Link>
 
         <div className="cockpitWordmark">
   <strong>
-    Makler-<span>Cockpit</span>
+    {t("wordmark.prefix")}<span>{t("wordmark.accent")}</span>
   </strong>
 </div>
 
@@ -524,17 +550,16 @@ justifySelf: "start",
 
         <section className="heroSection">
           <div className="heroContent">
-            <p className="eyebrow">DEIN MAKLER-COCKPIT</p>
+            <p className="eyebrow">{t("hero.eyebrow")}</p>
 
             <h1>
               {companyName.trim() ||
                 userName.trim() ||
-                "Meine Projekte"}
+                t("hero.fallbackTitle")}
             </h1>
 
             <p className="heroDescription">
-              Erstelle Inserate, verwalte Immobilien und bereite
-              Social-Media-Beiträge an einem zentralen Ort vor.
+              {t("hero.description")}
             </p>
 
             <p className="currentDate">{currentDate}</p>
@@ -543,7 +568,7 @@ justifySelf: "start",
           <div className="heroActions">
             <Link href="/dashboard" className="primaryButton">
               <span>＋</span>
-              Neues Inserat
+              {t("hero.newListing")}
             </Link>
 
            
@@ -555,11 +580,11 @@ justifySelf: "start",
             <span className="statIcon">🏠</span>
 
             <div>
-              <small>Gespeicherte Objekte</small>
+              <small>{t("stats.saved.title")}</small>
               <strong>
                 {loadingListings ? "…" : listings.length}
               </strong>
-              <p>Immobilien in deinem Cockpit</p>
+              <p>{t("stats.saved.description")}</p>
             </div>
           </article>
 
@@ -567,11 +592,11 @@ justifySelf: "start",
             <span className="statIcon">📝</span>
 
             <div>
-              <small>Erstellte Inserate</small>
+              <small>{t("stats.generated.title")}</small>
               <strong>
                 {loadingListings ? "…" : generatedListingsCount}
               </strong>
-              <p>Objekte mit Textvarianten</p>
+              <p>{t("stats.generated.description")}</p>
             </div>
           </article>
 
@@ -579,9 +604,9 @@ justifySelf: "start",
             <span className="statIcon">📱</span>
 
             <div>
-              <small>Social Media</small>
+              <small>{t("stats.social.title")}</small>
               <strong>0</strong>
-              <p>Vorbereitete Beiträge</p>
+              <p>{t("stats.social.description")}</p>
             </div>
           </article>
 
@@ -589,9 +614,9 @@ justifySelf: "start",
             <span className="statIcon">⚡</span>
 
             <div>
-              <small>Aktueller Plan</small>
-              <strong>Inserat-AI Zugang</strong>
-              <p>Funktionen gemäss gewähltem Angebot</p>
+              <small>{t("stats.plan.title")}</small>
+              <strong>{t("stats.plan.value")}</strong>
+              <p>{t("stats.plan.description")}</p>
             </div>
           </article>
         </section>
@@ -599,13 +624,10 @@ justifySelf: "start",
             <section className="panel objectsPanel" id="objekte">
               <div className="panelHeader">
                <div className="objectsHeading">
-  <p className="sectionLabel">IMMOBILIEN</p>
+  <p className="sectionLabel">{t("objects.sectionLabel")}</p>
 
   <h2>
-    {listings.length}{" "}
-    {listings.length === 1
-      ? "gespeichertes Objekt"
-      : "gespeicherte Objekte"}
+    {t("objects.count", { count: listings.length })}
   </h2>
 </div>
 
@@ -613,12 +635,12 @@ justifySelf: "start",
               </div>
 <div className="listingControls">
   <label className="listingSearch">
-    <span>Objekt suchen</span>
+    <span>{t("filters.searchLabel")}</span>
 
     <input
       type="search"
       value={searchQuery}
-      placeholder="Ort, PLZ, Objektart oder Highlight"
+      placeholder={t("filters.searchPlaceholder")}
       onChange={(event) => {
         setSearchQuery(event.target.value);
         
@@ -627,7 +649,7 @@ justifySelf: "start",
   </label>
 
   <label className="listingControl">
-    <span>Status</span>
+    <span>{t("filters.statusLabel")}</span>
 
     <select
       value={statusFilter}
@@ -638,14 +660,14 @@ justifySelf: "start",
         setShowAllListings(false);
       }}
     >
-      <option value="all">Alle Objekte</option>
-      <option value="active">Nur aktive</option>
-      <option value="archived">Nur archivierte</option>
+      <option value="all">{t("filters.all")}</option>
+      <option value="active">{t("filters.active")}</option>
+      <option value="archived">{t("filters.archived")}</option>
     </select>
   </label>
 
   <label className="listingControl">
-    <span>Sortierung</span>
+    <span>{t("filters.sortLabel")}</span>
 
     <select
       value={sortOrder}
@@ -657,11 +679,11 @@ justifySelf: "start",
       }}
     >
       <option value="updated-desc">
-        Zuletzt bearbeitet
+        {t("filters.updatedDesc")}
       </option>
 
       <option value="updated-asc">
-        Älteste Bearbeitung
+        {t("filters.updatedAsc")}
       </option>
     </select>
   </label>
@@ -669,31 +691,26 @@ justifySelf: "start",
               {loadingListings ? (
                 <div className="messageBox">
                   <div className="loadingSpinner" />
-                  <h3>Objekte werden geladen</h3>
-                  <p>
-                    Inserat-AI verbindet sich mit deiner Datenbank.
-                  </p>
+                  <h3>{t("states.loadingTitle")}</h3>
+                  <p>{t("states.loadingDescription")}</p>
                 </div>
               ) : listingsError ? (
                 <div className="messageBox errorBox">
                   <span className="messageIcon">⚠️</span>
-                  <h3>Objekte konnten nicht geladen werden</h3>
+                  <h3>{t("states.errorTitle")}</h3>
                   <p>{listingsError}</p>
                 </div>
               ) : currentListing === null ? (
                 <div className="messageBox">
                   <span className="messageIcon">🏡</span>
-                  <h3>Noch keine Objekte vorhanden</h3>
-                  <p>
-                    Speichere dein erstes Objekt im Inserat-Generator
-                    dauerhaft ab.
-                  </p>
+                  <h3>{t("states.emptyTitle")}</h3>
+                  <p>{t("states.emptyDescription")}</p>
 
                   <Link
                     href="/dashboard"
                     className="primaryButton messageButton"
                   >
-                    Erstes Objekt erstellen
+                    {t("states.createFirst")}
                   </Link>
                 </div>
               ) : (
@@ -704,13 +721,15 @@ justifySelf: "start",
     className="slideshowArrow"
     onClick={showPreviousListing}
     disabled={filteredListings.length <= 1}
-    aria-label="Vorheriges Objekt"
+    aria-label={t("aria.previousListing")}
   >
     ‹
   </button>
 
   <div className="currentObjectLabel">
-    Objekt {activeListingIndex + 1}
+    {t("objects.position", {
+      index: activeListingIndex + 1,
+    })}
   </div>
 
   <button
@@ -718,7 +737,7 @@ justifySelf: "start",
     className="slideshowArrow"
     onClick={showNextListing}
     disabled={filteredListings.length <= 1}
-    aria-label="Nächstes Objekt"
+    aria-label={t("aria.nextListing")}
   >
     ›
   </button>
@@ -736,7 +755,9 @@ justifySelf: "start",
           : "propertyStatus"
       }
     >
-      {currentListing.archivedAt ? "Archiviert" : "Aktiv"}
+      {currentListing.archivedAt
+        ? t("status.archived")
+        : t("status.active")}
     </span>
   </div>
 
@@ -749,20 +770,18 @@ justifySelf: "start",
         className="cockpitMediaArrow"
         onClick={showPreviousCockpitImage}
         disabled={currentListingImages.length <= 1}
-        aria-label="Vorheriges Objektbild"
+        aria-label={t("aria.previousImage")}
       >
         ‹
       </button>
 
       <div className="cockpitMediaHeaderText">
-        <span>OBJEKTBILDER</span>
+        <span>{t("images.sectionLabel")}</span>
 
         <strong>
-          {currentListingImages.length === 0
-            ? "Keine Bilder gespeichert"
-            : currentListingImages.length === 1
-              ? "1 Bild gespeichert"
-              : `${currentListingImages.length} Bilder gespeichert`}
+          {t("images.count", {
+            count: currentListingImages.length,
+          })}
         </strong>
       </div>
 
@@ -771,7 +790,7 @@ justifySelf: "start",
         className="cockpitMediaArrow"
         onClick={showNextCockpitImage}
         disabled={currentListingImages.length <= 1}
-        aria-label="Nächstes Objektbild"
+        aria-label={t("aria.nextImage")}
       >
         ›
       </button>
@@ -798,12 +817,15 @@ justifySelf: "start",
         {currentCockpitImage ? (
           <img
             src={currentCockpitImage.url}
-            alt={`${currentListing.propertyType} in ${currentListing.location}`}
+            alt={t("images.mainAlt", {
+              type: currentListing.propertyType,
+              location: currentListing.location,
+            })}
           />
         ) : (
           <div className="cockpitMediaEmpty">
             <span>📷</span>
-            <strong>Noch keine Objektbilder</strong>
+            <strong>{t("images.empty")}</strong>
           </div>
         )}
       </div>
@@ -824,7 +846,7 @@ justifySelf: "start",
             className="cockpitThumbnailNavigation"
             onClick={showPreviousCockpitImage}
             disabled={currentListingImages.length <= 1}
-            aria-label="Vorschaubilder nach oben"
+            aria-label={t("aria.thumbnailsUp")}
           >
             ▲
           </button>
@@ -857,13 +879,15 @@ justifySelf: "start",
                   onClick={() =>
                     setActiveCockpitImageIndex(imageIndex)
                   }
-                  aria-label={`Objektbild ${
-                    imageIndex + 1
-                  } anzeigen`}
+                  aria-label={t("aria.showImage", {
+                    index: imageIndex + 1,
+                  })}
                 >
                   <img
                     src={image.url}
-                    alt={`Vorschau ${imageIndex + 1}`}
+                    alt={t("images.thumbnailAlt", {
+                      index: imageIndex + 1,
+                    })}
                   />
                 </button>
               );
@@ -875,7 +899,7 @@ justifySelf: "start",
             className="cockpitThumbnailNavigation"
             onClick={showNextCockpitImage}
             disabled={currentListingImages.length <= 1}
-            aria-label="Vorschaubilder nach unten"
+            aria-label={t("aria.thumbnailsDown")}
           >
             ▼
           </button>
@@ -887,8 +911,10 @@ justifySelf: "start",
     <small>{currentListing.propertyType}</small>
 
     <h3>
-      {currentListing.propertyType} in{" "}
-      {currentListing.location}
+      {t("objects.propertyTitle", {
+        type: currentListing.propertyType,
+        location: currentListing.location,
+      })}
     </h3>
 
     <p>
@@ -902,7 +928,7 @@ justifySelf: "start",
 
   <div className="propertyFacts">
     <div>
-      <span>Zimmer</span>
+      <span>{t("facts.rooms")}</span>
 
       <strong>
         {currentListing.rooms !== null
@@ -912,7 +938,7 @@ justifySelf: "start",
     </div>
 
     <div>
-      <span>Wohnfläche</span>
+      <span>{t("facts.livingArea")}</span>
 
       <strong>
         {currentListing.livingArea !== null
@@ -922,21 +948,33 @@ justifySelf: "start",
     </div>
 
     <div className="priceFact">
-      <span>Verkaufspreis</span>
-      <strong>{formatPrice(currentListing.price)}</strong>
+      <span>{t("facts.salePrice")}</span>
+      <strong>
+        {formatPrice(
+          currentListing.price,
+          intlLocale,
+          t("objects.priceOnRequest")
+        )}
+      </strong>
     </div>
   </div>
 
   {currentListing.highlights && (
     <div className="highlightsBox">
-      <span>Highlights</span>
+      <span>{t("facts.highlights")}</span>
       <p>{currentListing.highlights}</p>
     </div>
   )}
 
   <div className="propertyFooter">
     <span>
-      Bearbeitet am {formatDate(currentListing.updatedAt)}
+      {t("objects.updatedOn", {
+        date: formatDate(
+          currentListing.updatedAt,
+          intlLocale,
+          t("objects.recentlyEdited")
+        ),
+      })}
     </span>
 
     <Link
@@ -959,7 +997,7 @@ justifySelf: "start",
     boxShadow: "0 8px 20px rgba(245, 158, 11, 0.12)",
   }}
 >
-  Objekt öffnen →
+  {t("objects.open")}
 </Link>
   </div>
 </article>
@@ -969,8 +1007,8 @@ justifySelf: "start",
             <section className="panel quickPanel allFunctionsPanel">
   <div className="panelHeader">
     <div>
-      <p className="sectionLabel">SCHNELLZUGRIFF</p>
-      <h2>Was möchtest du erledigen?</h2>
+      <p className="sectionLabel">{t("quick.sectionLabel")}</p>
+      <h2>{t("quick.title")}</h2>
     </div>
   </div>
 
@@ -978,40 +1016,31 @@ justifySelf: "start",
     <Link href="/dashboard" className="quickCard">
       <span className="quickIcon">✨</span>
 
-      <h3>Neues Inserat</h3>
+      <h3>{t("quick.newListing.title")}</h3>
 
-      <p>
-        Objektdaten eingeben und drei professionelle Varianten
-        erstellen.
-      </p>
+      <p>{t("quick.newListing.description")}</p>
 
-      <strong>Inserat erstellen →</strong>
+      <strong>{t("quick.newListing.action")}</strong>
     </Link>
 
     <Link href="/dashboard" className="quickCard">
       <span className="quickIcon">🖼️</span>
 
-      <h3>Bilder analysieren</h3>
+      <h3>{t("quick.images.title")}</h3>
 
-      <p>
-        Immobilienbilder hochladen und automatisch beschreiben
-        lassen.
-      </p>
+      <p>{t("quick.images.description")}</p>
 
-      <strong>Bilder hochladen →</strong>
+      <strong>{t("quick.images.action")}</strong>
     </Link>
 
     <a href="#objekte" className="quickCard">
       <span className="quickIcon">🏘️</span>
 
-      <h3>Objekte verwalten</h3>
+      <h3>{t("quick.manage.title")}</h3>
 
-      <p>
-        Gespeicherte Immobilien öffnen, prüfen und
-        weiterbearbeiten.
-      </p>
+      <p>{t("quick.manage.description")}</p>
 
-      <strong>Objekte anzeigen →</strong>
+      <strong>{t("quick.manage.action")}</strong>
     </a>
   </div>
 
@@ -1020,12 +1049,12 @@ justifySelf: "start",
   <div className="checklistInside">
     <div className="panelHeader checklistTitle">
       <div>
-        <p className="sectionLabel">HEUTE</p>
-        <h2>Deine Checkliste</h2>
+        <p className="sectionLabel">{t("checklist.sectionLabel")}</p>
+        <h2>{t("checklist.title")}</h2>
       </div>
 
       <button type="button" onClick={resetChecklist}>
-        Zurücksetzen
+        {t("checklist.reset")}
       </button>
     </div>
 
@@ -1054,7 +1083,11 @@ justifySelf: "start",
             {completedTasks}/{checklist.length}
           </strong>
 
-          <span>{checklistProgress}% erledigt</span>
+          <span>
+            {t("checklist.completedPercent", {
+              percent: checklistProgress,
+            })}
+          </span>
         </div>
       </div>
 
@@ -1075,8 +1108,12 @@ justifySelf: "start",
             </span>
 
             <span className="checkText">
-              <strong>{item.title}</strong>
-              <small>{item.description}</small>
+              <strong>
+                {t(CHECKLIST_TRANSLATION_KEYS[item.id].title)}
+              </strong>
+              <small>
+                {t(CHECKLIST_TRANSLATION_KEYS[item.id].description)}
+              </small>
             </span>
           </button>
         ))}

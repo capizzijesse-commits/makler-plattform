@@ -793,5 +793,140 @@
     },
     "country": "Schweiz",
     "productNotice": "Inserat-AI ist ein Produkt der Helvetic Immobilien Capizzi."
+  },
+  "CockpitOverview": {
+    "navigation": {
+      "dashboard": "Dashboard"
+    },
+    "wordmark": {
+      "prefix": "Makler-",
+      "accent": "Cockpit"
+    },
+    "hero": {
+      "eyebrow": "DEIN MAKLER-COCKPIT",
+      "fallbackTitle": "Meine Projekte",
+      "description": "Erstelle Inserate, verwalte Immobilien und bereite Social-Media-Beiträge an einem zentralen Ort vor.",
+      "newListing": "Neues Inserat"
+    },
+    "stats": {
+      "saved": {
+        "title": "Gespeicherte Objekte",
+        "description": "Immobilien in deinem Cockpit"
+      },
+      "generated": {
+        "title": "Erstellte Inserate",
+        "description": "Objekte mit Textvarianten"
+      },
+      "social": {
+        "title": "Social Media",
+        "description": "Vorbereitete Beiträge"
+      },
+      "plan": {
+        "title": "Aktueller Plan",
+        "value": "Inserat-AI Zugang",
+        "description": "Funktionen gemäss gewähltem Angebot"
+      }
+    },
+    "objects": {
+      "sectionLabel": "IMMOBILIEN",
+      "count": "{count, plural, =0 {Keine gespeicherten Objekte} one {# gespeichertes Objekt} other {# gespeicherte Objekte}}",
+      "position": "Objekt {index}",
+      "propertyTitle": "{type} in {location}",
+      "priceOnRequest": "Preis auf Anfrage",
+      "recentlyEdited": "Kürzlich bearbeitet",
+      "updatedOn": "Bearbeitet am {date}",
+      "open": "Objekt öffnen →"
+    },
+    "filters": {
+      "searchLabel": "Objekt suchen",
+      "searchPlaceholder": "Ort, PLZ, Objektart oder Highlight",
+      "statusLabel": "Status",
+      "all": "Alle Objekte",
+      "active": "Nur aktive",
+      "archived": "Nur archivierte",
+      "sortLabel": "Sortierung",
+      "updatedDesc": "Zuletzt bearbeitet",
+      "updatedAsc": "Älteste Bearbeitung"
+    },
+    "states": {
+      "loadingTitle": "Objekte werden geladen",
+      "loadingDescription": "Inserat-AI verbindet sich mit deiner Datenbank.",
+      "errorTitle": "Objekte konnten nicht geladen werden",
+      "emptyTitle": "Noch keine Objekte vorhanden",
+      "emptyDescription": "Speichere dein erstes Objekt im Inserat-Generator dauerhaft ab.",
+      "createFirst": "Erstes Objekt erstellen"
+    },
+    "status": {
+      "active": "Aktiv",
+      "archived": "Archiviert"
+    },
+    "images": {
+      "sectionLabel": "OBJEKTBILDER",
+      "count": "{count, plural, =0 {Keine Bilder gespeichert} one {# Bild gespeichert} other {# Bilder gespeichert}}",
+      "mainAlt": "{type} in {location}",
+      "empty": "Noch keine Objektbilder",
+      "thumbnailAlt": "Vorschau {index}"
+    },
+    "facts": {
+      "rooms": "Zimmer",
+      "livingArea": "Wohnfläche",
+      "salePrice": "Verkaufspreis",
+      "highlights": "Highlights"
+    },
+    "quick": {
+      "sectionLabel": "SCHNELLZUGRIFF",
+      "title": "Was möchtest du erledigen?",
+      "newListing": {
+        "title": "Neues Inserat",
+        "description": "Objektdaten eingeben und drei professionelle Varianten erstellen.",
+        "action": "Inserat erstellen →"
+      },
+      "images": {
+        "title": "Bilder analysieren",
+        "description": "Immobilienbilder hochladen und automatisch beschreiben lassen.",
+        "action": "Bilder hochladen →"
+      },
+      "manage": {
+        "title": "Objekte verwalten",
+        "description": "Gespeicherte Immobilien öffnen, prüfen und weiterbearbeiten.",
+        "action": "Objekte anzeigen →"
+      }
+    },
+    "checklist": {
+      "sectionLabel": "HEUTE",
+      "title": "Deine Checkliste",
+      "reset": "Zurücksetzen",
+      "completedPercent": "{percent}% erledigt",
+      "items": {
+        "listing": {
+          "title": "Inserat erstellen",
+          "description": "Ein neues Immobilien-Inserat vorbereiten."
+        },
+        "social": {
+          "title": "Social Post vorbereiten",
+          "description": "Einen Beitrag für deine Kanäle erstellen."
+        },
+        "images": {
+          "title": "Bilder analysieren",
+          "description": "Immobilienbilder automatisch beschreiben lassen."
+        },
+        "objects": {
+          "title": "Objekte kontrollieren",
+          "description": "Gespeicherte Immobilien prüfen oder bearbeiten."
+        }
+      }
+    },
+    "errors": {
+      "loadListings": "Die gespeicherten Objekte konnten nicht geladen werden."
+    },
+    "aria": {
+      "previousListing": "Vorheriges Objekt",
+      "nextListing": "Nächstes Objekt",
+      "previousImage": "Vorheriges Objektbild",
+      "nextImage": "Nächstes Objektbild",
+      "thumbnailsUp": "Vorschaubilder nach oben",
+      "thumbnailsDown": "Vorschaubilder nach unten",
+      "showImage": "Objektbild {index} anzeigen"
+    }
   }
 }

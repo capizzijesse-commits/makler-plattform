@@ -793,5 +793,140 @@
     },
     "country": "Switzerland",
     "productNotice": "Inserat-AI is a product of Helvetic Immobilien Capizzi."
+  },
+  "CockpitOverview": {
+    "navigation": {
+      "dashboard": "Dashboard"
+    },
+    "wordmark": {
+      "prefix": "Real estate ",
+      "accent": "cockpit"
+    },
+    "hero": {
+      "eyebrow": "YOUR REAL ESTATE COCKPIT",
+      "fallbackTitle": "My projects",
+      "description": "Create listings, manage properties and prepare social media content in one central place.",
+      "newListing": "New listing"
+    },
+    "stats": {
+      "saved": {
+        "title": "Saved properties",
+        "description": "Properties in your cockpit"
+      },
+      "generated": {
+        "title": "Created listings",
+        "description": "Properties with text variants"
+      },
+      "social": {
+        "title": "Social Media",
+        "description": "Prepared posts"
+      },
+      "plan": {
+        "title": "Current plan",
+        "value": "Inserat-AI access",
+        "description": "Features included in your selected offer"
+      }
+    },
+    "objects": {
+      "sectionLabel": "PROPERTIES",
+      "count": "{count, plural, =0 {No saved properties} one {# saved property} other {# saved properties}}",
+      "position": "Property {index}",
+      "propertyTitle": "{type} in {location}",
+      "priceOnRequest": "Price on request",
+      "recentlyEdited": "Recently edited",
+      "updatedOn": "Edited on {date}",
+      "open": "Open property →"
+    },
+    "filters": {
+      "searchLabel": "Search property",
+      "searchPlaceholder": "Location, postcode, property type or highlight",
+      "statusLabel": "Status",
+      "all": "All properties",
+      "active": "Active only",
+      "archived": "Archived only",
+      "sortLabel": "Sort",
+      "updatedDesc": "Recently edited",
+      "updatedAsc": "Least recently edited"
+    },
+    "states": {
+      "loadingTitle": "Loading properties",
+      "loadingDescription": "Inserat-AI is connecting to your database.",
+      "errorTitle": "Properties could not be loaded",
+      "emptyTitle": "No properties yet",
+      "emptyDescription": "Save your first property in the listing generator.",
+      "createFirst": "Create first property"
+    },
+    "status": {
+      "active": "Active",
+      "archived": "Archived"
+    },
+    "images": {
+      "sectionLabel": "PROPERTY IMAGES",
+      "count": "{count, plural, =0 {No images saved} one {# image saved} other {# images saved}}",
+      "mainAlt": "{type} in {location}",
+      "empty": "No property images yet",
+      "thumbnailAlt": "Preview {index}"
+    },
+    "facts": {
+      "rooms": "Rooms",
+      "livingArea": "Living area",
+      "salePrice": "Sale price",
+      "highlights": "Highlights"
+    },
+    "quick": {
+      "sectionLabel": "QUICK ACCESS",
+      "title": "What would you like to do?",
+      "newListing": {
+        "title": "New listing",
+        "description": "Enter property details and create three professional variants.",
+        "action": "Create listing →"
+      },
+      "images": {
+        "title": "Analyse images",
+        "description": "Upload property images and generate automatic descriptions.",
+        "action": "Upload images →"
+      },
+      "manage": {
+        "title": "Manage properties",
+        "description": "Open, review and continue editing saved properties.",
+        "action": "View properties →"
+      }
+    },
+    "checklist": {
+      "sectionLabel": "TODAY",
+      "title": "Your checklist",
+      "reset": "Reset",
+      "completedPercent": "{percent}% complete",
+      "items": {
+        "listing": {
+          "title": "Create listing",
+          "description": "Prepare a new property listing."
+        },
+        "social": {
+          "title": "Prepare social post",
+          "description": "Create a post for your channels."
+        },
+        "images": {
+          "title": "Analyse images",
+          "description": "Generate automatic descriptions for property images."
+        },
+        "objects": {
+          "title": "Review properties",
+          "description": "Review or edit saved properties."
+        }
+      }
+    },
+    "errors": {
+      "loadListings": "The saved properties could not be loaded."
+    },
+    "aria": {
+      "previousListing": "Previous property",
+      "nextListing": "Next property",
+      "previousImage": "Previous property image",
+      "nextImage": "Next property image",
+      "thumbnailsUp": "Move thumbnails up",
+      "thumbnailsDown": "Move thumbnails down",
+      "showImage": "Show property image {index}"
+    }
   }
 }
