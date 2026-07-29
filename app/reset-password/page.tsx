@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 type ResetPasswordResponse = {
   success?: boolean;
@@ -13,6 +14,7 @@ type ResetPasswordResponse = {
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const t = useTranslations("ResetPassword");
 
   const [token, setToken] = useState("");
   const [tokenLoaded, setTokenLoaded] = useState(false);
@@ -47,23 +49,17 @@ export default function ResetPasswordPage() {
     setSuccessMessage("");
 
     if (!token) {
-      setErrorMessage(
-        "Der Reset-Link ist unvollständig oder ungültig."
-      );
+      setErrorMessage(t("validation.invalidLink"));
       return;
     }
 
     if (password.length < 8) {
-      setErrorMessage(
-        "Das neue Passwort muss mindestens 8 Zeichen lang sein."
-      );
+      setErrorMessage(t("validation.passwordTooShort"));
       return;
     }
 
     if (password !== passwordConfirmation) {
-      setErrorMessage(
-        "Die beiden Passwörter stimmen nicht überein."
-      );
+      setErrorMessage(t("validation.passwordMismatch"));
       return;
     }
 
@@ -85,16 +81,10 @@ export default function ResetPasswordPage() {
         (await response.json()) as ResetPasswordResponse;
 
       if (!response.ok || !data.success) {
-        throw new Error(
-          data.error ||
-            "Das Passwort konnte nicht geändert werden."
-        );
+        throw new Error(t("messages.changeFailed"));
       }
 
-      setSuccessMessage(
-        data.message ||
-          "Dein Passwort wurde erfolgreich geändert."
-      );
+      setSuccessMessage(t("messages.success"));
 
       setPassword("");
       setPasswordConfirmation("");
@@ -106,7 +96,7 @@ export default function ResetPasswordPage() {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Das Passwort konnte nicht geändert werden."
+          : t("messages.changeFailed")
       );
     } finally {
       setLoading(false);
@@ -200,7 +190,7 @@ export default function ResetPasswordPage() {
               letterSpacing: "-0.04em",
             }}
           >
-            Neues Passwort
+            {t("hero.title")}
           </h1>
 
           <p
@@ -211,8 +201,7 @@ export default function ResetPasswordPage() {
               lineHeight: 1.65,
             }}
           >
-            Lege jetzt ein neues Passwort für dein
-            Inserat-AI-Konto fest.
+            {t("hero.description")}
           </p>
         </div>
 
@@ -224,7 +213,7 @@ export default function ResetPasswordPage() {
               textAlign: "center",
             }}
           >
-            Reset-Link wird geprüft ...
+            {t("messages.checkingLink")}
           </div>
         )}
 
@@ -243,8 +232,7 @@ export default function ResetPasswordPage() {
               lineHeight: 1.55,
             }}
           >
-            Der Link enthält keinen gültigen Reset-Token.
-            Fordere bitte einen neuen Link an.
+            {t("messages.missingToken")}
           </div>
         )}
 
@@ -266,7 +254,7 @@ export default function ResetPasswordPage() {
           >
             {successMessage}
             <div style={{ marginTop: "6px" }}>
-              Du wirst zum Login weitergeleitet.
+              {t("messages.redirecting")}
             </div>
           </div>
         )}
@@ -303,7 +291,7 @@ export default function ResetPasswordPage() {
                 fontWeight: 850,
               }}
             >
-              Neues Passwort
+              {t("fields.newPassword")}
             </label>
 
             <div style={{ position: "relative" }}>
@@ -314,7 +302,7 @@ export default function ResetPasswordPage() {
                 onChange={(event) =>
                   setPassword(event.target.value)
                 }
-                placeholder="Mindestens 8 Zeichen"
+                placeholder={t("fields.passwordPlaceholder")}
                 autoComplete="new-password"
                 required
                 disabled={loading}
@@ -328,8 +316,8 @@ export default function ResetPasswordPage() {
                 }
                 aria-label={
                   showPassword
-                    ? "Passwort ausblenden"
-                    : "Passwort anzeigen"
+                    ? t("fields.hidePassword")
+                    : t("fields.showPassword")
                 }
                 style={eyeButtonStyle}
               >
@@ -348,7 +336,7 @@ export default function ResetPasswordPage() {
                 fontWeight: 850,
               }}
             >
-              Passwort bestätigen
+              {t("fields.confirmPassword")}
             </label>
 
             <div style={{ position: "relative" }}>
@@ -361,7 +349,7 @@ export default function ResetPasswordPage() {
                 onChange={(event) =>
                   setPasswordConfirmation(event.target.value)
                 }
-                placeholder="Passwort erneut eingeben"
+                placeholder={t("fields.confirmationPlaceholder")}
                 autoComplete="new-password"
                 required
                 disabled={loading}
@@ -375,8 +363,8 @@ export default function ResetPasswordPage() {
                 }
                 aria-label={
                   showConfirmation
-                    ? "Passwort ausblenden"
-                    : "Passwort anzeigen"
+                    ? t("fields.hidePassword")
+                    : t("fields.showPassword")
                 }
                 style={eyeButtonStyle}
               >
@@ -406,8 +394,8 @@ export default function ResetPasswordPage() {
               }}
             >
               {loading
-                ? "Passwort wird geändert ..."
-                : "Neues Passwort speichern"}
+                ? t("actions.saving")
+                : t("actions.save")}
             </button>
           </form>
         )}
@@ -427,7 +415,7 @@ export default function ResetPasswordPage() {
               textDecoration: "none",
             }}
           >
-            Neuen Reset-Link anfordern
+            {t("actions.requestNewLink")}
           </Link>
         </div>
       </section>

@@ -650,5 +650,92 @@
       "hours": "{hours} h",
       "minutes": "{minutes} min"
     }
+  },
+  "ForgotPassword": {
+    "hero": {
+      "title": "Mot de passe oublié ?",
+      "description": "Saisissez votre adresse e-mail enregistrée. Nous vous enverrons un lien permettant de définir un nouveau mot de passe."
+    },
+    "fields": {
+      "email": "Adresse e-mail"
+    },
+    "actions": {
+      "sending": "Envoi du lien …",
+      "send": "Envoyer le lien",
+      "backToLogin": "Retour à la connexion"
+    },
+    "validation": {
+      "emailRequired": "Veuillez saisir votre adresse e-mail."
+    },
+    "messages": {
+      "requestFailed": "La demande ne peut pas être traitée pour le moment.",
+      "success": "Si un compte existe, un lien de réinitialisation a été envoyé."
+    },
+    "securityNotice": "Pour des raisons de sécurité, nous n’indiquons pas si une adresse e-mail est enregistrée auprès d’Inserat-AI."
+  },
+  "ResetPassword": {
+    "hero": {
+      "title": "Nouveau mot de passe",
+      "description": "Définissez un nouveau mot de passe pour votre compte Inserat-AI."
+    },
+    "fields": {
+      "newPassword": "Nouveau mot de passe",
+      "passwordPlaceholder": "Au moins 8 caractères",
+      "confirmPassword": "Confirmer le mot de passe",
+      "confirmationPlaceholder": "Saisissez à nouveau le mot de passe",
+      "showPassword": "Afficher le mot de passe",
+      "hidePassword": "Masquer le mot de passe"
+    },
+    "actions": {
+      "saving": "Modification du mot de passe …",
+      "save": "Enregistrer le nouveau mot de passe",
+      "requestNewLink": "Demander un nouveau lien"
+    },
+    "validation": {
+      "invalidLink": "Le lien de réinitialisation est incomplet ou non valide.",
+      "passwordTooShort": "Le nouveau mot de passe doit contenir au moins 8 caractères.",
+      "passwordMismatch": "Les deux mots de passe ne correspondent pas."
+    },
+    "messages": {
+      "checkingLink": "Vérification du lien …",
+      "missingToken": "Le lien ne contient aucun jeton valide. Demandez un nouveau lien.",
+      "success": "Votre mot de passe a été modifié avec succès.",
+      "changeFailed": "Le mot de passe n’a pas pu être modifié.",
+      "redirecting": "Vous allez être redirigé vers la page de connexion."
+    }
+  },
+  "Contact": {
+    "badge": "Contact et assistance",
+    "title": "Comment pouvons-nous vous aider ?",
+    "description": "Vous avez des questions sur Inserat-AI, votre compte, Founder ou une mise à niveau ? Écrivez-nous et nous vous répondrons personnellement.",
+    "details": {
+      "owner": "Propriétaire",
+      "phoneJesse": "Téléphone Jesse",
+      "phoneDanja": "Téléphone / WhatsApp Danja",
+      "email": "E-mail",
+      "website": "Site web"
+    },
+    "form": {
+      "name": "Nom",
+      "namePlaceholder": "Votre nom ou agence immobilière",
+      "email": "E-mail",
+      "emailPlaceholder": "nom@email.ch",
+      "phone": "Téléphone",
+      "message": "Message",
+      "messagePlaceholder": "Comment pouvons-nous vous aider ?"
+    },
+    "actions": {
+      "email": "Nous contacter par e-mail",
+      "backToGenerator": "Retour au générateur"
+    },
+    "footer": {
+      "responseTitle": "Réponse",
+      "responseText": "Nous vous répondrons dans les meilleurs délais.",
+      "supportTitle": "Assistance",
+      "supportText": "Questions sur le compte, Founder, Pro et Inserat-AI."
+    },
+    "email": {
+      "subject": "Demande concernant Inserat-AI"
+    }
   }
 }

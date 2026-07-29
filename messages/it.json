@@ -650,5 +650,92 @@
       "hours": "{hours} h",
       "minutes": "{minutes} min"
     }
+  },
+  "ForgotPassword": {
+    "hero": {
+      "title": "Password dimenticata?",
+      "description": "Inserisci l’indirizzo e-mail registrato. Ti invieremo un link per impostare una nuova password."
+    },
+    "fields": {
+      "email": "Indirizzo e-mail"
+    },
+    "actions": {
+      "sending": "Invio del link …",
+      "send": "Invia link di ripristino",
+      "backToLogin": "Torna all’accesso"
+    },
+    "validation": {
+      "emailRequired": "Inserisci il tuo indirizzo e-mail."
+    },
+    "messages": {
+      "requestFailed": "Al momento non è possibile elaborare la richiesta.",
+      "success": "Se esiste un account, è stato inviato un link di ripristino."
+    },
+    "securityNotice": "Per motivi di sicurezza non indichiamo se un indirizzo e-mail è registrato su Inserat-AI."
+  },
+  "ResetPassword": {
+    "hero": {
+      "title": "Nuova password",
+      "description": "Imposta una nuova password per il tuo account Inserat-AI."
+    },
+    "fields": {
+      "newPassword": "Nuova password",
+      "passwordPlaceholder": "Almeno 8 caratteri",
+      "confirmPassword": "Conferma password",
+      "confirmationPlaceholder": "Inserisci nuovamente la password",
+      "showPassword": "Mostra password",
+      "hidePassword": "Nascondi password"
+    },
+    "actions": {
+      "saving": "Modifica della password …",
+      "save": "Salva la nuova password",
+      "requestNewLink": "Richiedi un nuovo link"
+    },
+    "validation": {
+      "invalidLink": "Il link di ripristino è incompleto o non valido.",
+      "passwordTooShort": "La nuova password deve contenere almeno 8 caratteri.",
+      "passwordMismatch": "Le due password non corrispondono."
+    },
+    "messages": {
+      "checkingLink": "Verifica del link …",
+      "missingToken": "Il link non contiene un token valido. Richiedi un nuovo link.",
+      "success": "La password è stata modificata correttamente.",
+      "changeFailed": "Non è stato possibile modificare la password.",
+      "redirecting": "Verrai reindirizzato alla pagina di accesso."
+    }
+  },
+  "Contact": {
+    "badge": "Contatto e assistenza",
+    "title": "Come possiamo aiutarti?",
+    "description": "Hai domande su Inserat-AI, sul tuo account, su Founder o su un upgrade? Scrivici e ti risponderemo personalmente.",
+    "details": {
+      "owner": "Titolare",
+      "phoneJesse": "Telefono Jesse",
+      "phoneDanja": "Telefono / WhatsApp Danja",
+      "email": "E-mail",
+      "website": "Sito web"
+    },
+    "form": {
+      "name": "Nome",
+      "namePlaceholder": "Il tuo nome o agenzia immobiliare",
+      "email": "E-mail",
+      "emailPlaceholder": "nome@email.ch",
+      "phone": "Telefono",
+      "message": "Messaggio",
+      "messagePlaceholder": "Come possiamo aiutarti?"
+    },
+    "actions": {
+      "email": "Contattaci via e-mail",
+      "backToGenerator": "Torna al generatore"
+    },
+    "footer": {
+      "responseTitle": "Risposta",
+      "responseText": "Ti risponderemo il prima possibile.",
+      "supportTitle": "Assistenza",
+      "supportText": "Domande su account, Founder, Pro e Inserat-AI."
+    },
+    "email": {
+      "subject": "Richiesta su Inserat-AI"
+    }
   }
 }

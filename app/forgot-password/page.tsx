@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
+import { useTranslations } from "next-intl";
 
 type ForgotPasswordResponse = {
   success?: boolean;
@@ -10,6 +11,7 @@ type ForgotPasswordResponse = {
 };
 
 export default function ForgotPasswordPage() {
+  const t = useTranslations("ForgotPassword");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -21,7 +23,7 @@ export default function ForgotPasswordPage() {
     const normalizedEmail = email.trim().toLowerCase();
 
     if (!normalizedEmail) {
-      setErrorMessage("Bitte gib deine E-Mail-Adresse ein.");
+      setErrorMessage(t("validation.emailRequired"));
       return;
     }
 
@@ -43,21 +45,15 @@ export default function ForgotPasswordPage() {
       const data = (await response.json()) as ForgotPasswordResponse;
 
       if (!response.ok || !data.success) {
-        throw new Error(
-          data.error ||
-            "Die Anfrage konnte momentan nicht verarbeitet werden."
-        );
+        throw new Error(t("messages.requestFailed"));
       }
 
-      setSuccessMessage(
-        data.message ||
-          "Falls ein Konto existiert, wurde ein Reset-Link versendet."
-      );
+      setSuccessMessage(t("messages.success"));
     } catch (error) {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Die Anfrage ist fehlgeschlagen."
+          : t("messages.requestFailed")
       );
     } finally {
       setLoading(false);
@@ -123,7 +119,7 @@ export default function ForgotPasswordPage() {
               letterSpacing: "-0.04em",
             }}
           >
-            Passwort vergessen?
+            {t("hero.title")}
           </h1>
 
           <p
@@ -134,8 +130,7 @@ export default function ForgotPasswordPage() {
               lineHeight: 1.65,
             }}
           >
-            Gib deine registrierte E-Mail-Adresse ein. Wir senden dir
-            einen Link, mit dem du ein neues Passwort festlegen kannst.
+            {t("hero.description")}
           </p>
         </div>
 
@@ -188,7 +183,7 @@ export default function ForgotPasswordPage() {
               fontWeight: 850,
             }}
           >
-            E-Mail-Adresse
+            {t("fields.email")}
           </label>
 
           <input
@@ -234,7 +229,9 @@ export default function ForgotPasswordPage() {
               boxShadow: "0 16px 36px rgba(249, 115, 22, 0.3)",
             }}
           >
-            {loading ? "Link wird versendet ..." : "Reset-Link senden"}
+            {loading
+              ? t("actions.sending")
+              : t("actions.send")}
           </button>
         </form>
 
@@ -253,7 +250,8 @@ export default function ForgotPasswordPage() {
               textDecoration: "none",
             }}
           >
-            ← Zurück zum Login
+            {"← "}
+            {t("actions.backToLogin")}
           </Link>
         </div>
 
@@ -266,8 +264,7 @@ export default function ForgotPasswordPage() {
             textAlign: "center",
           }}
         >
-          Aus Sicherheitsgründen zeigen wir nicht an, ob eine
-          E-Mail-Adresse bei Inserat-AI registriert ist.
+          {t("securityNotice")}
         </p>
       </section>
     </main>

@@ -650,5 +650,92 @@
       "hours": "{hours} hr",
       "minutes": "{minutes} min"
     }
+  },
+  "ForgotPassword": {
+    "hero": {
+      "title": "Forgot your password?",
+      "description": "Enter your registered email address. We will send you a link to set a new password."
+    },
+    "fields": {
+      "email": "Email address"
+    },
+    "actions": {
+      "sending": "Sending link …",
+      "send": "Send reset link",
+      "backToLogin": "Back to sign in"
+    },
+    "validation": {
+      "emailRequired": "Enter your email address."
+    },
+    "messages": {
+      "requestFailed": "The request cannot be processed at the moment.",
+      "success": "If an account exists, a reset link has been sent."
+    },
+    "securityNotice": "For security reasons, we do not disclose whether an email address is registered with Inserat-AI."
+  },
+  "ResetPassword": {
+    "hero": {
+      "title": "New password",
+      "description": "Set a new password for your Inserat-AI account."
+    },
+    "fields": {
+      "newPassword": "New password",
+      "passwordPlaceholder": "At least 8 characters",
+      "confirmPassword": "Confirm password",
+      "confirmationPlaceholder": "Enter the password again",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password"
+    },
+    "actions": {
+      "saving": "Changing password …",
+      "save": "Save new password",
+      "requestNewLink": "Request a new reset link"
+    },
+    "validation": {
+      "invalidLink": "The reset link is incomplete or invalid.",
+      "passwordTooShort": "The new password must contain at least 8 characters.",
+      "passwordMismatch": "The two passwords do not match."
+    },
+    "messages": {
+      "checkingLink": "Checking reset link …",
+      "missingToken": "The link does not contain a valid reset token. Request a new link.",
+      "success": "Your password has been changed successfully.",
+      "changeFailed": "The password could not be changed.",
+      "redirecting": "You will be redirected to the sign-in page."
+    }
+  },
+  "Contact": {
+    "badge": "Contact and support",
+    "title": "How can we help?",
+    "description": "Do you have questions about Inserat-AI, your account, Founder or an upgrade? Send us a message and we will reply personally.",
+    "details": {
+      "owner": "Owner",
+      "phoneJesse": "Jesse phone",
+      "phoneDanja": "Danja phone / WhatsApp",
+      "email": "Email",
+      "website": "Website"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Your name or real estate agency",
+      "email": "Email",
+      "emailPlaceholder": "name@email.ch",
+      "phone": "Phone",
+      "message": "Message",
+      "messagePlaceholder": "How can we help?"
+    },
+    "actions": {
+      "email": "Contact us by email",
+      "backToGenerator": "Back to generator"
+    },
+    "footer": {
+      "responseTitle": "Response",
+      "responseText": "We will reply as soon as possible.",
+      "supportTitle": "Support",
+      "supportText": "Questions about your account, Founder, Pro and Inserat-AI."
+    },
+    "email": {
+      "subject": "Question about Inserat-AI"
+    }
   }
 }

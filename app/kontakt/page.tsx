@@ -1,4 +1,10 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+
 export default function KontaktPage() {
+  const t = useTranslations("Contact");
+  const emailSubject = encodeURIComponent(t("email.subject"));
   return (
     <main
       style={{
@@ -31,7 +37,7 @@ export default function KontaktPage() {
             marginBottom: "16px",
           }}
         >
-          Upgrade / Testmonat
+          {t("badge")}
         </div>
 
         <h1
@@ -43,31 +49,31 @@ export default function KontaktPage() {
             margin: 0,
           }}
         >
-          Testmonat oder Upgrade anfragen
+          {t("title")}
         </h1>
 <div style={{ marginTop: "24px", lineHeight: 1.8 }}>
   <p>
     <strong>Helvetic Immobilien Capizzi</strong><br />
-    Inhaber: Jesse Capizzi
+    {t("details.owner")}: Jesse Capizzi
   </p>
 
   <p>
-    <strong>Telefon Jesse:</strong><br />
+    <strong>{t("details.phoneJesse")}:</strong><br />
     +41 77 232 35 67
   </p>
 
   <p>
-    <strong>Telefon / WhatsApp Danja:</strong><br />
+    <strong>{t("details.phoneDanja")}:</strong><br />
     +41 77 231 72 59
   </p>
 
   <p>
-    <strong>E-Mail:</strong><br />
+    <strong>{t("details.email")}:</strong><br />
     info@inserat-ai.ch
   </p>
 
   <p>
-    <strong>Website:</strong><br />
+    <strong>{t("details.website")}:</strong><br />
     https://www.inserat-ai.ch
   </p>
 </div>
@@ -79,8 +85,7 @@ export default function KontaktPage() {
             fontSize: "17px",
           }}
         >
-          Sie möchten mehr als 5 Inserate erstellen? Schreiben Sie uns kurz und
-          wir richten Ihren Testmonat oder Ihr Upgrade ein.
+          {t("description")}
         </p>
 
         <div
@@ -91,29 +96,29 @@ export default function KontaktPage() {
           }}
         >
           <div>
-            <div style={labelStyle}>Name</div>
-            <input style={inputStyle} placeholder="Ihr Name oder Maklerbüro" />
+            <div style={labelStyle}>{t("form.name")}</div>
+            <input style={inputStyle} placeholder={t("form.namePlaceholder")} />
           </div>
 
           <div>
-            <div style={labelStyle}>E-Mail</div>
-            <input style={inputStyle} placeholder="ihre@email.ch" />
+            <div style={labelStyle}>{t("form.email")}</div>
+            <input style={inputStyle} placeholder={t("form.emailPlaceholder")} />
           </div>
 
           <div>
-            <div style={labelStyle}>Telefon</div>
+            <div style={labelStyle}>{t("form.phone")}</div>
             <input style={inputStyle} placeholder="+41 ..." />
           </div>
 
           <div>
-            <div style={labelStyle}>Nachricht</div>
+            <div style={labelStyle}>{t("form.message")}</div>
             <textarea
               style={{
                 ...inputStyle,
                 minHeight: "140px",
                 resize: "vertical",
               }}
-              placeholder="Ich interessiere mich für den Testmonat / das Upgrade."
+              placeholder={t("form.messagePlaceholder")}
             />
           </div>
         </div>
@@ -127,7 +132,7 @@ export default function KontaktPage() {
           }}
         >
           <a
-            href="mailto:hello@makler-ai.ch?subject=Upgrade%20oder%20Testmonat%20anfragen"
+            href={`mailto:info@inserat-ai.ch?subject=${emailSubject}`}
             style={{
               background: "#C8A24D",
               color: "#FFFFFF",
@@ -137,7 +142,7 @@ export default function KontaktPage() {
               fontWeight: 700,
             }}
           >
-            Per E-Mail anfragen
+            {t("actions.email")}
           </a>
 
           <a
@@ -152,7 +157,7 @@ export default function KontaktPage() {
               border: "1px solid #E5E7EB",
             }}
           >
-            Zurück zum Generator
+            {t("actions.backToGenerator")}
           </a>
         </div>
 
@@ -166,8 +171,14 @@ export default function KontaktPage() {
             fontSize: "15px",
           }}
         >
-          <div><strong>Starter:</strong> 39 CHF / Monat</div>
-          <div><strong>Inklusive:</strong> Inserate, Varianten, PDF, Copy, Portale & Social Media</div>
+          <div>
+            <strong>{t("footer.responseTitle")}:</strong>{" "}
+            {t("footer.responseText")}
+          </div>
+          <div>
+            <strong>{t("footer.supportTitle")}:</strong>{" "}
+            {t("footer.supportText")}
+          </div>
         </div>
       </div>
     </main>

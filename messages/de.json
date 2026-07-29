@@ -650,5 +650,92 @@
       "hours": "{hours} Std.",
       "minutes": "{minutes} Min."
     }
+  },
+  "ForgotPassword": {
+    "hero": {
+      "title": "Passwort vergessen?",
+      "description": "Gib deine registrierte E-Mail-Adresse ein. Wir senden dir einen Link, mit dem du ein neues Passwort festlegen kannst."
+    },
+    "fields": {
+      "email": "E-Mail-Adresse"
+    },
+    "actions": {
+      "sending": "Link wird versendet …",
+      "send": "Reset-Link senden",
+      "backToLogin": "Zurück zum Login"
+    },
+    "validation": {
+      "emailRequired": "Bitte gib deine E-Mail-Adresse ein."
+    },
+    "messages": {
+      "requestFailed": "Die Anfrage konnte momentan nicht verarbeitet werden.",
+      "success": "Falls ein Konto existiert, wurde ein Reset-Link versendet."
+    },
+    "securityNotice": "Aus Sicherheitsgründen zeigen wir nicht an, ob eine E-Mail-Adresse bei Inserat-AI registriert ist."
+  },
+  "ResetPassword": {
+    "hero": {
+      "title": "Neues Passwort",
+      "description": "Lege jetzt ein neues Passwort für dein Inserat-AI-Konto fest."
+    },
+    "fields": {
+      "newPassword": "Neues Passwort",
+      "passwordPlaceholder": "Mindestens 8 Zeichen",
+      "confirmPassword": "Passwort bestätigen",
+      "confirmationPlaceholder": "Passwort erneut eingeben",
+      "showPassword": "Passwort anzeigen",
+      "hidePassword": "Passwort ausblenden"
+    },
+    "actions": {
+      "saving": "Passwort wird geändert …",
+      "save": "Neues Passwort speichern",
+      "requestNewLink": "Neuen Reset-Link anfordern"
+    },
+    "validation": {
+      "invalidLink": "Der Reset-Link ist unvollständig oder ungültig.",
+      "passwordTooShort": "Das neue Passwort muss mindestens 8 Zeichen lang sein.",
+      "passwordMismatch": "Die beiden Passwörter stimmen nicht überein."
+    },
+    "messages": {
+      "checkingLink": "Reset-Link wird geprüft …",
+      "missingToken": "Der Link enthält keinen gültigen Reset-Token. Fordere bitte einen neuen Link an.",
+      "success": "Dein Passwort wurde erfolgreich geändert.",
+      "changeFailed": "Das Passwort konnte nicht geändert werden.",
+      "redirecting": "Du wirst zum Login weitergeleitet."
+    }
+  },
+  "Contact": {
+    "badge": "Kontakt & Unterstützung",
+    "title": "Wie können wir Ihnen helfen?",
+    "description": "Sie haben Fragen zu Inserat-AI, Ihrem Konto, Founder oder einem Upgrade? Schreiben Sie uns kurz – wir melden uns persönlich.",
+    "details": {
+      "owner": "Inhaber",
+      "phoneJesse": "Telefon Jesse",
+      "phoneDanja": "Telefon / WhatsApp Danja",
+      "email": "E-Mail",
+      "website": "Website"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Ihr Name oder Maklerbüro",
+      "email": "E-Mail",
+      "emailPlaceholder": "ihre@email.ch",
+      "phone": "Telefon",
+      "message": "Nachricht",
+      "messagePlaceholder": "Wie können wir Ihnen helfen?"
+    },
+    "actions": {
+      "email": "Per E-Mail anfragen",
+      "backToGenerator": "Zurück zum Generator"
+    },
+    "footer": {
+      "responseTitle": "Antwort",
+      "responseText": "Wir melden uns so schnell wie möglich.",
+      "supportTitle": "Unterstützung",
+      "supportText": "Fragen zu Konto, Founder, Pro und Inserat-AI."
+    },
+    "email": {
+      "subject": "Anfrage zu Inserat-AI"
+    }
   }
 }
