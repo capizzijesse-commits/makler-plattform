@@ -1,0 +1,497 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  overflow: hidden;
+  background: rgba(1, 5, 16, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: overlayIn 180ms ease-out;
+}
+
+.dialog {
+  position: relative;
+  width: min(940px, calc(100vw - 40px));
+  max-height: calc(100dvh - 40px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  color: #ffffff;
+  background:
+    radial-gradient(
+      circle at 90% 80%,
+      rgba(28, 83, 172, 0.18),
+      transparent 42%
+    ),
+    linear-gradient(145deg, #0a1428 0%, #071934 100%);
+  border: 1px solid rgba(244, 177, 44, 0.74);
+  border-radius: 28px;
+  box-shadow:
+    0 32px 90px rgba(0, 0, 0, 0.62),
+    0 0 50px rgba(244, 177, 44, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  isolation: isolate;
+  animation: dialogIn 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dialog::-webkit-scrollbar {
+  width: 7px;
+}
+
+.dialog::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dialog::-webkit-scrollbar-thumb {
+  background: rgba(244, 177, 44, 0.42);
+  border-radius: 999px;
+}
+
+.glow {
+  position: absolute;
+  right: -120px;
+  bottom: -150px;
+  z-index: -1;
+  width: 420px;
+  height: 420px;
+  pointer-events: none;
+  background: rgba(29, 91, 201, 0.24);
+  border-radius: 50%;
+  filter: blur(100px);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px 32px 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  flex: 0 0 auto;
+  color: #081326;
+  font-size: 1.55rem;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+  background: linear-gradient(145deg, #ffca4c, #f5a50c);
+  border: 1px solid rgba(255, 222, 137, 0.9);
+  border-radius: 17px;
+  box-shadow:
+    0 12px 28px rgba(245, 165, 12, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.46);
+}
+
+.brandName {
+  color: #ffffff;
+  font-size: 1.65rem;
+  font-weight: 850;
+  letter-spacing: -0.035em;
+}
+
+.closeButton {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  flex: 0 0 auto;
+  padding: 0;
+  color: #ffffff;
+  cursor: pointer;
+  background: rgba(5, 14, 32, 0.75);
+  border: 1.5px solid #f4b12c;
+  border-radius: 50%;
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.closeButton span {
+  display: block;
+  margin-top: -3px;
+  font-size: 2.4rem;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.closeButton:hover {
+  background: rgba(244, 177, 44, 0.13);
+  box-shadow: 0 0 24px rgba(244, 177, 44, 0.14);
+  transform: scale(1.04);
+}
+
+.content {
+  padding: 30px 32px 32px;
+}
+
+.eyebrow {
+  margin: 0 0 18px;
+  color: #f4b12c;
+  font-size: 1.05rem;
+  font-weight: 900;
+  letter-spacing: 0.19em;
+  line-height: 1.2;
+}
+
+.title {
+  max-width: 810px;
+  margin: 0;
+  color: #f8fafc;
+  font-size: clamp(3rem, 5vw, 4.65rem);
+  font-weight: 880;
+  letter-spacing: -0.058em;
+  line-height: 0.99;
+  text-wrap: balance;
+  text-shadow: 0 8px 26px rgba(0, 0, 0, 0.25);
+}
+
+.description {
+  max-width: 850px;
+  margin: 28px 0 0;
+  color: rgba(248, 250, 252, 0.91);
+  font-size: clamp(1.05rem, 1.45vw, 1.24rem);
+  font-weight: 450;
+  letter-spacing: -0.015em;
+  line-height: 1.55;
+}
+
+.languages {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.language {
+  display: flex;
+  min-width: 0;
+  min-height: 60px;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 10px 18px;
+  background: linear-gradient(
+    145deg,
+    rgba(8, 19, 42, 0.96),
+    rgba(4, 13, 31, 0.96)
+  );
+  border: 1px solid rgba(244, 177, 44, 0.72);
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 10px 22px rgba(0, 0, 0, 0.16);
+}
+
+.languageCode {
+  color: #f4b12c;
+  font-size: 1.22rem;
+  font-weight: 950;
+  letter-spacing: 0.07em;
+}
+
+/* Eigene CSS-Flaggen, damit Windows keine Buchstaben anzeigt */
+
+.flag {
+  position: relative;
+  display: block;
+  width: 38px;
+  height: 25px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: 3px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.28);
+}
+
+.flagGermany {
+  background: linear-gradient(
+    to bottom,
+    #171717 0%,
+    #171717 33.333%,
+    #dd1f26 33.333%,
+    #dd1f26 66.666%,
+    #ffce00 66.666%,
+    #ffce00 100%
+  );
+}
+
+.flagItaly {
+  background: linear-gradient(
+    to right,
+    #159447 0%,
+    #159447 33.333%,
+    #ffffff 33.333%,
+    #ffffff 66.666%,
+    #ce2b37 66.666%,
+    #ce2b37 100%
+  );
+}
+
+.flagFrance {
+  background: linear-gradient(
+    to right,
+    #17458f 0%,
+    #17458f 33.333%,
+    #ffffff 33.333%,
+    #ffffff 66.666%,
+    #e33a43 66.666%,
+    #e33a43 100%
+  );
+}
+
+.flagUnitedKingdom {
+  background:
+    linear-gradient(
+      33deg,
+      transparent 42%,
+      #ffffff 42%,
+      #ffffff 47%,
+      #cf1b2b 47%,
+      #cf1b2b 53%,
+      #ffffff 53%,
+      #ffffff 58%,
+      transparent 58%
+    ),
+    linear-gradient(
+      -33deg,
+      transparent 42%,
+      #ffffff 42%,
+      #ffffff 47%,
+      #cf1b2b 47%,
+      #cf1b2b 53%,
+      #ffffff 53%,
+      #ffffff 58%,
+      transparent 58%
+    ),
+    linear-gradient(
+      to right,
+      transparent 39%,
+      #ffffff 39%,
+      #ffffff 44%,
+      #cf1b2b 44%,
+      #cf1b2b 56%,
+      #ffffff 56%,
+      #ffffff 61%,
+      transparent 61%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 34%,
+      #ffffff 34%,
+      #ffffff 41%,
+      #cf1b2b 41%,
+      #cf1b2b 59%,
+      #ffffff 59%,
+      #ffffff 66%,
+      transparent 66%
+    ),
+    #193f82;
+}
+
+.slogan {
+  margin: 28px 0 0;
+  color: #ffffff;
+  font-size: clamp(1.16rem, 1.8vw, 1.45rem);
+  font-weight: 850;
+  letter-spacing: -0.025em;
+  line-height: 1.35;
+}
+
+.confirmButton {
+  width: 100%;
+  min-height: 66px;
+  margin-top: 28px;
+  padding: 14px 24px;
+  color: #071326;
+  cursor: pointer;
+  background: linear-gradient(
+    100deg,
+    #ffc43d,
+    #f4a715,
+    #ffbd29
+  );
+  border: 1px solid rgba(255, 222, 137, 0.92);
+  border-radius: 16px;
+  box-shadow:
+    0 15px 36px rgba(247, 174, 32, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.48);
+  font: inherit;
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    filter 160ms ease;
+}
+
+.confirmButton:hover {
+  box-shadow:
+    0 20px 44px rgba(247, 174, 32, 0.31),
+    inset 0 1px 0 rgba(255, 255, 255, 0.52);
+  filter: brightness(1.035);
+  transform: translateY(-2px);
+}
+
+.closeButton:focus-visible,
+.confirmButton:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 4px;
+}
+
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dialogIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 760px) {
+  .overlay {
+    padding: 10px;
+    overflow-y: auto;
+  }
+
+  .dialog {
+    width: 100%;
+    max-height: calc(100dvh - 20px);
+    border-radius: 22px;
+  }
+
+  .header {
+    padding: 20px 20px 0;
+  }
+
+  .logo {
+    width: 48px;
+    height: 48px;
+    font-size: 1.25rem;
+    border-radius: 14px;
+  }
+
+  .brandName {
+    font-size: 1.25rem;
+  }
+
+  .closeButton {
+    width: 48px;
+    height: 48px;
+  }
+
+  .closeButton span {
+    font-size: 2rem;
+  }
+
+  .content {
+    padding: 26px 20px 22px;
+  }
+
+  .eyebrow {
+    margin-bottom: 16px;
+    font-size: 0.88rem;
+    letter-spacing: 0.15em;
+  }
+
+  .title {
+    font-size: clamp(2.35rem, 11vw, 3.3rem);
+    line-height: 1;
+  }
+
+  .description {
+    margin-top: 22px;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .languages {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 22px;
+  }
+
+  .language {
+    min-height: 54px;
+    gap: 11px;
+    padding: 8px 12px;
+  }
+
+  .languageCode {
+    font-size: 1.05rem;
+  }
+
+  .flag {
+    width: 32px;
+    height: 21px;
+  }
+
+  .slogan {
+    margin-top: 22px;
+    font-size: 1.12rem;
+  }
+
+  .confirmButton {
+    min-height: 60px;
+    margin-top: 22px;
+    border-radius: 14px;
+    font-size: 1.22rem;
+  }
+}
+
+@media (max-width: 390px) {
+  .brand {
+    gap: 10px;
+  }
+
+  .header {
+    padding-inline: 16px;
+  }
+
+  .content {
+    padding-inline: 16px;
+  }
+
+  .title {
+    font-size: 2.2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .dialog {
+    animation: none;
+  }
+
+  .closeButton,
+  .confirmButton {
+    transition: none;
+  }
+}

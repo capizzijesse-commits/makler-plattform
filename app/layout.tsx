@@ -4,6 +4,7 @@ import {GoogleAnalytics} from "@next/third-parties/google";
 import {NextIntlClientProvider} from "next-intl";
 import {getLocale} from "next-intl/server";
 import AppDialogProvider from "@/components/AppDialogProvider";
+import LanguageLaunchDialog from "@/app/components/LanguageLaunchDialog";
 import AppShell from "@/app/components/AppShell";
 
 export const metadata: Metadata = {
@@ -30,11 +31,13 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body>
-        <NextIntlClientProvider>
-          <AppDialogProvider>
-            <AppShell>{children}</AppShell>
-          </AppDialogProvider>
-        </NextIntlClientProvider>
+       <NextIntlClientProvider>
+  <AppDialogProvider>
+    <LanguageLaunchDialog />
+
+    <AppShell>{children}</AppShell>
+  </AppDialogProvider>
+</NextIntlClientProvider>
       </body>
 
       {gaMeasurementId ? (
