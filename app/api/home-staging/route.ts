@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 const AI_MODEL = "gpt-image-2";
-const PROMPT_VERSION = "home-staging-v1";
+const PROMPT_VERSION = "home-staging-v2-variants";
 type AppLocale = "de" | "it" | "fr" | "en";
 
 const SAVE_MESSAGES: Record<
@@ -115,6 +115,10 @@ const ROOM_TYPES = new Set([
   "office",
   "diningRoom",
   "kidsRoom",
+  "bathroom",
+  "kitchen",
+  "hallway",
+  "utilityRoom",
 ]);
 
 const STYLES = new Set([

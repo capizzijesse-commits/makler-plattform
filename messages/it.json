@@ -1816,6 +1816,22 @@
       "kidsRoom": {
         "label": "Camera dei bambini",
         "description": "Arredamento cordiale e neutro per età"
+      },
+      "bathroom": {
+        "label": "Bagno",
+        "description": "Zona sanitaria con tessili e accessori adatti"
+      },
+      "kitchen": {
+        "label": "Cucina",
+        "description": "Cucina con decorazioni discrete e dettagli funzionali"
+      },
+      "hallway": {
+        "label": "Corridoio / ingresso",
+        "description": "Ingresso accogliente con passaggio libero"
+      },
+      "utilityRoom": {
+        "label": "Lavanderia / locale di servizio",
+        "description": "Ordine pratico e contenitori mobili adatti"
       }
     },
     "styles": {
@@ -1907,6 +1923,15 @@
         "tooLarge": "Il PDF della planimetria può avere una dimensione massima di 15 MB.",
         "analyze": "Non è stato possibile analizzare la planimetria."
       }
+    },
+    "detection": {
+      "detecting": "L’AI riconosce prima il tipo di ambiente reale …",
+      "detected": "Ambiente riconosciuto: {room}. La selezione è stata impostata automaticamente.",
+      "fixedDetected": "Ambiente fisso riconosciuto: {room}. Le categorie non compatibili sono bloccate per proteggere l’originale.",
+      "unknown": "Il tipo di ambiente non è chiaro. Seleziona la categoria corretta.",
+      "failed": "Non è stato possibile riconoscere il tipo di ambiente reale.",
+      "required": "Attendi il completamento del riconoscimento automatico.",
+      "fixedRoomLocked": "L’originale mostra {room}. Questa funzione fissa non può essere trasformata in un altro tipo di ambiente."
     }
   }
 }

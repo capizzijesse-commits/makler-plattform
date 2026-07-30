@@ -1816,6 +1816,22 @@
       "kidsRoom": {
         "label": "Chambre d’enfant",
         "description": "Aménagement convivial et neutre en âge"
+      },
+      "bathroom": {
+        "label": "Salle de bain",
+        "description": "Espace sanitaire avec textiles et accessoires adaptés"
+      },
+      "kitchen": {
+        "label": "Cuisine",
+        "description": "Cuisine avec décoration discrète et accents fonctionnels"
+      },
+      "hallway": {
+        "label": "Couloir / entrée",
+        "description": "Entrée accueillante avec circulation dégagée"
+      },
+      "utilityRoom": {
+        "label": "Buanderie / local de service",
+        "description": "Organisation pratique et rangements mobiles adaptés"
       }
     },
     "styles": {
@@ -1907,6 +1923,15 @@
         "tooLarge": "Le PDF du plan ne peut pas dépasser 15 MB.",
         "analyze": "Le plan n’a pas pu être analysé."
       }
+    },
+    "detection": {
+      "detecting": "L’AI identifie d’abord le type de pièce réel …",
+      "detected": "Pièce reconnue : {room}. La sélection a été définie automatiquement.",
+      "fixedDetected": "Pièce à fonction fixe reconnue : {room}. Les catégories incompatibles sont bloquées afin de protéger l’original.",
+      "unknown": "Le type de pièce n’est pas clairement identifiable. Veuillez sélectionner la catégorie appropriée.",
+      "failed": "Le type de pièce réel n’a pas pu être reconnu.",
+      "required": "Veuillez attendre la fin de la détection automatique.",
+      "fixedRoomLocked": "L’original montre {room}. Cette fonction fixe ne peut pas être transformée en un autre type de pièce."
     }
   }
 }

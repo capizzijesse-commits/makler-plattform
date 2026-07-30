@@ -1816,6 +1816,22 @@
       "kidsRoom": {
         "label": "Kinderzimmer",
         "description": "Freundliche und altersneutrale Einrichtung"
+      },
+      "bathroom": {
+        "label": "Badezimmer",
+        "description": "Sanitärbereich mit passenden Textilien und Accessoires"
+      },
+      "kitchen": {
+        "label": "Küche",
+        "description": "Küche mit dezenter Dekoration und funktionalen Akzenten"
+      },
+      "hallway": {
+        "label": "Flur / Eingang",
+        "description": "Einladender Eingangsbereich mit freiem Durchgang"
+      },
+      "utilityRoom": {
+        "label": "Hauswirtschaftsraum",
+        "description": "Praktische Ordnung und passende bewegliche Aufbewahrung"
       }
     },
     "styles": {
@@ -1907,6 +1923,15 @@
         "tooLarge": "Die Grundriss-PDF darf maximal 15 MB gross sein.",
         "analyze": "Der Grundriss konnte nicht analysiert werden."
       }
+    },
+    "detection": {
+      "detecting": "Die AI erkennt zuerst die tatsächliche Raumart …",
+      "detected": "Erkannter Raum: {room}. Die Auswahl wurde automatisch vorausgewählt.",
+      "fixedDetected": "Erkannter fester Raum: {room}. Unpassende Raumarten sind zum Schutz des Originals gesperrt.",
+      "unknown": "Die Raumart ist nicht eindeutig. Bitte die passende Raumart auswählen.",
+      "failed": "Die tatsächliche Raumart konnte nicht erkannt werden.",
+      "required": "Bitte warten, bis die automatische Raumerkennung abgeschlossen ist.",
+      "fixedRoomLocked": "Das Original zeigt {room}. Diese feste Raumfunktion darf nicht in eine andere Raumart umgewandelt werden."
     }
   }
 }

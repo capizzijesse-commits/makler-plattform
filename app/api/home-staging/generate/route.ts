@@ -1,3 +1,5 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
+
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
@@ -22,6 +24,8 @@ const GENERATE_MESSAGES = {
     notConfigured: "Die Home-Staging-AI ist momentan nicht konfiguriert.",
     required: "Objekt, Ausgangsbild, Raumart und Einrichtungsstil sind erforderlich.",
     invalidRoom: "Die gewählte Raumart ist ungültig.",
+    detectionRequired: "Bitte warten, bis die tatsächliche Raumart erkannt wurde.",
+    invalidDetection: "Die automatische Raumerkennung ist abgelaufen oder ungültig. Bitte das Bild erneut auswählen.",
     invalidStyle: "Der gewählte Einrichtungsstil ist ungültig.",
     invalidMode: "Der gewählte Generierungsmodus ist ungültig.",
     invalidSize: "Die gewählte Bildgrösse passt nicht zum Generierungsmodus.",
@@ -44,6 +48,8 @@ const GENERATE_MESSAGES = {
     notConfigured: "L’AI per l’home staging non è momentaneamente configurata.",
     required: "Immobile, immagine originale, tipo di ambiente e stile sono obbligatori.",
     invalidRoom: "Il tipo di ambiente selezionato non è valido.",
+    detectionRequired: "Attendi il riconoscimento del tipo di ambiente reale.",
+    invalidDetection: "Il riconoscimento automatico è scaduto o non è valido. Seleziona nuovamente l’immagine.",
     invalidStyle: "Lo stile selezionato non è valido.",
     invalidMode: "La modalità di generazione selezionata non è valida.",
     invalidSize: "La dimensione dell’immagine non corrisponde alla modalità selezionata.",
@@ -66,6 +72,8 @@ const GENERATE_MESSAGES = {
     notConfigured: "L’AI de home staging n’est pas configurée actuellement.",
     required: "Le bien, l’image source, le type de pièce et le style sont requis.",
     invalidRoom: "Le type de pièce sélectionné n’est pas valide.",
+    detectionRequired: "Veuillez attendre que le type de pièce réel soit reconnu.",
+    invalidDetection: "La détection automatique a expiré ou n’est pas valide. Veuillez sélectionner à nouveau l’image.",
     invalidStyle: "Le style sélectionné n’est pas valide.",
     invalidMode: "Le mode de génération sélectionné n’est pas valide.",
     invalidSize: "La taille d’image ne correspond pas au mode sélectionné.",
@@ -88,6 +96,8 @@ const GENERATE_MESSAGES = {
     notConfigured: "The home staging AI is not currently configured.",
     required: "Property, source image, room type and furnishing style are required.",
     invalidRoom: "The selected room type is invalid.",
+    detectionRequired: "Please wait until the actual room type has been detected.",
+    invalidDetection: "Automatic room detection has expired or is invalid. Please select the image again.",
     invalidStyle: "The selected furnishing style is invalid.",
     invalidMode: "The selected generation mode is invalid.",
     invalidSize: "The selected image size does not match the generation mode.",
@@ -189,6 +199,40 @@ const ROOM_TYPES = {
   office: "home office",
   diningRoom: "dining room",
   kidsRoom: "children's room",
+  bathroom: "bathroom",
+  kitchen: "kitchen",
+  hallway: "hallway",
+  utilityRoom: "utility or laundry room",
+} as const;
+
+const FIXED_USE_ROOM_TYPES = new Set<RoomType>([
+  "bathroom",
+  "kitchen",
+  "hallway",
+  "utilityRoom",
+]);
+
+const FIXED_ROOM_VARIATION_CONCEPTS = {
+  bathroom: [
+    "Add coordinated towels, a bath mat, discreet storage baskets, one humidity-tolerant plant and warm practical lighting.",
+    "Create a calm spa-inspired accessory concept using textiles, a mirror accent and minimal countertop organisation.",
+    "Use a clean hotel-inspired concept with restrained accessories, folded towels and uncluttered visible surfaces.",
+  ],
+  kitchen: [
+    "Add restrained countertop accessories, practical lighting, one small herb plant and suitable movable seating only where space allows.",
+    "Create a clean culinary concept with minimal accessories, coordinated textiles and clear working surfaces.",
+    "Use a warm contemporary kitchen styling concept with subtle decoration and no changes to cabinets or appliances.",
+  ],
+  hallway: [
+    "Add a slim console or bench only where circulation allows, a mirror, restrained lighting and a practical runner.",
+    "Create a welcoming entrance concept with minimal movable storage, one artwork and clear walking space.",
+    "Use a bright, uncluttered hallway styling with a narrow furniture piece and restrained decoration.",
+  ],
+  utilityRoom: [
+    "Add practical movable storage baskets, a small folding surface where space allows and neat functional accessories.",
+    "Create an orderly utility-room concept with clear circulation and restrained practical organisation.",
+    "Use compact movable storage and clean textiles without changing appliances, plumbing or fixed cabinetry.",
+  ],
 } as const;
 
 const STYLES = {
@@ -301,9 +345,9 @@ and a noticeably different furniture placement.
 ] as const;
 
 const PREVIEW_OUTPUT_SIZES = new Set([
-  "720x928",
-  "928x720",
-  "816x816",
+  "512x768",
+  "768x512",
+  "576x576",
 ]);
 
 const FINAL_OUTPUT_SIZES = new Set([
@@ -325,6 +369,7 @@ type GenerateHomeStagingBody = {
   outputSize?: unknown;
   mode?: unknown;
   variationIndex?: unknown;
+  roomDetectionToken?: unknown;
 };
 
 type OpenAIUsage = {
@@ -359,6 +404,103 @@ type OpenAIImageEditStreamEvent = {
     type?: string;
   };
 };
+
+type DetectedRoomType = RoomType | "other";
+
+type RoomDetectionTokenPayload = {
+  userId: string;
+  listingId: string;
+  sourceImageId: string;
+  roomType: DetectedRoomType;
+  fixedUse: boolean;
+  expiresAt: number;
+};
+
+function roomDetectionSecret(): string {
+  const secret =
+    process.env.HOME_STAGING_DETECTION_SECRET ||
+    process.env.OPENAI_API_KEY;
+
+  if (!secret) {
+    throw new Error(
+      "HOME_STAGING_DETECTION_SECRET fehlt."
+    );
+  }
+
+  return secret;
+}
+
+function verifyRoomDetectionToken(
+  token: string,
+  userId: string,
+  listingId: string,
+  sourceImageId: string
+): RoomDetectionTokenPayload | null {
+  const [encodedPayload, providedSignature] =
+    token.split(".");
+
+  if (
+    !encodedPayload ||
+    !providedSignature
+  ) {
+    return null;
+  }
+
+  const expectedSignature = createHmac(
+    "sha256",
+    roomDetectionSecret()
+  )
+    .update(encodedPayload)
+    .digest("base64url");
+
+  const expectedBuffer = Buffer.from(
+    expectedSignature,
+    "utf8"
+  );
+  const providedBuffer = Buffer.from(
+    providedSignature,
+    "utf8"
+  );
+
+  if (
+    expectedBuffer.length !== providedBuffer.length ||
+    !timingSafeEqual(
+      expectedBuffer,
+      providedBuffer
+    )
+  ) {
+    return null;
+  }
+
+  let payload: RoomDetectionTokenPayload;
+
+  try {
+    payload = JSON.parse(
+      Buffer.from(
+        encodedPayload,
+        "base64url"
+      ).toString("utf8")
+    ) as RoomDetectionTokenPayload;
+  } catch {
+    return null;
+  }
+
+  if (
+    payload.userId !== userId ||
+    payload.listingId !== listingId ||
+    payload.sourceImageId !== sourceImageId ||
+    payload.expiresAt <= Date.now() ||
+    typeof payload.fixedUse !== "boolean" ||
+    !(
+      payload.roomType === "other" ||
+      isRoomType(payload.roomType)
+    )
+  ) {
+    return null;
+  }
+
+  return payload;
+}
 
 function requiredText(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
@@ -399,9 +541,14 @@ function createStagingPrompt(
   const room = ROOM_TYPES[roomType];
   const designStyle = STYLES[style];
 
+  const roomInstruction =
+    FIXED_USE_ROOM_TYPES.has(roomType)
+      ? `Stage and enhance the visible ${room} while preserving its actual function and every fixed installation.`
+      : `Furnish the visible space as a ${room}.`;
+
   return [
     "Create a photorealistic virtual home staging edit of the supplied real-estate photograph.",
-    `Furnish the visible space as a ${room}.`,
+    roomInstruction,
     `Use an interior design that is ${designStyle}.`,
     "",
     "Critical room identity and preservation rules:",
@@ -496,6 +643,9 @@ export async function POST(
     const mode = requiredText(
       body?.mode
     );
+    const roomDetectionToken = requiredText(
+      body?.roomDetectionToken
+    );
 
     const requestedVariationIndex = Number(
       body?.variationIndex
@@ -513,7 +663,8 @@ export async function POST(
       !roomType ||
       !style ||
       !outputSize ||
-      !mode
+      !mode ||
+      !roomDetectionToken
     ) {
       return NextResponse.json(
         {
@@ -534,6 +685,31 @@ export async function POST(
         { status: 400 }
       );
     }
+
+    const roomDetection =
+      verifyRoomDetectionToken(
+        roomDetectionToken,
+        user.id,
+        listingId,
+        sourceImageId
+      );
+
+    if (!roomDetection) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: messages.invalidDetection,
+        },
+        { status: 400 }
+      );
+    }
+
+    const effectiveRoomType: RoomType =
+      roomDetection.fixedUse &&
+      roomDetection.roomType !== "other" &&
+      isRoomType(roomDetection.roomType)
+        ? roomDetection.roomType
+        : roomType;
 
     if (!isStagingStyle(style)) {
       return NextResponse.json(
@@ -788,15 +964,30 @@ export async function POST(
       }
     );
 
+    const fixedRoomConcepts =
+      effectiveRoomType === "bathroom" ||
+      effectiveRoomType === "kitchen" ||
+      effectiveRoomType === "hallway" ||
+      effectiveRoomType === "utilityRoom"
+        ? FIXED_ROOM_VARIATION_CONCEPTS[
+            effectiveRoomType
+          ]
+        : null;
+
     const variationConcept =
-      VARIATION_CONCEPTS[
-        variationIndex %
-          VARIATION_CONCEPTS.length
-      ];
+      fixedRoomConcepts
+        ? fixedRoomConcepts[
+            variationIndex %
+              fixedRoomConcepts.length
+          ]
+        : VARIATION_CONCEPTS[
+            variationIndex %
+              VARIATION_CONCEPTS.length
+          ];
 
     const stagingPrompt = `
 ${createStagingPrompt(
-  roomType,
+  effectiveRoomType,
   style,
   customInstructions
 )}
@@ -806,7 +997,12 @@ This is furnishing concept number ${variationIndex + 1}.
 
 ${variationConcept}
 
-Create a genuinely new furnishing concept.
+${
+  FIXED_USE_ROOM_TYPES.has(effectiveRoomType)
+    ? `Create a genuinely new but restrained styling concept for the actual fixed-use room.
+Use only compatible movable accessories, textiles, lighting and storage.
+Do not add sofas, beds, dining groups, office desks or other incompatible furniture.`
+    : `Create a genuinely new furnishing concept.
 Use a noticeably different furniture collection,
 different furniture silhouettes,
 different table and lamp designs
@@ -814,7 +1010,8 @@ and a clearly different furniture arrangement.
 
 Do not reproduce the same sofa, bed, chairs,
 tables, lamps, rugs or decorative arrangement
-from a previous generation.
+from a previous generation.`
+}
 
 The selected interior style must be unmistakably visible.
 
@@ -914,7 +1111,7 @@ compatible with the actual visible room.
       mimeType: "image/webp",
       listingId: listing.id,
       sourceImageId: sourceImage.id,
-      roomType,
+      roomType: effectiveRoomType,
       style,
       aiModel: AI_MODEL,
       promptVersion: PROMPT_VERSION,

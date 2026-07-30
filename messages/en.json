@@ -1816,6 +1816,22 @@
       "kidsRoom": {
         "label": "Children’s room",
         "description": "Friendly, age-neutral furnishing"
+      },
+      "bathroom": {
+        "label": "Bathroom",
+        "description": "Sanitary space with suitable textiles and accessories"
+      },
+      "kitchen": {
+        "label": "Kitchen",
+        "description": "Kitchen with subtle decoration and functional accents"
+      },
+      "hallway": {
+        "label": "Hallway / entrance",
+        "description": "Welcoming entrance with clear circulation"
+      },
+      "utilityRoom": {
+        "label": "Utility / laundry room",
+        "description": "Practical organisation and suitable movable storage"
       }
     },
     "styles": {
@@ -1907,6 +1923,15 @@
         "tooLarge": "The floor plan PDF may be no larger than 15 MB.",
         "analyze": "The floor plan could not be analysed."
       }
+    },
+    "detection": {
+      "detecting": "The AI is identifying the actual room type first …",
+      "detected": "Detected room: {room}. The selection was set automatically.",
+      "fixedDetected": "Detected fixed-use room: {room}. Incompatible room categories are locked to protect the original.",
+      "unknown": "The room type is unclear. Please select the appropriate category.",
+      "failed": "The actual room type could not be detected.",
+      "required": "Please wait until automatic room detection is complete.",
+      "fixedRoomLocked": "The original shows {room}. This fixed room function cannot be changed into another room type."
     }
   }
 }

@@ -80,6 +80,10 @@ const ROOM_TYPES = new Set([
   "office",
   "diningRoom",
   "kidsRoom",
+  "bathroom",
+  "kitchen",
+  "hallway",
+  "utilityRoom",
 ]);
 
 const STYLES = new Set([

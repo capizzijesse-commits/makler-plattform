@@ -22,6 +22,8 @@ type ListingImage = {
   sizeBytes: number | null;
   position: number;
   isPrimary: boolean;
+  analysis: string | null;
+  analysisStatus: string;
 };
 
 type Listing = {
@@ -39,7 +41,11 @@ type RoomType =
   | "bedroom"
   | "office"
   | "diningRoom"
-  | "kidsRoom";
+  | "kidsRoom"
+  | "bathroom"
+  | "kitchen"
+  | "hallway"
+  | "utilityRoom";
 
 type StagingStyle =
   | "modern"
@@ -48,9 +54,9 @@ type StagingStyle =
   | "minimalist";
 
 type OutputSize =
-  | "720x928"
-  | "928x720"
-  | "816x816"
+  | "512x768"
+  | "768x512"
+  | "576x576"
   | "1024x1536"
   | "1536x1024"
   | "1024x1024";
@@ -100,13 +106,42 @@ type SessionResponse = {
   error?: string;
 };
 
+type RoomDetectionResponse = {
+  success?: boolean;
+  error?: string;
+  roomType?: RoomType | "other";
+  confidence?: number;
+  fixedUse?: boolean;
+  source?: "analysis" | "vision";
+  token?: string;
+};
+
+type RoomDetection = {
+  roomType: RoomType | "other";
+  confidence: number;
+  fixedUse: boolean;
+  source: "analysis" | "vision";
+  token: string;
+};
+
 const ROOM_TYPES: RoomType[] = [
   "livingRoom",
   "bedroom",
   "office",
   "diningRoom",
   "kidsRoom",
+  "bathroom",
+  "kitchen",
+  "hallway",
+  "utilityRoom",
 ];
+
+const FIXED_USE_ROOM_TYPES = new Set<RoomType>([
+  "bathroom",
+  "kitchen",
+  "hallway",
+  "utilityRoom",
+]);
 
 const STYLES: StagingStyle[] = [
   "modern",
@@ -204,23 +239,23 @@ function detectOutputSize(
       }
 
       if (ratio > 1.12) {
-        resolve("928x720");
+        resolve("768x512");
         return;
       }
 
       if (ratio < 0.88) {
-        resolve("720x928");
+        resolve("512x768");
         return;
       }
 
-      resolve("816x816");
+      resolve("576x576");
     };
 
     image.onerror = () => {
       resolve(
         mode === "final"
           ? "1536x1024"
-          : "928x720"
+          : "768x512"
       );
     };
 
@@ -245,6 +280,14 @@ export default function HomeStagingPage() {
     useState("");
   const [roomType, setRoomType] =
     useState<RoomType>("livingRoom");
+  const [roomDetection, setRoomDetection] =
+    useState<RoomDetection | null>(null);
+  const [detectingRoom, setDetectingRoom] =
+    useState(false);
+  const [
+    roomDetectionError,
+    setRoomDetectionError,
+  ] = useState("");
   const [style, setStyle] =
     useState<StagingStyle>("modern");
   const [
@@ -479,6 +522,130 @@ export default function HomeStagingPage() {
     [listing, selectedImageId]
   );
 
+  useEffect(() => {
+    if (
+      !listing ||
+      !selectedImage ||
+      !hasHomeStagingAccess
+    ) {
+      setRoomDetection(null);
+      setRoomDetectionError("");
+      setDetectingRoom(false);
+      return;
+    }
+
+    const detectionListingId = listing.id;
+    const detectionSourceImageId = selectedImage.id;
+    const controller = new AbortController();
+
+    async function detectRoom() {
+      try {
+        setDetectingRoom(true);
+        setRoomDetection(null);
+        setRoomDetectionError("");
+
+        const response = await fetch(
+          `/api/home-staging/detect-room?locale=${encodeURIComponent(locale)}`,
+          {
+            method: "POST",
+            credentials: "include",
+            cache: "no-store",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              listingId: detectionListingId,
+              sourceImageId: detectionSourceImageId,
+              locale,
+            }),
+            signal: controller.signal,
+          }
+        );
+
+        if (response.status === 401) {
+          router.replace("/login");
+          return;
+        }
+
+        const data =
+          (await response
+            .json()
+            .catch(() => ({}))) as RoomDetectionResponse;
+
+        if (
+          !response.ok ||
+          !data.success ||
+          !data.roomType ||
+          !data.token ||
+          typeof data.fixedUse !== "boolean"
+        ) {
+          throw new Error(
+            data.error ||
+              t("detection.failed")
+          );
+        }
+
+        const detection: RoomDetection = {
+          roomType: data.roomType,
+          confidence:
+            typeof data.confidence === "number"
+              ? data.confidence
+              : 0,
+          fixedUse: data.fixedUse,
+          source:
+            data.source === "analysis"
+              ? "analysis"
+              : "vision",
+          token: data.token,
+        };
+
+        setRoomDetection(detection);
+
+        if (
+          detection.roomType !== "other" &&
+          ROOM_TYPES.includes(detection.roomType)
+        ) {
+          setRoomType(detection.roomType);
+        }
+      } catch (detectionError) {
+        if (
+          detectionError instanceof DOMException &&
+          detectionError.name === "AbortError"
+        ) {
+          return;
+        }
+
+        console.error(
+          "Home-Staging-Raumerkennung fehlgeschlagen:",
+          detectionError
+        );
+
+        setRoomDetectionError(
+          detectionError instanceof Error
+            ? detectionError.message
+            : t("detection.failed")
+        );
+      } finally {
+        if (!controller.signal.aborted) {
+          setDetectingRoom(false);
+        }
+      }
+    }
+
+    void detectRoom();
+
+    return () => {
+      controller.abort();
+    };
+  }, [
+    hasHomeStagingAccess,
+    listing,
+    locale,
+    router,
+    selectedImage,
+    t,
+  ]);
+
   const previewUrl = preview
     ? `data:${preview.mimeType};base64,${preview.imageBase64}`
     : "";
@@ -496,10 +663,27 @@ export default function HomeStagingPage() {
 
   function chooseImage(imageId: string) {
     setSelectedImageId(imageId);
+    setRoomDetection(null);
+    setRoomDetectionError("");
     resetResult();
   }
 
   function chooseRoomType(value: RoomType) {
+    if (
+      roomDetection?.fixedUse &&
+      roomDetection.roomType !== "other" &&
+      value !== roomDetection.roomType
+    ) {
+      setError(
+        t("detection.fixedRoomLocked", {
+          room: t(
+            `rooms.${roomDetection.roomType}.label`
+          ),
+        })
+      );
+      return;
+    }
+
     setRoomType(value);
     resetResult();
   }
@@ -915,6 +1099,17 @@ export default function HomeStagingPage() {
       return;
     }
 
+    if (
+      detectingRoom ||
+      !roomDetection?.token
+    ) {
+      setError(
+        roomDetectionError ||
+          t("detection.required")
+      );
+      return;
+    }
+
     const clientStartedAt = performance.now();
     let elapsedTimer: number | null = null;
     let receivedFirstPreview = false;
@@ -1015,6 +1210,8 @@ export default function HomeStagingPage() {
             mode: generationMode,
             variationIndex:
               variationIndexForRequest,
+            roomDetectionToken:
+              roomDetection.token,
             locale,
           }),
         }
@@ -1637,6 +1834,27 @@ export default function HomeStagingPage() {
                   </div>
                 </div>
 
+                <div className="generationModeNotice">
+                  {detectingRoom
+                    ? t("detection.detecting")
+                    : roomDetectionError
+                      ? roomDetectionError
+                      : roomDetection?.roomType &&
+                          roomDetection.roomType !== "other"
+                        ? roomDetection.fixedUse
+                          ? t("detection.fixedDetected", {
+                              room: t(
+                                `rooms.${roomDetection.roomType}.label`
+                              ),
+                            })
+                          : t("detection.detected", {
+                              room: t(
+                                `rooms.${roomDetection.roomType}.label`
+                              ),
+                            })
+                        : t("detection.unknown")}
+                </div>
+
                 <div className="optionGrid">
                   {ROOM_TYPES.map((option) => (
                     <button
@@ -1651,7 +1869,14 @@ export default function HomeStagingPage() {
                         chooseRoomType(option)
                       }
                       disabled={
-                        generating || saving
+                        generating ||
+                        saving ||
+                        detectingRoom ||
+                        Boolean(
+                          roomDetection?.fixedUse &&
+                            roomDetection.roomType !== "other" &&
+                            option !== roomDetection.roomType
+                        )
                       }
                     >
                       <strong>
@@ -1874,6 +2099,8 @@ export default function HomeStagingPage() {
                 disabled={
                   generating ||
                   saving ||
+                  detectingRoom ||
+                  !roomDetection?.token ||
                   isArchived ||
                   !selectedImage
                 }
