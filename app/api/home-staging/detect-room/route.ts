@@ -390,8 +390,10 @@ async function detectRoomWithVision(
           role: "system",
           content:
             "You classify one real-estate photo by its actual visible room function. " +
-            "Fixed installations have priority. A bathtub, shower, toilet or washbasin means bathroom. " +
-            "Kitchen cabinets, a cooker or a kitchen sink mean kitchen. " +
+            "Inspect the complete image carefully before deciding. Fixed installations have absolute priority. " +
+            "Any clearly visible bathtub, shower, toilet, bidet or washbasin means bathroom, even when the room is small or photographed vertically. " +
+            "Kitchen cabinets together with a cooker, oven, hob or kitchen sink mean kitchen. " +
+            "Never classify a bathroom or kitchen as a living room, bedroom, office, dining room or other. " +
             "Never infer the desired furnishing category. Return JSON only.",
         },
         {
@@ -408,7 +410,7 @@ async function detectRoomWithVision(
               type: "image_url",
               image_url: {
                 url: imageUrl,
-                detail: "low",
+                detail: "high",
               },
             },
           ],
@@ -586,16 +588,19 @@ export async function POST(
             sourceImage.analysis
           );
 
+    const trustedAnalysisRoom =
+      analysisRoom &&
+      FIXED_USE_ROOM_TYPES.has(analysisRoom)
+        ? analysisRoom
+        : null;
+
     const detection: DetectionResult =
       cachedDetection ||
-      (analysisRoom
+      (trustedAnalysisRoom
         ? {
-            roomType: analysisRoom,
+            roomType: trustedAnalysisRoom,
             confidence: 0.98,
-            fixedUse:
-              FIXED_USE_ROOM_TYPES.has(
-                analysisRoom
-              ),
+            fixedUse: true,
             source: "analysis",
           }
         : await detectRoomWithVision(

@@ -345,9 +345,9 @@ and a noticeably different furniture placement.
 ] as const;
 
 const PREVIEW_OUTPUT_SIZES = new Set([
-  "512x768",
-  "768x512",
-  "576x576",
+  "720x928",
+  "928x720",
+  "816x816",
 ]);
 
 const FINAL_OUTPUT_SIZES = new Set([

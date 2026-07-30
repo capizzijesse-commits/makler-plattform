@@ -54,9 +54,9 @@ type StagingStyle =
   | "minimalist";
 
 type OutputSize =
-  | "512x768"
-  | "768x512"
-  | "576x576"
+  | "720x928"
+  | "928x720"
+  | "816x816"
   | "1024x1536"
   | "1536x1024"
   | "1024x1024";
@@ -239,23 +239,23 @@ function detectOutputSize(
       }
 
       if (ratio > 1.12) {
-        resolve("768x512");
+        resolve("928x720");
         return;
       }
 
       if (ratio < 0.88) {
-        resolve("512x768");
+        resolve("720x928");
         return;
       }
 
-      resolve("576x576");
+      resolve("816x816");
     };
 
     image.onerror = () => {
       resolve(
         mode === "final"
           ? "1536x1024"
-          : "768x512"
+          : "928x720"
       );
     };
 
