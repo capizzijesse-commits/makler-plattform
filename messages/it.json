@@ -2112,5 +2112,14 @@
   "Metadata": {
     "title": "Inserat-AI | Marketing immobiliare con AI",
     "description": "Annunci immobiliari professionali, contenuti social ed exposé con AI per la Svizzera."
+  },
+  "MultilingualAnnouncement": {
+    "eyebrow": "NOVITÀ DA LUNEDÌ",
+    "title": "Inserat-AI parla quattro lingue.",
+    "description": "Da lunedì 3 agosto 2026, Inserat-AI sarà disponibile integralmente in tedesco, italiano, francese e inglese – dalla pagina iniziale fino al dossier di vendita.",
+    "languages": "Deutsch · Italiano · Français · English",
+    "button": "Ho capito",
+    "close": "Chiudi l’annuncio",
+    "note": "Una piattaforma. Quattro lingue. Per tutta la Svizzera."
   }
 }

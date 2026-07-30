@@ -3,12 +3,15 @@
 import { useTranslations } from "next-intl";
 import PricingSection from "./components/PricingSection";
 import ExampleGenerator from "./components/ExampleGenerator";
+import MultilingualAnnouncementPopup from "./components/MultilingualAnnouncementPopup";
 
 export default function HomePage() {
   const t = useTranslations("HomePage");
 
   return (
     <>
+        <MultilingualAnnouncementPopup />
+
       <section className="landingHero">
         <div className="landingHeroInner">
           <div className="landingHeroContent">
