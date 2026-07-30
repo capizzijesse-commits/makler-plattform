@@ -51,6 +51,10 @@
         "label": "Meine Projekte",
         "description": "Immobilien öffnen, bearbeiten und verwalten"
       },
+      "marketingHub": {
+        "label": "Marketing Hub",
+        "description": "Die Immobilienvermarktung zentral planen und steuern"
+      },
       "account": {
         "label": "Mein Konto",
         "description": "Kontaktdaten für Exposés verwalten"
@@ -120,6 +124,27 @@
       "headline": "Die Zukunft der Immobilienvermarktung beginnt heute.",
       "description": "Inserat-AI wächst mit Ihren Anforderungen. Heute erstellen Sie professionelle Inserate und Social-Media-Posts in Sekunden – morgen profitieren Sie von weiteren intelligenten Funktionen, die Ihre Vermarktung noch effizienter machen.",
       "closing": "Ein Konto. Laufende Verbesserungen. Immer einen Schritt voraus."
+    },
+    "marketingHub": {
+      "eyebrow": "ZENTRALE VERMARKTUNG",
+      "title": "Alles für die Immobilienvermarktung an einem Ort.",
+      "description": "Der Inserat-AI Marketing Hub verbindet Inserat, Bilder, Social Media, Exposé und 3D-Video-Tour. Er zeigt, was bereits fertig ist und welcher Schritt als Nächstes sinnvoll ist.",
+      "cards": {
+        "progress": {
+          "title": "Fortschritt im Blick",
+          "text": "Sie sehen sofort, welche Inhalte für ein Objekt bereits vorbereitet wurden und was noch fehlt."
+        },
+        "nextStep": {
+          "title": "Klare nächste Schritte",
+          "text": "Inserat-AI empfiehlt den nächsten sinnvollen Arbeitsschritt für die Vermarktung."
+        },
+        "central": {
+          "title": "Alle Module verbunden",
+          "text": "Social Media, Exposé, Bilder und Video-Tour lassen sich direkt aus einer zentralen Übersicht öffnen."
+        }
+      },
+      "cta": "Inserat-AI kostenlos kennenlernen",
+      "note": "Der Marketing Hub ist für freigeschaltete Objekte verfügbar."
     }
   },
   "Pricing": {
@@ -143,7 +168,8 @@
         "social": "Social-Media-Texte",
         "expose": "Professionelles Exposé mit PDF-Export",
         "storage": "Objekt, Texte und Bilder dauerhaft speichern",
-        "noMonthlyCosts": "Keine monatlichen Kosten"
+        "noMonthlyCosts": "Keine monatlichen Kosten",
+        "marketingHub": "Marketing Hub für diese Immobilie"
       }
     },
     "plans": {
@@ -175,7 +201,8 @@
           "storage": "Objekte, Texte und Bilder dauerhaft speichern",
           "trial": "30 Tage kostenlos testen",
           "founderGuarantee": "Founder-Preisgarantie: CHF 19.90 pro Monat dauerhaft bei ununterbrochen aktivem Abonnement",
-          "regularPrice": "Limitiert auf die ersten 50 Kunden – danach regulär CHF 39.90 pro Monat"
+          "regularPrice": "Limitiert auf die ersten 50 Kunden – danach regulär CHF 39.90 pro Monat",
+          "marketingHub": "Marketing Hub für mehrere Immobilien"
         },
         "price": "30 Tage kostenlos"
       },
@@ -191,7 +218,8 @@
           "tour": "3D-Video-Tour mit AI-Stimmen",
           "analysis": "Erweiterte Bildanalyse",
           "parallel": "3 Inserate gleichzeitig = 9 Varianten",
-          "development": "Publishing-Center und Secret Marketing – in Entwicklung"
+          "development": "Publishing-Center und Secret Marketing – in Entwicklung",
+          "marketingHub": "Marketing Hub mit 3D-Video-Tour und Premium-Vermarktung"
         }
       }
     },

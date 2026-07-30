@@ -212,6 +212,85 @@ export default function HomePage() {
         </div>
       </section>
 
+
+      <section
+        id="marketing-hub"
+        className="relative mx-auto mt-24 max-w-6xl px-6"
+      >
+        <div className="relative overflow-hidden rounded-[2rem] border border-amber-300/20 bg-gradient-to-br from-slate-950 via-[#08142d] to-[#0a2752] p-8 shadow-2xl shadow-black/30 md:p-12">
+          <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-amber-400/15 blur-3xl" />
+          <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
+
+          <div className="relative">
+            <p className="text-sm font-black uppercase tracking-[0.25em] text-amber-300">
+              {t("marketingHub.eyebrow")}
+            </p>
+
+            <h2 className="mt-5 max-w-4xl text-4xl font-black leading-tight tracking-[-0.045em] text-white md:text-6xl">
+              {t("marketingHub.title")}
+            </h2>
+
+            <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
+              {t("marketingHub.description")}
+            </p>
+
+            <div className="mt-10 grid gap-5 md:grid-cols-3">
+              <article className="rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-6 backdrop-blur">
+                <span className="text-sm font-black tracking-[0.18em] text-amber-300">
+                  01
+                </span>
+                <h3 className="mt-5 text-2xl font-black text-white">
+                  {t("marketingHub.cards.progress.title")}
+                </h3>
+                <p className="mt-3 leading-7 text-slate-300">
+                  {t("marketingHub.cards.progress.text")}
+                </p>
+              </article>
+
+              <article className="rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-6 backdrop-blur">
+                <span className="text-sm font-black tracking-[0.18em] text-amber-300">
+                  02
+                </span>
+                <h3 className="mt-5 text-2xl font-black text-white">
+                  {t("marketingHub.cards.nextStep.title")}
+                </h3>
+                <p className="mt-3 leading-7 text-slate-300">
+                  {t("marketingHub.cards.nextStep.text")}
+                </p>
+              </article>
+
+              <article className="rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-6 backdrop-blur">
+                <span className="text-sm font-black tracking-[0.18em] text-amber-300">
+                  03
+                </span>
+                <h3 className="mt-5 text-2xl font-black text-white">
+                  {t("marketingHub.cards.central.title")}
+                </h3>
+                <p className="mt-3 leading-7 text-slate-300">
+                  {t("marketingHub.cards.central.text")}
+                </p>
+              </article>
+            </div>
+
+            <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+              <a
+                href="/register"
+                className="inline-flex min-h-14 items-center justify-center rounded-xl bg-gradient-to-r from-amber-300 to-amber-500 px-7 font-black text-slate-950 shadow-lg shadow-amber-500/20 transition hover:-translate-y-0.5"
+              >
+                {t("marketingHub.cta")}
+                <span className="ml-2" aria-hidden="true">
+                  {"\u2192"}
+                </span>
+              </a>
+
+              <span className="text-sm font-bold text-slate-400">
+                {t("marketingHub.note")}
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <PricingSection />
     </>
   );

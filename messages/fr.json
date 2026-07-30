@@ -51,6 +51,10 @@
         "label": "Mes projets",
         "description": "Ouvrir, modifier et gérer les biens"
       },
+      "marketingHub": {
+        "label": "Marketing Hub",
+        "description": "Planifier et piloter la commercialisation depuis un seul endroit"
+      },
       "account": {
         "label": "Mon compte",
         "description": "Gérer les coordonnées pour les dossiers de vente"
@@ -120,6 +124,27 @@
       "headline": "L’avenir de la commercialisation immobilière commence aujourd’hui.",
       "description": "Inserat-AI évolue avec vos besoins. Aujourd’hui, vous créez des annonces professionnelles et des publications pour les réseaux sociaux en quelques secondes. Demain, vous profiterez de nouvelles fonctions intelligentes qui rendront votre commercialisation encore plus efficace.",
       "closing": "Un compte. Des améliorations continues. Toujours une longueur d’avance."
+    },
+    "marketingHub": {
+      "eyebrow": "COMMERCIALISATION CENTRALISÉE",
+      "title": "Toute la commercialisation immobilière au même endroit.",
+      "description": "Le Marketing Hub d’Inserat-AI relie l’annonce, les photos, les réseaux sociaux, le dossier de vente et la visite vidéo 3D. Il indique ce qui est déjà prêt et la prochaine étape utile.",
+      "cards": {
+        "progress": {
+          "title": "Suivi de l’avancement",
+          "text": "Vous voyez immédiatement quels contenus sont déjà préparés pour un bien et ce qu’il reste à faire."
+        },
+        "nextStep": {
+          "title": "Prochaines étapes claires",
+          "text": "Inserat-AI recommande la prochaine action pertinente pour la commercialisation."
+        },
+        "central": {
+          "title": "Tous les modules reliés",
+          "text": "Réseaux sociaux, dossier, photos et visite vidéo s’ouvrent depuis une vue centrale."
+        }
+      },
+      "cta": "Découvrir Inserat-AI gratuitement",
+      "note": "Le Marketing Hub est disponible pour les biens débloqués."
     }
   },
   "Pricing": {
@@ -143,7 +168,8 @@
         "social": "Textes pour les réseaux sociaux",
         "expose": "Dossier de vente professionnel avec export PDF",
         "storage": "Enregistrer durablement le bien, les textes et les photos",
-        "noMonthlyCosts": "Aucun coût mensuel"
+        "noMonthlyCosts": "Aucun coût mensuel",
+        "marketingHub": "Marketing Hub pour ce bien"
       }
     },
     "plans": {
@@ -175,7 +201,8 @@
           "storage": "Enregistrement durable des biens, textes et photos",
           "trial": "30 jours gratuits",
           "founderGuarantee": "Garantie Founder : CHF 19.90 par mois tant que l’abonnement reste actif sans interruption",
-          "regularPrice": "Limité aux 50 premiers clients – ensuite CHF 39.90 par mois"
+          "regularPrice": "Limité aux 50 premiers clients – ensuite CHF 39.90 par mois",
+          "marketingHub": "Marketing Hub pour plusieurs biens"
         },
         "price": "30 jours gratuits"
       },
@@ -191,7 +218,8 @@
           "tour": "Visite vidéo 3D avec voix AI",
           "analysis": "Analyse d’images avancée",
           "parallel": "3 annonces simultanément = 9 variantes",
-          "development": "Centre de publication et marketing confidentiel – en développement"
+          "development": "Centre de publication et marketing confidentiel – en développement",
+          "marketingHub": "Marketing Hub avec visite vidéo 3D et commercialisation premium"
         }
       }
     },

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -97,6 +97,13 @@ export default function Navbar() {
       accent: "blue",
     },
     {
+  label: t("items.marketingHub.label"),
+  description: t("items.marketingHub.description"),
+  icon: "📣",
+  href: "/marketing-hub",
+  accent: "gold",
+},
+    {
       label: t("items.account.label"),
       description: t("items.account.description"),
       icon: "\u{1F464}",
@@ -155,6 +162,7 @@ export default function Navbar() {
  const isLoggedInArea =
   pathname?.startsWith("/dashboard") ||
   pathname?.startsWith("/cockpit") ||
+  pathname?.startsWith("/marketing-hub") ||
   pathname?.startsWith("/expose") ||
   pathname?.startsWith("/konto");
 

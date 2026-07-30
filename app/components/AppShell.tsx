@@ -23,10 +23,11 @@ export default function AppShell({
     pathname === "/expose" ||
     pathname.startsWith("/expose/");
 
-  const showSupportTools =
-    pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/cockpit") ||
-    pathname.startsWith("/konto");
+ const showSupportTools =
+  pathname.startsWith("/dashboard") ||
+  pathname.startsWith("/cockpit") ||
+  pathname.startsWith("/marketing-hub") ||
+  pathname.startsWith("/konto");
 
   return (
     <>

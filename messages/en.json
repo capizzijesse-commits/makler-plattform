@@ -51,6 +51,10 @@
         "label": "My projects",
         "description": "Open, edit and manage properties"
       },
+      "marketingHub": {
+        "label": "Marketing Hub",
+        "description": "Plan and manage property marketing in one place"
+      },
       "account": {
         "label": "My account",
         "description": "Manage contact details for property brochures"
@@ -120,6 +124,27 @@
       "headline": "The future of property marketing starts today.",
       "description": "Inserat-AI grows with your needs. Today, you create professional listings and social media posts in seconds. Tomorrow, you will benefit from additional intelligent features that make your marketing even more efficient.",
       "closing": "One account. Continuous improvements. Always one step ahead."
+    },
+    "marketingHub": {
+      "eyebrow": "CENTRALISED MARKETING",
+      "title": "Everything for property marketing in one place.",
+      "description": "The Inserat-AI Marketing Hub connects listing copy, images, social media, the property brochure and the 3D video tour. It shows what is ready and the most useful next step.",
+      "cards": {
+        "progress": {
+          "title": "Progress at a glance",
+          "text": "See immediately which content has already been prepared for a property and what is still missing."
+        },
+        "nextStep": {
+          "title": "Clear next steps",
+          "text": "Inserat-AI recommends the next useful action for marketing the property."
+        },
+        "central": {
+          "title": "Every module connected",
+          "text": "Open social media, the brochure, images and the video tour directly from one central overview."
+        }
+      },
+      "cta": "Try Inserat-AI for free",
+      "note": "The Marketing Hub is available for unlocked properties."
     }
   },
   "Pricing": {
@@ -143,7 +168,8 @@
         "social": "Social media copy",
         "expose": "Professional property brochure with PDF export",
         "storage": "Store the property, text and images permanently",
-        "noMonthlyCosts": "No monthly costs"
+        "noMonthlyCosts": "No monthly costs",
+        "marketingHub": "Marketing Hub for this property"
       }
     },
     "plans": {
@@ -175,7 +201,8 @@
           "storage": "Store properties, text and images permanently",
           "trial": "30 days free",
           "founderGuarantee": "Founder price guarantee: CHF 19.90 per month while the subscription remains continuously active",
-          "regularPrice": "Limited to the first 50 customers – then CHF 39.90 per month"
+          "regularPrice": "Limited to the first 50 customers – then CHF 39.90 per month",
+          "marketingHub": "Marketing Hub for multiple properties"
         },
         "price": "30 days free"
       },
@@ -191,7 +218,8 @@
           "tour": "3D video tour with AI voices",
           "analysis": "Advanced image analysis",
           "parallel": "3 listings simultaneously = 9 variants",
-          "development": "Publishing center and secret marketing – in development"
+          "development": "Publishing center and secret marketing – in development",
+          "marketingHub": "Marketing Hub with 3D video tour and premium marketing"
         }
       }
     },

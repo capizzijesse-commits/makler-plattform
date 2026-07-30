@@ -51,6 +51,10 @@
         "label": "I miei progetti",
         "description": "Apri, modifica e gestisci gli immobili"
       },
+      "marketingHub": {
+        "label": "Marketing Hub",
+        "description": "Pianifica e gestisci il marketing immobiliare da un unico posto"
+      },
       "account": {
         "label": "Il mio account",
         "description": "Gestisci i dati di contatto per gli exposé"
@@ -120,6 +124,27 @@
       "headline": "Il futuro della commercializzazione immobiliare inizia oggi.",
       "description": "Inserat-AI cresce insieme alle vostre esigenze. Oggi create annunci professionali e contenuti per i social media in pochi secondi; domani beneficerete di ulteriori funzioni intelligenti che renderanno la commercializzazione ancora più efficiente.",
       "closing": "Un account. Miglioramenti continui. Sempre un passo avanti."
+    },
+    "marketingHub": {
+      "eyebrow": "MARKETING CENTRALIZZATO",
+      "title": "Tutto il marketing immobiliare in un unico posto.",
+      "description": "Il Marketing Hub di Inserat-AI collega annuncio, immagini, social media, dossier di vendita e tour video 3D. Mostra ciò che è già pronto e quale passo conviene eseguire successivamente.",
+      "cards": {
+        "progress": {
+          "title": "Avanzamento sotto controllo",
+          "text": "Vedi subito quali contenuti sono già stati preparati per un immobile e cosa manca ancora."
+        },
+        "nextStep": {
+          "title": "Prossimi passi chiari",
+          "text": "Inserat-AI suggerisce il prossimo passo più utile per la commercializzazione."
+        },
+        "central": {
+          "title": "Tutti i moduli collegati",
+          "text": "Social media, dossier, immagini e tour video si aprono direttamente da una panoramica centrale."
+        }
+      },
+      "cta": "Scopri Inserat-AI gratuitamente",
+      "note": "Il Marketing Hub è disponibile per gli immobili sbloccati."
     }
   },
   "Pricing": {
@@ -143,7 +168,8 @@
         "social": "Testi per i social media",
         "expose": "Dossier di vendita professionale con esportazione PDF",
         "storage": "Salva in modo permanente immobile, testi e immagini",
-        "noMonthlyCosts": "Nessun costo mensile"
+        "noMonthlyCosts": "Nessun costo mensile",
+        "marketingHub": "Marketing Hub per questo immobile"
       }
     },
     "plans": {
@@ -175,7 +201,8 @@
           "storage": "Salvataggio permanente di immobili, testi e immagini",
           "trial": "30 giorni gratuiti",
           "founderGuarantee": "Garanzia Founder: CHF 19.90 al mese finché l’abbonamento rimane attivo senza interruzioni",
-          "regularPrice": "Limitato ai primi 50 clienti – successivamente CHF 39.90 al mese"
+          "regularPrice": "Limitato ai primi 50 clienti – successivamente CHF 39.90 al mese",
+          "marketingHub": "Marketing Hub per più immobili"
         },
         "price": "30 giorni gratuiti"
       },
@@ -191,7 +218,8 @@
           "tour": "Video tour 3D con voci AI",
           "analysis": "Analisi avanzata delle immagini",
           "parallel": "3 annunci contemporaneamente = 9 varianti",
-          "development": "Centro pubblicazioni e marketing riservato – in sviluppo"
+          "development": "Centro pubblicazioni e marketing riservato – in sviluppo",
+          "marketingHub": "Marketing Hub con tour video 3D e marketing premium"
         }
       }
     },
