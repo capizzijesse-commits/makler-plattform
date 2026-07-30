@@ -1856,11 +1856,16 @@
     },
     "progress": {
       "title": "Visualizzazione dell’ambiente",
-      "description": "L’AI analizza prospettiva, geometria ed elementi esistenti. L’operazione può richiedere un po’ di tempo."
+      "description": "L’AI analizza prospettiva, geometria ed elementi esistenti. L’operazione può richiedere un po’ di tempo.",
+      "elapsed": "Tempo trascorso: {seconds} s",
+      "partialReady": "Prima anteprima dopo {seconds} secondi",
+      "finalizing": "L’immagine visibile viene perfezionata in background fino all’anteprima finale."
     },
     "status": {
       "previewCreated": "L’anteprima è stata creata e non è ancora salvata.",
-      "saved": "La visualizzazione AI è stata salvata definitivamente con l’immobile."
+      "saved": "La visualizzazione AI è stata salvata definitivamente con l’immobile.",
+      "partialReady": "Prima anteprima dopo {seconds} secondi. L’immagine finale viene ulteriormente perfezionata.",
+      "previewCreatedWithTime": "Anteprima finale dopo {seconds} secondi. Non è ancora stata salvata."
     },
     "result": {
       "savedTitle": "Risultato salvato",
@@ -1878,7 +1883,10 @@
       "saveDescription": "L’originale resta disponibile. La versione AI viene collegata separatamente all’immobile e all’immagine originale.",
       "newVariant": "Crea nuova variante",
       "saving": "Salvataggio del risultato …",
-      "save": "Salva risultato"
+      "save": "Salva risultato",
+      "partialReady": "Anteprima rapida pronta",
+      "partialBadge": "ANTEPRIMA RAPIDA",
+      "partialNotApplied": "L’immagine finale viene ancora perfezionata"
     },
     "floorPlan": {
       "eyebrow": "ASSISTENTE PLANIMETRIA",

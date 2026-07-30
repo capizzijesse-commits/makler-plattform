@@ -1856,11 +1856,16 @@
     },
     "progress": {
       "title": "Visualisation de la pièce",
-      "description": "L’AI analyse la perspective, la géométrie et les éléments existants. Cette opération peut prendre un certain temps."
+      "description": "L’AI analyse la perspective, la géométrie et les éléments existants. Cette opération peut prendre un certain temps.",
+      "elapsed": "Temps écoulé : {seconds} s",
+      "partialReady": "Premier aperçu après {seconds} secondes",
+      "finalizing": "L’image visible continue d’être affinée en arrière-plan jusqu’à l’aperçu final."
     },
     "status": {
       "previewCreated": "L’aperçu a été créé et n’est pas encore enregistré.",
-      "saved": "La visualisation AI a été enregistrée durablement avec le bien."
+      "saved": "La visualisation AI a été enregistrée durablement avec le bien.",
+      "partialReady": "Premier aperçu après {seconds} secondes. L’image finale continue d’être affinée.",
+      "previewCreatedWithTime": "Aperçu final après {seconds} secondes. Il n’est pas encore enregistré."
     },
     "result": {
       "savedTitle": "Résultat enregistré",
@@ -1878,7 +1883,10 @@
       "saveDescription": "L’original reste conservé. La version AI est liée séparément au bien et à l’image source.",
       "newVariant": "Créer une nouvelle variante",
       "saving": "Enregistrement du résultat …",
-      "save": "Enregistrer le résultat"
+      "save": "Enregistrer le résultat",
+      "partialReady": "Aperçu rapide prêt",
+      "partialBadge": "APERÇU RAPIDE",
+      "partialNotApplied": "L’image finale est encore en cours d’affinage"
     },
     "floorPlan": {
       "eyebrow": "ASSISTANT DE PLAN",

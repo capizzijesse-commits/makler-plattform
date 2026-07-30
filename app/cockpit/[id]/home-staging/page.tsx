@@ -8,6 +8,7 @@ import { useLocale, useTranslations } from "next-intl";
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ChangeEvent,
 } from "react";
@@ -71,6 +72,10 @@ type GenerateResponse = {
   success?: boolean;
   error?: string;
   details?: string;
+  message?: string;
+  phase?: "partial" | "completed" | "error";
+  elapsedMs?: number;
+  partialImageIndex?: number;
   preview?: HomeStagingPreview;
 };
 
@@ -125,6 +130,46 @@ function base64ToFile(
   return new File([bytes], fileName, {
     type: mimeType,
   });
+}
+
+function formatElapsedSeconds(
+  locale: string,
+  elapsedMs: number
+): string {
+  return new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(Math.max(0, elapsedMs) / 1000);
+}
+
+function parseServerSentEvent(block: string): {
+  event: string;
+  data: GenerateResponse | null;
+} {
+  const lines = block.split(/\r?\n/);
+  const event =
+    lines
+      .find((line) => line.startsWith("event:"))
+      ?.slice(6)
+      .trim() || "message";
+
+  const dataText = lines
+    .filter((line) => line.startsWith("data:"))
+    .map((line) => line.slice(5).trimStart())
+    .join("\n");
+
+  if (!dataText) {
+    return { event, data: null };
+  }
+
+  try {
+    return {
+      event,
+      data: JSON.parse(dataText) as GenerateResponse,
+    };
+  } catch {
+    return { event, data: null };
+  }
 }
 
 function detectOutputSize(
@@ -216,6 +261,14 @@ export default function HomeStagingPage() {
   ] = useState("");
   const [preview, setPreview] =
     useState<HomeStagingPreview | null>(null);
+  const [previewIsPartial, setPreviewIsPartial] =
+    useState(false);
+  const [firstPreviewMs, setFirstPreviewMs] =
+    useState<number | null>(null);
+  const [generationElapsedMs, setGenerationElapsedMs] =
+    useState(0);
+  const resultSectionRef =
+    useRef<HTMLElement | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] =
@@ -432,6 +485,9 @@ export default function HomeStagingPage() {
 
   function resetResult() {
     setPreview(null);
+    setPreviewIsPartial(false);
+    setFirstPreviewMs(null);
+    setGenerationElapsedMs(0);
     setSavedImageUrl("");
     setStatusMessage("");
     setError("");
@@ -859,12 +915,82 @@ export default function HomeStagingPage() {
       return;
     }
 
+    const clientStartedAt = performance.now();
+    let elapsedTimer: number | null = null;
+    let receivedFirstPreview = false;
+    let receivedFinalPreview = false;
+
+    function updatePreview(
+      data: GenerateResponse,
+      isPartial: boolean
+    ) {
+      if (!data.preview) {
+        return;
+      }
+
+      const elapsedMs =
+        typeof data.elapsedMs === "number"
+          ? data.elapsedMs
+          : Math.round(
+              performance.now() - clientStartedAt
+            );
+
+      setPreview(data.preview);
+      setPreviewIsPartial(isPartial);
+      setGenerationElapsedMs(elapsedMs);
+
+      if (isPartial) {
+        if (!receivedFirstPreview) {
+          receivedFirstPreview = true;
+          setFirstPreviewMs(elapsedMs);
+
+          window.requestAnimationFrame(() => {
+            resultSectionRef.current?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          });
+        }
+
+        setStatusMessage(
+          t("status.partialReady", {
+            seconds: formatElapsedSeconds(
+              locale,
+              elapsedMs
+            ),
+          })
+        );
+        return;
+      }
+
+      receivedFinalPreview = true;
+      setStatusMessage(
+        t("status.previewCreatedWithTime", {
+          seconds: formatElapsedSeconds(
+            locale,
+            elapsedMs
+          ),
+        })
+      );
+    }
+
     try {
       setGenerating(true);
       setPreview(null);
+      setPreviewIsPartial(false);
+      setFirstPreviewMs(null);
+      setGenerationElapsedMs(0);
       setSavedImageUrl("");
       setStatusMessage("");
       setError("");
+
+      elapsedTimer = window.setInterval(() => {
+        setGenerationElapsedMs(
+          Math.round(
+            performance.now() - clientStartedAt
+          )
+        );
+      }, 200);
 
       const outputSize = await detectOutputSize(
         selectedImage.url,
@@ -899,14 +1025,15 @@ export default function HomeStagingPage() {
         return;
       }
 
-      const data =
-        (await response.json()) as GenerateResponse;
+      const contentType =
+        response.headers.get("content-type") || "";
 
-      if (
-        !response.ok ||
-        !data.success ||
-        !data.preview
-      ) {
+      if (!response.ok) {
+        const data =
+          (await response
+            .json()
+            .catch(() => ({}))) as GenerateResponse;
+
         throw new Error(
           data.details ||
             data.error ||
@@ -914,10 +1041,90 @@ export default function HomeStagingPage() {
         );
       }
 
-      setPreview(data.preview);
-      setStatusMessage(
-        t("status.previewCreated")
-      );
+      if (!contentType.includes("text/event-stream")) {
+        const data =
+          (await response.json()) as GenerateResponse;
+
+        if (!data.success || !data.preview) {
+          throw new Error(
+            data.details ||
+              data.error ||
+              t("errors.generate")
+          );
+        }
+
+        updatePreview(data, false);
+        return;
+      }
+
+      if (!response.body) {
+        throw new Error(t("errors.generate"));
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let streamBuffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) {
+          break;
+        }
+
+        streamBuffer += decoder.decode(value, {
+          stream: true,
+        });
+
+        const eventBlocks = streamBuffer.split(
+          /\r?\n\r?\n/
+        );
+
+        streamBuffer = eventBlocks.pop() || "";
+
+        for (const eventBlock of eventBlocks) {
+          const parsed =
+            parseServerSentEvent(eventBlock);
+          const data = parsed.data;
+
+          if (!data) {
+            continue;
+          }
+
+          if (
+            parsed.event === "partial" ||
+            data.phase === "partial"
+          ) {
+            updatePreview(data, true);
+            continue;
+          }
+
+          if (
+            parsed.event === "completed" ||
+            data.phase === "completed"
+          ) {
+            updatePreview(data, false);
+            continue;
+          }
+
+          if (
+            parsed.event === "error" ||
+            data.phase === "error"
+          ) {
+            await reader.cancel();
+
+            throw new Error(
+              data.details ||
+                data.error ||
+                t("errors.generate")
+            );
+          }
+        }
+      }
+
+      if (!receivedFinalPreview) {
+        throw new Error(t("errors.generate"));
+      }
     } catch (generateError) {
       console.error(
         "Home-Staging-Vorschau fehlgeschlagen:",
@@ -930,6 +1137,10 @@ export default function HomeStagingPage() {
           : t("errors.generate")
       );
     } finally {
+      if (elapsedTimer !== null) {
+        window.clearInterval(elapsedTimer);
+      }
+
       setGenerating(false);
     }
   }
@@ -1684,18 +1895,53 @@ export default function HomeStagingPage() {
             )}
 
 
-            {generating && (
+            {generating && !preview && (
               <section className="generationProgress">
                 <div className="largeSpinner" />
 
                 <h2>{t("progress.title")}</h2>
 
                 <p>{t("progress.description")}</p>
+
+                <strong className="generationElapsed">
+                  {t("progress.elapsed", {
+                    seconds: formatElapsedSeconds(
+                      locale,
+                      generationElapsedMs
+                    ),
+                  })}
+                </strong>
               </section>
             )}
 
+            {generating && previewIsPartial && (
+              <div className="speedPreviewNotice">
+                <div
+                  className="speedPreviewSpinner"
+                  aria-hidden="true"
+                />
+
+                <div>
+                  <strong>
+                    {t("progress.partialReady", {
+                      seconds: formatElapsedSeconds(
+                        locale,
+                        firstPreviewMs ??
+                          generationElapsedMs
+                      ),
+                    })}
+                  </strong>
+
+                  <span>{t("progress.finalizing")}</span>
+                </div>
+              </div>
+            )}
+
             {preview && selectedImage && (
-              <section className="resultSection">
+              <section
+                ref={resultSectionRef}
+                className="resultSection"
+              >
                 {statusMessage && (
                   <div className="resultStatusBar">
                     <div className="resultStatusIcon">
@@ -1706,12 +1952,12 @@ export default function HomeStagingPage() {
                       <strong>
                         {savedImageUrl
                           ? t("result.savedTitle")
-                          : t("result.previewReady")}
+                          : previewIsPartial
+                            ? t("result.partialReady")
+                            : t("result.previewReady")}
                       </strong>
 
-                      <span>
-                        {statusMessage}
-                      </span>
+                      <span>{statusMessage}</span>
                     </div>
                   </div>
                 )}
@@ -1722,7 +1968,11 @@ export default function HomeStagingPage() {
                     <h2>{t("result.title")}</h2>
                   </div>
 
-                  <span className="aiLabel">{t("result.aiBadge")}</span>
+                  <span className="aiLabel">
+                    {previewIsPartial
+                      ? t("result.partialBadge")
+                      : t("result.aiBadge")}
+                  </span>
                 </div>
 
                 <div className="comparisonGrid">
@@ -1743,7 +1993,11 @@ export default function HomeStagingPage() {
                   <article className="comparisonCard resultCard">
                     <div className="imageHeader">
                       <strong>{t("result.visualization")}</strong>
-                      <span>{t("result.notApplied")}</span>
+                      <span>
+                        {previewIsPartial
+                          ? t("result.partialNotApplied")
+                          : t("result.notApplied")}
+                      </span>
                     </div>
 
                     <div className="comparisonImage">
@@ -1752,7 +2006,11 @@ export default function HomeStagingPage() {
                         alt={t("result.generatedAlt")}
                       />
 
-                      <span className="imageAiBadge">{t("result.aiBadge")}</span>
+                      <span className="imageAiBadge">
+                        {previewIsPartial
+                          ? t("result.partialBadge")
+                          : t("result.aiBadge")}
+                      </span>
                     </div>
                   </article>
                 </div>
@@ -2674,6 +2932,55 @@ function PageStyles() {
         margin: 0;
         color: #94a3b8;
         line-height: 1.6;
+      }
+
+      .generationElapsed {
+        margin-top: 14px;
+        color: #fbbf24;
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .speedPreviewNotice {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-top: 20px;
+        padding: 15px 17px;
+        border: 1px solid rgba(34, 211, 238, 0.35);
+        border-radius: 15px;
+        background:
+          linear-gradient(
+            135deg,
+            rgba(8, 145, 178, 0.18),
+            rgba(120, 53, 15, 0.18)
+          );
+      }
+
+      .speedPreviewNotice > div:last-child {
+        display: grid;
+        gap: 4px;
+      }
+
+      .speedPreviewNotice strong {
+        color: #a5f3fc;
+        font-size: 14px;
+      }
+
+      .speedPreviewNotice span {
+        color: #cbd5e1;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .speedPreviewSpinner {
+        width: 30px;
+        height: 30px;
+        flex: 0 0 auto;
+        border: 3px solid rgba(34, 211, 238, 0.2);
+        border-top-color: #fbbf24;
+        border-radius: 50%;
+        animation: stagingSpin 0.8s linear infinite;
       }
 
       .resultSection {

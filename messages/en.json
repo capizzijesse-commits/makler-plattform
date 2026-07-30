@@ -1856,11 +1856,16 @@
     },
     "progress": {
       "title": "Visualising the room",
-      "description": "The AI is analysing perspective, geometry and existing room elements. This may take some time."
+      "description": "The AI is analysing perspective, geometry and existing room elements. This may take some time.",
+      "elapsed": "Elapsed time: {seconds} s",
+      "partialReady": "First preview after {seconds} seconds",
+      "finalizing": "The visible image is being refined in the background until the final preview is ready."
     },
     "status": {
       "previewCreated": "The preview was created and has not been saved yet.",
-      "saved": "The AI visualisation was permanently saved with the property."
+      "saved": "The AI visualisation was permanently saved with the property.",
+      "partialReady": "First preview after {seconds} seconds. The final image is still being refined.",
+      "previewCreatedWithTime": "Final preview after {seconds} seconds. It has not been saved yet."
     },
     "result": {
       "savedTitle": "Result saved",
@@ -1878,7 +1883,10 @@
       "saveDescription": "The original remains available. The AI version is linked separately to this property and source image.",
       "newVariant": "Create new variant",
       "saving": "Saving result …",
-      "save": "Save result"
+      "save": "Save result",
+      "partialReady": "Quick preview ready",
+      "partialBadge": "QUICK PREVIEW",
+      "partialNotApplied": "The final image is still being refined"
     },
     "floorPlan": {
       "eyebrow": "FLOOR PLAN ASSISTANT",

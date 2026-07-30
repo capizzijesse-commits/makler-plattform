@@ -1856,11 +1856,16 @@
     },
     "progress": {
       "title": "Der Raum wird visualisiert",
-      "description": "Die AI analysiert Perspektive, Geometrie und vorhandene Raumelemente. Dieser Vorgang kann etwas dauern."
+      "description": "Die AI analysiert Perspektive, Geometrie und vorhandene Raumelemente. Dieser Vorgang kann etwas dauern.",
+      "elapsed": "Verstrichene Zeit: {seconds} s",
+      "partialReady": "Erste Vorschau nach {seconds} Sekunden",
+      "finalizing": "Das sichtbare Bild wird im Hintergrund zur vollständigen Vorschau verfeinert."
     },
     "status": {
       "previewCreated": "Die Vorschau wurde erstellt. Sie ist noch nicht gespeichert.",
-      "saved": "Die AI-Visualisierung wurde dauerhaft mit dem Objekt gespeichert."
+      "saved": "Die AI-Visualisierung wurde dauerhaft mit dem Objekt gespeichert.",
+      "partialReady": "Erste Vorschau nach {seconds} Sekunden. Das finale Bild wird weiter verfeinert.",
+      "previewCreatedWithTime": "Finale Vorschau nach {seconds} Sekunden. Sie ist noch nicht gespeichert."
     },
     "result": {
       "savedTitle": "Ergebnis gespeichert",
@@ -1878,7 +1883,10 @@
       "saveDescription": "Das Original bleibt erhalten. Die AI-Version wird separat mit diesem Objekt und dem Ausgangsbild verbunden.",
       "newVariant": "Neue Variante erstellen",
       "saving": "Ergebnis wird gespeichert …",
-      "save": "Ergebnis speichern"
+      "save": "Ergebnis speichern",
+      "partialReady": "Schnellvorschau bereit",
+      "partialBadge": "SCHNELLVORSCHAU",
+      "partialNotApplied": "Finales Bild wird noch verfeinert"
     },
     "floorPlan": {
       "eyebrow": "GRUNDRISS-ASSISTENT",

@@ -112,6 +112,64 @@ function normalizeLocale(value: unknown): AppLocale {
     : "de";
 }
 
+type OptimizedSourceCacheEntry = {
+  buffer: Buffer;
+  expiresAt: number;
+};
+
+const OPTIMIZED_SOURCE_CACHE_TTL_MS =
+  10 * 60 * 1000;
+const OPTIMIZED_SOURCE_CACHE_MAX_ENTRIES = 12;
+const optimizedSourceCache = new Map<
+  string,
+  OptimizedSourceCacheEntry
+>();
+
+function getCachedOptimizedSource(
+  cacheKey: string
+): Buffer | null {
+  const cached = optimizedSourceCache.get(cacheKey);
+
+  if (!cached) {
+    return null;
+  }
+
+  if (cached.expiresAt <= Date.now()) {
+    optimizedSourceCache.delete(cacheKey);
+    return null;
+  }
+
+  optimizedSourceCache.delete(cacheKey);
+  optimizedSourceCache.set(cacheKey, cached);
+
+  return cached.buffer;
+}
+
+function cacheOptimizedSource(
+  cacheKey: string,
+  buffer: Buffer
+): void {
+  optimizedSourceCache.set(cacheKey, {
+    buffer,
+    expiresAt:
+      Date.now() + OPTIMIZED_SOURCE_CACHE_TTL_MS,
+  });
+
+  while (
+    optimizedSourceCache.size >
+    OPTIMIZED_SOURCE_CACHE_MAX_ENTRIES
+  ) {
+    const oldestKey =
+      optimizedSourceCache.keys().next().value;
+
+    if (typeof oldestKey !== "string") {
+      break;
+    }
+
+    optimizedSourceCache.delete(oldestKey);
+  }
+}
+
 
 const PREVIEW_SOURCE_EDGE = 1280;
 const FINAL_SOURCE_EDGE = 2048;
@@ -269,6 +327,12 @@ type GenerateHomeStagingBody = {
   variationIndex?: unknown;
 };
 
+type OpenAIUsage = {
+  input_tokens?: number;
+  output_tokens?: number;
+  total_tokens?: number;
+};
+
 type OpenAIImageEditResponse = {
   data?: Array<{
     b64_json?: string;
@@ -276,11 +340,19 @@ type OpenAIImageEditResponse = {
   output_format?: string;
   quality?: string;
   size?: string;
-  usage?: {
-    input_tokens?: number;
-    output_tokens?: number;
-    total_tokens?: number;
+  usage?: OpenAIUsage;
+  error?: {
+    code?: string;
+    message?: string;
+    type?: string;
   };
+};
+
+type OpenAIImageEditStreamEvent = {
+  type?: string;
+  b64_json?: string;
+  partial_image_index?: number;
+  usage?: OpenAIUsage;
   error?: {
     code?: string;
     message?: string;
@@ -355,7 +427,7 @@ function createStagingPrompt(
 
 export async function POST(
   request: NextRequest
-): Promise<NextResponse> {
+): Promise<Response> {
   const locale = normalizeLocale(
     request.nextUrl.searchParams.get("locale")
   );
@@ -606,71 +678,97 @@ export async function POST(
       );
     }
 
-    const sourceResponse = await fetch(sourceImage.url, {
-      cache: "no-store",
-      signal: AbortSignal.timeout(30_000),
-    });
+    const optimizedSourceCacheKey = [
+      sourceImage.id,
+      sourceImage.url,
+      generationMode,
+      maxSourceEdge,
+      sourceWebpQuality,
+    ].join(":");
 
-    if (!sourceResponse.ok) {
-      throw new Error(
-        `Originalbild konnte nicht geladen werden: ${sourceResponse.status}`
+    let optimizedSourceBuffer =
+      getCachedOptimizedSource(
+        optimizedSourceCacheKey
       );
-    }
 
-    const responseMimeType =
-      sourceResponse.headers
-        .get("content-type")
-        ?.split(";")[0]
-        .trim() || "";
-
-    const mimeType =
-      sourceImage.mimeType &&
-      ALLOWED_IMAGE_TYPES.has(sourceImage.mimeType)
-        ? sourceImage.mimeType
-        : responseMimeType;
-
-    if (!ALLOWED_IMAGE_TYPES.has(mimeType)) {
-      return NextResponse.json(
+    if (!optimizedSourceBuffer) {
+      const sourceResponse = await fetch(
+        sourceImage.url,
         {
-          success: false,
-          error:
-            messages.unsupportedFormat,
-        },
-        { status: 400 }
+          cache: "force-cache",
+          signal: AbortSignal.timeout(30_000),
+        }
+      );
+
+      if (!sourceResponse.ok) {
+        throw new Error(
+          `Originalbild konnte nicht geladen werden: ${sourceResponse.status}`
+        );
+      }
+
+      const responseMimeType =
+        sourceResponse.headers
+          .get("content-type")
+          ?.split(";")[0]
+          .trim() || "";
+
+      const mimeType =
+        sourceImage.mimeType &&
+        ALLOWED_IMAGE_TYPES.has(
+          sourceImage.mimeType
+        )
+          ? sourceImage.mimeType
+          : responseMimeType;
+
+      if (!ALLOWED_IMAGE_TYPES.has(mimeType)) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: messages.unsupportedFormat,
+          },
+          { status: 400 }
+        );
+      }
+
+      const sourceBytes =
+        await sourceResponse.arrayBuffer();
+
+      if (
+        sourceBytes.byteLength >
+        MAX_SOURCE_IMAGE_SIZE
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: messages.originalTooLarge,
+          },
+          { status: 400 }
+        );
+      }
+
+      optimizedSourceBuffer = await sharp(
+        Buffer.from(sourceBytes)
+      )
+        .rotate()
+        .resize({
+          width: maxSourceEdge,
+          height: maxSourceEdge,
+          fit: "inside",
+          withoutEnlargement: true,
+          fastShrinkOnLoad: true,
+        })
+        .webp({
+          quality: sourceWebpQuality,
+          effort: isFinalMode ? 2 : 0,
+          smartSubsample: true,
+        })
+        .toBuffer();
+
+      cacheOptimizedSource(
+        optimizedSourceCacheKey,
+        optimizedSourceBuffer
       );
     }
-
-    const sourceBytes =
-      await sourceResponse.arrayBuffer();
-
-    if (sourceBytes.byteLength > MAX_SOURCE_IMAGE_SIZE) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            messages.originalTooLarge,
-        },
-        { status: 400 }
-      );
-    }
-
-    const optimizedSourceBuffer = await sharp(
-      Buffer.from(sourceBytes)
-    )
-      .rotate()
-      .resize({
-        width: maxSourceEdge,
-        height: maxSourceEdge,
-        fit: "inside",
-        withoutEnlargement: true,
-        fastShrinkOnLoad: true,
-      })
-      .webp({
-        quality: sourceWebpQuality,
-        effort: isFinalMode ? 3 : 0,
-        smartSubsample: true,
-      })
-      .toBuffer();
 
     const sourceFile = new File(
       [
@@ -732,9 +830,20 @@ textiles, lighting and decoration.
     formData.append("quality", imageQuality);
     formData.append("size", outputSize);
     formData.append("output_format", "webp");
-    formData.append("output_compression", outputCompression);
+    formData.append(
+      "output_compression",
+      outputCompression
+    );
     formData.append("moderation", "auto");
     formData.append("user", user.id);
+    formData.append("stream", "true");
+    formData.append("partial_images", "1");
+    formData.append(
+      "input_fidelity",
+      isFinalMode ? "high" : "low"
+    );
+
+    const generationStartedAt = Date.now();
 
     const openAIResponse = await fetch(
       "https://api.openai.com/v1/images/edits",
@@ -748,12 +857,11 @@ textiles, lighting and decoration.
       }
     );
 
-    const result =
-      (await openAIResponse
-        .json()
-        .catch(() => null)) as OpenAIImageEditResponse | null;
-
     if (!openAIResponse.ok) {
+      const result =
+        (await openAIResponse
+          .json()
+          .catch(() => null)) as OpenAIImageEditResponse | null;
       const upstreamCode = result?.error?.code;
       const upstreamMessage = result?.error?.message;
 
@@ -767,8 +875,7 @@ textiles, lighting and decoration.
         return NextResponse.json(
           {
             success: false,
-            error:
-              messages.moderation,
+            error: messages.moderation,
           },
           { status: 400 }
         );
@@ -777,8 +884,7 @@ textiles, lighting and decoration.
       return NextResponse.json(
         {
           success: false,
-          error:
-            messages.generateFailed,
+          error: messages.generateFailed,
           details:
             process.env.NODE_ENV === "development"
               ? upstreamMessage
@@ -788,35 +894,243 @@ textiles, lighting and decoration.
       );
     }
 
-    const imageBase64 =
-      result?.data?.[0]?.b64_json?.trim();
+    const contentType =
+      openAIResponse.headers.get("content-type") || "";
 
-    if (!imageBase64) {
+    const createPreview = (imageBase64: string) => ({
+      imageBase64,
+      mimeType: "image/webp",
+      listingId: listing.id,
+      sourceImageId: sourceImage.id,
+      roomType,
+      style,
+      aiModel: AI_MODEL,
+      promptVersion: PROMPT_VERSION,
+    });
+
+    if (!contentType.includes("text/event-stream")) {
+      const result =
+        (await openAIResponse
+          .json()
+          .catch(() => null)) as OpenAIImageEditResponse | null;
+      const imageBase64 =
+        result?.data?.[0]?.b64_json?.trim();
+
+      if (!imageBase64) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: messages.noImage,
+          },
+          { status: 502 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        phase: "completed",
+        message: messages.previewCreated,
+        preview: createPreview(imageBase64),
+        elapsedMs: Date.now() - generationStartedAt,
+        usage: result?.usage ?? null,
+      });
+    }
+
+    if (!openAIResponse.body) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            messages.noImage,
+          error: messages.noImage,
         },
         { status: 502 }
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      message:
-        messages.previewCreated,
-      preview: {
-        imageBase64,
-        mimeType: "image/webp",
-        listingId: listing.id,
-        sourceImageId: sourceImage.id,
-        roomType,
-        style,
-        aiModel: AI_MODEL,
-        promptVersion: PROMPT_VERSION,
+    const upstreamReader =
+      openAIResponse.body.getReader();
+    const decoder = new TextDecoder();
+    const encoder = new TextEncoder();
+
+    const responseStream = new ReadableStream<Uint8Array>({
+      async start(controller) {
+        let streamBuffer = "";
+        let completed = false;
+
+        const sendEvent = (
+          event: "partial" | "completed" | "error",
+          payload: Record<string, unknown>
+        ) => {
+          controller.enqueue(
+            encoder.encode(
+              `event: ${event}\ndata: ${JSON.stringify(
+                payload
+              )}\n\n`
+            )
+          );
+        };
+
+        const processEventBlock = (block: string) => {
+          const lines = block.split(/\r?\n/);
+          const eventName =
+            lines
+              .find((line) =>
+                line.startsWith("event:")
+              )
+              ?.slice(6)
+              .trim() || "";
+          const dataText = lines
+            .filter((line) =>
+              line.startsWith("data:")
+            )
+            .map((line) =>
+              line.slice(5).trimStart()
+            )
+            .join("\n");
+
+          if (!dataText || dataText === "[DONE]") {
+            return;
+          }
+
+          let eventData: OpenAIImageEditStreamEvent;
+
+          try {
+            eventData = JSON.parse(
+              dataText
+            ) as OpenAIImageEditStreamEvent;
+          } catch {
+            return;
+          }
+
+          const eventType =
+            eventData.type || eventName;
+
+          if (
+            eventType ===
+            "image_edit.partial_image"
+          ) {
+            const imageBase64 =
+              eventData.b64_json?.trim();
+
+            if (!imageBase64) {
+              return;
+            }
+
+            sendEvent("partial", {
+              success: true,
+              phase: "partial",
+              preview: createPreview(imageBase64),
+              elapsedMs:
+                Date.now() - generationStartedAt,
+              partialImageIndex:
+                eventData.partial_image_index ?? 0,
+            });
+            return;
+          }
+
+          if (
+            eventType === "image_edit.completed"
+          ) {
+            const imageBase64 =
+              eventData.b64_json?.trim();
+
+            if (!imageBase64) {
+              return;
+            }
+
+            completed = true;
+            sendEvent("completed", {
+              success: true,
+              phase: "completed",
+              message: messages.previewCreated,
+              preview: createPreview(imageBase64),
+              elapsedMs:
+                Date.now() - generationStartedAt,
+              usage: eventData.usage ?? null,
+            });
+            return;
+          }
+
+          if (
+            eventType === "error" ||
+            eventData.error
+          ) {
+            sendEvent("error", {
+              success: false,
+              phase: "error",
+              error: messages.generateFailed,
+              details:
+                process.env.NODE_ENV === "development"
+                  ? eventData.error?.message
+                  : undefined,
+            });
+          }
+        };
+
+        try {
+          while (true) {
+            const { done, value } =
+              await upstreamReader.read();
+
+            if (done) {
+              break;
+            }
+
+            streamBuffer += decoder.decode(value, {
+              stream: true,
+            });
+
+            const eventBlocks = streamBuffer.split(
+              /\r?\n\r?\n/
+            );
+
+            streamBuffer = eventBlocks.pop() || "";
+
+            for (const eventBlock of eventBlocks) {
+              processEventBlock(eventBlock);
+            }
+          }
+
+          if (streamBuffer.trim()) {
+            processEventBlock(streamBuffer);
+          }
+
+          if (!completed) {
+            sendEvent("error", {
+              success: false,
+              phase: "error",
+              error: messages.noImage,
+            });
+          }
+        } catch (streamError) {
+          console.error(
+            "HOME-STAGING STREAM ERROR:",
+            streamError
+          );
+
+          sendEvent("error", {
+            success: false,
+            phase: "error",
+            error: messages.previewFailed,
+          });
+        } finally {
+          controller.close();
+          upstreamReader.releaseLock();
+        }
       },
-      usage: result?.usage ?? null,
+      async cancel() {
+        await upstreamReader.cancel();
+      },
+    });
+
+    return new Response(responseStream, {
+      status: 200,
+      headers: {
+        "Content-Type":
+          "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+        "X-Accel-Buffering": "no",
+      },
     });
   } catch (error) {
     console.error(
