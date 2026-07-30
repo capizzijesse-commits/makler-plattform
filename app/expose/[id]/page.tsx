@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 
 type ListingImage = {
   id: string;
@@ -117,22 +118,20 @@ function collectTextVariants(value: unknown): TextVariant[] {
   return hasDirectText ? [directVariant, ...nestedVariants] : nestedVariants;
 }
 
-function getExposeTitle(listing: Listing): string {
+function getExposeTitle(
+  listing: Listing,
+  fallbackTitle: string
+): string {
   const variants = collectTextVariants(listing.generatedVariants);
   const generatedTitle = variants.find((variant) => variant.title)?.title;
 
-  if (generatedTitle) {
-    return generatedTitle;
-  }
-
-  const place = [listing.postalCode, listing.location]
-    .filter(Boolean)
-    .join(" ");
-
-  return `${listing.propertyType} in ${place || listing.location}`.trim();
+  return generatedTitle || fallbackTitle;
 }
 
-function getDescription(listing: Listing): string {
+function getDescription(
+  listing: Listing,
+  fallbackParts: string[]
+): string {
   if (typeof listing.generatedVariants === "string") {
     const text = listing.generatedVariants.trim();
 
@@ -152,22 +151,7 @@ function getDescription(listing: Listing): string {
     }
   }
 
-  return [
-    `Dieses ${listing.propertyType.toLowerCase()} befindet sich in ${
-      listing.location
-    }.`,
-    listing.rooms
-      ? `Die Immobilie verfügt über ${formatNumber(listing.rooms)} Zimmer.`
-      : "",
-    listing.livingArea
-      ? `Die Wohnfläche beträgt rund ${formatNumber(
-          listing.livingArea
-        )} m².`
-      : "",
-    "Weitere Angaben können direkt im Objekt ergänzt und anschliessend im Exposé übernommen werden.",
-  ]
-    .filter(Boolean)
-    .join(" ");
+  return fallbackParts.filter(Boolean).join(" ");
 }
 
 function splitHighlights(value?: string | null): string[] {
@@ -185,23 +169,33 @@ function splitHighlights(value?: string | null): string[] {
   );
 }
 
-function formatNumber(value: number): string {
-  return new Intl.NumberFormat("de-CH", {
+function formatNumber(
+  value: number,
+  locale: string
+): string {
+  return new Intl.NumberFormat(locale, {
     maximumFractionDigits: 1,
   }).format(value);
 }
 
-function formatPrice(value?: number | null): string {
+function formatPrice(
+  value: number | null | undefined,
+  locale: string,
+  onRequest: string
+): string {
   if (value === null || value === undefined) {
-    return "Auf Anfrage";
+    return onRequest;
   }
 
-  return `CHF ${new Intl.NumberFormat("de-CH", {
+  return `CHF ${new Intl.NumberFormat(locale, {
     maximumFractionDigits: 0,
   }).format(value)}`;
 }
 
-function formatDate(value?: string): string {
+function formatDate(
+  value: string | undefined,
+  locale: string
+): string {
   if (!value) {
     return "";
   }
@@ -212,7 +206,7 @@ function formatDate(value?: string): string {
     return "";
   }
 
-  return new Intl.DateTimeFormat("de-CH", {
+  return new Intl.DateTimeFormat(locale, {
     day: "2-digit",
     month: "long",
     year: "numeric",
@@ -228,11 +222,20 @@ function sanitizeFilePart(value: string): string {
     .slice(0, 60);
 }
 
-function getPdfDocumentTitle(listing: Listing): string {
-  const propertyType = sanitizeFilePart(listing.propertyType || "Immobilie");
-  const location = sanitizeFilePart(listing.location || "Schweiz");
+function getPdfDocumentTitle(
+  listing: Listing,
+  propertyFallback: string,
+  countryFallback: string,
+  prefix: string
+): string {
+  const propertyType = sanitizeFilePart(
+    listing.propertyType || propertyFallback
+  );
+  const location = sanitizeFilePart(
+    listing.location || countryFallback
+  );
 
-  return `Expose_${propertyType}_${location}`;
+  return `${sanitizeFilePart(prefix)}_${propertyType}_${location}`;
 }
 
 function getInitialContact(): ContactDetails {
@@ -265,7 +268,13 @@ function getInitialContact(): ContactDetails {
   };
 }
 
-function BrandMark({ compact = false }: { compact?: boolean }) {
+function BrandMark({
+  compact = false,
+  subtitle,
+}: {
+  compact?: boolean;
+  subtitle: string;
+}) {
   return (
     <div className={`brand-mark ${compact ? "brand-mark--compact" : ""}`}>
       <span className="brand-mark__icon" aria-hidden="true">
@@ -277,16 +286,18 @@ function BrandMark({ compact = false }: { compact?: boolean }) {
 
       <span className="brand-mark__copy">
         <strong>Inserat-AI</strong>
-        <small>Immobilien-Exposé</small>
+        <small>{subtitle}</small>
       </span>
     </div>
   );
 }
 
 function ImagePlaceholder({
-  label = "Noch kein Objektbild vorhanden",
+  label,
+  hint,
 }: {
-  label?: string;
+  label: string;
+  hint: string;
 }) {
   return (
     <div className="image-placeholder">
@@ -295,7 +306,7 @@ function ImagePlaceholder({
         <span />
       </div>
       <strong>{label}</strong>
-      <small>Bilder im Makler-Cockpit hinzufügen</small>
+      <small>{hint}</small>
     </div>
   );
 }
@@ -341,13 +352,15 @@ function MetricCard({
 function PageFooter({
   page,
   date,
+  brandSubtitle,
 }: {
   page: string;
   date?: string;
+  brandSubtitle: string;
 }) {
   return (
     <footer className="sheet-footer">
-      <BrandMark compact />
+      <BrandMark compact subtitle={brandSubtitle} />
       <div className="sheet-footer__meta">
         {date && <span>{date}</span>}
         <strong>{page}</strong>
@@ -359,6 +372,17 @@ function PageFooter({
 export default function ExposePreviewPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const locale = useLocale();
+  const t = useTranslations("Expose");
+
+  const intlLocale =
+    locale === "it"
+      ? "it-CH"
+      : locale === "fr"
+        ? "fr-CH"
+        : locale === "en"
+          ? "en-CH"
+          : "de-CH";
 
   const listingId = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
@@ -436,7 +460,7 @@ export default function ExposePreviewPage() {
 
   useEffect(() => {
     if (!listingId) {
-      setError("Es wurde keine Objekt-ID übergeben.");
+      setError(t("errors.missingId"));
       setLoading(false);
       return;
     }
@@ -468,7 +492,9 @@ export default function ExposePreviewPage() {
 
         if (!response.ok || !data?.listing) {
           throw new Error(
-            data?.error || "Das Objekt konnte nicht geladen werden."
+            locale === "de" && data?.error
+              ? data.error
+              : t("errors.loadFailed")
           );
         }
 
@@ -484,7 +510,7 @@ export default function ExposePreviewPage() {
         setError(
           loadError instanceof Error
             ? loadError.message
-            : "Das Objekt konnte nicht geladen werden."
+            : t("errors.loadFailed")
         );
       } finally {
         if (!controller.signal.aborted) {
@@ -498,7 +524,7 @@ export default function ExposePreviewPage() {
     return () => {
       controller.abort();
     };
-  }, [listingId]);
+  }, [listingId, locale, t]);
 
   const sortedImages = useMemo(() => {
     if (!listing?.images?.length) {
@@ -536,7 +562,12 @@ export default function ExposePreviewPage() {
     }
 
     const previousTitle = document.title;
-    const pdfDocumentTitle = getPdfDocumentTitle(listing);
+    const pdfDocumentTitle = getPdfDocumentTitle(
+      listing,
+      t("fallback.property"),
+      t("fallback.country"),
+      t("pdf.filePrefix")
+    );
     let cleanedUp = false;
 
     function cleanupPrintState() {
@@ -565,11 +596,11 @@ export default function ExposePreviewPage() {
     return (
       <main className="status-screen">
         <div className="status-card">
-          <BrandMark />
+          <BrandMark subtitle={t("brand.subtitle")} />
           <div className="status-card__copy">
-            <span>EXPOSÉ-GENERATOR</span>
-            <h1>Exposé wird vorbereitet</h1>
-            <p>Objektdaten, Texte und Bilder werden zusammengestellt.</p>
+            <span>{t("status.generator")}</span>
+            <h1>{t("status.loadingTitle")}</h1>
+            <p>{t("status.loadingDescription")}</p>
           </div>
           <div className="loading-track">
             <span />
@@ -584,14 +615,14 @@ export default function ExposePreviewPage() {
     return (
       <main className="status-screen">
         <div className="status-card status-card--error">
-          <BrandMark />
+          <BrandMark subtitle={t("brand.subtitle")} />
           <div className="status-card__copy">
-            <span>EXPOSÉ-GENERATOR</span>
-            <h1>Exposé nicht verfügbar</h1>
-            <p>{error || "Das Objekt wurde nicht gefunden."}</p>
+            <span>{t("status.generator")}</span>
+            <h1>{t("status.unavailableTitle")}</h1>
+            <p>{error || t("errors.notFound")}</p>
           </div>
           <button type="button" className="primary-button" onClick={goBack}>
-            Zurück zum Makler-Cockpit
+            {t("status.backCockpit")}
           </button>
         </div>
         <ExposeStyles />
@@ -599,17 +630,55 @@ export default function ExposePreviewPage() {
     );
   }
 
-  const title = getExposeTitle(listing);
-  const description = getDescription(listing);
   const place = [listing.postalCode, listing.location]
     .filter(Boolean)
     .join(" ");
-  const creationDate = formatDate(listing.updatedAt || listing.createdAt);
+
+  const title = getExposeTitle(
+    listing,
+    t("fallback.title", {
+      propertyType: listing.propertyType,
+      place: place || listing.location,
+    })
+  );
+
+  const description = getDescription(listing, [
+    t("fallback.descriptionLocation", {
+      propertyType: listing.propertyType.toLowerCase(),
+      location: listing.location,
+    }),
+    listing.rooms
+      ? t("fallback.descriptionRooms", {
+          rooms: formatNumber(listing.rooms, intlLocale),
+        })
+      : "",
+    listing.livingArea
+      ? t("fallback.descriptionArea", {
+          area: formatNumber(listing.livingArea, intlLocale),
+        })
+      : "",
+    t("fallback.descriptionMore"),
+  ]);
+
+  const creationDate = formatDate(
+    listing.updatedAt || listing.createdAt,
+    intlLocale
+  );
 
   const featureItems = [
-    listing.style ? `Stil: ${listing.style}` : "",
+    listing.style
+      ? t("details.style", {
+          style: listing.style,
+        })
+      : "",
     ...highlights,
   ].filter(Boolean);
+
+  const price = formatPrice(
+    listing.price,
+    intlLocale,
+    t("metrics.onRequest")
+  );
 
   return (
     <>
@@ -620,9 +689,9 @@ export default function ExposePreviewPage() {
 
             <div className="preview-toolbar__copy">
               <span className="preview-toolbar__eyebrow">
-                EXPOSÉ-BEREIT
+                {t("toolbar.ready")}
               </span>
-              <strong>Exposé-Vorschau</strong>
+              <strong>{t("toolbar.preview")}</strong>
               <span className="preview-toolbar__meta">
                 {listing.propertyType} · {place || listing.location}
               </span>
@@ -641,7 +710,7 @@ export default function ExposePreviewPage() {
               >
                 ←
               </span>
-              Zurück
+              {t("toolbar.back")}
             </button>
 
             <button
@@ -653,7 +722,9 @@ export default function ExposePreviewPage() {
               <span className="toolbar-button__icon" aria-hidden="true">
                 ↓
               </span>
-              {printing ? "PDF wird vorbereitet …" : "PDF speichern"}
+              {printing
+                ? t("toolbar.preparingPdf")
+                : t("toolbar.savePdf")}
             </button>
           </div>
         </div>
@@ -666,26 +737,34 @@ export default function ExposePreviewPage() {
           <div className="sheet-grid" />
 
           <div className="cover-header">
-            <BrandMark />
+            <BrandMark subtitle={t("brand.subtitle")} />
             <span className="status-pill">
               <span />
-              {listing.archivedAt ? "ARCHIVIERT" : "AKTIVES OBJEKT"}
+              {listing.archivedAt
+                ? t("cover.archived")
+                : t("cover.active")}
             </span>
           </div>
 
           <div className="cover-hero">
             <div className="cover-image-card">
               {primaryImage ? (
-                <img src={primaryImage.url} alt={`Hauptbild: ${title}`} />
+                <img
+                  src={primaryImage.url}
+                  alt={t("cover.mainImageAlt", { title })}
+                />
               ) : (
-                <ImagePlaceholder />
+                <ImagePlaceholder
+                  label={t("image.placeholder")}
+                  hint={t("image.hint")}
+                />
               )}
 
               <div className="cover-image-card__overlay" />
 
               <div className="cover-image-card__badge">
                 <span>01</span>
-                <small>HAUPTBILD</small>
+                <small>{t("cover.mainImage")}</small>
               </div>
             </div>
 
@@ -706,32 +785,36 @@ export default function ExposePreviewPage() {
 
           <div className="cover-metrics">
             <MetricCard
-              label="Zimmer"
+              label={t("metrics.rooms")}
               value={
                 listing.rooms !== null && listing.rooms !== undefined
-                  ? formatNumber(listing.rooms)
+                  ? formatNumber(listing.rooms, intlLocale)
                   : "–"
               }
               accent="gold"
             />
             <MetricCard
-              label="Wohnfläche"
+              label={t("metrics.livingArea")}
               value={
                 listing.livingArea !== null &&
                 listing.livingArea !== undefined
-                  ? `${formatNumber(listing.livingArea)} m²`
+                  ? `${formatNumber(listing.livingArea, intlLocale)} m²`
                   : "–"
               }
               accent="cyan"
             />
             <MetricCard
-              label="Kaufpreis"
-              value={formatPrice(listing.price)}
+              label={t("metrics.purchasePrice")}
+              value={price}
               accent="violet"
             />
           </div>
 
-          <PageFooter page="01 / 04" date={creationDate} />
+          <PageFooter
+            page="01 / 04"
+            date={creationDate}
+            brandSubtitle={t("brand.subtitle")}
+          />
         </section>
 
         <section className="sheet gallery-sheet">
@@ -740,20 +823,26 @@ export default function ExposePreviewPage() {
 
           <PageLabel
             number="02"
-            eyebrow="OBJEKTBILDER"
-            title="Galerie & Impressionen"
+            eyebrow={t("gallery.eyebrow")}
+            title={t("gallery.title")}
           />
 
           <div className="gallery-dashboard">
             <div className="gallery-main">
               {primaryImage ? (
-                <img src={primaryImage.url} alt={`Objektansicht: ${title}`} />
+                <img
+                  src={primaryImage.url}
+                  alt={t("gallery.objectViewAlt", { title })}
+                />
               ) : (
-                <ImagePlaceholder />
+                <ImagePlaceholder
+                  label={t("image.placeholder")}
+                  hint={t("image.hint")}
+                />
               )}
 
               <div className="gallery-card-label">
-                <span>HAUPTAUFNAHME</span>
+                <span>{t("gallery.mainCapture")}</span>
                 <strong>{listing.location}</strong>
               </div>
             </div>
@@ -763,7 +852,10 @@ export default function ExposePreviewPage() {
                 <div className="gallery-thumb" key={image.id}>
                   <img
                     src={image.url}
-                    alt={`Objektbild ${index + 2}: ${title}`}
+                    alt={t("gallery.objectImageAlt", {
+                      number: index + 2,
+                      title,
+                    })}
                   />
                   <span>{String(index + 2).padStart(2, "0")}</span>
                 </div>
@@ -776,7 +868,10 @@ export default function ExposePreviewPage() {
                       className="gallery-thumb gallery-thumb--empty"
                       key={`placeholder-${index}`}
                     >
-                      <ImagePlaceholder label="Weitere Aufnahme" />
+                      <ImagePlaceholder
+                        label={t("image.additional")}
+                        hint={t("image.hint")}
+                      />
                       <span>
                         {String(galleryImages.length + index + 2).padStart(
                           2,
@@ -791,20 +886,25 @@ export default function ExposePreviewPage() {
 
           <div className="gallery-info-strip">
             <div>
-              <span>OBJEKT</span>
+              <span>{t("gallery.property")}</span>
               <strong>{listing.propertyType}</strong>
             </div>
             <div>
-              <span>STANDORT</span>
+              <span>{t("gallery.location")}</span>
               <strong>{place || listing.location}</strong>
             </div>
             <div>
-              <span>BILDER</span>
-              <strong>{sortedImages.length || "Noch keine"}</strong>
+              <span>{t("gallery.images")}</span>
+              <strong>
+                {sortedImages.length || t("gallery.none")}
+              </strong>
             </div>
           </div>
 
-          <PageFooter page="02 / 04" />
+          <PageFooter
+            page="02 / 04"
+            brandSubtitle={t("brand.subtitle")}
+          />
         </section>
 
         <section className="sheet details-sheet">
@@ -813,46 +913,49 @@ export default function ExposePreviewPage() {
 
           <PageLabel
             number="03"
-            eyebrow="OBJEKTPROFIL"
-            title="Details & Beschreibung"
+            eyebrow={t("details.eyebrow")}
+            title={t("details.title")}
           />
 
           <div className="details-dashboard">
             <aside className="property-panel">
               <div className="property-panel__header">
-                <span>OBJEKTDATEN</span>
-                <strong>Alle Fakten auf einen Blick</strong>
+                <span>{t("details.propertyData")}</span>
+                <strong>{t("details.allFacts")}</strong>
               </div>
 
               <div className="property-stat-grid">
                 <MetricCard
-                  label="Objektart"
+                  label={t("details.propertyType")}
                   value={listing.propertyType}
                   accent="gold"
                 />
                 <MetricCard
-                  label="Zimmer"
+                  label={t("metrics.rooms")}
                   value={
                     listing.rooms !== null &&
                     listing.rooms !== undefined
-                      ? formatNumber(listing.rooms)
+                      ? formatNumber(listing.rooms, intlLocale)
                       : "–"
                   }
                   accent="cyan"
                 />
                 <MetricCard
-                  label="Wohnfläche"
+                  label={t("metrics.livingArea")}
                   value={
                     listing.livingArea !== null &&
                     listing.livingArea !== undefined
-                      ? `${formatNumber(listing.livingArea)} m²`
+                      ? `${formatNumber(
+                          listing.livingArea,
+                          intlLocale
+                        )} m²`
                       : "–"
                   }
                   accent="violet"
                 />
                 <MetricCard
-                  label="Preis"
-                  value={formatPrice(listing.price)}
+                  label={t("details.price")}
+                  value={price}
                   accent="gold"
                 />
               </div>
@@ -860,7 +963,7 @@ export default function ExposePreviewPage() {
               <div className="property-location-card">
                 <span className="property-location-card__icon" />
                 <div>
-                  <span>STANDORT</span>
+                  <span>{t("details.location")}</span>
                   <strong>{place || listing.location}</strong>
                 </div>
               </div>
@@ -892,7 +995,7 @@ export default function ExposePreviewPage() {
                 <div className="ai-analysis-card">
                   <div className="ai-analysis-card__icon">AI</div>
                   <div>
-                    <span>AI-BILDANALYSE</span>
+                    <span>{t("details.imageAnalysis")}</span>
                     <p>{listing.imageAnalysis}</p>
                   </div>
                 </div>
@@ -900,7 +1003,10 @@ export default function ExposePreviewPage() {
             </article>
           </div>
 
-          <PageFooter page="03 / 04" />
+          <PageFooter
+            page="03 / 04"
+            brandSubtitle={t("brand.subtitle")}
+          />
         </section>
 
         <section className="sheet final-sheet">
@@ -910,8 +1016,8 @@ export default function ExposePreviewPage() {
 
           <PageLabel
             number="04"
-            eyebrow="ABSCHLUSS"
-            title="Highlights, Lage & Kontakt"
+            eyebrow={t("final.eyebrow")}
+            title={t("final.title")}
           />
 
           <div className="final-dashboard">
@@ -919,8 +1025,8 @@ export default function ExposePreviewPage() {
               <div className="panel-heading">
                 <span className="panel-heading__icon">01</span>
                 <div>
-                  <span>HIGHLIGHTS</span>
-                  <h3>Ausstattung & Vorteile</h3>
+                  <span>{t("final.highlights")}</span>
+                  <h3>{t("final.featuresTitle")}</h3>
                 </div>
               </div>
 
@@ -936,10 +1042,7 @@ export default function ExposePreviewPage() {
               ) : (
                 <div className="empty-panel">
                   <span>+</span>
-                  <p>
-                    Highlights können im Objekt ergänzt werden und erscheinen
-                    anschliessend automatisch hier.
-                  </p>
+                  <p>{t("final.emptyHighlights")}</p>
                 </div>
               )}
             </section>
@@ -950,7 +1053,7 @@ export default function ExposePreviewPage() {
                   02
                 </span>
                 <div>
-                  <span>LAGE</span>
+                  <span>{t("final.location")}</span>
                   <h3>{listing.location}</h3>
                 </div>
               </div>
@@ -961,15 +1064,15 @@ export default function ExposePreviewPage() {
                 <span className="location-visual__pin" />
                 <div>
                   <strong>{place || listing.location}</strong>
-                  <span>Schweiz</span>
+                  <span>{t("fallback.country")}</span>
                 </div>
               </div>
 
               <p>
                 {listing.locationDescription ||
-                  `Die Immobilie befindet sich in ${
-                    place || listing.location
-                  }. Die Lage verbindet ein angenehmes Wohnumfeld mit den vielfältigen Möglichkeiten der umliegenden Region.`}
+                  t("final.locationFallback", {
+                    place: place || listing.location,
+                  })}
               </p>
             </section>
           </div>
@@ -980,13 +1083,10 @@ export default function ExposePreviewPage() {
             <div className="contact-panel__intro">
               <span className="section-kicker">
                 <span />
-                PERSÖNLICHE BERATUNG
+                {t("final.personalAdvice")}
               </span>
-              <h3>Interesse an dieser Immobilie?</h3>
-              <p>
-                Für weitere Informationen oder einen Besichtigungstermin stehen
-                wir gerne zur Verfügung.
-              </p>
+              <h3>{t("final.interest")}</h3>
+              <p>{t("final.contactText")}</p>
             </div>
 
             <div className="contact-card">
@@ -1000,32 +1100,39 @@ export default function ExposePreviewPage() {
               </div>
 
               <div className="contact-card__main">
-                <strong>{contact.name || "Ihre Ansprechperson"}</strong>
+                <strong>
+                  {contact.name || t("final.contactPerson")}
+                </strong>
                 <span>
-                  {contact.company ||
-                    "Kontaktdaten im Benutzerprofil ergänzen"}
+                  {contact.company || t("final.profileMissing")}
                 </span>
               </div>
 
               <div className="contact-card__details">
                 <p>
-                  <span>E-MAIL</span>
-                  <strong>{contact.email || "Noch nicht hinterlegt"}</strong>
+                  <span>{t("final.email")}</span>
+                  <strong>
+                    {contact.email || t("final.notStored")}
+                  </strong>
                 </p>
                 <p>
-                  <span>TELEFON</span>
-                  <strong>{contact.phone || "Noch nicht hinterlegt"}</strong>
+                  <span>{t("final.phone")}</span>
+                  <strong>
+                    {contact.phone || t("final.notStored")}
+                  </strong>
                 </p>
               </div>
             </div>
           </section>
 
           <div className="legal-note">
-            Alle Angaben sind ohne Gewähr und vor Veröffentlichung durch den
-            Anbieter zu prüfen.
+            {t("final.legal")}
           </div>
 
-          <PageFooter page="04 / 04" />
+          <PageFooter
+            page="04 / 04"
+            brandSubtitle={t("brand.subtitle")}
+          />
         </section>
       </main>
 

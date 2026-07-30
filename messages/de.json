@@ -1933,5 +1933,129 @@
       "required": "Bitte warten, bis die automatische Raumerkennung abgeschlossen ist.",
       "fixedRoomLocked": "Das Original zeigt {room}. Diese feste Raumfunktion darf nicht in eine andere Raumart umgewandelt werden."
     }
+  },
+  "Expose": {
+    "brand": {
+      "subtitle": "Immobilien-Exposé"
+    },
+    "image": {
+      "placeholder": "Noch kein Objektbild vorhanden",
+      "hint": "Bilder im Makler-Cockpit hinzufügen",
+      "additional": "Weitere Aufnahme"
+    },
+    "status": {
+      "generator": "EXPOSÉ-GENERATOR",
+      "loadingTitle": "Exposé wird vorbereitet",
+      "loadingDescription": "Objektdaten, Texte und Bilder werden zusammengestellt.",
+      "unavailableTitle": "Exposé nicht verfügbar",
+      "backCockpit": "Zurück zum Makler-Cockpit"
+    },
+    "errors": {
+      "missingId": "Es wurde keine Objekt-ID übergeben.",
+      "loadFailed": "Das Objekt konnte nicht geladen werden.",
+      "notFound": "Das Objekt wurde nicht gefunden."
+    },
+    "fallback": {
+      "title": "{propertyType} in {place}",
+      "descriptionLocation": "Dieses {propertyType} befindet sich in {location}.",
+      "descriptionRooms": "Die Immobilie verfügt über {rooms} Zimmer.",
+      "descriptionArea": "Die Wohnfläche beträgt rund {area} m².",
+      "descriptionMore": "Weitere Angaben können direkt im Objekt ergänzt und anschliessend im Exposé übernommen werden.",
+      "property": "Immobilie",
+      "country": "Schweiz"
+    },
+    "pdf": {
+      "filePrefix": "Expose"
+    },
+    "toolbar": {
+      "ready": "EXPOSÉ-BEREIT",
+      "preview": "Exposé-Vorschau",
+      "back": "Zurück",
+      "preparingPdf": "PDF wird vorbereitet …",
+      "savePdf": "PDF speichern"
+    },
+    "cover": {
+      "archived": "ARCHIVIERT",
+      "active": "AKTIVES OBJEKT",
+      "mainImage": "HAUPTBILD",
+      "mainImageAlt": "Hauptbild: {title}"
+    },
+    "metrics": {
+      "rooms": "Zimmer",
+      "livingArea": "Wohnfläche",
+      "purchasePrice": "Kaufpreis",
+      "onRequest": "Auf Anfrage"
+    },
+    "gallery": {
+      "eyebrow": "OBJEKTBILDER",
+      "title": "Galerie & Impressionen",
+      "mainCapture": "HAUPTAUFNAHME",
+      "objectViewAlt": "Objektansicht: {title}",
+      "objectImageAlt": "Objektbild {number}: {title}",
+      "property": "OBJEKT",
+      "location": "STANDORT",
+      "images": "BILDER",
+      "none": "Noch keine"
+    },
+    "details": {
+      "eyebrow": "OBJEKTPROFIL",
+      "title": "Details & Beschreibung",
+      "propertyData": "OBJEKTDATEN",
+      "allFacts": "Alle Fakten auf einen Blick",
+      "propertyType": "Objektart",
+      "price": "Preis",
+      "location": "STANDORT",
+      "imageAnalysis": "AI-BILDANALYSE",
+      "style": "Stil: {style}"
+    },
+    "final": {
+      "eyebrow": "ABSCHLUSS",
+      "title": "Highlights, Lage & Kontakt",
+      "highlights": "HIGHLIGHTS",
+      "featuresTitle": "Ausstattung & Vorteile",
+      "emptyHighlights": "Highlights können im Objekt ergänzt werden und erscheinen anschliessend automatisch hier.",
+      "location": "LAGE",
+      "locationFallback": "Die Immobilie befindet sich in {place}. Die Lage verbindet ein angenehmes Wohnumfeld mit den vielfältigen Möglichkeiten der umliegenden Region.",
+      "personalAdvice": "PERSÖNLICHE BERATUNG",
+      "interest": "Interesse an dieser Immobilie?",
+      "contactText": "Für weitere Informationen oder einen Besichtigungstermin stehen wir gerne zur Verfügung.",
+      "contactPerson": "Ihre Ansprechperson",
+      "profileMissing": "Kontaktdaten im Benutzerprofil ergänzen",
+      "email": "E-MAIL",
+      "phone": "TELEFON",
+      "notStored": "Noch nicht hinterlegt",
+      "legal": "Alle Angaben sind ohne Gewähr und vor Veröffentlichung durch den Anbieter zu prüfen."
+    }
+  },
+  "PortalExport": {
+    "download": "Portal-Export herunterladen",
+    "missingData": "Für den Portal-Export fehlen noch Ort, Objektart, Titel oder Beschreibung."
+  },
+  "SupportDock": {
+    "aria": {
+      "navigation": "Inserat-AI Hilfe und Kontakt",
+      "guide": "Inserat-AI Guide öffnen",
+      "feedback": "Feedback öffnen",
+      "contact": "WhatsApp-Kontakt öffnen"
+    },
+    "guide": {
+      "title": "AI Guide",
+      "subtitle": "Dein Assistent"
+    },
+    "feedback": {
+      "title": "Feedback",
+      "subtitle": "Idee oder Problem"
+    },
+    "contact": {
+      "title": "WhatsApp",
+      "subtitle": "Kontakt & Telefon"
+    }
+  },
+  "WhatsAppContact": {
+    "message": "Hallo Inserat-AI, ich interessiere mich für eine Demo.",
+    "title": "Kontakt",
+    "description": "Wir helfen dir gerne persönlich weiter.",
+    "close": "Kontaktfenster schliessen",
+    "phone": "Telefon"
   }
 }

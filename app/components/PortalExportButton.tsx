@@ -4,12 +4,14 @@ import {
   downloadPortalExportXml,
   type PortalExportData,
 } from "@/lib/portalExportXml";
+import { useTranslations } from "next-intl";
 
 type PortalExportButtonProps = {
   data: PortalExportData;
 };
 
 export default function PortalExportButton({ data }: PortalExportButtonProps) {
+  const t = useTranslations("PortalExport");
   const hasRequiredData =
     data.ort &&
     data.objektart &&
@@ -25,6 +27,12 @@ export default function PortalExportButton({ data }: PortalExportButtonProps) {
       type="button"
       onClick={handleDownload}
       disabled={!hasRequiredData}
+      aria-label={t("download")}
+      title={
+        hasRequiredData
+          ? t("download")
+          : t("missingData")
+      }
    style={{
   border: "1px solid rgba(245, 158, 11, 0.55)",
   background:
@@ -41,7 +49,7 @@ export default function PortalExportButton({ data }: PortalExportButtonProps) {
   transition: "all 0.2s ease",
 }}
     >
-      Portal-Export herunterladen
+      {t("download")}
     </button>
   );
 }

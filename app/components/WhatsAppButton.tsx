@@ -1,17 +1,18 @@
-﻿"use client";
+"use client";
 
 import {
   useEffect,
   useRef,
   useState,
 } from "react";
+import { useTranslations } from "next-intl";
 
 export default function WhatsAppButton() {
+  const t = useTranslations("WhatsAppContact");
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
 
-  const message =
-    "Hallo Inserat-AI, ich interessiere mich für eine Demo.";
+  const message = t("message");
 
   const jesseWhatsappUrl =
     `https://wa.me/41772323567?text=${encodeURIComponent(
@@ -100,14 +101,14 @@ export default function WhatsAppButton() {
       <header className="contactHeader">
         <div>
           <span>INSERAT-AI</span>
-          <h2 id="contact-panel-title">Kontakt</h2>
-          <p>Wir helfen dir gerne persönlich weiter.</p>
+          <h2 id="contact-panel-title">{t("title")}</h2>
+          <p>{t("description")}</p>
         </div>
 
         <button
           type="button"
           onClick={() => setOpen(false)}
-          aria-label="Kontaktfenster schliessen"
+          aria-label={t("close")}
         >
           ×
         </button>
@@ -118,7 +119,7 @@ export default function WhatsAppButton() {
 
         <div className="contactActions">
           <a href="tel:+41772323567">
-            Telefon
+            {t("phone")}
           </a>
 
           <a
@@ -137,7 +138,7 @@ export default function WhatsAppButton() {
 
         <div className="contactActions">
           <a href="tel:+41772317259">
-            Telefon
+            {t("phone")}
           </a>
 
           <a

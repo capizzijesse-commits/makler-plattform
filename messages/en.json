@@ -1933,5 +1933,129 @@
       "required": "Please wait until automatic room detection is complete.",
       "fixedRoomLocked": "The original shows {room}. This fixed room function cannot be changed into another room type."
     }
+  },
+  "Expose": {
+    "brand": {
+      "subtitle": "Property brochure"
+    },
+    "image": {
+      "placeholder": "No property image available yet",
+      "hint": "Add images in the broker cockpit",
+      "additional": "Additional image"
+    },
+    "status": {
+      "generator": "BROCHURE GENERATOR",
+      "loadingTitle": "Preparing the brochure",
+      "loadingDescription": "Property details, text and images are being assembled.",
+      "unavailableTitle": "Brochure unavailable",
+      "backCockpit": "Back to the broker cockpit"
+    },
+    "errors": {
+      "missingId": "No property ID was provided.",
+      "loadFailed": "The property could not be loaded.",
+      "notFound": "The property was not found."
+    },
+    "fallback": {
+      "title": "{propertyType} in {place}",
+      "descriptionLocation": "This {propertyType} is located in {location}.",
+      "descriptionRooms": "The property has {rooms} rooms.",
+      "descriptionArea": "The living area is approximately {area} m².",
+      "descriptionMore": "Additional information can be added to the property and then included automatically in the brochure.",
+      "property": "Property",
+      "country": "Switzerland"
+    },
+    "pdf": {
+      "filePrefix": "Property_Brochure"
+    },
+    "toolbar": {
+      "ready": "BROCHURE READY",
+      "preview": "Brochure preview",
+      "back": "Back",
+      "preparingPdf": "Preparing PDF …",
+      "savePdf": "Save PDF"
+    },
+    "cover": {
+      "archived": "ARCHIVED",
+      "active": "ACTIVE PROPERTY",
+      "mainImage": "MAIN IMAGE",
+      "mainImageAlt": "Main image: {title}"
+    },
+    "metrics": {
+      "rooms": "Rooms",
+      "livingArea": "Living area",
+      "purchasePrice": "Purchase price",
+      "onRequest": "On request"
+    },
+    "gallery": {
+      "eyebrow": "PROPERTY IMAGES",
+      "title": "Gallery and impressions",
+      "mainCapture": "MAIN VIEW",
+      "objectViewAlt": "Property view: {title}",
+      "objectImageAlt": "Property image {number}: {title}",
+      "property": "PROPERTY",
+      "location": "LOCATION",
+      "images": "IMAGES",
+      "none": "None yet"
+    },
+    "details": {
+      "eyebrow": "PROPERTY PROFILE",
+      "title": "Details and description",
+      "propertyData": "PROPERTY DETAILS",
+      "allFacts": "All key facts at a glance",
+      "propertyType": "Property type",
+      "price": "Price",
+      "location": "LOCATION",
+      "imageAnalysis": "AI IMAGE ANALYSIS",
+      "style": "Style: {style}"
+    },
+    "final": {
+      "eyebrow": "CONCLUSION",
+      "title": "Highlights, location and contact",
+      "highlights": "HIGHLIGHTS",
+      "featuresTitle": "Features and benefits",
+      "emptyHighlights": "Highlights can be added to the property and will then appear here automatically.",
+      "location": "LOCATION",
+      "locationFallback": "The property is located in {place}. The location combines a pleasant residential setting with the many opportunities offered by the surrounding region.",
+      "personalAdvice": "PERSONAL ADVICE",
+      "interest": "Interested in this property?",
+      "contactText": "We are happy to provide further information or arrange a viewing.",
+      "contactPerson": "Your contact person",
+      "profileMissing": "Add contact details in the user profile",
+      "email": "EMAIL",
+      "phone": "PHONE",
+      "notStored": "Not provided yet",
+      "legal": "All information is provided without guarantee and must be verified by the provider before publication."
+    }
+  },
+  "PortalExport": {
+    "download": "Download portal export",
+    "missingData": "Location, property type, title or description is still missing for the portal export."
+  },
+  "SupportDock": {
+    "aria": {
+      "navigation": "Inserat-AI help and contact",
+      "guide": "Open the Inserat-AI guide",
+      "feedback": "Open feedback",
+      "contact": "Open WhatsApp contact"
+    },
+    "guide": {
+      "title": "AI Guide",
+      "subtitle": "Your assistant"
+    },
+    "feedback": {
+      "title": "Feedback",
+      "subtitle": "Idea or problem"
+    },
+    "contact": {
+      "title": "WhatsApp",
+      "subtitle": "Contact and phone"
+    }
+  },
+  "WhatsAppContact": {
+    "message": "Hello Inserat-AI, I am interested in a demo.",
+    "title": "Contact",
+    "description": "We are happy to help you personally.",
+    "close": "Close contact window",
+    "phone": "Phone"
   }
 }

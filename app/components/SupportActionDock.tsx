@@ -3,6 +3,7 @@
 
 
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import PrivacyModeButton from "@/components/PrivacyModeButton";
 
 
@@ -11,7 +12,7 @@ type SupportAction =
   | "contact"
   | "guide";
 
-  
+
 function isGuidePage(pathname: string): boolean {
   return (
     pathname !== "/impressum" &&
@@ -25,6 +26,7 @@ function sendWindowEvent(name: string) {
 
 export default function SupportActionDock() {
   const pathname = usePathname() || "/";
+  const t = useTranslations("SupportDock");
   const showGuide = isGuidePage(pathname);
 
   function openAction(action: SupportAction) {
@@ -48,14 +50,14 @@ export default function SupportActionDock() {
   return (
     <nav
       className="supportDock"
-      aria-label="Inserat-AI Hilfe und Kontakt"
+      aria-label={t("aria.navigation")}
     >
       {showGuide ? (
         <button
           type="button"
           className="supportAction supportGuide"
           onClick={() => openAction("guide")}
-          aria-label="Inserat-AI Guide öffnen"
+          aria-label={t("aria.guide")}
         >
           <span className="supportIcon" aria-hidden="true">
             <svg viewBox="0 0 24 24">
@@ -72,8 +74,8 @@ export default function SupportActionDock() {
           </span>
 
           <span className="supportText">
-            <strong>AI Guide</strong>
-            <small>Dein Assistent</small>
+            <strong>{t("guide.title")}</strong>
+            <small>{t("guide.subtitle")}</small>
           </span>
         </button>
       ) : null}
@@ -82,7 +84,7 @@ export default function SupportActionDock() {
         type="button"
         className="supportAction supportFeedback"
         onClick={() => openAction("feedback")}
-        aria-label="Feedback öffnen"
+        aria-label={t("aria.feedback")}
       >
         <span className="supportIcon" aria-hidden="true">
           <svg viewBox="0 0 24 24">
@@ -98,8 +100,8 @@ export default function SupportActionDock() {
         </span>
 
         <span className="supportText">
-          <strong>Feedback</strong>
-          <small>Idee oder Problem</small>
+          <strong>{t("feedback.title")}</strong>
+          <small>{t("feedback.subtitle")}</small>
         </span>
       </button>
 
@@ -107,7 +109,7 @@ export default function SupportActionDock() {
         type="button"
         className="supportAction supportContact"
         onClick={() => openAction("contact")}
-        aria-label="WhatsApp Kontakt öffnen"
+        aria-label={t("aria.contact")}
       >
         <span className="supportIcon" aria-hidden="true">
           <svg viewBox="0 0 24 24">
@@ -127,8 +129,8 @@ export default function SupportActionDock() {
         </span>
 
         <span className="supportText">
-          <strong>WhatsApp</strong>
-          <small>Kontakt & Telefon</small>
+          <strong>{t("contact.title")}</strong>
+          <small>{t("contact.subtitle")}</small>
         </span>
       </button>
 
@@ -359,4 +361,3 @@ export default function SupportActionDock() {
     </nav>
   );
 }
-

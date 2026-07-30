@@ -1933,5 +1933,129 @@
       "required": "Attendi il completamento del riconoscimento automatico.",
       "fixedRoomLocked": "L’originale mostra {room}. Questa funzione fissa non può essere trasformata in un altro tipo di ambiente."
     }
+  },
+  "Expose": {
+    "brand": {
+      "subtitle": "Exposé immobiliare"
+    },
+    "image": {
+      "placeholder": "Nessuna immagine dell’immobile disponibile",
+      "hint": "Aggiungi le immagini nel cockpit immobiliare",
+      "additional": "Altra immagine"
+    },
+    "status": {
+      "generator": "GENERATORE DI EXPOSÉ",
+      "loadingTitle": "Preparazione dell’exposé",
+      "loadingDescription": "Dati, testi e immagini dell’immobile vengono raccolti.",
+      "unavailableTitle": "Exposé non disponibile",
+      "backCockpit": "Torna al cockpit immobiliare"
+    },
+    "errors": {
+      "missingId": "Non è stato trasmesso alcun ID dell’immobile.",
+      "loadFailed": "Non è stato possibile caricare l’immobile.",
+      "notFound": "L’immobile non è stato trovato."
+    },
+    "fallback": {
+      "title": "{propertyType} a {place}",
+      "descriptionLocation": "Questo immobile di tipo {propertyType} si trova a {location}.",
+      "descriptionRooms": "L’immobile dispone di {rooms} locali.",
+      "descriptionArea": "La superficie abitabile è di circa {area} m².",
+      "descriptionMore": "Ulteriori informazioni possono essere aggiunte all’immobile e inserite automaticamente nell’exposé.",
+      "property": "Immobile",
+      "country": "Svizzera"
+    },
+    "pdf": {
+      "filePrefix": "Expose"
+    },
+    "toolbar": {
+      "ready": "EXPOSÉ PRONTO",
+      "preview": "Anteprima dell’exposé",
+      "back": "Indietro",
+      "preparingPdf": "Preparazione del PDF …",
+      "savePdf": "Salva PDF"
+    },
+    "cover": {
+      "archived": "ARCHIVIATO",
+      "active": "IMMOBILE ATTIVO",
+      "mainImage": "IMMAGINE PRINCIPALE",
+      "mainImageAlt": "Immagine principale: {title}"
+    },
+    "metrics": {
+      "rooms": "Locali",
+      "livingArea": "Superficie abitabile",
+      "purchasePrice": "Prezzo di vendita",
+      "onRequest": "Su richiesta"
+    },
+    "gallery": {
+      "eyebrow": "IMMAGINI DELL’IMMOBILE",
+      "title": "Galleria e impressioni",
+      "mainCapture": "SCATTO PRINCIPALE",
+      "objectViewAlt": "Vista dell’immobile: {title}",
+      "objectImageAlt": "Immagine {number} dell’immobile: {title}",
+      "property": "IMMOBILE",
+      "location": "LOCALITÀ",
+      "images": "IMMAGINI",
+      "none": "Nessuna"
+    },
+    "details": {
+      "eyebrow": "PROFILO DELL’IMMOBILE",
+      "title": "Dettagli e descrizione",
+      "propertyData": "DATI DELL’IMMOBILE",
+      "allFacts": "Tutti i dati a colpo d’occhio",
+      "propertyType": "Tipologia",
+      "price": "Prezzo",
+      "location": "LOCALITÀ",
+      "imageAnalysis": "ANALISI AI DELL’IMMAGINE",
+      "style": "Stile: {style}"
+    },
+    "final": {
+      "eyebrow": "CONCLUSIONE",
+      "title": "Punti di forza, posizione e contatto",
+      "highlights": "PUNTI DI FORZA",
+      "featuresTitle": "Dotazioni e vantaggi",
+      "emptyHighlights": "I punti di forza possono essere aggiunti all’immobile e appariranno automaticamente qui.",
+      "location": "POSIZIONE",
+      "locationFallback": "L’immobile si trova a {place}. La posizione unisce un ambiente abitativo piacevole alle numerose opportunità offerte dalla regione circostante.",
+      "personalAdvice": "CONSULENZA PERSONALE",
+      "interest": "Ti interessa questo immobile?",
+      "contactText": "Siamo a disposizione per ulteriori informazioni o per fissare una visita.",
+      "contactPerson": "La tua persona di contatto",
+      "profileMissing": "Completa i dati di contatto nel profilo utente",
+      "email": "E-MAIL",
+      "phone": "TELEFONO",
+      "notStored": "Non ancora indicato",
+      "legal": "Tutte le informazioni sono fornite senza garanzia e devono essere verificate dall’offerente prima della pubblicazione."
+    }
+  },
+  "PortalExport": {
+    "download": "Scarica l’export per i portali",
+    "missingData": "Per l’export mancano ancora località, tipologia, titolo o descrizione."
+  },
+  "SupportDock": {
+    "aria": {
+      "navigation": "Aiuto e contatto Inserat-AI",
+      "guide": "Apri la guida Inserat-AI",
+      "feedback": "Apri il feedback",
+      "contact": "Apri il contatto WhatsApp"
+    },
+    "guide": {
+      "title": "AI Guide",
+      "subtitle": "Il tuo assistente"
+    },
+    "feedback": {
+      "title": "Feedback",
+      "subtitle": "Idea o problema"
+    },
+    "contact": {
+      "title": "WhatsApp",
+      "subtitle": "Contatto e telefono"
+    }
+  },
+  "WhatsAppContact": {
+    "message": "Ciao Inserat-AI, sono interessato a una demo.",
+    "title": "Contatto",
+    "description": "Ti aiutiamo volentieri di persona.",
+    "close": "Chiudi la finestra di contatto",
+    "phone": "Telefono"
   }
 }

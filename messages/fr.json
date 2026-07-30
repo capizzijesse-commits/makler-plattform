@@ -1933,5 +1933,129 @@
       "required": "Veuillez attendre la fin de la détection automatique.",
       "fixedRoomLocked": "L’original montre {room}. Cette fonction fixe ne peut pas être transformée en un autre type de pièce."
     }
+  },
+  "Expose": {
+    "brand": {
+      "subtitle": "Exposé immobilier"
+    },
+    "image": {
+      "placeholder": "Aucune image du bien disponible",
+      "hint": "Ajouter des images dans le cockpit immobilier",
+      "additional": "Autre vue"
+    },
+    "status": {
+      "generator": "GÉNÉRATEUR D’EXPOSÉ",
+      "loadingTitle": "Préparation de l’exposé",
+      "loadingDescription": "Les données, les textes et les images du bien sont rassemblés.",
+      "unavailableTitle": "Exposé indisponible",
+      "backCockpit": "Retour au cockpit immobilier"
+    },
+    "errors": {
+      "missingId": "Aucun identifiant de bien n’a été transmis.",
+      "loadFailed": "Le bien n’a pas pu être chargé.",
+      "notFound": "Le bien n’a pas été trouvé."
+    },
+    "fallback": {
+      "title": "{propertyType} à {place}",
+      "descriptionLocation": "Ce bien de type {propertyType} se situe à {location}.",
+      "descriptionRooms": "Le bien dispose de {rooms} pièces.",
+      "descriptionArea": "La surface habitable est d’environ {area} m².",
+      "descriptionMore": "Des informations supplémentaires peuvent être ajoutées au bien puis reprises automatiquement dans l’exposé.",
+      "property": "Bien immobilier",
+      "country": "Suisse"
+    },
+    "pdf": {
+      "filePrefix": "Expose"
+    },
+    "toolbar": {
+      "ready": "EXPOSÉ PRÊT",
+      "preview": "Aperçu de l’exposé",
+      "back": "Retour",
+      "preparingPdf": "Préparation du PDF …",
+      "savePdf": "Enregistrer le PDF"
+    },
+    "cover": {
+      "archived": "ARCHIVÉ",
+      "active": "BIEN ACTIF",
+      "mainImage": "IMAGE PRINCIPALE",
+      "mainImageAlt": "Image principale : {title}"
+    },
+    "metrics": {
+      "rooms": "Pièces",
+      "livingArea": "Surface habitable",
+      "purchasePrice": "Prix de vente",
+      "onRequest": "Sur demande"
+    },
+    "gallery": {
+      "eyebrow": "IMAGES DU BIEN",
+      "title": "Galerie et impressions",
+      "mainCapture": "VUE PRINCIPALE",
+      "objectViewAlt": "Vue du bien : {title}",
+      "objectImageAlt": "Image {number} du bien : {title}",
+      "property": "BIEN",
+      "location": "LOCALITÉ",
+      "images": "IMAGES",
+      "none": "Aucune"
+    },
+    "details": {
+      "eyebrow": "PROFIL DU BIEN",
+      "title": "Détails et description",
+      "propertyData": "DONNÉES DU BIEN",
+      "allFacts": "Tous les faits en un coup d’œil",
+      "propertyType": "Type de bien",
+      "price": "Prix",
+      "location": "LOCALITÉ",
+      "imageAnalysis": "ANALYSE D’IMAGE AI",
+      "style": "Style : {style}"
+    },
+    "final": {
+      "eyebrow": "CONCLUSION",
+      "title": "Points forts, situation et contact",
+      "highlights": "POINTS FORTS",
+      "featuresTitle": "Équipements et avantages",
+      "emptyHighlights": "Les points forts peuvent être ajoutés au bien et apparaîtront automatiquement ici.",
+      "location": "SITUATION",
+      "locationFallback": "Le bien se situe à {place}. Son emplacement associe un cadre de vie agréable aux nombreuses possibilités offertes par la région environnante.",
+      "personalAdvice": "CONSEIL PERSONNALISÉ",
+      "interest": "Ce bien vous intéresse ?",
+      "contactText": "Nous sommes à votre disposition pour toute information complémentaire ou pour organiser une visite.",
+      "contactPerson": "Votre personne de contact",
+      "profileMissing": "Compléter les coordonnées dans le profil utilisateur",
+      "email": "E-MAIL",
+      "phone": "TÉLÉPHONE",
+      "notStored": "Pas encore renseigné",
+      "legal": "Toutes les informations sont fournies sans garantie et doivent être vérifiées par l’annonceur avant publication."
+    }
+  },
+  "PortalExport": {
+    "download": "Télécharger l’export pour les portails",
+    "missingData": "La localité, le type de bien, le titre ou la description manquent encore pour l’export."
+  },
+  "SupportDock": {
+    "aria": {
+      "navigation": "Aide et contact Inserat-AI",
+      "guide": "Ouvrir le guide Inserat-AI",
+      "feedback": "Ouvrir le feedback",
+      "contact": "Ouvrir le contact WhatsApp"
+    },
+    "guide": {
+      "title": "AI Guide",
+      "subtitle": "Votre assistant"
+    },
+    "feedback": {
+      "title": "Feedback",
+      "subtitle": "Idée ou problème"
+    },
+    "contact": {
+      "title": "WhatsApp",
+      "subtitle": "Contact et téléphone"
+    }
+  },
+  "WhatsAppContact": {
+    "message": "Bonjour Inserat-AI, je souhaite découvrir une démonstration.",
+    "title": "Contact",
+    "description": "Nous vous aidons volontiers personnellement.",
+    "close": "Fermer la fenêtre de contact",
+    "phone": "Téléphone"
   }
 }
