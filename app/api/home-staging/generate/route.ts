@@ -171,10 +171,10 @@ function cacheOptimizedSource(
 }
 
 
-const PREVIEW_SOURCE_EDGE = 1280;
+const PREVIEW_SOURCE_EDGE = 640;
 const FINAL_SOURCE_EDGE = 2048;
 
-const PREVIEW_SOURCE_WEBP_QUALITY = 80;
+const PREVIEW_SOURCE_WEBP_QUALITY = 58;
 const FINAL_SOURCE_WEBP_QUALITY = 92;
 
 const ALLOWED_IMAGE_TYPES = new Set([
@@ -189,6 +189,17 @@ const ROOM_TYPES = {
   office: "home office",
   diningRoom: "dining room",
   kidsRoom: "children's room",
+} as const;
+
+const FAST_PREVIEW_STYLES = {
+  modern:
+    "warm contemporary modern with clean lines, beige textiles, light wood and restrained black accents",
+  scandinavian:
+    "bright Scandinavian with pale oak, soft natural textiles and an airy Nordic atmosphere",
+  luxurious:
+    "elegant premium luxury with refined materials, sculptural lighting and restrained rich accents",
+  minimalist:
+    "high-end minimalist with very few essential pieces, calm colours and generous open space",
 } as const;
 
 const STYLES = {
@@ -389,6 +400,35 @@ function extensionForMimeType(mimeType: string): string {
     default:
       return "jpg";
   }
+}
+
+function createFastPreviewPrompt(
+  roomType: RoomType,
+  style: StagingStyle,
+  customInstructions: string,
+  variationConcept: string,
+  variationIndex: number
+): string {
+  const room = ROOM_TYPES[roomType];
+  const designStyle =
+    FAST_PREVIEW_STYLES[style];
+  const shortVariation = variationConcept
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return [
+    "Create a fast photorealistic virtual home staging preview of the supplied property photo.",
+    `Furnish the visible space as a ${room} in a ${designStyle} style.`,
+    `Use furnishing concept ${variationIndex + 1}: ${shortVariation}`,
+    "Preserve the exact camera angle, perspective, crop, room geometry, walls, floor, ceiling, windows, doors, radiators and fixed installations.",
+    "Only add plausible movable furniture, lighting, textiles, plants and restrained decoration.",
+    "Keep realistic furniture scale and clear walking space.",
+    customInstructions
+      ? `User furnishing wishes: ${customInstructions}`
+      : "No additional furnishing wishes.",
+    "Do not add people, pets, text, logos, watermarks or architectural changes.",
+    "Return a natural Swiss real-estate photograph, not an illustration or 3D render.",
+  ].join("\n");
 }
 
 function createStagingPrompt(
@@ -594,7 +634,7 @@ export async function POST(
     const outputCompression =
       isFinalMode
         ? "92"
-        : "80";
+        : "55";
 
     if (customInstructions.length > 500) {
       return NextResponse.json(
@@ -788,7 +828,8 @@ export async function POST(
           VARIATION_CONCEPTS.length
       ];
 
-    const stagingPrompt = `
+    const stagingPrompt = isFinalMode
+      ? `
 ${createStagingPrompt(
   roomType,
   style,
@@ -820,7 +861,14 @@ openings and natural light direction unchanged.
 
 Only add or replace movable furniture,
 textiles, lighting and decoration.
-`;
+`
+      : createFastPreviewPrompt(
+          roomType,
+          style,
+          customInstructions,
+          variationConcept,
+          variationIndex
+        );
 
     const formData = new FormData();
 
@@ -837,7 +885,10 @@ textiles, lighting and decoration.
     formData.append("moderation", "auto");
     formData.append("user", user.id);
     formData.append("stream", "true");
-    formData.append("partial_images", "1");
+    formData.append(
+      "partial_images",
+      isFinalMode ? "1" : "3"
+    );
 
     const generationStartedAt = Date.now();
 
