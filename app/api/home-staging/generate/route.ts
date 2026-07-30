@@ -838,10 +838,6 @@ textiles, lighting and decoration.
     formData.append("user", user.id);
     formData.append("stream", "true");
     formData.append("partial_images", "1");
-    formData.append(
-      "input_fidelity",
-      isFinalMode ? "high" : "low"
-    );
 
     const generationStartedAt = Date.now();
 
