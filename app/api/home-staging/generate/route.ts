@@ -171,10 +171,10 @@ function cacheOptimizedSource(
 }
 
 
-const PREVIEW_SOURCE_EDGE = 640;
+const PREVIEW_SOURCE_EDGE = 1280;
 const FINAL_SOURCE_EDGE = 2048;
 
-const PREVIEW_SOURCE_WEBP_QUALITY = 58;
+const PREVIEW_SOURCE_WEBP_QUALITY = 80;
 const FINAL_SOURCE_WEBP_QUALITY = 92;
 
 const ALLOWED_IMAGE_TYPES = new Set([
@@ -189,17 +189,6 @@ const ROOM_TYPES = {
   office: "home office",
   diningRoom: "dining room",
   kidsRoom: "children's room",
-} as const;
-
-const FAST_PREVIEW_STYLES = {
-  modern:
-    "warm contemporary modern with clean lines, beige textiles, light wood and restrained black accents",
-  scandinavian:
-    "bright Scandinavian with pale oak, soft natural textiles and an airy Nordic atmosphere",
-  luxurious:
-    "elegant premium luxury with refined materials, sculptural lighting and restrained rich accents",
-  minimalist:
-    "high-end minimalist with very few essential pieces, calm colours and generous open space",
 } as const;
 
 const STYLES = {
@@ -402,35 +391,6 @@ function extensionForMimeType(mimeType: string): string {
   }
 }
 
-function createFastPreviewPrompt(
-  roomType: RoomType,
-  style: StagingStyle,
-  customInstructions: string,
-  variationConcept: string,
-  variationIndex: number
-): string {
-  const room = ROOM_TYPES[roomType];
-  const designStyle =
-    FAST_PREVIEW_STYLES[style];
-  const shortVariation = variationConcept
-    .replace(/\s+/g, " ")
-    .trim();
-
-  return [
-    "Create a fast photorealistic virtual home staging preview of the supplied property photo.",
-    `Furnish the visible space as a ${room} in a ${designStyle} style.`,
-    `Use furnishing concept ${variationIndex + 1}: ${shortVariation}`,
-    "Preserve the exact camera angle, perspective, crop, room geometry, walls, floor, ceiling, windows, doors, radiators and fixed installations.",
-    "Only add plausible movable furniture, lighting, textiles, plants and restrained decoration.",
-    "Keep realistic furniture scale and clear walking space.",
-    customInstructions
-      ? `User furnishing wishes: ${customInstructions}`
-      : "No additional furnishing wishes.",
-    "Do not add people, pets, text, logos, watermarks or architectural changes.",
-    "Return a natural Swiss real-estate photograph, not an illustration or 3D render.",
-  ].join("\n");
-}
-
 function createStagingPrompt(
   roomType: RoomType,
   style: StagingStyle,
@@ -444,7 +404,13 @@ function createStagingPrompt(
     `Furnish the visible space as a ${room}.`,
     `Use an interior design that is ${designStyle}.`,
     "",
-    "Critical preservation rules:",
+    "Critical room identity and preservation rules:",
+    "- First identify the actual visible room from its fixed installations and architectural features.",
+    "- The actual visible room function has absolute priority over the selected room category.",
+    "- If the selected room category conflicts with the real room, ignore the selected category and preserve the real room.",
+    "- A bathroom must remain a bathroom, a kitchen must remain a kitchen and a hallway must remain a hallway.",
+    "- Never remove, hide or replace a bathtub, shower, toilet, washbasin, kitchen counter, sink, cooker or another fixed installation.",
+    "- For incompatible selections, improve the real room only with suitable movable accessories, textiles, lighting and restrained decoration.",
     "- Preserve the exact room geometry, camera position, perspective, crop and proportions.",
     "- Preserve all walls, ceilings, floors, windows, doors, stairs, radiators and built-in fixtures.",
     "- Do not add, remove, enlarge, reduce or relocate architectural elements.",
@@ -634,7 +600,7 @@ export async function POST(
     const outputCompression =
       isFinalMode
         ? "92"
-        : "55";
+        : "80";
 
     if (customInstructions.length > 500) {
       return NextResponse.json(
@@ -828,8 +794,7 @@ export async function POST(
           VARIATION_CONCEPTS.length
       ];
 
-    const stagingPrompt = isFinalMode
-      ? `
+    const stagingPrompt = `
 ${createStagingPrompt(
   roomType,
   style,
@@ -853,22 +818,25 @@ from a previous generation.
 
 The selected interior style must be unmistakably visible.
 
-ABSOLUTE ARCHITECTURAL PRESERVATION:
+ABSOLUTE ROOM IDENTITY AND ARCHITECTURAL PRESERVATION:
+First identify and preserve the actual visible room type.
+A bathroom must remain a bathroom.
+A kitchen must remain a kitchen.
+A hallway must remain a hallway.
+If the selected room category is incompatible,
+ignore it and preserve the real room function.
+Never remove, hide or replace fixed sanitary,
+kitchen or utility installations.
+
 Keep the original camera position, perspective,
 room dimensions, ceiling height, walls, floor,
 windows, doors, radiators, built-in elements,
 openings and natural light direction unchanged.
 
 Only add or replace movable furniture,
-textiles, lighting and decoration.
-`
-      : createFastPreviewPrompt(
-          roomType,
-          style,
-          customInstructions,
-          variationConcept,
-          variationIndex
-        );
+textiles, lighting and decoration that are
+compatible with the actual visible room.
+`;
 
     const formData = new FormData();
 
@@ -885,10 +853,7 @@ textiles, lighting and decoration.
     formData.append("moderation", "auto");
     formData.append("user", user.id);
     formData.append("stream", "true");
-    formData.append(
-      "partial_images",
-      isFinalMode ? "1" : "3"
-    );
+    formData.append("partial_images", "1");
 
     const generationStartedAt = Date.now();
 
