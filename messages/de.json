@@ -2057,5 +2057,60 @@
     "description": "Wir helfen dir gerne persönlich weiter.",
     "close": "Kontaktfenster schliessen",
     "phone": "Telefon"
+  },
+  "AppDialog": {
+    "confirm": "Bestätigen",
+    "cancel": "Abbrechen",
+    "closeNotice": "Hinweis schliessen"
+  },
+  "Feedback": {
+    "title": "Dein Feedback",
+    "subtitle": "Hilf uns, Inserat-AI weiter zu verbessern.",
+    "close": "Feedback-Fenster schliessen",
+    "categoryLabel": "Art des Feedbacks",
+    "categories": {
+      "idea": "Idee",
+      "problem": "Problem",
+      "question": "Frage",
+      "other": "Sonstiges"
+    },
+    "emailLabel": "E-Mail-Adresse",
+    "emailHint": "Optional, falls wir antworten sollen.",
+    "messageLabel": "Deine Nachricht",
+    "messagePlaceholder": "Was gefällt dir oder was sollten wir verbessern?",
+    "companyLabel": "Firma",
+    "validation": {
+      "moreDetail": "Bitte beschreibe dein Feedback etwas genauer."
+    },
+    "errors": {
+      "sendFailed": "Das Feedback konnte nicht gesendet werden."
+    },
+    "success": {
+      "sent": "Vielen Dank! Dein Feedback wurde gesendet."
+    },
+    "actions": {
+      "cancel": "Abbrechen",
+      "sending": "Wird gesendet…",
+      "send": "Feedback senden"
+    }
+  },
+  "PrivacyMode": {
+    "aria": {
+      "disable": "Privatsphäre-Modus ausschalten",
+      "enable": "Privatsphäre-Modus einschalten"
+    },
+    "title": {
+      "showImages": "Privatsphäre aktiv – Bilder anzeigen",
+      "protectImages": "Bilder vorübergehend schützen"
+    },
+    "label": "Privatsphäre",
+    "status": {
+      "protected": "Bilder geschützt",
+      "visible": "Bilder sichtbar"
+    }
+  },
+  "Metadata": {
+    "title": "Inserat-AI | Immobilienmarketing mit AI",
+    "description": "Professionelle Immobilieninserate, Social-Media-Texte und Exposés mit AI für die Schweiz."
   }
 }

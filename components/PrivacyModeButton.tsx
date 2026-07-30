@@ -1,6 +1,7 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 const STORAGE_KEY = "inseratAiPrivacyMode";
 
@@ -11,6 +12,7 @@ type PrivacyModeButtonProps = {
 export default function PrivacyModeButton({
   variant = "navbar",
 }: PrivacyModeButtonProps) {
+  const t = useTranslations("PrivacyMode");
   const [active, setActive] = useState(false);
   const [ready, setReady] = useState(false);
 
@@ -64,13 +66,13 @@ export default function PrivacyModeButton({
       aria-pressed={active}
       aria-label={
         active
-          ? "Privatsphäre-Modus ausschalten"
-          : "Privatsphäre-Modus einschalten"
+          ? t("aria.disable")
+          : t("aria.enable")
       }
       title={
         active
-          ? "Privatsphäre aktiv – Bilder anzeigen"
-          : "Bilder vorübergehend schützen"
+          ? t("title.showImages")
+          : t("title.protectImages")
       }
     >
       {active ? (
@@ -131,11 +133,11 @@ export default function PrivacyModeButton({
 
       {isDock ? (
         <span className="privacyDockText">
-          <strong>Privatsphäre</strong>
+          <strong>{t("label")}</strong>
           <small>
             {active
-              ? "Bilder geschützt"
-              : "Bilder sichtbar"}
+              ? t("status.protected")
+              : t("status.visible")}
           </small>
         </span>
       ) : null}

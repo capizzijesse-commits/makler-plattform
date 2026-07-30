@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   FormEvent,
@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useTranslations } from "next-intl";
 
 type SubmitStatus =
   | "idle"
@@ -13,14 +14,28 @@ type SubmitStatus =
   | "success"
   | "error";
 
-const FEEDBACK_CATEGORIES = [
-  "Idee",
-  "Problem",
-  "Frage",
-  "Sonstiges",
-];
-
 export default function FeedbackButton() {
+  const t = useTranslations("Feedback");
+
+  const feedbackCategories = [
+    {
+      value: "Idee",
+      label: t("categories.idea"),
+    },
+    {
+      value: "Problem",
+      label: t("categories.problem"),
+    },
+    {
+      value: "Frage",
+      label: t("categories.question"),
+    },
+    {
+      value: "Sonstiges",
+      label: t("categories.other"),
+    },
+  ];
+
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState("Idee");
   const [email, setEmail] = useState("");
@@ -113,7 +128,7 @@ export default function FeedbackButton() {
     if (cleanedMessage.length < 5) {
       setStatus("error");
       setStatusMessage(
-        "Bitte beschreibe dein Feedback etwas genauer."
+        t("validation.moreDetail")
       );
       return;
     }
@@ -141,25 +156,24 @@ export default function FeedbackButton() {
 
       if (!response.ok) {
         throw new Error(
-          result.error ||
-            "Das Feedback konnte nicht gesendet werden."
+          t("errors.sendFailed")
         );
       }
 
       setStatus("success");
       setStatusMessage(
-        "Vielen Dank! Dein Feedback wurde gesendet."
+        t("success.sent")
       );
 
       setMessage("");
       setCompany("");
     } catch (error) {
       setStatus("error");
-      setStatusMessage(
-        error instanceof Error
-          ? error.message
-          : "Das Feedback konnte nicht gesendet werden."
+      console.error(
+        "FEEDBACK SEND ERROR:",
+        error
       );
+      setStatusMessage(t("errors.sendFailed"));
     }
   }
 
@@ -185,19 +199,16 @@ export default function FeedbackButton() {
               <div>
                 <p>INSERAT AI</p>
                 <h2 id="feedback-title">
-                  Dein Feedback
+                  {t("title")}
                 </h2>
-                <span>
-                  Hilf uns, Inserat AI weiter zu
-                  verbessern.
-                </span>
+                <span>{t("subtitle")}</span>
               </div>
 
               <button
                 type="button"
                 className="feedbackCloseButton"
                 onClick={closeDialog}
-                aria-label="Feedback-Fenster schliessen"
+                aria-label={t("close")}
               >
                 ×
               </button>
@@ -208,7 +219,7 @@ export default function FeedbackButton() {
               onSubmit={handleSubmit}
             >
               <label>
-                <span>Art des Feedbacks</span>
+                <span>{t("categoryLabel")}</span>
 
                 <select
                   value={category}
@@ -216,13 +227,13 @@ export default function FeedbackButton() {
                     setCategory(event.target.value)
                   }
                 >
-                  {FEEDBACK_CATEGORIES.map(
+                  {feedbackCategories.map(
                     (option) => (
                       <option
-                        key={option}
-                        value={option}
+                        key={option.value}
+                        value={option.value}
                       >
-                        {option}
+                        {option.label}
                       </option>
                     )
                   )}
@@ -230,10 +241,8 @@ export default function FeedbackButton() {
               </label>
 
               <label>
-                <span>E-Mail-Adresse</span>
-                <small>
-                  Optional, falls wir antworten sollen.
-                </small>
+                <span>{t("emailLabel")}</span>
+                <small>{t("emailHint")}</small>
 
                 <input
                   type="email"
@@ -247,14 +256,14 @@ export default function FeedbackButton() {
               </label>
 
               <label>
-                <span>Deine Nachricht</span>
+                <span>{t("messageLabel")}</span>
 
                 <textarea
                   ref={textareaRef}
                   value={message}
                   maxLength={2000}
                   rows={6}
-                  placeholder="Was gefällt dir oder was sollten wir verbessern?"
+                  placeholder={t("messagePlaceholder")}
                   onChange={(event) =>
                     setMessage(event.target.value)
                   }
@@ -269,7 +278,7 @@ export default function FeedbackButton() {
                 className="feedbackHoneypot"
                 aria-hidden="true"
               >
-                <span>Firma</span>
+                <span>{t("companyLabel")}</span>
                 <input
                   type="text"
                   value={company}
@@ -297,7 +306,7 @@ export default function FeedbackButton() {
                   onClick={closeDialog}
                   disabled={status === "sending"}
                 >
-                  Abbrechen
+                  {t("actions.cancel")}
                 </button>
 
                 <button
@@ -306,8 +315,8 @@ export default function FeedbackButton() {
                   disabled={status === "sending"}
                 >
                   {status === "sending"
-                    ? "Wird gesendet…"
-                    : "Feedback senden"}
+                    ? t("actions.sending")
+                    : t("actions.send")}
                 </button>
               </div>
             </form>

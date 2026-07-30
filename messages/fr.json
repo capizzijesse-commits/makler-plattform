@@ -2057,5 +2057,60 @@
     "description": "Nous vous aidons volontiers personnellement.",
     "close": "Fermer la fenêtre de contact",
     "phone": "Téléphone"
+  },
+  "AppDialog": {
+    "confirm": "Confirmer",
+    "cancel": "Annuler",
+    "closeNotice": "Fermer la notification"
+  },
+  "Feedback": {
+    "title": "Votre avis",
+    "subtitle": "Aidez-nous à continuer d’améliorer Inserat-AI.",
+    "close": "Fermer la fenêtre d’avis",
+    "categoryLabel": "Type d’avis",
+    "categories": {
+      "idea": "Idée",
+      "problem": "Problème",
+      "question": "Question",
+      "other": "Autre"
+    },
+    "emailLabel": "Adresse e-mail",
+    "emailHint": "Facultatif, si vous souhaitez une réponse.",
+    "messageLabel": "Votre message",
+    "messagePlaceholder": "Qu’appréciez-vous ou que devrions-nous améliorer ?",
+    "companyLabel": "Entreprise",
+    "validation": {
+      "moreDetail": "Veuillez décrire votre avis un peu plus précisément."
+    },
+    "errors": {
+      "sendFailed": "Votre avis n’a pas pu être envoyé."
+    },
+    "success": {
+      "sent": "Merci ! Votre avis a été envoyé."
+    },
+    "actions": {
+      "cancel": "Annuler",
+      "sending": "Envoi en cours…",
+      "send": "Envoyer l’avis"
+    }
+  },
+  "PrivacyMode": {
+    "aria": {
+      "disable": "Désactiver le mode confidentialité",
+      "enable": "Activer le mode confidentialité"
+    },
+    "title": {
+      "showImages": "Confidentialité active – afficher les images",
+      "protectImages": "Protéger temporairement les images"
+    },
+    "label": "Confidentialité",
+    "status": {
+      "protected": "Images protégées",
+      "visible": "Images visibles"
+    }
+  },
+  "Metadata": {
+    "title": "Inserat-AI | Marketing immobilier avec l’AI",
+    "description": "Annonces immobilières professionnelles, contenus pour les réseaux sociaux et exposés avec l’AI pour la Suisse."
   }
 }

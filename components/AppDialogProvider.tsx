@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   createContext,
@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useTranslations } from "next-intl";
 
 export type AppNoticeTone =
   | "success"
@@ -78,6 +79,8 @@ export default function AppDialogProvider({
 }: {
   children: ReactNode;
 }) {
+  const t = useTranslations("AppDialog");
+
   const [toasts, setToasts] = useState<ToastItem[]>(
     []
   );
@@ -148,11 +151,11 @@ export default function AppDialogProvider({
 
           setConfirmOptions({
             confirmLabel:
-              options.confirmLabel || "Bestätigen",
+              options.confirmLabel || t("confirm"),
             secondaryLabel:
               options.secondaryLabel,
             cancelLabel:
-              options.cancelLabel || "Abbrechen",
+              options.cancelLabel || t("cancel"),
             tone:
               options.tone || "default",
             title:
@@ -165,7 +168,7 @@ export default function AppDialogProvider({
         }
       );
     },
-    []
+    [t]
   );
 
   const confirmAction = useCallback(
@@ -286,7 +289,7 @@ export default function AppDialogProvider({
             <button
               type="button"
               onClick={() => removeToast(toast.id)}
-              aria-label="Hinweis schliessen"
+              aria-label={t("closeNotice")}
             >
               ×
             </button>

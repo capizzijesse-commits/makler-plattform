@@ -2057,5 +2057,60 @@
     "description": "We are happy to help you personally.",
     "close": "Close contact window",
     "phone": "Phone"
+  },
+  "AppDialog": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "closeNotice": "Close notification"
+  },
+  "Feedback": {
+    "title": "Your feedback",
+    "subtitle": "Help us continue improving Inserat-AI.",
+    "close": "Close feedback window",
+    "categoryLabel": "Feedback type",
+    "categories": {
+      "idea": "Idea",
+      "problem": "Problem",
+      "question": "Question",
+      "other": "Other"
+    },
+    "emailLabel": "Email address",
+    "emailHint": "Optional, in case you would like a reply.",
+    "messageLabel": "Your message",
+    "messagePlaceholder": "What do you like, or what should we improve?",
+    "companyLabel": "Company",
+    "validation": {
+      "moreDetail": "Please describe your feedback in a little more detail."
+    },
+    "errors": {
+      "sendFailed": "Your feedback could not be sent."
+    },
+    "success": {
+      "sent": "Thank you! Your feedback has been sent."
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "sending": "Sending…",
+      "send": "Send feedback"
+    }
+  },
+  "PrivacyMode": {
+    "aria": {
+      "disable": "Turn off privacy mode",
+      "enable": "Turn on privacy mode"
+    },
+    "title": {
+      "showImages": "Privacy active – show images",
+      "protectImages": "Temporarily protect images"
+    },
+    "label": "Privacy",
+    "status": {
+      "protected": "Images protected",
+      "visible": "Images visible"
+    }
+  },
+  "Metadata": {
+    "title": "Inserat-AI | AI property marketing",
+    "description": "Professional property listings, social media content and brochures with AI for Switzerland."
   }
 }

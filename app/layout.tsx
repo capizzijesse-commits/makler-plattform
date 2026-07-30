@@ -2,14 +2,18 @@ import "./globals.css";
 import type {Metadata, Viewport} from "next";
 import {GoogleAnalytics} from "@next/third-parties/google";
 import {NextIntlClientProvider} from "next-intl";
-import {getLocale} from "next-intl/server";
+import {getLocale, getTranslations} from "next-intl/server";
 import AppDialogProvider from "@/components/AppDialogProvider";
 import AppShell from "@/app/components/AppShell";
 
-export const metadata: Metadata = {
-  title: "Inserat-AI",
-  description: "Immobilien-Inserate-Generator für die Schweiz",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Metadata");
+
+  return {
+    title: t("title"),
+    description: t("description"),
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",

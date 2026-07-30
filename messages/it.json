@@ -2057,5 +2057,60 @@
     "description": "Ti aiutiamo volentieri di persona.",
     "close": "Chiudi la finestra di contatto",
     "phone": "Telefono"
+  },
+  "AppDialog": {
+    "confirm": "Conferma",
+    "cancel": "Annulla",
+    "closeNotice": "Chiudi notifica"
+  },
+  "Feedback": {
+    "title": "Il tuo feedback",
+    "subtitle": "Aiutaci a migliorare ulteriormente Inserat-AI.",
+    "close": "Chiudi la finestra del feedback",
+    "categoryLabel": "Tipo di feedback",
+    "categories": {
+      "idea": "Idea",
+      "problem": "Problema",
+      "question": "Domanda",
+      "other": "Altro"
+    },
+    "emailLabel": "Indirizzo e-mail",
+    "emailHint": "Facoltativo, se desideri ricevere una risposta.",
+    "messageLabel": "Il tuo messaggio",
+    "messagePlaceholder": "Cosa ti piace o cosa dovremmo migliorare?",
+    "companyLabel": "Azienda",
+    "validation": {
+      "moreDetail": "Descrivi il tuo feedback in modo un po’ più dettagliato."
+    },
+    "errors": {
+      "sendFailed": "Non è stato possibile inviare il feedback."
+    },
+    "success": {
+      "sent": "Grazie! Il tuo feedback è stato inviato."
+    },
+    "actions": {
+      "cancel": "Annulla",
+      "sending": "Invio in corso…",
+      "send": "Invia feedback"
+    }
+  },
+  "PrivacyMode": {
+    "aria": {
+      "disable": "Disattiva la modalità privacy",
+      "enable": "Attiva la modalità privacy"
+    },
+    "title": {
+      "showImages": "Privacy attiva – mostra immagini",
+      "protectImages": "Proteggi temporaneamente le immagini"
+    },
+    "label": "Privacy",
+    "status": {
+      "protected": "Immagini protette",
+      "visible": "Immagini visibili"
+    }
+  },
+  "Metadata": {
+    "title": "Inserat-AI | Marketing immobiliare con AI",
+    "description": "Annunci immobiliari professionali, contenuti social ed exposé con AI per la Svizzera."
   }
 }
