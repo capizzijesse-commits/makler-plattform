@@ -4,6 +4,7 @@ import {
   useState,
   type ChangeEvent,
 } from "react";
+import { useLocale, useTranslations } from "next-intl";
 
 type FloorPlanAnalysis = {
   summary: string;
@@ -22,6 +23,8 @@ export default function FloorPlanAnalyzer({
   disabled = false,
   onApply,
 }: FloorPlanAnalyzerProps) {
+  const locale = useLocale();
+  const t = useTranslations("HomeStaging.floorPlan");
   const [fileName, setFileName] =
     useState("");
   const [analyzing, setAnalyzing] =
@@ -51,14 +54,14 @@ export default function FloorPlanAnalyzer({
 
     if (!isPdf) {
       setError(
-        "Bitte wähle eine PDF-Datei aus."
+        t("errors.pdfOnly")
       );
       return;
     }
 
     if (file.size > 15 * 1024 * 1024) {
       setError(
-        "Die Grundriss-PDF darf maximal 15 MB gross sein."
+        t("errors.tooLarge")
       );
       return;
     }
@@ -74,9 +77,10 @@ export default function FloorPlanAnalyzer({
 
       body.append("listingId", listingId);
       body.append("file", file);
+      body.append("locale", locale);
 
       const response = await fetch(
-        "/api/home-staging/floor-plan",
+        `/api/home-staging/floor-plan?locale=${encodeURIComponent(locale)}`,
         {
           method: "POST",
           credentials: "include",
@@ -99,7 +103,7 @@ export default function FloorPlanAnalyzer({
       ) {
         throw new Error(
           data.error ||
-            "Der Grundriss konnte nicht analysiert werden."
+            t("errors.analyze")
         );
       }
 
@@ -113,7 +117,7 @@ export default function FloorPlanAnalyzer({
       setError(
         uploadError instanceof Error
           ? uploadError.message
-          : "Der Grundriss konnte nicht analysiert werden."
+          : t("errors.analyze")
       );
     } finally {
       setAnalyzing(false);
@@ -145,17 +149,12 @@ export default function FloorPlanAnalyzer({
         </span>
 
         <div>
-          <small>GRUNDRISS-ASSISTENT</small>
-          <h2>Grundriss-PDF hochladen</h2>
+          <small>{t("eyebrow")}</small>
+          <h2>{t("title")}</h2>
         </div>
       </div>
 
-      <p className="floorPlanIntro">
-        Inserat-AI erkennt Räume, Masse,
-        Türen, Fenster und sinnvolle
-        Möblierungszonen und erstellt daraus
-        konkrete Einrichtungswünsche.
-      </p>
+      <p className="floorPlanIntro">{t("description")}</p>
 
       <label
         className={
@@ -174,27 +173,22 @@ export default function FloorPlanAnalyzer({
         <span
           className="floorPlanIcon"
           aria-hidden="true"
-        >
-          PDF
-        </span>
+        >{t("pdfLabel")}</span>
 
         <div>
           <strong>
             {analyzing
-              ? "Grundriss wird analysiert …"
-              : "Grundriss-PDF hochladen"}
+              ? t("analyzing")
+              : t("upload")}
           </strong>
 
-          <small>
-            PDF · maximal 15 MB · wird nicht
-            als Objektfoto gespeichert
-          </small>
+          <small>{t("uploadHint")}</small>
         </div>
       </label>
 
       {fileName ? (
         <p className="floorPlanFileName">
-          Ausgewählte Datei:
+          {t("selectedFile")}
           {" "}
           <strong>{fileName}</strong>
         </p>
@@ -213,10 +207,8 @@ export default function FloorPlanAnalyzer({
         <div className="floorPlanResult">
           <div className="floorPlanResultHeader">
             <div>
-              <small>AI-AUSWERTUNG</small>
-              <h3>
-                Grundriss wurde erkannt
-              </h3>
+              <small>{t("resultEyebrow")}</small>
+              <h3>{t("resultTitle")}</h3>
             </div>
 
             <span>✓</span>
@@ -235,9 +227,7 @@ export default function FloorPlanAnalyzer({
           ) : null}
 
           <div className="floorPlanInstruction">
-            <small>
-              VORGESCHLAGENE EINRICHTUNG
-            </small>
+            <small>{t("suggestionEyebrow")}</small>
 
             <p>
               {analysis.stagingInstructions}
@@ -251,8 +241,8 @@ export default function FloorPlanAnalyzer({
             disabled={disabled}
           >
             {applied
-              ? "✓ In Wünsche übernommen"
-              : "Für Einrichtung übernehmen"}
+              ? t("applied")
+              : t("apply")}
           </button>
         </div>
       ) : null}

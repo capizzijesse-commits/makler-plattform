@@ -4,6 +4,7 @@ import { upload } from "@vercel/blob/client";
 import FloorPlanAnalyzer from "./FloorPlanAnalyzer";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import {
   useEffect,
   useMemo,
@@ -94,63 +95,19 @@ type SessionResponse = {
   error?: string;
 };
 
-const ROOM_TYPES: Array<{
-  value: RoomType;
-  label: string;
-  description: string;
-}> = [
-  {
-    value: "livingRoom",
-    label: "Wohnzimmer",
-    description: "Sofa, Sessel, Tisch und wohnliche Akzente",
-  },
-  {
-    value: "bedroom",
-    label: "Schlafzimmer",
-    description: "Bett, Nachttische und ruhige Atmosphäre",
-  },
-  {
-    value: "office",
-    label: "Büro",
-    description: "Arbeitsplatz mit funktionaler Einrichtung",
-  },
-  {
-    value: "diningRoom",
-    label: "Esszimmer",
-    description: "Esstisch, Stühle und dezente Beleuchtung",
-  },
-  {
-    value: "kidsRoom",
-    label: "Kinderzimmer",
-    description: "Freundliche und altersneutrale Einrichtung",
-  },
+const ROOM_TYPES: RoomType[] = [
+  "livingRoom",
+  "bedroom",
+  "office",
+  "diningRoom",
+  "kidsRoom",
 ];
 
-const STYLES: Array<{
-  value: StagingStyle;
-  label: string;
-  description: string;
-}> = [
-  {
-    value: "modern",
-    label: "Modern",
-    description: "Warm, elegant und hochwertig",
-  },
-  {
-    value: "scandinavian",
-    label: "Skandinavisch",
-    description: "Hell, natürlich und einladend",
-  },
-  {
-    value: "luxurious",
-    label: "Luxuriös",
-    description: "Edle Materialien und zurückhaltender Luxus",
-  },
-  {
-    value: "minimalist",
-    label: "Minimalistisch",
-    description: "Ruhig, funktional und grosszügig",
-  },
+const STYLES: StagingStyle[] = [
+  "modern",
+  "scandinavian",
+  "luxurious",
+  "minimalist",
 ];
 
 function base64ToFile(
@@ -229,6 +186,8 @@ function detectOutputSize(
 export default function HomeStagingPage() {
   const params = useParams();
   const router = useRouter();
+  const locale = useLocale();
+  const t = useTranslations("HomeStaging");
 
   const rawId = params.id;
   const listingId = Array.isArray(rawId)
@@ -337,7 +296,7 @@ export default function HomeStagingPage() {
         ) {
           throw new Error(
             sessionData.error ||
-              "Die Zugriffsberechtigung konnte nicht geprüft werden."
+              t("errors.accessCheck")
           );
         }
 
@@ -356,7 +315,7 @@ export default function HomeStagingPage() {
         proAccessGranted = true;
 
         if (!listingId) {
-          setError("Keine Objekt-ID gefunden.");
+          setError(t("errors.missingListingId"));
           return;
         }
 
@@ -391,7 +350,7 @@ export default function HomeStagingPage() {
         ) {
           throw new Error(
             data.error ||
-              "Das Objekt konnte nicht geladen werden."
+              t("errors.loadListing")
           );
         }
 
@@ -433,7 +392,7 @@ export default function HomeStagingPage() {
         const message =
           loadError instanceof Error
             ? loadError.message
-            : "Home Staging konnte nicht geladen werden.";
+            : t("errors.loadHomeStaging");
 
         if (proAccessGranted) {
           setError(message);
@@ -457,7 +416,7 @@ export default function HomeStagingPage() {
     return () => {
       controller.abort();
     };
-  }, [listingId, router]);
+  }, [listingId, locale, router, t]);
 
   const selectedImage = useMemo(
     () =>
@@ -534,7 +493,7 @@ export default function HomeStagingPage() {
 
     if (availableSlots === 0) {
       setError(
-        "Für dieses Objekt sind bereits 10 Bilder gespeichert."
+        t("errors.imageLimit")
       );
       return;
     }
@@ -556,7 +515,7 @@ export default function HomeStagingPage() {
 
     if (invalidFile) {
       setError(
-        "Erlaubt sind JPEG, PNG und WebP mit maximal 10 MB pro Bild."
+        t("errors.invalidImage")
       );
       return;
     }
@@ -577,9 +536,10 @@ export default function HomeStagingPage() {
         const file = filesToUpload[index];
 
         setUploadMessage(
-          `Bild ${index + 1} von ${
-            filesToUpload.length
-          } wird hochgeladen …`
+          t("upload.progress", {
+            current: index + 1,
+            total: filesToUpload.length,
+          })
         );
 
         const safeFileName = file.name
@@ -590,7 +550,7 @@ export default function HomeStagingPage() {
 
         const blob = await upload(
           `listing-images/${listing.id}/${Date.now()}-${index}-${
-            safeFileName || "objektbild"
+            safeFileName || "property-image"
           }`,
           file,
           {
@@ -640,7 +600,9 @@ export default function HomeStagingPage() {
         ) {
           throw new Error(
             imageData.error ||
-              `Das Bild „${file.name}“ konnte nicht gespeichert werden.`
+              t("errors.saveImage", {
+                fileName: file.name,
+              })
           );
         }
 
@@ -676,8 +638,10 @@ export default function HomeStagingPage() {
 
       setUploadMessage(
         uploadedImages.length === 1
-          ? "Das neue Raumfoto wurde gespeichert und ausgewählt."
-          : `${uploadedImages.length} neue Raumfotos wurden gespeichert. Das erste neue Bild wurde ausgewählt.`
+          ? t("upload.savedSingle")
+          : t("upload.savedMultiple", {
+              count: uploadedImages.length,
+            })
       );
     } catch (uploadError) {
       console.error(
@@ -688,7 +652,7 @@ export default function HomeStagingPage() {
       setError(
         uploadError instanceof Error
           ? uploadError.message
-          : "Die Raumfotos konnten nicht hochgeladen werden."
+          : t("errors.uploadImages")
       );
     } finally {
       setUploadingImages(false);
@@ -765,7 +729,7 @@ export default function HomeStagingPage() {
       if (!response.ok || !data.success) {
         throw new Error(
           data.error ||
-            "Das Bild konnte nicht gelöscht werden."
+            t("errors.deleteImage")
         );
       }
 
@@ -809,7 +773,7 @@ export default function HomeStagingPage() {
       resetResult();
       setPendingDeleteImage(null);
       setUploadMessage(
-        "Das Raumfoto wurde dauerhaft gelöscht."
+        t("upload.deleted")
       );
     } catch (deleteError) {
       console.error(
@@ -820,7 +784,7 @@ export default function HomeStagingPage() {
       setError(
         deleteError instanceof Error
           ? deleteError.message
-          : "Das Raumfoto konnte nicht gelöscht werden."
+          : t("errors.deleteRoomImage")
       );
     } finally {
       setDeletingImageId(null);
@@ -864,15 +828,14 @@ export default function HomeStagingPage() {
           <div>
             <strong>
               {uploadingImages
-                ? "Raumfotos werden hochgeladen …"
+                ? t("upload.uploading")
                 : imageCount >= 10
-                  ? "Maximal 10 Objektbilder erreicht"
-                  : "Neue Raumfotos hochladen"}
+                  ? t("upload.limitReached")
+                  : t("upload.addPhotos")}
             </strong>
 
             <small>
-              JPEG, PNG oder WebP · maximal
-              10 MB pro Bild
+              {t("upload.formats")}
             </small>
           </div>
         </label>
@@ -909,7 +872,7 @@ export default function HomeStagingPage() {
       );
 
       const response = await fetch(
-        "/api/home-staging/generate",
+        `/api/home-staging/generate?locale=${encodeURIComponent(locale)}`,
         {
           method: "POST",
           credentials: "include",
@@ -926,6 +889,7 @@ export default function HomeStagingPage() {
             mode: generationMode,
             variationIndex:
               variationIndexForRequest,
+            locale,
           }),
         }
       );
@@ -946,13 +910,13 @@ export default function HomeStagingPage() {
         throw new Error(
           data.details ||
             data.error ||
-            "Die AI-Visualisierung konnte nicht erstellt werden."
+            t("errors.generate")
         );
       }
 
       setPreview(data.preview);
       setStatusMessage(
-        "Die Vorschau wurde erstellt. Sie ist noch nicht gespeichert."
+        t("status.previewCreated")
       );
     } catch (generateError) {
       console.error(
@@ -963,7 +927,7 @@ export default function HomeStagingPage() {
       setError(
         generateError instanceof Error
           ? generateError.message
-          : "Die AI-Visualisierung konnte nicht erstellt werden."
+          : t("errors.generate")
       );
     } finally {
       setGenerating(false);
@@ -1019,7 +983,7 @@ export default function HomeStagingPage() {
         {
           access: "public",
           handleUploadUrl:
-            "/api/home-staging/upload",
+            `/api/home-staging/upload?locale=${encodeURIComponent(locale)}`,
           clientPayload: JSON.stringify({
             listingId: listing.id,
             sourceImageId:
@@ -1029,12 +993,13 @@ export default function HomeStagingPage() {
             aiModel: preview.aiModel,
             promptVersion:
               preview.promptVersion,
+            locale,
           }),
         }
       );
 
       const saveResponse = await fetch(
-        "/api/home-staging",
+        `/api/home-staging?locale=${encodeURIComponent(locale)}`,
         {
           method: "POST",
           credentials: "include",
@@ -1056,6 +1021,7 @@ export default function HomeStagingPage() {
             aiModel: preview.aiModel,
             promptVersion:
               preview.promptVersion,
+            locale,
           }),
         }
       );
@@ -1074,7 +1040,7 @@ export default function HomeStagingPage() {
       ) {
         throw new Error(
           saveData.error ||
-            "Die AI-Visualisierung konnte nicht gespeichert werden."
+            t("errors.saveResult")
         );
       }
 
@@ -1082,7 +1048,7 @@ export default function HomeStagingPage() {
         saveData.image?.url || uploadedBlob.url
       );
       setStatusMessage(
-        "Die AI-Visualisierung wurde dauerhaft mit dem Objekt gespeichert."
+        t("status.saved")
       );
     } catch (saveError) {
       console.error(
@@ -1093,7 +1059,7 @@ export default function HomeStagingPage() {
       setError(
         saveError instanceof Error
           ? saveError.message
-          : "Die AI-Visualisierung konnte nicht gespeichert werden."
+          : t("errors.saveResult")
       );
     } finally {
       setSaving(false);
@@ -1105,10 +1071,8 @@ export default function HomeStagingPage() {
       <main className="stagingPage">
         <div className="statusCard">
           <div className="spinner" />
-          <strong>Home Staging wird vorbereitet …</strong>
-          <span>
-            Objektbilder und Angaben werden geladen.
-          </span>
+          <strong>{t("loading.title")}</strong>
+          <span>{t("loading.description")}</span>
         </div>
 
         <PageStyles />
@@ -1120,18 +1084,14 @@ export default function HomeStagingPage() {
     return (
       <main className="stagingPage">
         <div className="statusCard errorCard">
-          <strong>
-            Zugriff konnte nicht geprüft werden
-          </strong>
+          <strong>{t("access.errorTitle")}</strong>
 
           <span>{accessError}</span>
 
           <Link
             href="/cockpit"
             className="primaryLink"
-          >
-            Zurück zum Makler-Cockpit
-          </Link>
+          >{t("common.backCockpit")}</Link>
         </div>
 
         <PageStyles />
@@ -1167,26 +1127,13 @@ export default function HomeStagingPage() {
               fontWeight: 900,
               letterSpacing: "0.16em",
             }}
-          >
-            PRO-FUNKTION
-          </span>
+          >{t("access.proBadge")}</span>
 
-          <strong>
-            Virtuelles Home Staging
-          </strong>
+          <strong>{t("access.title")}</strong>
 
-          <span>
-            Fotorealistische AI-Visualisierungen und
-            die integrierte Grundrissanalyse gehören
-            zum Pro-Angebot für CHF 79.90 pro Monat.
-          </span>
+          <span>{t("access.proDescription")}</span>
 
-          <span>
-            Diese Funktionen sind weder im
-            Founder-Angebot für CHF 19.90 pro Monat
-            noch im Einzelobjekt für CHF 9.90
-            enthalten.
-          </span>
+          <span>{t("access.excludedPlans")}</span>
 
           <div
             style={{
@@ -1199,16 +1146,12 @@ export default function HomeStagingPage() {
             <Link
               href="/cockpit"
               className="primaryLink"
-            >
-              Zurück zum Makler-Cockpit
-            </Link>
+            >{t("common.backCockpit")}</Link>
 
             <Link
               href="/#preise"
               className="primaryLink"
-            >
-              Pro-Angebot ansehen
-            </Link>
+            >{t("access.viewPro")}</Link>
           </div>
         </div>
 
@@ -1221,17 +1164,13 @@ export default function HomeStagingPage() {
     return (
       <main className="stagingPage">
         <div className="statusCard errorCard">
-          <strong>
-            Home Staging konnte nicht geöffnet werden
-          </strong>
+          <strong>{t("errors.openTitle")}</strong>
           <span>{error}</span>
 
           <Link
             href="/cockpit"
             className="primaryLink"
-          >
-            Zurück zum Makler-Cockpit
-          </Link>
+          >{t("common.backCockpit")}</Link>
         </div>
 
         <PageStyles />
@@ -1253,34 +1192,22 @@ export default function HomeStagingPage() {
           <Link
             href={`/cockpit/${listing.id}`}
             className="backLink"
-          >
-            ← Zurück zum Objekt
-          </Link>
+          >{t("common.backObject")}</Link>
 
-          <span className="mvpBadge">
-            HOME STAGING MVP
-          </span>
+          <span className="mvpBadge">{t("hero.mvpBadge")}</span>
         </nav>
 
         <header className="hero">
           <div>
-            <span className="eyebrow">
-              VIRTUELLES HOME STAGING
-            </span>
+            <span className="eyebrow">{t("hero.eyebrow")}</span>
 
-            <h1>
-              Räume fotorealistisch einrichten
-            </h1>
+            <h1>{t("hero.title")}</h1>
 
-            <p>
-              Wähle ein bestehendes Objektbild,
-              bestimme Raumart und Stil und erstelle
-              eine AI-visualisierte Vorschau.
-            </p>
+            <p>{t("hero.description")}</p>
           </div>
 
           <div className="objectSummary">
-            <span>AKTUELLES OBJEKT</span>
+            <span>{t("hero.currentObject")}</span>
             <strong>
               {listing.propertyType} in{" "}
               {listing.location}
@@ -1296,47 +1223,29 @@ export default function HomeStagingPage() {
         </header>
 
         <div className="notice">
-          <strong>
-            Originalbild bleibt unverändert
-          </strong>
+          <strong>{t("notice.title")}</strong>
 
-          <span>
-            Das AI-Ergebnis wird erst nach dem
-            ausdrücklichen Klick auf „Ergebnis
-            speichern“ dauerhaft übernommen.
-          </span>
+          <span>{t("notice.description")}</span>
         </div>
 
         {isArchived && (
-          <div className="messageBox warningBox">
-            Dieses Objekt ist archiviert. Aktiviere
-            es zuerst wieder, um eine Visualisierung
-            zu erstellen.
-          </div>
+          <div className="messageBox warningBox">{t("archived")}</div>
         )}
 
         {!hasImages ? (
           <section className="emptyState">
             <span className="emptyIcon">▧</span>
 
-            <h2>
-              Noch keine Objektbilder vorhanden
-            </h2>
+            <h2>{t("empty.title")}</h2>
 
-            <p>
-              Lade zuerst auf der Objektseite ein
-              Foto eines leeren oder wenig
-              eingerichteten Raumes hoch.
-            </p>
+            <p>{t("empty.description")}</p>
 
             {renderImageUpload()}
 
             <Link
               href={`/cockpit/${listing.id}`}
               className="secondaryPageLink"
-            >
-              Zur Objektseite
-            </Link>
+            >{t("common.toObject")}</Link>
           </section>
         ) : (
           <>
@@ -1346,8 +1255,8 @@ export default function HomeStagingPage() {
                   <span>1</span>
 
                   <div>
-                    <small>AUSGANGSBILD</small>
-                    <h2>Objektbild auswählen</h2>
+                    <small>{t("steps.source.eyebrow")}</small>
+                    <h2>{t("steps.source.title")}</h2>
                   </div>
                 </div>
 
@@ -1375,22 +1284,26 @@ export default function HomeStagingPage() {
                             uploadingImages ||
                             deletingImageId !== null
                           }
-                          aria-label={`Bild ${
-                            index + 1
-                          } auswählen`}
+                          aria-label={t("images.selectAria", {
+                            number: index + 1,
+                          })}
                         >
                           <img
                             src={image.url}
                             alt={
                               image.fileName ||
-                              `Objektbild ${index + 1}`
+                              t("images.alt", {
+                                number: index + 1,
+                              })
                             }
                           />
 
                           <span>
-                            Bild {index + 1}
+                            {t("images.number", {
+                              number: index + 1,
+                            })}
                             {image.isPrimary
-                              ? " · Hauptbild"
+                              ? t("images.primarySuffix")
                               : ""}
                           </span>
                         </button>
@@ -1409,10 +1322,10 @@ export default function HomeStagingPage() {
                             uploadingImages ||
                             deletingImageId !== null
                           }
-                          aria-label={`Bild ${
-                            index + 1
-                          } löschen`}
-                          title="Bild löschen"
+                          aria-label={t("images.deleteAria", {
+                            number: index + 1,
+                          })}
+                          title={t("images.deleteTitle")}
                         >
                           {deletingImageId ===
                           image.id ? (
@@ -1448,29 +1361,14 @@ export default function HomeStagingPage() {
                     role="alert"
                   >
                       <div>
-                        <small>
-                          BILD DAUERHAFT LÖSCHEN
-                        </small>
+                        <small>{t("delete.eyebrow")}</small>
 
-                        <strong>
-                          Raumfoto wirklich entfernen?
-                        </strong>
+                        <strong>{t("delete.title")}</strong>
 
-                        <p>
-                          Das ausgewählte Bild wird
-                          aus dem Objekt und dem
-                          Bildspeicher gelöscht.
-                          Dieser Vorgang kann nicht
-                          rückgängig gemacht werden.
-                        </p>
+                        <p>{t("delete.description")}</p>
 
                         {pendingDeleteImage.isPrimary ? (
-                          <p className="primaryDeleteWarning">
-                            Dieses Bild ist das
-                            Hauptbild. Inserat-AI
-                            bestimmt automatisch ein
-                            neues Hauptbild.
-                          </p>
+                          <p className="primaryDeleteWarning">{t("delete.primaryWarning")}</p>
                         ) : null}
                       </div>
 
@@ -1484,9 +1382,7 @@ export default function HomeStagingPage() {
                           disabled={
                             deletingImageId !== null
                           }
-                        >
-                          Abbrechen
-                        </button>
+                        >{t("common.cancel")}</button>
 
                         <button
                           type="button"
@@ -1499,8 +1395,8 @@ export default function HomeStagingPage() {
                           }
                         >
                           {deletingImageId
-                            ? "Wird gelöscht …"
-                            : "Dauerhaft löschen"}
+                            ? t("delete.deleting")
+                            : t("delete.confirm")}
                         </button>
                       </div>
                   </div>
@@ -1513,17 +1409,11 @@ export default function HomeStagingPage() {
                 <span>2</span>
 
                 <div>
-                  <small>RAUM GESTALTEN</small>
+                  <small>{t("steps.design.eyebrow")}</small>
 
-                  <h2>
-                    Raum, Stil und Wünsche festlegen
-                  </h2>
+                  <h2>{t("steps.design.title")}</h2>
 
-                  <p>
-                    Bestimme Nutzung, Einrichtung und
-                    individuelle Vorgaben gemeinsam
-                    in einem Arbeitsbereich.
-                  </p>
+                  <p>{t("steps.design.description")}</p>
                 </div>
               </div>
 <div className="panel">
@@ -1531,35 +1421,33 @@ export default function HomeStagingPage() {
                   <span>2</span>
 
                   <div>
-                    <small>RAUMART</small>
-                    <h2>Nutzung festlegen</h2>
+                    <small>{t("steps.room.eyebrow")}</small>
+                    <h2>{t("steps.room.title")}</h2>
                   </div>
                 </div>
 
                 <div className="optionGrid">
                   {ROOM_TYPES.map((option) => (
                     <button
-                      key={option.value}
+                      key={option}
                       type="button"
                       className={
-                        roomType === option.value
+                        roomType === option
                           ? "optionCard optionCardActive"
                           : "optionCard"
                       }
                       onClick={() =>
-                        chooseRoomType(
-                          option.value
-                        )
+                        chooseRoomType(option)
                       }
                       disabled={
                         generating || saving
                       }
                     >
                       <strong>
-                        {option.label}
+                        {t(`rooms.${option}.label`)}
                       </strong>
                       <span>
-                        {option.description}
+                        {t(`rooms.${option}.description`)}
                       </span>
                     </button>
                   ))}
@@ -1571,33 +1459,33 @@ export default function HomeStagingPage() {
                   <span>3</span>
 
                   <div>
-                    <small>EINRICHTUNGSSTIL</small>
-                    <h2>Wirkung bestimmen</h2>
+                    <small>{t("steps.style.eyebrow")}</small>
+                    <h2>{t("steps.style.title")}</h2>
                   </div>
                 </div>
 
                 <div className="optionGrid">
                   {STYLES.map((option) => (
                     <button
-                      key={option.value}
+                      key={option}
                       type="button"
                       className={
-                        style === option.value
+                        style === option
                           ? "optionCard optionCardActive"
                           : "optionCard"
                       }
                       onClick={() =>
-                        chooseStyle(option.value)
+                        chooseStyle(option)
                       }
                       disabled={
                         generating || saving
                       }
                     >
                       <strong>
-                        {option.label}
+                        {t(`styles.${option}.label`)}
                       </strong>
                       <span>
-                        {option.description}
+                        {t(`styles.${option}.description`)}
                       </span>
                     </button>
                   ))}
@@ -1609,16 +1497,13 @@ export default function HomeStagingPage() {
                   <span>4</span>
 
                   <div>
-                    <small>EIGENE WÜNSCHE</small>
-                    <h2>Einrichtung beschreiben</h2>
+                    <small>{t("steps.custom.eyebrow")}</small>
+                    <h2>{t("steps.custom.title")}</h2>
                   </div>
                 </div>
 
                 <label className="customPromptField">
-                  <span>
-                    Wie soll der Raum eingerichtet
-                    werden?
-                  </span>
+                  <span>{t("steps.custom.label")}</span>
 
                   <textarea
                     value={customInstructions}
@@ -1632,17 +1517,12 @@ export default function HomeStagingPage() {
                     disabled={
                       generating || saving
                     }
-                    placeholder="Zum Beispiel: Helles beigefarbenes Sofa, runder Holztisch, warme Beleuchtung, wenige Pflanzen und keine Teppiche."
+                    placeholder={t("steps.custom.placeholder")}
                   />
                 </label>
 
                 <div className="customPromptFooter">
-                  <span>
-                    Die Wünsche gelten nur für Möbel,
-                    Farben, Textilien, Licht und
-                    Dekoration. Bauliche Merkmale
-                    bleiben geschützt.
-                  </span>
+                  <span>{t("steps.custom.hint")}</span>
 
                   <strong>
                     {customInstructions.length} / 500
@@ -1650,42 +1530,36 @@ export default function HomeStagingPage() {
                 </div>
 
                 <div className="promptExamples">
-                  <span>Beispiele:</span>
+                  <span>{t("steps.custom.examples")}</span>
                   <button
                     type="button"
                     onClick={() =>
                       changeCustomInstructions(
-                        "Helles Sofa, runder Holztisch, warme Beleuchtung und wenige Pflanzen."
+                        t("steps.custom.examplesText.warm")
                       )
                     }
                     disabled={generating || saving}
-                  >
-                    Warm und wohnlich
-                  </button>
+                  >{t("steps.custom.warm")}</button>
 
                   <button
                     type="button"
                     onClick={() =>
                       changeCustomInstructions(
-                        "Dunkles Ledersofa, schwarzer Metalltisch, dezente Kunst und keine Teppiche."
+                        t("steps.custom.examplesText.bold")
                       )
                     }
                     disabled={generating || saving}
-                  >
-                    Markant und modern
-                  </button>
+                  >{t("steps.custom.bold")}</button>
 
                   <button
                     type="button"
                     onClick={() =>
                       changeCustomInstructions(
-                        "Naturholz, helle Stoffe, dezente Pflanzen und möglichst wenig Dekoration."
+                        t("steps.custom.examplesText.natural")
                       )
                     }
                     disabled={generating || saving}
-                  >
-                    Natürlich und ruhig
-                  </button>
+                  >{t("steps.custom.natural")}</button>
                 </div>
               </div>
             </section>
@@ -1704,8 +1578,8 @@ export default function HomeStagingPage() {
             <section className="generationPanel">
               <div className="generationModeSection">
                 <div className="generationModeHeading">
-                  <small>AUSGABEQUALITÄT</small>
-                  <h2>Generierungsmodus wählen</h2>
+                  <small>{t("generation.qualityEyebrow")}</small>
+                  <h2>{t("generation.modeTitle")}</h2>
                 </div>
 
                 <div className="generationModeGrid">
@@ -1730,14 +1604,9 @@ export default function HomeStagingPage() {
                     <span>⚡</span>
 
                     <div>
-                      <strong>
-                        Schnellvorschau
-                      </strong>
+                      <strong>{t("generation.preview.title")}</strong>
 
-                      <small>
-                        Schneller prüfen, wie Stil,
-                        Möbel und Farben wirken
-                      </small>
+                      <small>{t("generation.preview.description")}</small>
                     </div>
                   </button>
 
@@ -1762,46 +1631,29 @@ export default function HomeStagingPage() {
                     <span>◆</span>
 
                     <div>
-                      <strong>
-                        Finales Vermarktungsbild
-                      </strong>
+                      <strong>{t("generation.final.title")}</strong>
 
-                      <small>
-                        Höhere Qualität für Inserat,
-                        Exposé und Social Media
-                      </small>
+                      <small>{t("generation.final.description")}</small>
                     </div>
                   </button>
                 </div>
 
                 <div className="generationModeNotice">
                   {generationMode === "preview"
-                    ? "Schnellmodus aktiv: geeignet zum Ausprobieren und Vergleichen."
-                    : "Finalmodus aktiv: benötigt länger, liefert aber mehr Details und eine grössere Ausgabe."}
+                    ? t("generation.preview.notice")
+                    : t("generation.final.notice")}
                 </div>
               </div>
               <div>
-                <span className="generationLabel">
-                  BEREIT ZUR VISUALISIERUNG
-                </span>
+                <span className="generationLabel">{t("generation.ready")}</span>
 
                 <h2>
-                  {ROOM_TYPES.find(
-                    (option) =>
-                      option.value === roomType
-                  )?.label || "Raum"}
+                  {t(`rooms.${roomType}.label`)}
                   {" · "}
-                  {STYLES.find(
-                    (option) =>
-                      option.value === style
-                  )?.label || "Stil"}
+                  {t(`styles.${style}.label`)}
                 </h2>
 
-                <p>
-                  Die AI soll nur bewegliche Möbel
-                  und Dekoration ergänzen. Bauliche
-                  Merkmale sollen erhalten bleiben.
-                </p>
+                <p>{t("generation.preservation")}</p>
               </div>
 
               <button
@@ -1817,20 +1669,16 @@ export default function HomeStagingPage() {
               >
                 {generating ? (
                   <>
-                    <span className="buttonSpinner" />
-                    AI richtet den Raum ein …
-                  </>
+                    <span className="buttonSpinner" />{t("generation.generatingButton")}</>
                 ) : (
-                  "AI-Visualisierung erstellen"
+                  t("generation.create")
                 )}
               </button>
             </section>
 
             {error && (
               <div className="messageBox errorBox">
-                <strong>
-                  Vorgang nicht abgeschlossen
-                </strong>
+                <strong>{t("errors.actionTitle")}</strong>
                 <span>{error}</span>
               </div>
             )}
@@ -1840,16 +1688,9 @@ export default function HomeStagingPage() {
               <section className="generationProgress">
                 <div className="largeSpinner" />
 
-                <h2>
-                  Der Raum wird visualisiert
-                </h2>
+                <h2>{t("progress.title")}</h2>
 
-                <p>
-                  Die AI analysiert Perspektive,
-                  Geometrie und vorhandene
-                  Raumelemente. Dieser Vorgang kann
-                  etwas dauern.
-                </p>
+                <p>{t("progress.description")}</p>
               </section>
             )}
 
@@ -1864,8 +1705,8 @@ export default function HomeStagingPage() {
                     <div>
                       <strong>
                         {savedImageUrl
-                          ? "Ergebnis gespeichert"
-                          : "Vorschau bereit"}
+                          ? t("result.savedTitle")
+                          : t("result.previewReady")}
                       </strong>
 
                       <span>
@@ -1876,71 +1717,51 @@ export default function HomeStagingPage() {
                 )}
                 <div className="resultHeading">
                   <div>
-                    <span className="eyebrow">
-                      VORHER / NACHHER
-                    </span>
+                    <span className="eyebrow">{t("result.eyebrow")}</span>
 
-                    <h2>
-                      Original und AI-Ergebnis
-                    </h2>
+                    <h2>{t("result.title")}</h2>
                   </div>
 
-                  <span className="aiLabel">
-                    AI-VISUALISIERT
-                  </span>
+                  <span className="aiLabel">{t("result.aiBadge")}</span>
                 </div>
 
                 <div className="comparisonGrid">
                   <article className="comparisonCard">
                     <div className="imageHeader">
-                      <strong>Original</strong>
-                      <span>Unverändert</span>
+                      <strong>{t("result.original")}</strong>
+                      <span>{t("result.unchanged")}</span>
                     </div>
 
                     <div className="comparisonImage">
                       <img
                         src={selectedImage.url}
-                        alt="Originales Objektbild"
+                        alt={t("result.originalAlt")}
                       />
                     </div>
                   </article>
 
                   <article className="comparisonCard resultCard">
                     <div className="imageHeader">
-                      <strong>
-                        AI-Visualisierung
-                      </strong>
-                      <span>
-                        Noch nicht automatisch
-                        übernommen
-                      </span>
+                      <strong>{t("result.visualization")}</strong>
+                      <span>{t("result.notApplied")}</span>
                     </div>
 
                     <div className="comparisonImage">
                       <img
                         src={previewUrl}
-                        alt="AI-visualisiertes Home-Staging-Ergebnis"
+                        alt={t("result.generatedAlt")}
                       />
 
-                      <span className="imageAiBadge">
-                        AI-VISUALISIERT
-                      </span>
+                      <span className="imageAiBadge">{t("result.aiBadge")}</span>
                     </div>
                   </article>
                 </div>
 
                 <div className="savePanel">
                   <div>
-                    <strong>
-                      Ergebnis bewusst speichern
-                    </strong>
+                    <strong>{t("result.saveTitle")}</strong>
 
-                    <p>
-                      Das Original bleibt erhalten.
-                      Die AI-Version wird separat mit
-                      diesem Objekt und dem
-                      Ausgangsbild verbunden.
-                    </p>
+                    <p>{t("result.saveDescription")}</p>
                   </div>
 
                   <div className="saveActions">
@@ -1953,9 +1774,7 @@ export default function HomeStagingPage() {
                         saving ||
                         Boolean(savedImageUrl)
                       }
-                    >
-                      Neue Variante erstellen
-                    </button>
+                    >{t("result.newVariant")}</button>
 
                     <button
                       type="button"
@@ -1968,10 +1787,10 @@ export default function HomeStagingPage() {
                       }
                     >
                       {saving
-                        ? "Ergebnis wird gespeichert …"
+                        ? t("result.saving")
                         : savedImageUrl
-                          ? "Ergebnis gespeichert"
-                          : "Ergebnis speichern"}
+                          ? t("result.savedTitle")
+                          : t("result.save")}
                     </button>
                   </div>
                 </div>

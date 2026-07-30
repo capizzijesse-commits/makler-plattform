@@ -1683,5 +1683,222 @@
         }
       }
     }
+  },
+  "HomeStaging": {
+    "common": {
+      "backCockpit": "Retour au cockpit immobilier",
+      "backObject": "← Retour au bien",
+      "toObject": "Accéder à la page du bien",
+      "cancel": "Annuler"
+    },
+    "loading": {
+      "title": "Préparation du home staging …",
+      "description": "Chargement des images et des données du bien."
+    },
+    "access": {
+      "errorTitle": "Impossible de vérifier l’accès",
+      "proBadge": "FONCTION PRO",
+      "title": "Home staging virtuel",
+      "proDescription": "Les visualisations photoréalistes par AI et l’analyse intégrée du plan font partie de l’offre Pro à CHF 79.90 par mois.",
+      "excludedPlans": "Ces fonctions ne sont incluses ni dans l’offre Founder à CHF 19.90 par mois ni dans l’objet individuel à CHF 9.90.",
+      "viewPro": "Voir l’offre Pro"
+    },
+    "errors": {
+      "accessCheck": "L’autorisation d’accès n’a pas pu être vérifiée.",
+      "missingListingId": "Identifiant du bien introuvable.",
+      "loadListing": "Le bien n’a pas pu être chargé.",
+      "loadHomeStaging": "Le home staging n’a pas pu être chargé.",
+      "imageLimit": "10 images sont déjà enregistrées pour ce bien.",
+      "invalidImage": "Formats autorisés : JPEG, PNG et WebP, jusqu’à 10 MB par image.",
+      "saveImage": "L’image « {fileName} » n’a pas pu être enregistrée.",
+      "uploadImages": "Les photos des pièces n’ont pas pu être téléchargées.",
+      "deleteImage": "L’image n’a pas pu être supprimée.",
+      "deleteRoomImage": "La photo de la pièce n’a pas pu être supprimée.",
+      "generate": "La visualisation AI n’a pas pu être créée.",
+      "saveResult": "La visualisation AI n’a pas pu être enregistrée.",
+      "openTitle": "Le home staging n’a pas pu être ouvert",
+      "actionTitle": "Opération non terminée"
+    },
+    "hero": {
+      "mvpBadge": "HOME STAGING MVP",
+      "eyebrow": "HOME STAGING VIRTUEL",
+      "title": "Aménager les pièces de façon photoréaliste",
+      "description": "Choisissez une image du bien, définissez la pièce et le style, puis créez un aperçu visualisé par AI.",
+      "currentObject": "BIEN ACTUEL"
+    },
+    "notice": {
+      "title": "L’image originale reste inchangée",
+      "description": "Le résultat AI n’est enregistré durablement qu’après un clic explicite sur « Enregistrer le résultat »."
+    },
+    "archived": "Ce bien est archivé. Réactivez-le avant de créer une visualisation.",
+    "empty": {
+      "title": "Aucune image du bien",
+      "description": "Téléchargez d’abord, depuis la page du bien, une photo d’une pièce vide ou peu meublée."
+    },
+    "upload": {
+      "progress": "Téléchargement de l’image {current} sur {total} …",
+      "savedSingle": "La nouvelle photo de la pièce a été enregistrée et sélectionnée.",
+      "savedMultiple": "{count} nouvelles photos ont été enregistrées. La première nouvelle image a été sélectionnée.",
+      "deleted": "La photo de la pièce a été supprimée définitivement.",
+      "uploading": "Téléchargement des photos des pièces …",
+      "limitReached": "Limite de 10 images atteinte",
+      "addPhotos": "Télécharger de nouvelles photos",
+      "formats": "JPEG, PNG ou WebP · maximum 10 MB par image"
+    },
+    "images": {
+      "selectAria": "Sélectionner l’image {number}",
+      "alt": "Image du bien {number}",
+      "number": "Image {number}",
+      "primarySuffix": " · Image principale",
+      "deleteAria": "Supprimer l’image {number}",
+      "deleteTitle": "Supprimer l’image"
+    },
+    "delete": {
+      "eyebrow": "SUPPRIMER DÉFINITIVEMENT L’IMAGE",
+      "title": "Supprimer réellement la photo de la pièce ?",
+      "description": "L’image sélectionnée sera supprimée du bien et du stockage. Cette opération est irréversible.",
+      "primaryWarning": "Cette image est l’image principale. Inserat-AI en choisira automatiquement une nouvelle.",
+      "deleting": "Suppression …",
+      "confirm": "Supprimer définitivement"
+    },
+    "steps": {
+      "source": {
+        "eyebrow": "IMAGE SOURCE",
+        "title": "Sélectionner une image"
+      },
+      "design": {
+        "eyebrow": "CONCEVOIR LA PIÈCE",
+        "title": "Définir la pièce, le style et les souhaits",
+        "description": "Définissez ensemble l’usage, l’aménagement et les consignes individuelles dans un seul espace de travail."
+      },
+      "room": {
+        "eyebrow": "TYPE DE PIÈCE",
+        "title": "Définir l’usage"
+      },
+      "style": {
+        "eyebrow": "STYLE D’AMÉNAGEMENT",
+        "title": "Définir l’ambiance"
+      },
+      "custom": {
+        "eyebrow": "SOUHAITS PERSONNELS",
+        "title": "Décrire l’aménagement",
+        "label": "Comment la pièce doit-elle être aménagée ?",
+        "placeholder": "Par exemple : canapé beige clair, table ronde en bois, éclairage chaud, quelques plantes et aucun tapis.",
+        "hint": "Les souhaits concernent uniquement le mobilier, les couleurs, les textiles, la lumière et la décoration. Les éléments structurels restent protégés.",
+        "examples": "Exemples :",
+        "warm": "Chaleureux et accueillant",
+        "bold": "Affirmé et moderne",
+        "natural": "Naturel et calme",
+        "examplesText": {
+          "warm": "Canapé clair, table ronde en bois, éclairage chaud et quelques plantes.",
+          "bold": "Canapé en cuir foncé, table en métal noir, art discret et aucun tapis.",
+          "natural": "Bois naturel, tissus clairs, plantes discrètes et très peu de décoration."
+        }
+      }
+    },
+    "rooms": {
+      "livingRoom": {
+        "label": "Séjour",
+        "description": "Canapé, fauteuil, table et accents chaleureux"
+      },
+      "bedroom": {
+        "label": "Chambre",
+        "description": "Lit, tables de nuit et ambiance calme"
+      },
+      "office": {
+        "label": "Bureau",
+        "description": "Poste de travail fonctionnel"
+      },
+      "diningRoom": {
+        "label": "Salle à manger",
+        "description": "Table, chaises et éclairage discret"
+      },
+      "kidsRoom": {
+        "label": "Chambre d’enfant",
+        "description": "Aménagement convivial et neutre en âge"
+      }
+    },
+    "styles": {
+      "modern": {
+        "label": "Moderne",
+        "description": "Chaleureux, élégant et haut de gamme"
+      },
+      "scandinavian": {
+        "label": "Scandinave",
+        "description": "Clair, naturel et accueillant"
+      },
+      "luxurious": {
+        "label": "Luxueux",
+        "description": "Matériaux nobles et luxe discret"
+      },
+      "minimalist": {
+        "label": "Minimaliste",
+        "description": "Calme, fonctionnel et spacieux"
+      }
+    },
+    "generation": {
+      "qualityEyebrow": "QUALITÉ DE SORTIE",
+      "modeTitle": "Choisir le mode de génération",
+      "preview": {
+        "title": "Aperçu rapide",
+        "description": "Vérifier rapidement l’effet du style, du mobilier et des couleurs",
+        "notice": "Mode rapide actif : idéal pour tester et comparer."
+      },
+      "final": {
+        "title": "Image finale de commercialisation",
+        "description": "Qualité supérieure pour l’annonce, l’exposé et les réseaux sociaux",
+        "notice": "Mode final actif : plus long, mais avec davantage de détails et une sortie plus grande."
+      },
+      "ready": "PRÊT POUR LA VISUALISATION",
+      "preservation": "L’AI doit uniquement ajouter du mobilier mobile et de la décoration. Les éléments structurels doivent rester inchangés.",
+      "generatingButton": "L’AI aménage la pièce …",
+      "create": "Créer la visualisation AI"
+    },
+    "progress": {
+      "title": "Visualisation de la pièce",
+      "description": "L’AI analyse la perspective, la géométrie et les éléments existants. Cette opération peut prendre un certain temps."
+    },
+    "status": {
+      "previewCreated": "L’aperçu a été créé et n’est pas encore enregistré.",
+      "saved": "La visualisation AI a été enregistrée durablement avec le bien."
+    },
+    "result": {
+      "savedTitle": "Résultat enregistré",
+      "previewReady": "Aperçu prêt",
+      "eyebrow": "AVANT / APRÈS",
+      "title": "Original et résultat AI",
+      "aiBadge": "VISUALISÉ PAR AI",
+      "original": "Original",
+      "unchanged": "Inchangé",
+      "visualization": "Visualisation AI",
+      "notApplied": "Pas encore repris automatiquement",
+      "originalAlt": "Image originale du bien",
+      "generatedAlt": "Résultat de home staging visualisé par AI",
+      "saveTitle": "Enregistrer le résultat consciemment",
+      "saveDescription": "L’original reste conservé. La version AI est liée séparément au bien et à l’image source.",
+      "newVariant": "Créer une nouvelle variante",
+      "saving": "Enregistrement du résultat …",
+      "save": "Enregistrer le résultat"
+    },
+    "floorPlan": {
+      "eyebrow": "ASSISTANT DE PLAN",
+      "title": "Télécharger le PDF du plan",
+      "description": "Inserat-AI reconnaît les pièces, les mesures, les portes, les fenêtres et les zones d’ameublement, puis crée des souhaits concrets.",
+      "pdfLabel": "PDF",
+      "uploadHint": "PDF · maximum 15 MB · non enregistré comme photo du bien",
+      "analyzing": "Analyse du plan …",
+      "upload": "Télécharger le PDF du plan",
+      "selectedFile": "Fichier sélectionné :",
+      "resultEyebrow": "ANALYSE AI",
+      "resultTitle": "Plan reconnu",
+      "suggestionEyebrow": "AMÉNAGEMENT SUGGÉRÉ",
+      "applied": "✓ Repris dans les souhaits",
+      "apply": "Utiliser pour l’aménagement",
+      "errors": {
+        "pdfOnly": "Veuillez sélectionner un fichier PDF.",
+        "tooLarge": "Le PDF du plan ne peut pas dépasser 15 MB.",
+        "analyze": "Le plan n’a pas pu être analysé."
+      }
+    }
   }
 }

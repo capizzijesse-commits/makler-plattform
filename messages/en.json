@@ -1683,5 +1683,222 @@
         }
       }
     }
+  },
+  "HomeStaging": {
+    "common": {
+      "backCockpit": "Back to the broker cockpit",
+      "backObject": "← Back to property",
+      "toObject": "Go to property page",
+      "cancel": "Cancel"
+    },
+    "loading": {
+      "title": "Preparing home staging …",
+      "description": "Loading property images and details."
+    },
+    "access": {
+      "errorTitle": "Access could not be checked",
+      "proBadge": "PRO FEATURE",
+      "title": "Virtual home staging",
+      "proDescription": "Photorealistic AI visualisations and integrated floor plan analysis are included in the Pro plan at CHF 79.90 per month.",
+      "excludedPlans": "These features are not included in either the Founder plan at CHF 19.90 per month or the CHF 9.90 single-property offer.",
+      "viewPro": "View Pro offer"
+    },
+    "errors": {
+      "accessCheck": "The access permission could not be checked.",
+      "missingListingId": "No property ID was found.",
+      "loadListing": "The property could not be loaded.",
+      "loadHomeStaging": "Home staging could not be loaded.",
+      "imageLimit": "10 images are already saved for this property.",
+      "invalidImage": "JPEG, PNG and WebP are allowed, with a maximum of 10 MB per image.",
+      "saveImage": "The image “{fileName}” could not be saved.",
+      "uploadImages": "The room photos could not be uploaded.",
+      "deleteImage": "The image could not be deleted.",
+      "deleteRoomImage": "The room photo could not be deleted.",
+      "generate": "The AI visualisation could not be created.",
+      "saveResult": "The AI visualisation could not be saved.",
+      "openTitle": "Home staging could not be opened",
+      "actionTitle": "Action not completed"
+    },
+    "hero": {
+      "mvpBadge": "HOME STAGING MVP",
+      "eyebrow": "VIRTUAL HOME STAGING",
+      "title": "Furnish rooms photorealistically",
+      "description": "Choose an existing property image, set the room type and style, and create an AI-visualised preview.",
+      "currentObject": "CURRENT PROPERTY"
+    },
+    "notice": {
+      "title": "The original image remains unchanged",
+      "description": "The AI result is only saved permanently after you explicitly click “Save result”."
+    },
+    "archived": "This property is archived. Reactivate it before creating a visualisation.",
+    "empty": {
+      "title": "No property images yet",
+      "description": "First upload a photo of an empty or lightly furnished room from the property page."
+    },
+    "upload": {
+      "progress": "Uploading image {current} of {total} …",
+      "savedSingle": "The new room photo was saved and selected.",
+      "savedMultiple": "{count} new room photos were saved. The first new image was selected.",
+      "deleted": "The room photo was permanently deleted.",
+      "uploading": "Uploading room photos …",
+      "limitReached": "Maximum of 10 property images reached",
+      "addPhotos": "Upload new room photos",
+      "formats": "JPEG, PNG or WebP · maximum 10 MB per image"
+    },
+    "images": {
+      "selectAria": "Select image {number}",
+      "alt": "Property image {number}",
+      "number": "Image {number}",
+      "primarySuffix": " · Main image",
+      "deleteAria": "Delete image {number}",
+      "deleteTitle": "Delete image"
+    },
+    "delete": {
+      "eyebrow": "PERMANENTLY DELETE IMAGE",
+      "title": "Remove this room photo?",
+      "description": "The selected image will be deleted from the property and image storage. This action cannot be undone.",
+      "primaryWarning": "This is the main image. Inserat-AI will automatically choose a new main image.",
+      "deleting": "Deleting …",
+      "confirm": "Delete permanently"
+    },
+    "steps": {
+      "source": {
+        "eyebrow": "SOURCE IMAGE",
+        "title": "Select property image"
+      },
+      "design": {
+        "eyebrow": "DESIGN THE ROOM",
+        "title": "Set room, style and preferences",
+        "description": "Define the use, furnishing and individual requirements together in one workspace."
+      },
+      "room": {
+        "eyebrow": "ROOM TYPE",
+        "title": "Set the use"
+      },
+      "style": {
+        "eyebrow": "FURNISHING STYLE",
+        "title": "Set the atmosphere"
+      },
+      "custom": {
+        "eyebrow": "YOUR PREFERENCES",
+        "title": "Describe the furnishing",
+        "label": "How should the room be furnished?",
+        "placeholder": "For example: light beige sofa, round wooden table, warm lighting, a few plants and no rugs.",
+        "hint": "Preferences only apply to furniture, colours, textiles, lighting and decoration. Structural features remain protected.",
+        "examples": "Examples:",
+        "warm": "Warm and welcoming",
+        "bold": "Bold and modern",
+        "natural": "Natural and calm",
+        "examplesText": {
+          "warm": "Light sofa, round wooden table, warm lighting and a few plants.",
+          "bold": "Dark leather sofa, black metal table, restrained artwork and no rugs.",
+          "natural": "Natural wood, light fabrics, subtle plants and very little decoration."
+        }
+      }
+    },
+    "rooms": {
+      "livingRoom": {
+        "label": "Living room",
+        "description": "Sofa, armchair, table and welcoming accents"
+      },
+      "bedroom": {
+        "label": "Bedroom",
+        "description": "Bed, bedside tables and a calm atmosphere"
+      },
+      "office": {
+        "label": "Office",
+        "description": "Functional workspace and furnishing"
+      },
+      "diningRoom": {
+        "label": "Dining room",
+        "description": "Dining table, chairs and subtle lighting"
+      },
+      "kidsRoom": {
+        "label": "Children’s room",
+        "description": "Friendly, age-neutral furnishing"
+      }
+    },
+    "styles": {
+      "modern": {
+        "label": "Modern",
+        "description": "Warm, elegant and premium"
+      },
+      "scandinavian": {
+        "label": "Scandinavian",
+        "description": "Bright, natural and welcoming"
+      },
+      "luxurious": {
+        "label": "Luxurious",
+        "description": "Fine materials and restrained luxury"
+      },
+      "minimalist": {
+        "label": "Minimalist",
+        "description": "Calm, functional and spacious"
+      }
+    },
+    "generation": {
+      "qualityEyebrow": "OUTPUT QUALITY",
+      "modeTitle": "Choose generation mode",
+      "preview": {
+        "title": "Quick preview",
+        "description": "Quickly check how style, furniture and colours work",
+        "notice": "Quick mode active: suitable for testing and comparing."
+      },
+      "final": {
+        "title": "Final marketing image",
+        "description": "Higher quality for listings, brochures and social media",
+        "notice": "Final mode active: takes longer but provides more detail and a larger output."
+      },
+      "ready": "READY FOR VISUALISATION",
+      "preservation": "The AI should only add movable furniture and decoration. Structural features must remain unchanged.",
+      "generatingButton": "AI is furnishing the room …",
+      "create": "Create AI visualisation"
+    },
+    "progress": {
+      "title": "Visualising the room",
+      "description": "The AI is analysing perspective, geometry and existing room elements. This may take some time."
+    },
+    "status": {
+      "previewCreated": "The preview was created and has not been saved yet.",
+      "saved": "The AI visualisation was permanently saved with the property."
+    },
+    "result": {
+      "savedTitle": "Result saved",
+      "previewReady": "Preview ready",
+      "eyebrow": "BEFORE / AFTER",
+      "title": "Original and AI result",
+      "aiBadge": "AI-VISUALISED",
+      "original": "Original",
+      "unchanged": "Unchanged",
+      "visualization": "AI visualisation",
+      "notApplied": "Not applied automatically yet",
+      "originalAlt": "Original property image",
+      "generatedAlt": "AI-visualised home staging result",
+      "saveTitle": "Save the result intentionally",
+      "saveDescription": "The original remains available. The AI version is linked separately to this property and source image.",
+      "newVariant": "Create new variant",
+      "saving": "Saving result …",
+      "save": "Save result"
+    },
+    "floorPlan": {
+      "eyebrow": "FLOOR PLAN ASSISTANT",
+      "title": "Upload floor plan PDF",
+      "description": "Inserat-AI identifies rooms, dimensions, doors, windows and furnishing zones and turns them into specific furnishing preferences.",
+      "pdfLabel": "PDF",
+      "uploadHint": "PDF · maximum 15 MB · not saved as a property photo",
+      "analyzing": "Analysing floor plan …",
+      "upload": "Upload floor plan PDF",
+      "selectedFile": "Selected file:",
+      "resultEyebrow": "AI ANALYSIS",
+      "resultTitle": "Floor plan recognised",
+      "suggestionEyebrow": "SUGGESTED FURNISHING",
+      "applied": "✓ Added to preferences",
+      "apply": "Use for furnishing",
+      "errors": {
+        "pdfOnly": "Please select a PDF file.",
+        "tooLarge": "The floor plan PDF may be no larger than 15 MB.",
+        "analyze": "The floor plan could not be analysed."
+      }
+    }
   }
 }

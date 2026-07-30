@@ -8,6 +8,84 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 const MAX_PDF_SIZE_BYTES = 15 * 1024 * 1024;
+type AppLocale = "de" | "it" | "fr" | "en";
+
+const LANGUAGE_NAMES: Record<AppLocale, string> = {
+  de: "German (Swiss Standard German)",
+  it: "Italian",
+  fr: "French",
+  en: "English",
+};
+
+const FLOOR_PLAN_MESSAGES = {
+  de: {
+    login: "Bitte melde dich erneut an.",
+    pro: "Die Grundrissanalyse für Home Staging ist im Pro-Plan für CHF 79.90 pro Monat enthalten.",
+    notConfigured: "Die AI-Verbindung ist nicht konfiguriert.",
+    missingListingId: "Die Objekt-ID fehlt.",
+    selectPdf: "Bitte wähle einen Grundriss als PDF aus.",
+    pdfOnly: "Erlaubt sind ausschliesslich PDF-Dateien.",
+    tooLarge: "Die Grundriss-PDF darf maximal 15 MB gross sein.",
+    listingNotFound: "Das Objekt wurde nicht gefunden.",
+    analyzeFailed: "Der Grundriss konnte momentan nicht analysiert werden.",
+    noResult: "Die AI hat keine Grundrissauswertung zurückgegeben.",
+    processFailed: "Der Grundriss konnte nicht verarbeitet werden.",
+    analyzed: "Der Grundriss wurde analysiert.",
+    notSpecified: "nicht angegeben",
+  },
+  it: {
+    login: "Effettua nuovamente l’accesso.",
+    pro: "L’analisi della planimetria per l’home staging è inclusa nel piano Pro da CHF 79.90 al mese.",
+    notConfigured: "La connessione AI non è configurata.",
+    missingListingId: "Manca l’ID dell’immobile.",
+    selectPdf: "Seleziona una planimetria in formato PDF.",
+    pdfOnly: "Sono consentiti esclusivamente file PDF.",
+    tooLarge: "Il PDF della planimetria può avere una dimensione massima di 15 MB.",
+    listingNotFound: "L’immobile non è stato trovato.",
+    analyzeFailed: "Non è stato possibile analizzare momentaneamente la planimetria.",
+    noResult: "L’AI non ha restituito alcuna analisi della planimetria.",
+    processFailed: "Non è stato possibile elaborare la planimetria.",
+    analyzed: "La planimetria è stata analizzata.",
+    notSpecified: "non indicato",
+  },
+  fr: {
+    login: "Veuillez vous reconnecter.",
+    pro: "L’analyse du plan pour le home staging est incluse dans l’offre Pro à CHF 79.90 par mois.",
+    notConfigured: "La connexion AI n’est pas configurée.",
+    missingListingId: "L’identifiant du bien est manquant.",
+    selectPdf: "Veuillez sélectionner un plan au format PDF.",
+    pdfOnly: "Seuls les fichiers PDF sont autorisés.",
+    tooLarge: "Le PDF du plan ne peut pas dépasser 15 MB.",
+    listingNotFound: "Le bien n’a pas été trouvé.",
+    analyzeFailed: "Le plan ne peut pas être analysé actuellement.",
+    noResult: "L’AI n’a renvoyé aucune analyse du plan.",
+    processFailed: "Le plan n’a pas pu être traité.",
+    analyzed: "Le plan a été analysé.",
+    notSpecified: "non indiqué",
+  },
+  en: {
+    login: "Please sign in again.",
+    pro: "Floor plan analysis for home staging is included in the Pro plan at CHF 79.90 per month.",
+    notConfigured: "The AI connection is not configured.",
+    missingListingId: "The property ID is missing.",
+    selectPdf: "Please select a floor plan in PDF format.",
+    pdfOnly: "Only PDF files are allowed.",
+    tooLarge: "The floor plan PDF may be no larger than 15 MB.",
+    listingNotFound: "The property was not found.",
+    analyzeFailed: "The floor plan cannot be analysed at the moment.",
+    noResult: "The AI did not return a floor plan analysis.",
+    processFailed: "The floor plan could not be processed.",
+    analyzed: "The floor plan was analysed.",
+    notSpecified: "not specified",
+  },
+} satisfies Record<AppLocale, Record<string, string>>;
+
+function normalizeLocale(value: unknown): AppLocale {
+  return value === "it" || value === "fr" || value === "en"
+    ? value
+    : "de";
+}
+
 
 type OpenAIOutputContent = {
   type?: unknown;
@@ -94,7 +172,8 @@ function cleanJsonText(value: string): string {
 }
 
 function parseFloorPlanResult(
-  outputText: string
+  outputText: string,
+  fallbackSummary: string
 ): FloorPlanResult {
   try {
     const parsed = JSON.parse(
@@ -128,7 +207,7 @@ function parseFloorPlanResult(
       return {
         summary:
           summary ||
-          "Der Grundriss wurde analysiert.",
+          fallbackSummary,
         stagingInstructions:
           stagingInstructions ||
           summary.slice(0, 500),
@@ -150,6 +229,11 @@ function parseFloorPlanResult(
 export async function POST(
   request: NextRequest
 ): Promise<NextResponse> {
+  const locale = normalizeLocale(
+    request.nextUrl.searchParams.get("locale")
+  );
+  const messages = FLOOR_PLAN_MESSAGES[locale];
+
   try {
     const user =
       await getAuthenticatedUser(request);
@@ -159,7 +243,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Bitte melde dich erneut an.",
+            messages.login,
         },
         { status: 401 }
       );
@@ -173,7 +257,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Die Grundrissanalyse für Home Staging ist im Pro-Plan für CHF 79.90 pro Monat enthalten.",
+            messages.pro,
         },
         { status: 403 }
       );
@@ -187,7 +271,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Die AI-Verbindung ist nicht konfiguriert.",
+            messages.notConfigured,
         },
         { status: 500 }
       );
@@ -208,7 +292,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Die Objekt-ID fehlt.",
+            messages.missingListingId,
         },
         { status: 400 }
       );
@@ -219,7 +303,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Bitte wähle einen Grundriss als PDF aus.",
+            messages.selectPdf,
         },
         { status: 400 }
       );
@@ -236,7 +320,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Erlaubt sind ausschliesslich PDF-Dateien.",
+            messages.pdfOnly,
         },
         { status: 400 }
       );
@@ -250,7 +334,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Die Grundriss-PDF darf maximal 15 MB gross sein.",
+            messages.tooLarge,
         },
         { status: 400 }
       );
@@ -277,7 +361,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Das Objekt wurde nicht gefunden.",
+            messages.listingNotFound,
         },
         { status: 404 }
       );
@@ -325,29 +409,30 @@ export async function POST(
                 {
                   type: "input_text",
                   text: [
-                    "Analysiere diesen Immobiliengrundriss als Unterstützung für virtuelles Home Staging.",
+                    "Analyse this real-estate floor plan as support for virtual home staging.",
+                    `Write every natural-language JSON value in ${LANGUAGE_NAMES[locale]}.`,
                     "",
-                    "Bekannte Objektdaten:",
-                    `Objektart: ${listing.propertyType || "nicht angegeben"}`,
-                    `Zimmer: ${listing.rooms || "nicht angegeben"}`,
-                    `Wohnfläche: ${listing.livingArea || "nicht angegeben"}`,
-                    `Ort: ${listing.location || "nicht angegeben"}`,
+                    "Known property data:",
+                    `Property type: ${listing.propertyType || messages.notSpecified}`,
+                    `Rooms: ${listing.rooms || messages.notSpecified}`,
+                    `Living area: ${listing.livingArea || messages.notSpecified}`,
+                    `Location: ${listing.location || messages.notSpecified}`,
                     "",
-                    "Erkenne soweit lesbar:",
-                    "- vorhandene Räume und ihre ungefähre Nutzung",
-                    "- beschriftete Flächen oder Masse",
-                    "- Türen, Fenster, Balkone und Durchgänge",
-                    "- sinnvolle Möblierungs- und Laufzonen",
-                    "- wichtige Einschränkungen für die Möbelplatzierung",
+                    "Identify where legible:",
+                    "- existing rooms and their likely use",
+                    "- labelled areas or dimensions",
+                    "- doors, windows, balconies and passages",
+                    "- sensible furnishing and circulation zones",
+                    "- important restrictions for furniture placement",
                     "",
-                    "Erfinde keine unlesbaren Masse oder baulichen Angaben.",
-                    "Kennzeichne Unsicherheiten ausdrücklich.",
+                    "Never invent unreadable dimensions or structural details.",
+                    "State uncertainties clearly.",
                     "",
-                    "Antworte ausschliesslich als gültiges JSON ohne Markdown:",
+                    "Return valid JSON only, without Markdown:",
                     "{",
-                    '  "summary": "verständliche deutsche Zusammenfassung",',
-                    '  "stagingInstructions": "konkrete Einrichtungsanweisung mit maximal 500 Zeichen",',
-                    '  "rooms": ["Raum 1", "Raum 2"]',
+                    '  "summary": "clear summary in the requested language",',
+                    '  "stagingInstructions": "specific furnishing instruction in the requested language, maximum 500 characters",',
+                    '  "rooms": ["room name in the requested language"]',
                     "}",
                   ].join("\n"),
                 },
@@ -380,7 +465,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Der Grundriss konnte momentan nicht analysiert werden.",
+            messages.analyzeFailed,
         },
         {
           status:
@@ -400,14 +485,17 @@ export async function POST(
         {
           success: false,
           error:
-            "Die AI hat keine Grundrissauswertung zurückgegeben.",
+            messages.noResult,
         },
         { status: 502 }
       );
     }
 
     const analysis =
-      parseFloorPlanResult(outputText);
+      parseFloorPlanResult(
+        outputText,
+        messages.analyzed
+      );
 
     return NextResponse.json({
       success: true,
@@ -425,7 +513,7 @@ export async function POST(
       {
         success: false,
         error:
-          "Der Grundriss konnte nicht verarbeitet werden.",
+          messages.processFailed,
       },
       { status: 500 }
     );

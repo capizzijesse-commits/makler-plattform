@@ -1683,5 +1683,222 @@
         }
       }
     }
+  },
+  "HomeStaging": {
+    "common": {
+      "backCockpit": "Zurück zum Makler-Cockpit",
+      "backObject": "← Zurück zum Objekt",
+      "toObject": "Zur Objektseite",
+      "cancel": "Abbrechen"
+    },
+    "loading": {
+      "title": "Home Staging wird vorbereitet …",
+      "description": "Objektbilder und Angaben werden geladen."
+    },
+    "access": {
+      "errorTitle": "Zugriff konnte nicht geprüft werden",
+      "proBadge": "PRO-FUNKTION",
+      "title": "Virtuelles Home Staging",
+      "proDescription": "Fotorealistische AI-Visualisierungen und die integrierte Grundrissanalyse gehören zum Pro-Angebot für CHF 79.90 pro Monat.",
+      "excludedPlans": "Diese Funktionen sind weder im Founder-Angebot für CHF 19.90 pro Monat noch im Einzelobjekt für CHF 9.90 enthalten.",
+      "viewPro": "Pro-Angebot ansehen"
+    },
+    "errors": {
+      "accessCheck": "Die Zugriffsberechtigung konnte nicht geprüft werden.",
+      "missingListingId": "Keine Objekt-ID gefunden.",
+      "loadListing": "Das Objekt konnte nicht geladen werden.",
+      "loadHomeStaging": "Home Staging konnte nicht geladen werden.",
+      "imageLimit": "Für dieses Objekt sind bereits 10 Bilder gespeichert.",
+      "invalidImage": "Erlaubt sind JPEG, PNG und WebP mit maximal 10 MB pro Bild.",
+      "saveImage": "Das Bild „{fileName}“ konnte nicht gespeichert werden.",
+      "uploadImages": "Die Raumfotos konnten nicht hochgeladen werden.",
+      "deleteImage": "Das Bild konnte nicht gelöscht werden.",
+      "deleteRoomImage": "Das Raumfoto konnte nicht gelöscht werden.",
+      "generate": "Die AI-Visualisierung konnte nicht erstellt werden.",
+      "saveResult": "Die AI-Visualisierung konnte nicht gespeichert werden.",
+      "openTitle": "Home Staging konnte nicht geöffnet werden",
+      "actionTitle": "Vorgang nicht abgeschlossen"
+    },
+    "hero": {
+      "mvpBadge": "HOME STAGING MVP",
+      "eyebrow": "VIRTUELLES HOME STAGING",
+      "title": "Räume fotorealistisch einrichten",
+      "description": "Wähle ein bestehendes Objektbild, bestimme Raumart und Stil und erstelle eine AI-visualisierte Vorschau.",
+      "currentObject": "AKTUELLES OBJEKT"
+    },
+    "notice": {
+      "title": "Originalbild bleibt unverändert",
+      "description": "Das AI-Ergebnis wird erst nach dem ausdrücklichen Klick auf „Ergebnis speichern“ dauerhaft übernommen."
+    },
+    "archived": "Dieses Objekt ist archiviert. Aktiviere es zuerst wieder, um eine Visualisierung zu erstellen.",
+    "empty": {
+      "title": "Noch keine Objektbilder vorhanden",
+      "description": "Lade zuerst auf der Objektseite ein Foto eines leeren oder wenig eingerichteten Raumes hoch."
+    },
+    "upload": {
+      "progress": "Bild {current} von {total} wird hochgeladen …",
+      "savedSingle": "Das neue Raumfoto wurde gespeichert und ausgewählt.",
+      "savedMultiple": "{count} neue Raumfotos wurden gespeichert. Das erste neue Bild wurde ausgewählt.",
+      "deleted": "Das Raumfoto wurde dauerhaft gelöscht.",
+      "uploading": "Raumfotos werden hochgeladen …",
+      "limitReached": "Maximal 10 Objektbilder erreicht",
+      "addPhotos": "Neue Raumfotos hochladen",
+      "formats": "JPEG, PNG oder WebP · maximal 10 MB pro Bild"
+    },
+    "images": {
+      "selectAria": "Bild {number} auswählen",
+      "alt": "Objektbild {number}",
+      "number": "Bild {number}",
+      "primarySuffix": " · Hauptbild",
+      "deleteAria": "Bild {number} löschen",
+      "deleteTitle": "Bild löschen"
+    },
+    "delete": {
+      "eyebrow": "BILD DAUERHAFT LÖSCHEN",
+      "title": "Raumfoto wirklich entfernen?",
+      "description": "Das ausgewählte Bild wird aus dem Objekt und dem Bildspeicher gelöscht. Dieser Vorgang kann nicht rückgängig gemacht werden.",
+      "primaryWarning": "Dieses Bild ist das Hauptbild. Inserat-AI bestimmt automatisch ein neues Hauptbild.",
+      "deleting": "Wird gelöscht …",
+      "confirm": "Dauerhaft löschen"
+    },
+    "steps": {
+      "source": {
+        "eyebrow": "AUSGANGSBILD",
+        "title": "Objektbild auswählen"
+      },
+      "design": {
+        "eyebrow": "RAUM GESTALTEN",
+        "title": "Raum, Stil und Wünsche festlegen",
+        "description": "Bestimme Nutzung, Einrichtung und individuelle Vorgaben gemeinsam in einem Arbeitsbereich."
+      },
+      "room": {
+        "eyebrow": "RAUMART",
+        "title": "Nutzung festlegen"
+      },
+      "style": {
+        "eyebrow": "EINRICHTUNGSSTIL",
+        "title": "Wirkung bestimmen"
+      },
+      "custom": {
+        "eyebrow": "EIGENE WÜNSCHE",
+        "title": "Einrichtung beschreiben",
+        "label": "Wie soll der Raum eingerichtet werden?",
+        "placeholder": "Zum Beispiel: Helles beigefarbenes Sofa, runder Holztisch, warme Beleuchtung, wenige Pflanzen und keine Teppiche.",
+        "hint": "Die Wünsche gelten nur für Möbel, Farben, Textilien, Licht und Dekoration. Bauliche Merkmale bleiben geschützt.",
+        "examples": "Beispiele:",
+        "warm": "Warm und wohnlich",
+        "bold": "Markant und modern",
+        "natural": "Natürlich und ruhig",
+        "examplesText": {
+          "warm": "Helles Sofa, runder Holztisch, warme Beleuchtung und wenige Pflanzen.",
+          "bold": "Dunkles Ledersofa, schwarzer Metalltisch, dezente Kunst und keine Teppiche.",
+          "natural": "Naturholz, helle Stoffe, dezente Pflanzen und möglichst wenig Dekoration."
+        }
+      }
+    },
+    "rooms": {
+      "livingRoom": {
+        "label": "Wohnzimmer",
+        "description": "Sofa, Sessel, Tisch und wohnliche Akzente"
+      },
+      "bedroom": {
+        "label": "Schlafzimmer",
+        "description": "Bett, Nachttische und ruhige Atmosphäre"
+      },
+      "office": {
+        "label": "Büro",
+        "description": "Arbeitsplatz mit funktionaler Einrichtung"
+      },
+      "diningRoom": {
+        "label": "Esszimmer",
+        "description": "Esstisch, Stühle und dezente Beleuchtung"
+      },
+      "kidsRoom": {
+        "label": "Kinderzimmer",
+        "description": "Freundliche und altersneutrale Einrichtung"
+      }
+    },
+    "styles": {
+      "modern": {
+        "label": "Modern",
+        "description": "Warm, elegant und hochwertig"
+      },
+      "scandinavian": {
+        "label": "Skandinavisch",
+        "description": "Hell, natürlich und einladend"
+      },
+      "luxurious": {
+        "label": "Luxuriös",
+        "description": "Edle Materialien und zurückhaltender Luxus"
+      },
+      "minimalist": {
+        "label": "Minimalistisch",
+        "description": "Ruhig, funktional und grosszügig"
+      }
+    },
+    "generation": {
+      "qualityEyebrow": "AUSGABEQUALITÄT",
+      "modeTitle": "Generierungsmodus wählen",
+      "preview": {
+        "title": "Schnellvorschau",
+        "description": "Schneller prüfen, wie Stil, Möbel und Farben wirken",
+        "notice": "Schnellmodus aktiv: geeignet zum Ausprobieren und Vergleichen."
+      },
+      "final": {
+        "title": "Finales Vermarktungsbild",
+        "description": "Höhere Qualität für Inserat, Exposé und Social Media",
+        "notice": "Finalmodus aktiv: benötigt länger, liefert aber mehr Details und eine grössere Ausgabe."
+      },
+      "ready": "BEREIT ZUR VISUALISIERUNG",
+      "preservation": "Die AI soll nur bewegliche Möbel und Dekoration ergänzen. Bauliche Merkmale sollen erhalten bleiben.",
+      "generatingButton": "AI richtet den Raum ein …",
+      "create": "AI-Visualisierung erstellen"
+    },
+    "progress": {
+      "title": "Der Raum wird visualisiert",
+      "description": "Die AI analysiert Perspektive, Geometrie und vorhandene Raumelemente. Dieser Vorgang kann etwas dauern."
+    },
+    "status": {
+      "previewCreated": "Die Vorschau wurde erstellt. Sie ist noch nicht gespeichert.",
+      "saved": "Die AI-Visualisierung wurde dauerhaft mit dem Objekt gespeichert."
+    },
+    "result": {
+      "savedTitle": "Ergebnis gespeichert",
+      "previewReady": "Vorschau bereit",
+      "eyebrow": "VORHER / NACHHER",
+      "title": "Original und AI-Ergebnis",
+      "aiBadge": "AI-VISUALISIERT",
+      "original": "Original",
+      "unchanged": "Unverändert",
+      "visualization": "AI-Visualisierung",
+      "notApplied": "Noch nicht automatisch übernommen",
+      "originalAlt": "Originales Objektbild",
+      "generatedAlt": "AI-visualisiertes Home-Staging-Ergebnis",
+      "saveTitle": "Ergebnis bewusst speichern",
+      "saveDescription": "Das Original bleibt erhalten. Die AI-Version wird separat mit diesem Objekt und dem Ausgangsbild verbunden.",
+      "newVariant": "Neue Variante erstellen",
+      "saving": "Ergebnis wird gespeichert …",
+      "save": "Ergebnis speichern"
+    },
+    "floorPlan": {
+      "eyebrow": "GRUNDRISS-ASSISTENT",
+      "title": "Grundriss-PDF hochladen",
+      "description": "Inserat-AI erkennt Räume, Masse, Türen, Fenster und sinnvolle Möblierungszonen und erstellt daraus konkrete Einrichtungswünsche.",
+      "pdfLabel": "PDF",
+      "uploadHint": "PDF · maximal 15 MB · wird nicht als Objektfoto gespeichert",
+      "analyzing": "Grundriss wird analysiert …",
+      "upload": "Grundriss-PDF hochladen",
+      "selectedFile": "Ausgewählte Datei:",
+      "resultEyebrow": "AI-AUSWERTUNG",
+      "resultTitle": "Grundriss wurde erkannt",
+      "suggestionEyebrow": "VORGESCHLAGENE EINRICHTUNG",
+      "applied": "✓ In Wünsche übernommen",
+      "apply": "Für Einrichtung übernehmen",
+      "errors": {
+        "pdfOnly": "Bitte wähle eine PDF-Datei aus.",
+        "tooLarge": "Die Grundriss-PDF darf maximal 15 MB gross sein.",
+        "analyze": "Der Grundriss konnte nicht analysiert werden."
+      }
+    }
   }
 }

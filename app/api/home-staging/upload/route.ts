@@ -10,6 +10,69 @@ import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/session";
 
 export const runtime = "nodejs";
+type AppLocale = "de" | "it" | "fr" | "en";
+
+const UPLOAD_MESSAGES = {
+  de: {
+    login: "Bitte zuerst einloggen.",
+    pro: "Virtuelles Home Staging ist im Pro-Plan für CHF 79.90 pro Monat enthalten.",
+    invalidData: "Ungültige Home-Staging-Daten.",
+    incomplete: "Die Angaben zur AI-Visualisierung sind unvollständig.",
+    invalidRoom: "Ungültige Raumart.",
+    invalidStyle: "Ungültiger Einrichtungsstil.",
+    invalidGeneration: "Ungültige AI-Generierungsdaten.",
+    listingNotFound: "Das Objekt wurde nicht gefunden.",
+    originalNotFound: "Das Originalbild wurde nicht gefunden.",
+    invalidPath: "Ungültiger Home-Staging-Speicherpfad.",
+    uploadFailed: "Das Home-Staging-Bild konnte nicht hochgeladen werden.",
+  },
+  it: {
+    login: "Effettua prima l’accesso.",
+    pro: "L’home staging virtuale è incluso nel piano Pro da CHF 79.90 al mese.",
+    invalidData: "Dati di home staging non validi.",
+    incomplete: "I dati della visualizzazione AI sono incompleti.",
+    invalidRoom: "Tipo di ambiente non valido.",
+    invalidStyle: "Stile di arredamento non valido.",
+    invalidGeneration: "Dati di generazione AI non validi.",
+    listingNotFound: "L’immobile non è stato trovato.",
+    originalNotFound: "L’immagine originale non è stata trovata.",
+    invalidPath: "Percorso di salvataggio dell’home staging non valido.",
+    uploadFailed: "Non è stato possibile caricare l’immagine di home staging.",
+  },
+  fr: {
+    login: "Veuillez d’abord vous connecter.",
+    pro: "Le home staging virtuel est inclus dans l’offre Pro à CHF 79.90 par mois.",
+    invalidData: "Données de home staging non valides.",
+    incomplete: "Les données de la visualisation AI sont incomplètes.",
+    invalidRoom: "Type de pièce non valide.",
+    invalidStyle: "Style d’aménagement non valide.",
+    invalidGeneration: "Données de génération AI non valides.",
+    listingNotFound: "Le bien n’a pas été trouvé.",
+    originalNotFound: "L’image originale n’a pas été trouvée.",
+    invalidPath: "Chemin de stockage du home staging non valide.",
+    uploadFailed: "L’image de home staging n’a pas pu être téléchargée.",
+  },
+  en: {
+    login: "Please sign in first.",
+    pro: "Virtual home staging is included in the Pro plan at CHF 79.90 per month.",
+    invalidData: "Invalid home staging data.",
+    incomplete: "The AI visualisation details are incomplete.",
+    invalidRoom: "Invalid room type.",
+    invalidStyle: "Invalid furnishing style.",
+    invalidGeneration: "Invalid AI generation details.",
+    listingNotFound: "The property was not found.",
+    originalNotFound: "The original image was not found.",
+    invalidPath: "Invalid home staging storage path.",
+    uploadFailed: "The home staging image could not be uploaded.",
+  },
+} satisfies Record<AppLocale, Record<string, string>>;
+
+function normalizeLocale(value: unknown): AppLocale {
+  return value === "it" || value === "fr" || value === "en"
+    ? value
+    : "de";
+}
+
 
 const ROOM_TYPES = new Set([
   "livingRoom",
@@ -42,6 +105,11 @@ function requiredText(value: unknown): string {
 export async function POST(
   request: NextRequest
 ): Promise<NextResponse> {
+  const locale = normalizeLocale(
+    request.nextUrl.searchParams.get("locale")
+  );
+  const messages = UPLOAD_MESSAGES[locale];
+
   try {
     const user = await getAuthenticatedUser(request);
 
@@ -49,7 +117,7 @@ export async function POST(
       return NextResponse.json(
         {
           success: false,
-          error: "Bitte zuerst einloggen.",
+          error: messages.login,
         },
         { status: 401 }
       );
@@ -63,7 +131,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Virtuelles Home Staging ist im Pro-Plan für CHF 79.90 pro Monat enthalten.",
+            messages.pro,
         },
         { status: 403 }
       );
@@ -82,7 +150,7 @@ export async function POST(
         const user = await getAuthenticatedUser(request);
 
         if (!user) {
-          throw new Error("Bitte zuerst einloggen.");
+          throw new Error(messages.login);
         }
 
         let payload: UploadClientPayload;
@@ -93,7 +161,7 @@ export async function POST(
           ) as UploadClientPayload;
         } catch {
           throw new Error(
-            "Ungültige Home-Staging-Daten."
+            messages.invalidData
           );
         }
 
@@ -123,17 +191,17 @@ export async function POST(
           !promptVersion
         ) {
           throw new Error(
-            "Die Angaben zur AI-Visualisierung sind unvollständig."
+            messages.incomplete
           );
         }
 
         if (!ROOM_TYPES.has(roomType)) {
-          throw new Error("Ungültige Raumart.");
+          throw new Error(messages.invalidRoom);
         }
 
         if (!STYLES.has(style)) {
           throw new Error(
-            "Ungültiger Einrichtungsstil."
+            messages.invalidStyle
           );
         }
 
@@ -142,7 +210,7 @@ export async function POST(
           promptVersion !== "home-staging-v2-variants"
         ) {
           throw new Error(
-            "Ungültige AI-Generierungsdaten."
+            messages.invalidGeneration
           );
         }
 
@@ -168,13 +236,13 @@ export async function POST(
 
         if (!listing) {
           throw new Error(
-            "Das Objekt wurde nicht gefunden."
+            messages.listingNotFound
           );
         }
 
         if (!listing.images[0]) {
           throw new Error(
-            "Das Originalbild wurde nicht gefunden."
+            messages.originalNotFound
           );
         }
 
@@ -183,7 +251,7 @@ export async function POST(
 
         if (!pathname.startsWith(expectedPathPrefix)) {
           throw new Error(
-            "Ungültiger Home-Staging-Speicherpfad."
+            messages.invalidPath
           );
         }
 
@@ -219,22 +287,22 @@ export async function POST(
     );
 
     const safeMessages = new Set([
-      "Bitte zuerst einloggen.",
-      "Ungültige Home-Staging-Daten.",
-      "Die Angaben zur AI-Visualisierung sind unvollständig.",
-      "Ungültige Raumart.",
-      "Ungültiger Einrichtungsstil.",
-      "Ungültige AI-Generierungsdaten.",
-      "Das Objekt wurde nicht gefunden.",
-      "Das Originalbild wurde nicht gefunden.",
-      "Ungültiger Home-Staging-Speicherpfad.",
+      messages.login,
+      messages.invalidData,
+      messages.incomplete,
+      messages.invalidRoom,
+      messages.invalidStyle,
+      messages.invalidGeneration,
+      messages.listingNotFound,
+      messages.originalNotFound,
+      messages.invalidPath,
     ]);
 
     const message =
       error instanceof Error &&
       safeMessages.has(error.message)
         ? error.message
-        : "Das Home-Staging-Bild konnte nicht hochgeladen werden.";
+        : messages.uploadFailed;
 
     return NextResponse.json(
       {
@@ -245,4 +313,3 @@ export async function POST(
     );
   }
 }
-

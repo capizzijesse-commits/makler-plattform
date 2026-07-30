@@ -13,6 +13,105 @@ export const maxDuration = 180;
 const AI_MODEL = "gpt-image-2";
 const PROMPT_VERSION = "home-staging-v2-variants";
 const MAX_SOURCE_IMAGE_SIZE = 10 * 1024 * 1024;
+type AppLocale = "de" | "it" | "fr" | "en";
+
+const GENERATE_MESSAGES = {
+  de: {
+    login: "Bitte zuerst einloggen.",
+    pro: "Virtuelles Home Staging ist im Pro-Plan für CHF 79.90 pro Monat enthalten.",
+    notConfigured: "Die Home-Staging-AI ist momentan nicht konfiguriert.",
+    required: "Objekt, Ausgangsbild, Raumart und Einrichtungsstil sind erforderlich.",
+    invalidRoom: "Die gewählte Raumart ist ungültig.",
+    invalidStyle: "Der gewählte Einrichtungsstil ist ungültig.",
+    invalidMode: "Der gewählte Generierungsmodus ist ungültig.",
+    invalidSize: "Die gewählte Bildgrösse passt nicht zum Generierungsmodus.",
+    instructionsTooLong: "Die eigenen Einrichtungswünsche dürfen maximal 500 Zeichen enthalten.",
+    listingNotFound: "Das Objekt wurde nicht gefunden.",
+    archived: "Für ein archiviertes Objekt kann kein Home Staging erstellt werden.",
+    originalNotFound: "Das gewählte Originalbild wurde nicht gefunden.",
+    originalTooLarge: "Das Originalbild ist zu gross. Maximal erlaubt sind 10 MB.",
+    unsupportedFormat: "Das Bildformat wird für Home Staging nicht unterstützt.",
+    moderation: "Dieses Bild oder die gewählte Anfrage konnte nicht verarbeitet werden.",
+    generateFailed: "Die AI-Visualisierung konnte nicht erstellt werden.",
+    noImage: "Die AI hat kein visualisiertes Bild zurückgegeben.",
+    previewCreated: "Die Vorschau wurde erstellt und noch nicht gespeichert.",
+    timeout: "Die Bilderstellung hat zu lange gedauert. Bitte erneut versuchen.",
+    previewFailed: "Die Home-Staging-Vorschau konnte nicht erstellt werden.",
+  },
+  it: {
+    login: "Effettua prima l’accesso.",
+    pro: "L’home staging virtuale è incluso nel piano Pro da CHF 79.90 al mese.",
+    notConfigured: "L’AI per l’home staging non è momentaneamente configurata.",
+    required: "Immobile, immagine originale, tipo di ambiente e stile sono obbligatori.",
+    invalidRoom: "Il tipo di ambiente selezionato non è valido.",
+    invalidStyle: "Lo stile selezionato non è valido.",
+    invalidMode: "La modalità di generazione selezionata non è valida.",
+    invalidSize: "La dimensione dell’immagine non corrisponde alla modalità selezionata.",
+    instructionsTooLong: "Le richieste personalizzate possono contenere al massimo 500 caratteri.",
+    listingNotFound: "L’immobile non è stato trovato.",
+    archived: "Non è possibile creare un home staging per un immobile archiviato.",
+    originalNotFound: "L’immagine originale selezionata non è stata trovata.",
+    originalTooLarge: "L’immagine originale è troppo grande. Il massimo è 10 MB.",
+    unsupportedFormat: "Il formato dell’immagine non è supportato per l’home staging.",
+    moderation: "Non è stato possibile elaborare l’immagine o la richiesta selezionata.",
+    generateFailed: "Non è stato possibile creare la visualizzazione AI.",
+    noImage: "L’AI non ha restituito alcuna immagine visualizzata.",
+    previewCreated: "L’anteprima è stata creata e non è ancora salvata.",
+    timeout: "La creazione dell’immagine ha richiesto troppo tempo. Riprova.",
+    previewFailed: "Non è stato possibile creare l’anteprima di home staging.",
+  },
+  fr: {
+    login: "Veuillez d’abord vous connecter.",
+    pro: "Le home staging virtuel est inclus dans l’offre Pro à CHF 79.90 par mois.",
+    notConfigured: "L’AI de home staging n’est pas configurée actuellement.",
+    required: "Le bien, l’image source, le type de pièce et le style sont requis.",
+    invalidRoom: "Le type de pièce sélectionné n’est pas valide.",
+    invalidStyle: "Le style sélectionné n’est pas valide.",
+    invalidMode: "Le mode de génération sélectionné n’est pas valide.",
+    invalidSize: "La taille d’image ne correspond pas au mode sélectionné.",
+    instructionsTooLong: "Les souhaits personnalisés sont limités à 500 caractères.",
+    listingNotFound: "Le bien n’a pas été trouvé.",
+    archived: "Aucun home staging ne peut être créé pour un bien archivé.",
+    originalNotFound: "L’image source sélectionnée n’a pas été trouvée.",
+    originalTooLarge: "L’image source est trop grande. La limite est de 10 MB.",
+    unsupportedFormat: "Le format d’image n’est pas pris en charge pour le home staging.",
+    moderation: "L’image ou la demande sélectionnée n’a pas pu être traitée.",
+    generateFailed: "La visualisation AI n’a pas pu être créée.",
+    noImage: "L’AI n’a renvoyé aucune image visualisée.",
+    previewCreated: "L’aperçu a été créé et n’est pas encore enregistré.",
+    timeout: "La création de l’image a pris trop de temps. Veuillez réessayer.",
+    previewFailed: "L’aperçu de home staging n’a pas pu être créé.",
+  },
+  en: {
+    login: "Please sign in first.",
+    pro: "Virtual home staging is included in the Pro plan at CHF 79.90 per month.",
+    notConfigured: "The home staging AI is not currently configured.",
+    required: "Property, source image, room type and furnishing style are required.",
+    invalidRoom: "The selected room type is invalid.",
+    invalidStyle: "The selected furnishing style is invalid.",
+    invalidMode: "The selected generation mode is invalid.",
+    invalidSize: "The selected image size does not match the generation mode.",
+    instructionsTooLong: "Custom furnishing instructions may contain up to 500 characters.",
+    listingNotFound: "The property was not found.",
+    archived: "Home staging cannot be created for an archived property.",
+    originalNotFound: "The selected original image was not found.",
+    originalTooLarge: "The original image is too large. The maximum size is 10 MB.",
+    unsupportedFormat: "The image format is not supported for home staging.",
+    moderation: "The selected image or request could not be processed.",
+    generateFailed: "The AI visualisation could not be created.",
+    noImage: "The AI did not return a visualised image.",
+    previewCreated: "The preview was created and has not been saved yet.",
+    timeout: "Image creation took too long. Please try again.",
+    previewFailed: "The home staging preview could not be created.",
+  },
+} satisfies Record<AppLocale, Record<string, string>>;
+
+function normalizeLocale(value: unknown): AppLocale {
+  return value === "it" || value === "fr" || value === "en"
+    ? value
+    : "de";
+}
+
 
 const PREVIEW_SOURCE_EDGE = 1280;
 const FINAL_SOURCE_EDGE = 2048;
@@ -257,6 +356,11 @@ function createStagingPrompt(
 export async function POST(
   request: NextRequest
 ): Promise<NextResponse> {
+  const locale = normalizeLocale(
+    request.nextUrl.searchParams.get("locale")
+  );
+  const messages = GENERATE_MESSAGES[locale];
+
   try {
     const user = await getAuthenticatedUser(request);
 
@@ -264,7 +368,7 @@ export async function POST(
       return NextResponse.json(
         {
           success: false,
-          error: "Bitte zuerst einloggen.",
+          error: messages.login,
         },
         { status: 401 }
       );
@@ -278,7 +382,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Virtuelles Home Staging ist im Pro-Plan für CHF 79.90 pro Monat enthalten.",
+            messages.pro,
         },
         { status: 403 }
       );
@@ -289,7 +393,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Die Home-Staging-AI ist momentan nicht konfiguriert.",
+            messages.notConfigured,
         },
         { status: 500 }
       );
@@ -337,7 +441,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Objekt, Ausgangsbild, Raumart und Einrichtungsstil sind erforderlich.",
+            messages.required,
         },
         { status: 400 }
       );
@@ -347,7 +451,7 @@ export async function POST(
       return NextResponse.json(
         {
           success: false,
-          error: "Die gewählte Raumart ist ungültig.",
+          error: messages.invalidRoom,
         },
         { status: 400 }
       );
@@ -358,7 +462,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Der gewählte Einrichtungsstil ist ungültig.",
+            messages.invalidStyle,
         },
         { status: 400 }
       );
@@ -372,7 +476,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Der gewählte Generierungsmodus ist ungültig.",
+            messages.invalidMode,
         },
         { status: 400 }
       );
@@ -394,7 +498,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Die gewählte Bildgrösse passt nicht zum Generierungsmodus.",
+            messages.invalidSize,
         },
         { status: 400 }
       );
@@ -425,7 +529,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Die eigenen Einrichtungswünsche dürfen maximal 500 Zeichen enthalten.",
+            messages.instructionsTooLong,
         },
         { status: 400 }
       );
@@ -458,7 +562,7 @@ export async function POST(
       return NextResponse.json(
         {
           success: false,
-          error: "Das Objekt wurde nicht gefunden.",
+          error: messages.listingNotFound,
         },
         { status: 404 }
       );
@@ -469,7 +573,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Für ein archiviertes Objekt kann kein Home Staging erstellt werden.",
+            messages.archived,
         },
         { status: 400 }
       );
@@ -482,7 +586,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Das gewählte Originalbild wurde nicht gefunden.",
+            messages.originalNotFound,
         },
         { status: 404 }
       );
@@ -496,7 +600,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Das Originalbild ist zu gross. Maximal erlaubt sind 10 MB.",
+            messages.originalTooLarge,
         },
         { status: 400 }
       );
@@ -530,7 +634,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Das Bildformat wird für Home Staging nicht unterstützt.",
+            messages.unsupportedFormat,
         },
         { status: 400 }
       );
@@ -544,7 +648,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Das Originalbild ist zu gross. Maximal erlaubt sind 10 MB.",
+            messages.originalTooLarge,
         },
         { status: 400 }
       );
@@ -664,7 +768,7 @@ textiles, lighting and decoration.
           {
             success: false,
             error:
-              "Dieses Bild oder die gewählte Anfrage konnte nicht verarbeitet werden.",
+              messages.moderation,
           },
           { status: 400 }
         );
@@ -674,7 +778,7 @@ textiles, lighting and decoration.
         {
           success: false,
           error:
-            "Die AI-Visualisierung konnte nicht erstellt werden.",
+            messages.generateFailed,
           details:
             process.env.NODE_ENV === "development"
               ? upstreamMessage
@@ -692,7 +796,7 @@ textiles, lighting and decoration.
         {
           success: false,
           error:
-            "Die AI hat kein visualisiertes Bild zurückgegeben.",
+            messages.noImage,
         },
         { status: 502 }
       );
@@ -701,7 +805,7 @@ textiles, lighting and decoration.
     return NextResponse.json({
       success: true,
       message:
-        "Die Vorschau wurde erstellt und noch nicht gespeichert.",
+        messages.previewCreated,
       preview: {
         imageBase64,
         mimeType: "image/webp",
@@ -729,8 +833,8 @@ textiles, lighting and decoration.
       {
         success: false,
         error: isTimeout
-          ? "Die Bilderstellung hat zu lange gedauert. Bitte erneut versuchen."
-          : "Die Home-Staging-Vorschau konnte nicht erstellt werden.",
+          ? messages.timeout
+          : messages.previewFailed,
       },
       { status: isTimeout ? 504 : 500 }
     );
