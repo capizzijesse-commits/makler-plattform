@@ -117,7 +117,11 @@ export default function CockpitListingPage() {
         const data = await response.json();
 
         if (!response.ok || !data.success) {
-          throw new Error(data.error || t("errors.load"));
+          throw new Error(
+            locale === "de" && data.error
+              ? data.error
+              : t("errors.load")
+          );
         }
 
         setListing(data.listing);

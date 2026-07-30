@@ -438,8 +438,9 @@ useEffect(() => {
 
         if (!response.ok || !data.success) {
           throw new Error(
-            data.error ||
-              t("errors.loadListings")
+            locale === "de" && data.error
+                ? data.error
+                : t("errors.loadListings")
           );
         }
 

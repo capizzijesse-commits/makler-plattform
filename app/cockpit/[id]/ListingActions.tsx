@@ -102,7 +102,11 @@ export default function ListingActions({
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || t("errors.status"));
+        throw new Error(
+          locale === "de" && data.error
+            ? data.error
+            : t("errors.status")
+        );
       }
 
       window.location.reload();
@@ -160,7 +164,11 @@ export default function ListingActions({
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || t("errors.delete"));
+        throw new Error(
+          locale === "de" && data.error
+            ? data.error
+            : t("errors.delete")
+        );
       }
 
       window.location.href = "/cockpit";
@@ -217,7 +225,11 @@ export default function ListingActions({
         !data?.success ||
         typeof data.checkoutUrl !== "string"
       ) {
-        throw new Error(data?.error || t("errors.checkout"));
+        throw new Error(
+          locale === "de" && data?.error
+            ? data.error
+            : t("errors.checkout")
+        );
       }
 
       window.location.href = data.checkoutUrl;

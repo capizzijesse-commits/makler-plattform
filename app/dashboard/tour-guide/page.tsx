@@ -210,8 +210,9 @@ export default function TourGuidePage() {
           !sessionData.authenticated
         ) {
           throw new Error(
-            sessionData.error ||
-              t("errors.accessCheck")
+            locale === "de" && sessionData.error
+                ? sessionData.error
+                : t("errors.accessCheck")
           );
         }
 
@@ -256,8 +257,9 @@ export default function TourGuidePage() {
 
         if (!response.ok || !data.success || !data.listing) {
           throw new Error(
-            data.error ||
-              t("errors.loadListing")
+            locale === "de" && data.error
+                ? data.error
+                : t("errors.loadListing")
           );
         }
 

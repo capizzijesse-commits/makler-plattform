@@ -391,8 +391,9 @@ export default function HomeStagingPage() {
           !sessionData.authenticated
         ) {
           throw new Error(
-            sessionData.error ||
-              t("errors.accessCheck")
+            locale === "de" && sessionData.error
+                ? sessionData.error
+                : t("errors.accessCheck")
           );
         }
 
@@ -445,8 +446,9 @@ export default function HomeStagingPage() {
           !data.listing
         ) {
           throw new Error(
-            data.error ||
-              t("errors.loadListing")
+            locale === "de" && data.error
+                ? data.error
+                : t("errors.loadListing")
           );
         }
 
@@ -839,10 +841,11 @@ export default function HomeStagingPage() {
           !imageData.image
         ) {
           throw new Error(
-            imageData.error ||
-              t("errors.saveImage", {
-                fileName: file.name,
-              })
+            locale === "de" && imageData.error
+              ? imageData.error
+              : t("errors.saveImage", {
+                  fileName: file.name,
+                })
           );
         }
 
@@ -968,8 +971,9 @@ export default function HomeStagingPage() {
 
       if (!response.ok || !data.success) {
         throw new Error(
-          data.error ||
-            t("errors.deleteImage")
+          locale === "de" && data.error
+              ? data.error
+              : t("errors.deleteImage")
         );
       }
 

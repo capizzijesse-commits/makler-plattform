@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import PrivacyModeButton from "../../components/PrivacyModeButton";
 import LanguageSwitcher from "@/app/components/LanguageSwitcher";
 
@@ -79,6 +79,7 @@ function isMenuItemActive(
 
 export default function Navbar() {
   const pathname = usePathname();
+  const locale = useLocale();
   const t = useTranslations("Navbar");
 
   const menuItems: MenuItem[] = [
@@ -305,7 +306,9 @@ export default function Navbar() {
 
       if (!response.ok || !data.success) {
         throw new Error(
-          data.error || t("logoutError")
+          locale === "de" && data.error
+              ? data.error
+              : t("logoutError")
         );
       }
 

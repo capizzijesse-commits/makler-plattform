@@ -137,7 +137,9 @@ const [settingPrimaryImageId, setSettingPrimaryImageId] =
 
         if (!response.ok || !data.success) {
           throw new Error(
-            data.error || t("errors.load")
+            locale === "de" && data.error
+                ? data.error
+                : t("errors.load")
           );
         }
 
@@ -324,10 +326,11 @@ async function handleImageUpload(
 
       if (!imageResponse.ok || !imageData.image) {
         throw new Error(
-          imageData.error ||
-            t("images.messages.saveFileError", {
-              fileName: file.name,
-            })
+          locale === "de" && imageData.error
+              ? imageData.error
+              : t("images.messages.saveFileError", {
+                  fileName: file.name,
+                })
         );
       }
 
@@ -393,8 +396,9 @@ async function setPrimaryImage(imageId: string) {
 
     if (!response.ok || !data.success || !data.image) {
       throw new Error(
-        data.error ||
-          t("images.messages.primaryError")
+        locale === "de" && data.error
+          ? data.error
+          : t("images.messages.primaryError")
       );
     }
 
@@ -473,7 +477,9 @@ async function deleteListingImage(imageId: string) {
 
     if (!response.ok || !data.success) {
       throw new Error(
-        data.error || t("images.messages.deleteError")
+        locale === "de" && data.error
+            ? data.error
+            : t("images.messages.deleteError")
       );
     }
 
@@ -562,7 +568,9 @@ async function deleteListingImage(imageId: string) {
 
       if (!response.ok || !data.success) {
         throw new Error(
-          data.error || t("errors.save")
+          locale === "de" && data.error
+                ? data.error
+                : t("errors.save")
         );
       }
 
