@@ -3,7 +3,10 @@ import type {Metadata, Viewport} from "next";
 import {GoogleAnalytics} from "@next/third-parties/google";
 import {NextIntlClientProvider} from "next-intl";
 import {getLocale, getTranslations} from "next-intl/server";
+
 import AppDialogProvider from "@/components/AppDialogProvider";
+import LanguageLaunchDialog from "@/app/components/LanguageLaunchDialog";
+
 import AppShell from "@/app/components/AppShell";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -28,7 +31,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const gaMeasurementId =
+    process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
   const locale = await getLocale();
 
   return (
@@ -36,14 +41,16 @@ export default async function RootLayout({
       <body>
         <NextIntlClientProvider>
           <AppDialogProvider>
+            <LanguageLaunchDialog />
+
             <AppShell>{children}</AppShell>
           </AppDialogProvider>
         </NextIntlClientProvider>
-      </body>
 
-      {gaMeasurementId ? (
-        <GoogleAnalytics gaId={gaMeasurementId} />
-      ) : null}
+        {gaMeasurementId ? (
+          <GoogleAnalytics gaId={gaMeasurementId} />
+        ) : null}
+      </body>
     </html>
   );
 }
