@@ -1468,5 +1468,220 @@
         }
       }
     }
+  },
+  "GuideAssistant": {
+    "welcome": "Hallo! Ich bin dein Inserat-AI Guide. Ich helfe dir bei Objekten, Inseraten, Exposés, Social Media, Tour Guide und Immobilienvermarktung. Was möchtest du als Nächstes erledigen?",
+    "aria": {
+      "panel": "Inserat-AI Guide Assistent",
+      "newChat": "Neuen Chat starten",
+      "close": "Guide schliessen",
+      "suggestions": "Vorgeschlagene Fragen"
+    },
+    "composer": {
+      "placeholder": "Frage den Inserat-AI Guide …",
+      "messageAria": "Nachricht an den Guide",
+      "sendAria": "Nachricht senden"
+    },
+    "disclaimer": "Die Stimme ist AI-generiert. Der Guide erklärt und empfiehlt. Änderungen erfolgen nur nach deiner Bestätigung.",
+    "errors": {
+      "answer": "Der Guide konnte momentan keine Antwort erstellen.",
+      "unreachable": "Der Guide ist momentan nicht erreichbar."
+    },
+    "pages": {
+      "cockpit": "Makler-Cockpit",
+      "homeStaging": "Virtuelles Home Staging",
+      "edit": "Objekt bearbeiten",
+      "details": "Objektdetails",
+      "socialMedia": "Social Media",
+      "tourGuide": "Tour Guide",
+      "dashboard": "Inserat-Generator",
+      "expose": "Exposé",
+      "account": "Benutzerkonto",
+      "default": "Inserat-AI"
+    },
+    "speech": {
+      "unsupported": "Die Spracheingabe wird von diesem Browser nicht unterstützt.",
+      "recognized": "Sprache wurde erkannt.",
+      "microphonePermission": "Bitte erlaube Inserat-AI den Zugriff auf dein Mikrofon.",
+      "noSpeech": "Es wurde keine Sprache erkannt. Bitte versuche es nochmals.",
+      "noMicrophone": "Es wurde kein verfügbares Mikrofon gefunden.",
+      "inputFailed": "Die Spracheingabe konnte nicht abgeschlossen werden.",
+      "listening": "Ich höre zu …",
+      "microphoneStart": "Das Mikrofon konnte nicht gestartet werden.",
+      "outputStopped": "Sprachausgabe gestoppt.",
+      "preparing": "Realistische AI-Stimme wird vorbereitet …",
+      "createFailed": "Die realistische Stimme konnte nicht erstellt werden.",
+      "emptyAudio": "Die Sprachausgabe enthielt keine Audiodaten.",
+      "finished": "Wiedergabe beendet.",
+      "playbackFailed": "Die Audiodatei konnte nicht abgespielt werden.",
+      "playing": "AI-generierte Stimme wird abgespielt.",
+      "unavailable": "Die Sprachausgabe ist momentan nicht verfügbar.",
+      "cancelOutput": "Sprachausgabe abbrechen",
+      "stopReading": "Vorlesen stoppen",
+      "readAnswer": "Antwort mit realistischer Stimme vorlesen",
+      "readWithAi": "Mit realistischer AI-Stimme vorlesen",
+      "loading": "Wird geladen …",
+      "stop": "Stoppen",
+      "read": "Vorlesen",
+      "stopInput": "Spracheingabe stoppen",
+      "speakQuestion": "Frage sprechen",
+      "stopRecording": "Aufnahme stoppen"
+    },
+    "quick": {
+      "cockpit": {
+        "nextStep": {
+          "label": "Nächster Schritt",
+          "prompt": "Was ist im Makler-Cockpit mein sinnvollster nächster Arbeitsschritt?"
+        },
+        "prepareObject": {
+          "label": "Objekt vorbereiten",
+          "prompt": "Welche Angaben sollte ich für ein vollständiges Immobilienobjekt vorbereiten?"
+        },
+        "planMarketing": {
+          "label": "Vermarktung planen",
+          "prompt": "Wie plane ich die Vermarktung eines neuen Objekts mit Inserat-AI?"
+        }
+      },
+      "homeStaging": {
+        "recommendStyle": {
+          "label": "Stil empfehlen",
+          "prompt": "Welcher Einrichtungsstil passt zu diesem Objekt und warum?"
+        },
+        "formulateRequest": {
+          "label": "Wunschtext formulieren",
+          "prompt": "Hilf mir, einen präzisen Wunschtext für das virtuelle Home Staging dieses Objekts zu formulieren."
+        },
+        "furnishRoom": {
+          "label": "Raum einrichten",
+          "prompt": "Welche Möbel, Farben und Dekorationen eignen sich für ein professionelles Home Staging dieses Objekts?"
+        },
+        "reviewResult": {
+          "label": "Ergebnis prüfen",
+          "prompt": "Worauf sollte ich beim Prüfen eines AI-visualisierten Home-Staging-Ergebnisses achten?"
+        }
+      },
+      "edit": {
+        "missingDetails": {
+          "label": "Fehlende Angaben",
+          "prompt": "Welche Angaben fehlen bei diesem Objekt noch?"
+        },
+        "createHighlights": {
+          "label": "Highlights erstellen",
+          "prompt": "Erstelle aus den vorhandenen Objektdaten fünf hochwertige Highlights. Erfinde keine Angaben."
+        },
+        "improveObject": {
+          "label": "Objekt verbessern",
+          "prompt": "Wie kann ich die vorhandenen Objektdaten für eine bessere Vermarktung verbessern?"
+        },
+        "nextStep": {
+          "label": "Nächster Schritt",
+          "prompt": "Was sollte ich bei diesem Objekt als Nächstes erledigen?"
+        }
+      },
+      "details": {
+        "reviewObject": {
+          "label": "Objekt prüfen",
+          "prompt": "Prüfe dieses Objekt auf Vollständigkeit und Verkaufswirkung."
+        },
+        "nextStep": {
+          "label": "Nächster Schritt",
+          "prompt": "Was ist bei diesem Objekt der sinnvollste nächste Arbeitsschritt?"
+        },
+        "prepareListing": {
+          "label": "Inserat vorbereiten",
+          "prompt": "Wie sollte ich aus diesen Objektdaten ein überzeugendes Immobilieninserat aufbauen?"
+        },
+        "socialMedia": {
+          "label": "Social Media",
+          "prompt": "Welche Social-Media-Inhalte eignen sich für dieses Objekt?"
+        }
+      },
+      "socialMedia": {
+        "instagram": {
+          "label": "Instagram",
+          "prompt": "Erstelle einen hochwertigen Instagram-Text für das aktuelle Immobilienobjekt."
+        },
+        "facebook": {
+          "label": "Facebook",
+          "prompt": "Erstelle einen professionellen Facebook-Text für das aktuelle Immobilienobjekt."
+        },
+        "hashtags": {
+          "label": "Hashtags",
+          "prompt": "Schlage passende Schweizer Immobilien-Hashtags vor."
+        },
+        "choosePlatform": {
+          "label": "Plattform wählen",
+          "prompt": "Welche Social-Media-Plattform eignet sich für dieses Objekt am besten und warum?"
+        }
+      },
+      "tourGuide": {
+        "planTour": {
+          "label": "Tour planen",
+          "prompt": "Wie baue ich eine überzeugende Besichtigungstour für dieses Objekt auf?"
+        },
+        "greeting": {
+          "label": "Begrüssung",
+          "prompt": "Formuliere eine professionelle Begrüssung für die Objektbesichtigung."
+        },
+        "roomOrder": {
+          "label": "Raumreihenfolge",
+          "prompt": "Welche Reihenfolge der Räume erzeugt bei einer Besichtigung die beste Wirkung?"
+        },
+        "improveTour": {
+          "label": "Tour verbessern",
+          "prompt": "Wie kann ich den Tour Guide professioneller und verkaufsstärker machen?"
+        }
+      },
+      "expose": {
+        "reviewExpose": {
+          "label": "Exposé prüfen",
+          "prompt": "Prüfe dieses Exposé auf Vollständigkeit und professionelle Verkaufswirkung."
+        },
+        "missingContent": {
+          "label": "Fehlende Inhalte",
+          "prompt": "Welche Inhalte fehlen in diesem Exposé noch?"
+        },
+        "reviewLocation": {
+          "label": "Lagetext prüfen",
+          "prompt": "Prüfe den vorhandenen Lagetext und schlage konkrete Verbesserungen vor."
+        },
+        "improveImpact": {
+          "label": "Wirkung erhöhen",
+          "prompt": "Wie kann dieses Exposé hochwertiger und verkaufsstärker wirken?"
+        }
+      },
+      "dashboard": {
+        "startListing": {
+          "label": "Inserat starten",
+          "prompt": "Welche Angaben brauche ich für ein hochwertiges Immobilieninserat?"
+        },
+        "improveTitle": {
+          "label": "Titel verbessern",
+          "prompt": "Wie schreibe ich einen klaren und verkaufsstarken Immobilientitel?"
+        },
+        "description": {
+          "label": "Beschreibung",
+          "prompt": "Wie sollte eine professionelle Immobilienbeschreibung aufgebaut sein?"
+        },
+        "nextStep": {
+          "label": "Nächster Schritt",
+          "prompt": "Was sollte ich im Inserat-Generator als Nächstes erledigen?"
+        }
+      },
+      "account": {
+        "reviewProfile": {
+          "label": "Profil prüfen",
+          "prompt": "Welche Profilangaben sind für professionelle Inserate und Exposés besonders wichtig?"
+        },
+        "contactDetails": {
+          "label": "Kontaktdaten",
+          "prompt": "Wie sollten meine Kontaktdaten in einem Immobilienexposé dargestellt werden?"
+        },
+        "useInseratAi": {
+          "label": "Inserat-AI nutzen",
+          "prompt": "Wie hole ich den grössten Nutzen aus Inserat-AI heraus?"
+        }
+      }
+    }
   }
 }

@@ -1468,5 +1468,220 @@
         }
       }
     }
+  },
+  "GuideAssistant": {
+    "welcome": "Hello! I’m your Inserat-AI Guide. I help with properties, listings, brochures, social media, guided tours and property marketing. What would you like to do next?",
+    "aria": {
+      "panel": "Inserat-AI Guide Assistant",
+      "newChat": "Start a new chat",
+      "close": "Close Guide",
+      "suggestions": "Suggested questions"
+    },
+    "composer": {
+      "placeholder": "Ask the Inserat-AI Guide …",
+      "messageAria": "Message to the Guide",
+      "sendAria": "Send message"
+    },
+    "disclaimer": "The voice is AI-generated. The Guide explains and recommends. Changes only happen after your confirmation.",
+    "errors": {
+      "answer": "The Guide could not generate an answer.",
+      "unreachable": "The Guide is currently unavailable."
+    },
+    "pages": {
+      "cockpit": "Broker cockpit",
+      "homeStaging": "Virtual home staging",
+      "edit": "Edit property",
+      "details": "Property details",
+      "socialMedia": "Social media",
+      "tourGuide": "Tour guide",
+      "dashboard": "Listing generator",
+      "expose": "Brochure",
+      "account": "User account",
+      "default": "Inserat-AI"
+    },
+    "speech": {
+      "unsupported": "This browser does not support voice input.",
+      "recognized": "Speech recognised.",
+      "microphonePermission": "Please allow Inserat-AI to access your microphone.",
+      "noSpeech": "No speech was recognised. Please try again.",
+      "noMicrophone": "No available microphone was found.",
+      "inputFailed": "Voice input could not be completed.",
+      "listening": "I’m listening …",
+      "microphoneStart": "The microphone could not be started.",
+      "outputStopped": "Voice playback stopped.",
+      "preparing": "Preparing a realistic AI voice …",
+      "createFailed": "The realistic voice could not be created.",
+      "emptyAudio": "The voice response contained no audio data.",
+      "finished": "Playback finished.",
+      "playbackFailed": "The audio file could not be played.",
+      "playing": "Playing the AI-generated voice.",
+      "unavailable": "Voice playback is currently unavailable.",
+      "cancelOutput": "Cancel voice playback",
+      "stopReading": "Stop reading",
+      "readAnswer": "Read the answer with a realistic voice",
+      "readWithAi": "Read with a realistic AI voice",
+      "loading": "Loading …",
+      "stop": "Stop",
+      "read": "Read aloud",
+      "stopInput": "Stop voice input",
+      "speakQuestion": "Speak question",
+      "stopRecording": "Stop recording"
+    },
+    "quick": {
+      "cockpit": {
+        "nextStep": {
+          "label": "Next step",
+          "prompt": "What is the most useful next work step in the broker cockpit?"
+        },
+        "prepareObject": {
+          "label": "Prepare property",
+          "prompt": "What information should I prepare for a complete property record?"
+        },
+        "planMarketing": {
+          "label": "Plan marketing",
+          "prompt": "How should I plan the marketing of a new property with Inserat-AI?"
+        }
+      },
+      "homeStaging": {
+        "recommendStyle": {
+          "label": "Recommend style",
+          "prompt": "Which interior style suits this property and why?"
+        },
+        "formulateRequest": {
+          "label": "Write request",
+          "prompt": "Help me write a precise request for the virtual home staging of this property."
+        },
+        "furnishRoom": {
+          "label": "Furnish room",
+          "prompt": "Which furniture, colours and decorations suit professional home staging for this property?"
+        },
+        "reviewResult": {
+          "label": "Review result",
+          "prompt": "What should I check in an AI-visualised home staging result?"
+        }
+      },
+      "edit": {
+        "missingDetails": {
+          "label": "Missing details",
+          "prompt": "Which details are still missing for this property?"
+        },
+        "createHighlights": {
+          "label": "Create highlights",
+          "prompt": "Create five high-quality highlights from the available property data. Do not invent information."
+        },
+        "improveObject": {
+          "label": "Improve property",
+          "prompt": "How can I improve the available property data for stronger marketing?"
+        },
+        "nextStep": {
+          "label": "Next step",
+          "prompt": "What should I do next for this property?"
+        }
+      },
+      "details": {
+        "reviewObject": {
+          "label": "Review property",
+          "prompt": "Review this property for completeness and sales impact."
+        },
+        "nextStep": {
+          "label": "Next step",
+          "prompt": "What is the most useful next work step for this property?"
+        },
+        "prepareListing": {
+          "label": "Prepare listing",
+          "prompt": "How should I turn this property data into a convincing property listing?"
+        },
+        "socialMedia": {
+          "label": "Social media",
+          "prompt": "Which social media content is suitable for this property?"
+        }
+      },
+      "socialMedia": {
+        "instagram": {
+          "label": "Instagram",
+          "prompt": "Create a high-quality Instagram post for the current property."
+        },
+        "facebook": {
+          "label": "Facebook",
+          "prompt": "Create a professional Facebook post for the current property."
+        },
+        "hashtags": {
+          "label": "Hashtags",
+          "prompt": "Suggest suitable Swiss property hashtags."
+        },
+        "choosePlatform": {
+          "label": "Choose platform",
+          "prompt": "Which social media platform is best for this property and why?"
+        }
+      },
+      "tourGuide": {
+        "planTour": {
+          "label": "Plan tour",
+          "prompt": "How should I structure a convincing viewing tour for this property?"
+        },
+        "greeting": {
+          "label": "Welcome",
+          "prompt": "Write a professional welcome for the property viewing."
+        },
+        "roomOrder": {
+          "label": "Room order",
+          "prompt": "Which room order creates the best effect during a viewing?"
+        },
+        "improveTour": {
+          "label": "Improve tour",
+          "prompt": "How can I make the tour guide more professional and persuasive?"
+        }
+      },
+      "expose": {
+        "reviewExpose": {
+          "label": "Review brochure",
+          "prompt": "Review this brochure for completeness and professional sales impact."
+        },
+        "missingContent": {
+          "label": "Missing content",
+          "prompt": "Which content is still missing from this brochure?"
+        },
+        "reviewLocation": {
+          "label": "Review location text",
+          "prompt": "Review the existing location text and suggest specific improvements."
+        },
+        "improveImpact": {
+          "label": "Increase impact",
+          "prompt": "How can this brochure look more premium and persuasive?"
+        }
+      },
+      "dashboard": {
+        "startListing": {
+          "label": "Start listing",
+          "prompt": "What information do I need for a high-quality property listing?"
+        },
+        "improveTitle": {
+          "label": "Improve title",
+          "prompt": "How do I write a clear and persuasive property title?"
+        },
+        "description": {
+          "label": "Description",
+          "prompt": "How should a professional property description be structured?"
+        },
+        "nextStep": {
+          "label": "Next step",
+          "prompt": "What should I do next in the listing generator?"
+        }
+      },
+      "account": {
+        "reviewProfile": {
+          "label": "Review profile",
+          "prompt": "Which profile details are important for professional listings and brochures?"
+        },
+        "contactDetails": {
+          "label": "Contact details",
+          "prompt": "How should my contact details appear in a property brochure?"
+        },
+        "useInseratAi": {
+          "label": "Use Inserat-AI",
+          "prompt": "How can I get the most value from Inserat-AI?"
+        }
+      }
+    }
   }
 }

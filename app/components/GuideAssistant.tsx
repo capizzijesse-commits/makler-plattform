@@ -9,6 +9,7 @@ import {
   type KeyboardEvent,
 } from "react";
 import { usePathname } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 
 type ChatRole = "user" | "assistant";
 
@@ -72,14 +73,38 @@ declare global {
   }
 }
 
-const STORAGE_KEY = "inserat-ai-guide-history-v1";
+const STORAGE_KEY = "inserat-ai-guide-history-v2";
 
-const WELCOME_MESSAGE: ChatMessage = {
-  id: "guide-welcome",
-  role: "assistant",
-  content:
-    "Hallo! Ich bin dein Inserat-AI Guide. Ich helfe dir bei Objekten, Inseraten, Exposés, Social Media, Tour Guide und Immobilienvermarktung. Was möchtest du als Nächstes erledigen?",
-};
+type SupportedLocale = "de" | "it" | "fr" | "en";
+
+function normalizeLocale(value: string): SupportedLocale {
+  if (value === "it" || value === "fr" || value === "en") {
+    return value;
+  }
+
+  return "de";
+}
+
+function getSpeechRecognitionLocale(
+  locale: SupportedLocale
+): string {
+  const locales: Record<SupportedLocale, string> = {
+    de: "de-CH",
+    it: "it-CH",
+    fr: "fr-CH",
+    en: "en-CH",
+  };
+
+  return locales[locale];
+}
+
+function createWelcomeMessage(content: string): ChatMessage {
+  return {
+    id: "guide-welcome",
+    role: "assistant",
+    content,
+  };
+}
 
 function createMessageId(): string {
   return `${Date.now()}-${Math.random()
@@ -145,9 +170,9 @@ function getListingId(pathname: string): string | null {
     : null;
 }
 
-function getPageLabel(pathname: string): string {
+function getPageLabelKey(pathname: string): string {
   if (pathname === "/cockpit") {
-    return "Makler-Cockpit";
+    return "pages.cockpit";
   }
 
   if (
@@ -155,46 +180,38 @@ function getPageLabel(pathname: string): string {
       pathname
     )
   ) {
-    return "Virtuelles Home Staging";
+    return "pages.homeStaging";
   }
 
- if (/^\/cockpit\/[^/]+\/edit\/?$/.test(pathname)) {
-  return "Objekt bearbeiten";
-}
+  if (/^\/cockpit\/[^/]+\/edit\/?$/.test(pathname)) {
+    return "pages.edit";
+  }
 
-if (
-  /^\/cockpit\/[^/]+\/home-staging\/?$/.test(
-    pathname
-  )
-) {
-  return "Virtuelles Home Staging";
-}
-
-if (/^\/cockpit\/[^/]+\/?$/.test(pathname)) {
-  return "Objektdetails";
-}
+  if (/^\/cockpit\/[^/]+\/?$/.test(pathname)) {
+    return "pages.details";
+  }
 
   if (pathname === "/dashboard/social-media") {
-    return "Social Media";
+    return "pages.socialMedia";
   }
 
   if (pathname === "/dashboard/tour-guide") {
-    return "Tour Guide";
+    return "pages.tourGuide";
   }
 
   if (pathname === "/dashboard") {
-    return "Inserat-Generator";
+    return "pages.dashboard";
   }
 
   if (/^\/expose\/[^/]+\/?$/.test(pathname)) {
-    return "Exposé";
+    return "pages.expose";
   }
 
   if (pathname === "/konto") {
-    return "Benutzerkonto";
+    return "pages.account";
   }
 
-  return "Inserat-AI";
+  return "pages.default";
 }
 
 type GuideQuickAction = {
@@ -202,25 +219,27 @@ type GuideQuickAction = {
   prompt: string;
 };
 
-function getQuickActions(
+type GuideQuickActionKey = {
+  labelKey: string;
+  promptKey: string;
+};
+
+function getQuickActionKeys(
   pathname: string
-): GuideQuickAction[] {
+): GuideQuickActionKey[] {
   if (pathname === "/cockpit") {
     return [
       {
-        label: "Nächster Schritt",
-        prompt:
-          "Was ist im Makler-Cockpit mein sinnvollster nächster Arbeitsschritt?",
+        labelKey: "quick.cockpit.nextStep.label",
+        promptKey: "quick.cockpit.nextStep.prompt",
       },
       {
-        label: "Objekt vorbereiten",
-        prompt:
-          "Welche Angaben sollte ich für ein vollständiges Immobilienobjekt vorbereiten?",
+        labelKey: "quick.cockpit.prepareObject.label",
+        promptKey: "quick.cockpit.prepareObject.prompt",
       },
       {
-        label: "Vermarktung planen",
-        prompt:
-          "Wie plane ich die Vermarktung eines neuen Objekts mit Inserat-AI?",
+        labelKey: "quick.cockpit.planMarketing.label",
+        promptKey: "quick.cockpit.planMarketing.prompt",
       },
     ];
   }
@@ -232,24 +251,20 @@ function getQuickActions(
   ) {
     return [
       {
-        label: "Stil empfehlen",
-        prompt:
-          "Welcher Einrichtungsstil passt zu diesem Objekt und warum?",
+        labelKey: "quick.homeStaging.recommendStyle.label",
+        promptKey: "quick.homeStaging.recommendStyle.prompt",
       },
       {
-        label: "Wunschtext formulieren",
-        prompt:
-          "Hilf mir, einen präzisen Wunschtext für das virtuelle Home Staging dieses Objekts zu formulieren.",
+        labelKey: "quick.homeStaging.formulateRequest.label",
+        promptKey: "quick.homeStaging.formulateRequest.prompt",
       },
       {
-        label: "Raum einrichten",
-        prompt:
-          "Welche Möbel, Farben und Dekorationen eignen sich für ein professionelles Home Staging dieses Objekts?",
+        labelKey: "quick.homeStaging.furnishRoom.label",
+        promptKey: "quick.homeStaging.furnishRoom.prompt",
       },
       {
-        label: "Ergebnis prüfen",
-        prompt:
-          "Worauf sollte ich beim Prüfen eines AI-visualisierten Home-Staging-Ergebnisses achten?",
+        labelKey: "quick.homeStaging.reviewResult.label",
+        promptKey: "quick.homeStaging.reviewResult.prompt",
       },
     ];
   }
@@ -257,24 +272,20 @@ function getQuickActions(
   if (/^\/cockpit\/[^/]+\/edit\/?$/.test(pathname)) {
     return [
       {
-        label: "Fehlende Angaben",
-        prompt:
-          "Welche Angaben fehlen bei diesem Objekt noch?",
+        labelKey: "quick.edit.missingDetails.label",
+        promptKey: "quick.edit.missingDetails.prompt",
       },
       {
-        label: "Highlights erstellen",
-        prompt:
-          "Erstelle aus den vorhandenen Objektdaten fünf hochwertige Highlights. Erfinde keine Angaben.",
+        labelKey: "quick.edit.createHighlights.label",
+        promptKey: "quick.edit.createHighlights.prompt",
       },
       {
-        label: "Objekt verbessern",
-        prompt:
-          "Wie kann ich die vorhandenen Objektdaten für eine bessere Vermarktung verbessern?",
+        labelKey: "quick.edit.improveObject.label",
+        promptKey: "quick.edit.improveObject.prompt",
       },
       {
-        label: "Nächster Schritt",
-        prompt:
-          "Was sollte ich bei diesem Objekt als Nächstes erledigen?",
+        labelKey: "quick.edit.nextStep.label",
+        promptKey: "quick.edit.nextStep.prompt",
       },
     ];
   }
@@ -282,24 +293,20 @@ function getQuickActions(
   if (/^\/cockpit\/[^/]+\/?$/.test(pathname)) {
     return [
       {
-        label: "Objekt prüfen",
-        prompt:
-          "Prüfe dieses Objekt auf Vollständigkeit und Verkaufswirkung.",
+        labelKey: "quick.details.reviewObject.label",
+        promptKey: "quick.details.reviewObject.prompt",
       },
       {
-        label: "Nächster Schritt",
-        prompt:
-          "Was ist bei diesem Objekt der sinnvollste nächste Arbeitsschritt?",
+        labelKey: "quick.details.nextStep.label",
+        promptKey: "quick.details.nextStep.prompt",
       },
       {
-        label: "Inserat vorbereiten",
-        prompt:
-          "Wie sollte ich aus diesen Objektdaten ein überzeugendes Immobilieninserat aufbauen?",
+        labelKey: "quick.details.prepareListing.label",
+        promptKey: "quick.details.prepareListing.prompt",
       },
       {
-        label: "Social Media",
-        prompt:
-          "Welche Social-Media-Inhalte eignen sich für dieses Objekt?",
+        labelKey: "quick.details.socialMedia.label",
+        promptKey: "quick.details.socialMedia.prompt",
       },
     ];
   }
@@ -307,24 +314,20 @@ function getQuickActions(
   if (pathname === "/dashboard/social-media") {
     return [
       {
-        label: "Instagram",
-        prompt:
-          "Erstelle einen hochwertigen Instagram-Text für das aktuelle Immobilienobjekt.",
+        labelKey: "quick.socialMedia.instagram.label",
+        promptKey: "quick.socialMedia.instagram.prompt",
       },
       {
-        label: "Facebook",
-        prompt:
-          "Erstelle einen professionellen Facebook-Text für das aktuelle Immobilienobjekt.",
+        labelKey: "quick.socialMedia.facebook.label",
+        promptKey: "quick.socialMedia.facebook.prompt",
       },
       {
-        label: "Hashtags",
-        prompt:
-          "Schlage passende Schweizer Immobilien-Hashtags vor.",
+        labelKey: "quick.socialMedia.hashtags.label",
+        promptKey: "quick.socialMedia.hashtags.prompt",
       },
       {
-        label: "Plattform wählen",
-        prompt:
-          "Welche Social-Media-Plattform eignet sich für dieses Objekt am besten und warum?",
+        labelKey: "quick.socialMedia.choosePlatform.label",
+        promptKey: "quick.socialMedia.choosePlatform.prompt",
       },
     ];
   }
@@ -332,24 +335,20 @@ function getQuickActions(
   if (pathname === "/dashboard/tour-guide") {
     return [
       {
-        label: "Tour planen",
-        prompt:
-          "Wie baue ich eine überzeugende Besichtigungstour für dieses Objekt auf?",
+        labelKey: "quick.tourGuide.planTour.label",
+        promptKey: "quick.tourGuide.planTour.prompt",
       },
       {
-        label: "Begrüssung",
-        prompt:
-          "Formuliere eine professionelle Begrüssung für die Objektbesichtigung.",
+        labelKey: "quick.tourGuide.greeting.label",
+        promptKey: "quick.tourGuide.greeting.prompt",
       },
       {
-        label: "Raumreihenfolge",
-        prompt:
-          "Welche Reihenfolge der Räume erzeugt bei einer Besichtigung die beste Wirkung?",
+        labelKey: "quick.tourGuide.roomOrder.label",
+        promptKey: "quick.tourGuide.roomOrder.prompt",
       },
       {
-        label: "Tour verbessern",
-        prompt:
-          "Wie kann ich den Tour Guide professioneller und verkaufsstärker machen?",
+        labelKey: "quick.tourGuide.improveTour.label",
+        promptKey: "quick.tourGuide.improveTour.prompt",
       },
     ];
   }
@@ -357,24 +356,20 @@ function getQuickActions(
   if (/^\/expose\/[^/]+\/?$/.test(pathname)) {
     return [
       {
-        label: "Exposé prüfen",
-        prompt:
-          "Prüfe dieses Exposé auf Vollständigkeit und professionelle Verkaufswirkung.",
+        labelKey: "quick.expose.reviewExpose.label",
+        promptKey: "quick.expose.reviewExpose.prompt",
       },
       {
-        label: "Fehlende Inhalte",
-        prompt:
-          "Welche Inhalte fehlen in diesem Exposé noch?",
+        labelKey: "quick.expose.missingContent.label",
+        promptKey: "quick.expose.missingContent.prompt",
       },
       {
-        label: "Lagetext prüfen",
-        prompt:
-          "Prüfe den vorhandenen Lagetext und schlage konkrete Verbesserungen vor.",
+        labelKey: "quick.expose.reviewLocation.label",
+        promptKey: "quick.expose.reviewLocation.prompt",
       },
       {
-        label: "Wirkung erhöhen",
-        prompt:
-          "Wie kann dieses Exposé hochwertiger und verkaufsstärker wirken?",
+        labelKey: "quick.expose.improveImpact.label",
+        promptKey: "quick.expose.improveImpact.prompt",
       },
     ];
   }
@@ -382,24 +377,20 @@ function getQuickActions(
   if (pathname === "/dashboard") {
     return [
       {
-        label: "Inserat starten",
-        prompt:
-          "Welche Angaben brauche ich für ein hochwertiges Immobilieninserat?",
+        labelKey: "quick.dashboard.startListing.label",
+        promptKey: "quick.dashboard.startListing.prompt",
       },
       {
-        label: "Titel verbessern",
-        prompt:
-          "Wie schreibe ich einen klaren und verkaufsstarken Immobilientitel?",
+        labelKey: "quick.dashboard.improveTitle.label",
+        promptKey: "quick.dashboard.improveTitle.prompt",
       },
       {
-        label: "Beschreibung",
-        prompt:
-          "Wie sollte eine professionelle Immobilienbeschreibung aufgebaut sein?",
+        labelKey: "quick.dashboard.description.label",
+        promptKey: "quick.dashboard.description.prompt",
       },
       {
-        label: "Nächster Schritt",
-        prompt:
-          "Was sollte ich im Inserat-Generator als Nächstes erledigen?",
+        labelKey: "quick.dashboard.nextStep.label",
+        promptKey: "quick.dashboard.nextStep.prompt",
       },
     ];
   }
@@ -407,19 +398,16 @@ function getQuickActions(
   if (pathname === "/konto") {
     return [
       {
-        label: "Profil prüfen",
-        prompt:
-          "Welche Profilangaben sind für professionelle Inserate und Exposés besonders wichtig?",
+        labelKey: "quick.account.reviewProfile.label",
+        promptKey: "quick.account.reviewProfile.prompt",
       },
       {
-        label: "Kontaktdaten",
-        prompt:
-          "Wie sollten meine Kontaktdaten in einem Immobilienexposé dargestellt werden?",
+        labelKey: "quick.account.contactDetails.label",
+        promptKey: "quick.account.contactDetails.prompt",
       },
       {
-        label: "Inserat-AI nutzen",
-        prompt:
-          "Wie hole ich den grössten Nutzen aus Inserat-AI heraus?",
+        labelKey: "quick.account.useInseratAi.label",
+        promptKey: "quick.account.useInseratAi.prompt",
       },
     ];
   }
@@ -429,14 +417,22 @@ function getQuickActions(
 
 export default function GuideAssistant() {
   const pathname = usePathname() || "/";
+  const locale = normalizeLocale(useLocale());
+  const t = useTranslations("GuideAssistant");
+  const welcomeMessage = useMemo(
+    () => createWelcomeMessage(t("welcome")),
+    [t]
+  );
+  const storageKey = `${STORAGE_KEY}-${locale}`;
+
   const isVisible = useMemo(
     () => isGuidePage(pathname),
     [pathname]
   );
 
   const pageLabel = useMemo(
-    () => getPageLabel(pathname),
-    [pathname]
+    () => t(getPageLabelKey(pathname) as never),
+    [pathname, t]
   );
 
   const listingId = useMemo(
@@ -444,14 +440,18 @@ export default function GuideAssistant() {
     [pathname]
   );
 
-  const quickActions = useMemo(
-    () => getQuickActions(pathname),
-    [pathname]
+  const quickActions = useMemo<GuideQuickAction[]>(
+    () =>
+      getQuickActionKeys(pathname).map((action) => ({
+        label: t(action.labelKey as never),
+        prompt: t(action.promptKey as never),
+      })),
+    [pathname, t]
   );
 
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    WELCOME_MESSAGE,
+    welcomeMessage,
   ]);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -483,6 +483,8 @@ export default function GuideAssistant() {
   const audioUrlRef = useRef<string | null>(null);
   const speechRequestRef =
     useRef<AbortController | null>(null);
+  const hydratedStorageKeyRef =
+    useRef<string | null>(null);
 
   useEffect(() => {
     setSpeechRecognitionSupported(
@@ -494,38 +496,52 @@ export default function GuideAssistant() {
   }, []);
 
   useEffect(() => {
+    hydratedStorageKeyRef.current = null;
+    setIsHydrated(false);
+
     try {
       const storedValue =
-        window.sessionStorage.getItem(STORAGE_KEY);
+        window.sessionStorage.getItem(storageKey);
 
       if (storedValue) {
         const parsed: unknown = JSON.parse(storedValue);
         const storedMessages =
           normalizeStoredMessages(parsed);
 
-        if (storedMessages.length > 0) {
-          setMessages(storedMessages);
-        }
+        setMessages(
+          storedMessages.length > 0
+            ? storedMessages
+            : [welcomeMessage]
+        );
+      } else {
+        setMessages([welcomeMessage]);
       }
     } catch {
-      window.sessionStorage.removeItem(STORAGE_KEY);
+      window.sessionStorage.removeItem(storageKey);
+      setMessages([welcomeMessage]);
     } finally {
+      hydratedStorageKeyRef.current = storageKey;
       setIsHydrated(true);
     }
-  }, []);
+  }, [storageKey, welcomeMessage]);
 
   useEffect(() => {
-    if (!isHydrated) return;
+    if (
+      !isHydrated ||
+      hydratedStorageKeyRef.current !== storageKey
+    ) {
+      return;
+    }
 
     try {
       window.sessionStorage.setItem(
-        STORAGE_KEY,
+        storageKey,
         JSON.stringify(messages.slice(-30))
       );
     } catch {
       // Der Guide funktioniert auch ohne Session-Speicher.
     }
-  }, [isHydrated, messages]);
+  }, [isHydrated, messages, storageKey]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -652,6 +668,7 @@ export default function GuideAssistant() {
           credentials: "same-origin",
           headers: {
             "Content-Type": "application/json",
+            "X-Inserat-Locale": locale,
           },
           body: JSON.stringify({
             message: messageText,
@@ -663,6 +680,7 @@ export default function GuideAssistant() {
               })),
             pathname,
             listingId,
+            locale,
           }),
         }
       );
@@ -681,7 +699,7 @@ export default function GuideAssistant() {
           isRecord(data) &&
           typeof data.error === "string"
             ? data.error
-            : "Der Guide konnte momentan keine Antwort erstellen.";
+            : t("errors.answer");
 
         throw new Error(errorMessage);
       }
@@ -700,7 +718,7 @@ export default function GuideAssistant() {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : "Der Guide ist momentan nicht erreichbar.";
+          : t("errors.unreachable");
 
       setMessages((current) => [
         ...current,
@@ -733,7 +751,7 @@ export default function GuideAssistant() {
 
     if (!RecognitionConstructor) {
       setAudioNotice(
-        "Die Spracheingabe wird von diesem Browser nicht unterstützt."
+        t("speech.unsupported")
       );
       return;
     }
@@ -743,7 +761,7 @@ export default function GuideAssistant() {
     const recognition = new RecognitionConstructor();
     const originalInput = input.trim();
 
-    recognition.lang = "de-CH";
+    recognition.lang = getSpeechRecognitionLocale(locale);
     recognition.continuous = false;
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
@@ -775,7 +793,7 @@ export default function GuideAssistant() {
         : spokenText;
 
       setInput(combinedText.slice(0, 3_000));
-      setAudioNotice("Sprache wurde erkannt.");
+      setAudioNotice(t("speech.recognized"));
     };
 
     recognition.onerror = (
@@ -789,27 +807,27 @@ export default function GuideAssistant() {
         event.error === "service-not-allowed"
       ) {
         setAudioNotice(
-          "Bitte erlaube Inserat-AI den Zugriff auf dein Mikrofon."
+          t("speech.microphonePermission")
         );
         return;
       }
 
       if (event.error === "no-speech") {
         setAudioNotice(
-          "Es wurde keine Sprache erkannt. Bitte versuche es nochmals."
+          t("speech.noSpeech")
         );
         return;
       }
 
       if (event.error === "audio-capture") {
         setAudioNotice(
-          "Es wurde kein verfügbares Mikrofon gefunden."
+          t("speech.noMicrophone")
         );
         return;
       }
 
       setAudioNotice(
-        "Die Spracheingabe konnte nicht abgeschlossen werden."
+        t("speech.inputFailed")
       );
     };
 
@@ -822,12 +840,12 @@ export default function GuideAssistant() {
       recognitionRef.current = recognition;
       recognition.start();
       setIsListening(true);
-      setAudioNotice("Ich höre zu …");
+      setAudioNotice(t("speech.listening"));
     } catch {
       recognitionRef.current = null;
       setIsListening(false);
       setAudioNotice(
-        "Das Mikrofon konnte nicht gestartet werden."
+        t("speech.microphoneStart")
       );
     }
   }
@@ -867,7 +885,7 @@ export default function GuideAssistant() {
 
     if (isCurrentMessage) {
       stopSpeaking();
-      setAudioNotice("Sprachausgabe gestoppt.");
+      setAudioNotice(t("speech.outputStopped"));
       return;
     }
 
@@ -879,7 +897,7 @@ export default function GuideAssistant() {
 
     setSpeechLoadingMessageId(message.id);
     setAudioNotice(
-      "Realistische AI-Stimme wird vorbereitet …"
+      t("speech.preparing")
     );
 
     try {
@@ -888,16 +906,18 @@ export default function GuideAssistant() {
         credentials: "same-origin",
         headers: {
           "Content-Type": "application/json",
+          "X-Inserat-Locale": locale,
         },
         signal: controller.signal,
         body: JSON.stringify({
           text: message.content,
+          locale,
         }),
       });
 
       if (!response.ok) {
         let errorMessage =
-          "Die realistische Stimme konnte nicht erstellt werden.";
+          t("speech.createFailed");
 
         const contentType =
           response.headers.get("content-type") || "";
@@ -922,7 +942,7 @@ export default function GuideAssistant() {
 
       if (!audioBlob.size) {
         throw new Error(
-          "Die Sprachausgabe enthielt keine Audiodaten."
+          t("speech.emptyAudio")
         );
       }
 
@@ -940,21 +960,21 @@ export default function GuideAssistant() {
       audio.onended = () => {
         releaseSpeechAudio();
         setSpeakingMessageId(null);
-        setAudioNotice("Wiedergabe beendet.");
+        setAudioNotice(t("speech.finished"));
       };
 
       audio.onerror = () => {
         releaseSpeechAudio();
         setSpeakingMessageId(null);
         setAudioNotice(
-          "Die Audiodatei konnte nicht abgespielt werden."
+          t("speech.playbackFailed")
         );
       };
 
       setSpeechLoadingMessageId(null);
       setSpeakingMessageId(message.id);
       setAudioNotice(
-        "AI-generierte Stimme wird abgespielt."
+        t("speech.playing")
       );
 
       await audio.play();
@@ -973,7 +993,7 @@ export default function GuideAssistant() {
       setAudioNotice(
         error instanceof Error
           ? error.message
-          : "Die Sprachausgabe ist momentan nicht verfügbar."
+          : t("speech.unavailable")
       );
     } finally {
       if (speechRequestRef.current === controller) {
@@ -1005,11 +1025,12 @@ export default function GuideAssistant() {
   }
 
   function startNewConversation() {
-    setMessages([WELCOME_MESSAGE]);
+    setMessages([welcomeMessage]);
     setInput("");
+    setAudioNotice("");
 
     try {
-      window.sessionStorage.removeItem(STORAGE_KEY);
+      window.sessionStorage.removeItem(storageKey);
     } catch {
       // Keine weitere Aktion notwendig.
     }
@@ -1028,7 +1049,7 @@ export default function GuideAssistant() {
       {isOpen ? (
         <section
           className="guide-panel"
-          aria-label="Inserat-AI Guide Assistent"
+          aria-label={t("aria.panel")}
         >
           <header className="guide-header">
             <div className="guide-title-area">
@@ -1057,8 +1078,8 @@ export default function GuideAssistant() {
                 type="button"
                 className="guide-header-button"
                 onClick={startNewConversation}
-                title="Neuen Chat starten"
-                aria-label="Neuen Chat starten"
+                title={t("aria.newChat")}
+                aria-label={t("aria.newChat")}
               >
                 ↻
               </button>
@@ -1067,8 +1088,8 @@ export default function GuideAssistant() {
                 type="button"
                 className="guide-header-button"
                 onClick={() => setIsOpen(false)}
-                title="Guide schliessen"
-                aria-label="Guide schliessen"
+                title={t("aria.close")}
+                aria-label={t("aria.close")}
               >
                 ×
               </button>
@@ -1113,17 +1134,17 @@ export default function GuideAssistant() {
                       }
                       aria-label={
                         speechLoadingMessageId === message.id
-                          ? "Sprachausgabe abbrechen"
+                          ? t("speech.cancelOutput")
                           : speakingMessageId === message.id
-                            ? "Vorlesen stoppen"
-                            : "Antwort mit realistischer Stimme vorlesen"
+                            ? t("speech.stopReading")
+                            : t("speech.readAnswer")
                       }
                       title={
                         speechLoadingMessageId === message.id
-                          ? "Sprachausgabe abbrechen"
+                          ? t("speech.cancelOutput")
                           : speakingMessageId === message.id
-                            ? "Vorlesen stoppen"
-                            : "Mit realistischer AI-Stimme vorlesen"
+                            ? t("speech.stopReading")
+                            : t("speech.readWithAi")
                       }
                     >
                       <svg
@@ -1145,10 +1166,10 @@ export default function GuideAssistant() {
 
                       <span>
                         {speechLoadingMessageId === message.id
-                          ? "Wird geladen …"
+                          ? t("speech.loading")
                           : speakingMessageId === message.id
-                            ? "Stoppen"
-                            : "Vorlesen"}
+                            ? t("speech.stop")
+                            : t("speech.read")}
                       </span>
                     </button>
                   ) : null}
@@ -1172,7 +1193,7 @@ export default function GuideAssistant() {
           {quickActions.length > 0 ? (
             <div
               className="guide-quick-actions"
-              aria-label="Vorgeschlagene Fragen"
+              aria-label={t("aria.suggestions")}
             >
               {quickActions.map((action) => (
                 <button
@@ -1210,15 +1231,15 @@ export default function GuideAssistant() {
               }
               aria-label={
                 isListening
-                  ? "Spracheingabe stoppen"
-                  : "Frage sprechen"
+                  ? t("speech.stopInput")
+                  : t("speech.speakQuestion")
               }
               title={
                 speechRecognitionSupported
                   ? isListening
-                    ? "Aufnahme stoppen"
-                    : "Frage sprechen"
-                  : "Spracheingabe wird nicht unterstützt"
+                    ? t("speech.stopRecording")
+                    : t("speech.speakQuestion")
+                  : t("speech.unsupported")
               }
             >
               <svg
@@ -1254,8 +1275,8 @@ export default function GuideAssistant() {
               onKeyDown={handleTextareaKeyDown}
               maxLength={3_000}
               rows={1}
-              placeholder="Frage den Inserat-AI Guide …"
-              aria-label="Nachricht an den Guide"
+              placeholder={t("composer.placeholder")}
+              aria-label={t("composer.messageAria")}
               disabled={isSending}
             />
 
@@ -1263,7 +1284,7 @@ export default function GuideAssistant() {
               type="submit"
               className="guide-send"
               disabled={!input.trim() || isSending}
-              aria-label="Nachricht senden"
+              aria-label={t("composer.sendAria")}
             >
               ➜
             </button>
@@ -1287,8 +1308,7 @@ export default function GuideAssistant() {
           ) : null}
 
           <div className="guide-disclaimer">
-            Die Stimme ist AI-generiert. Der Guide erklärt und empfiehlt. Änderungen
-            erfolgen nur nach deiner Bestätigung.
+            {t("disclaimer")}
           </div>
         </section>
       ) : null}

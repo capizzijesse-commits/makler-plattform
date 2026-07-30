@@ -1468,5 +1468,220 @@
         }
       }
     }
+  },
+  "GuideAssistant": {
+    "welcome": "Ciao! Sono la tua guida Inserat-AI. Ti aiuto con immobili, annunci, exposé, social media, tour guidati e marketing immobiliare. Cosa vuoi fare adesso?",
+    "aria": {
+      "panel": "Assistente Guide di Inserat-AI",
+      "newChat": "Avvia una nuova chat",
+      "close": "Chiudi Guide",
+      "suggestions": "Domande suggerite"
+    },
+    "composer": {
+      "placeholder": "Chiedi alla guida Inserat-AI …",
+      "messageAria": "Messaggio alla guida",
+      "sendAria": "Invia messaggio"
+    },
+    "disclaimer": "La voce è generata dall’AI. La guida spiega e consiglia. Le modifiche avvengono solo dopo la tua conferma.",
+    "errors": {
+      "answer": "La guida non è riuscita a creare una risposta.",
+      "unreachable": "La guida non è momentaneamente raggiungibile."
+    },
+    "pages": {
+      "cockpit": "Cockpit immobiliare",
+      "homeStaging": "Home staging virtuale",
+      "edit": "Modifica immobile",
+      "details": "Dettagli immobile",
+      "socialMedia": "Social media",
+      "tourGuide": "Tour guidato",
+      "dashboard": "Generatore di annunci",
+      "expose": "Exposé",
+      "account": "Account utente",
+      "default": "Inserat-AI"
+    },
+    "speech": {
+      "unsupported": "Questo browser non supporta l’immissione vocale.",
+      "recognized": "Voce riconosciuta.",
+      "microphonePermission": "Consenti a Inserat-AI di accedere al microfono.",
+      "noSpeech": "Non è stata riconosciuta alcuna voce. Riprova.",
+      "noMicrophone": "Non è stato trovato alcun microfono disponibile.",
+      "inputFailed": "Non è stato possibile completare l’immissione vocale.",
+      "listening": "Ti ascolto …",
+      "microphoneStart": "Non è stato possibile avviare il microfono.",
+      "outputStopped": "Riproduzione vocale interrotta.",
+      "preparing": "Preparazione della voce AI realistica …",
+      "createFailed": "Non è stato possibile creare la voce realistica.",
+      "emptyAudio": "La riproduzione vocale non conteneva dati audio.",
+      "finished": "Riproduzione terminata.",
+      "playbackFailed": "Non è stato possibile riprodurre il file audio.",
+      "playing": "Riproduzione della voce generata dall’AI.",
+      "unavailable": "La riproduzione vocale non è momentaneamente disponibile.",
+      "cancelOutput": "Annulla riproduzione vocale",
+      "stopReading": "Interrompi lettura",
+      "readAnswer": "Leggi la risposta con una voce realistica",
+      "readWithAi": "Leggi con una voce AI realistica",
+      "loading": "Caricamento …",
+      "stop": "Interrompi",
+      "read": "Leggi",
+      "stopInput": "Interrompi immissione vocale",
+      "speakQuestion": "Pronuncia la domanda",
+      "stopRecording": "Interrompi registrazione"
+    },
+    "quick": {
+      "cockpit": {
+        "nextStep": {
+          "label": "Passo successivo",
+          "prompt": "Qual è il prossimo passo di lavoro più utile nel cockpit immobiliare?"
+        },
+        "prepareObject": {
+          "label": "Prepara immobile",
+          "prompt": "Quali dati devo preparare per un immobile completo?"
+        },
+        "planMarketing": {
+          "label": "Pianifica marketing",
+          "prompt": "Come posso pianificare la commercializzazione di un nuovo immobile con Inserat-AI?"
+        }
+      },
+      "homeStaging": {
+        "recommendStyle": {
+          "label": "Consiglia stile",
+          "prompt": "Quale stile di arredamento è adatto a questo immobile e perché?"
+        },
+        "formulateRequest": {
+          "label": "Formula richiesta",
+          "prompt": "Aiutami a formulare una richiesta precisa per l’home staging virtuale di questo immobile."
+        },
+        "furnishRoom": {
+          "label": "Arreda ambiente",
+          "prompt": "Quali mobili, colori e decorazioni sono adatti a un home staging professionale di questo immobile?"
+        },
+        "reviewResult": {
+          "label": "Verifica risultato",
+          "prompt": "A cosa devo prestare attenzione quando verifico un risultato di home staging visualizzato con AI?"
+        }
+      },
+      "edit": {
+        "missingDetails": {
+          "label": "Dati mancanti",
+          "prompt": "Quali dati mancano ancora per questo immobile?"
+        },
+        "createHighlights": {
+          "label": "Crea punti di forza",
+          "prompt": "Crea cinque punti di forza di qualità dai dati disponibili. Non inventare informazioni."
+        },
+        "improveObject": {
+          "label": "Migliora immobile",
+          "prompt": "Come posso migliorare i dati disponibili per una commercializzazione più efficace?"
+        },
+        "nextStep": {
+          "label": "Passo successivo",
+          "prompt": "Qual è il prossimo passo da svolgere per questo immobile?"
+        }
+      },
+      "details": {
+        "reviewObject": {
+          "label": "Verifica immobile",
+          "prompt": "Verifica completezza ed efficacia commerciale di questo immobile."
+        },
+        "nextStep": {
+          "label": "Passo successivo",
+          "prompt": "Qual è il prossimo passo di lavoro più utile per questo immobile?"
+        },
+        "prepareListing": {
+          "label": "Prepara annuncio",
+          "prompt": "Come posso creare un annuncio immobiliare convincente a partire da questi dati?"
+        },
+        "socialMedia": {
+          "label": "Social media",
+          "prompt": "Quali contenuti social sono adatti a questo immobile?"
+        }
+      },
+      "socialMedia": {
+        "instagram": {
+          "label": "Instagram",
+          "prompt": "Crea un testo Instagram di qualità per l’immobile attuale."
+        },
+        "facebook": {
+          "label": "Facebook",
+          "prompt": "Crea un testo Facebook professionale per l’immobile attuale."
+        },
+        "hashtags": {
+          "label": "Hashtag",
+          "prompt": "Suggerisci hashtag immobiliari adatti al mercato svizzero."
+        },
+        "choosePlatform": {
+          "label": "Scegli piattaforma",
+          "prompt": "Quale piattaforma social è più adatta a questo immobile e perché?"
+        }
+      },
+      "tourGuide": {
+        "planTour": {
+          "label": "Pianifica tour",
+          "prompt": "Come posso strutturare un tour convincente per questo immobile?"
+        },
+        "greeting": {
+          "label": "Benvenuto",
+          "prompt": "Formula un benvenuto professionale per la visita dell’immobile."
+        },
+        "roomOrder": {
+          "label": "Ordine ambienti",
+          "prompt": "Quale ordine degli ambienti produce l’effetto migliore durante una visita?"
+        },
+        "improveTour": {
+          "label": "Migliora tour",
+          "prompt": "Come posso rendere il tour più professionale ed efficace commercialmente?"
+        }
+      },
+      "expose": {
+        "reviewExpose": {
+          "label": "Verifica exposé",
+          "prompt": "Verifica completezza ed efficacia professionale di questo exposé."
+        },
+        "missingContent": {
+          "label": "Contenuti mancanti",
+          "prompt": "Quali contenuti mancano ancora in questo exposé?"
+        },
+        "reviewLocation": {
+          "label": "Verifica posizione",
+          "prompt": "Verifica il testo sulla posizione e proponi miglioramenti concreti."
+        },
+        "improveImpact": {
+          "label": "Aumenta efficacia",
+          "prompt": "Come posso rendere questo exposé più prestigioso ed efficace?"
+        }
+      },
+      "dashboard": {
+        "startListing": {
+          "label": "Avvia annuncio",
+          "prompt": "Quali dati servono per un annuncio immobiliare di qualità?"
+        },
+        "improveTitle": {
+          "label": "Migliora titolo",
+          "prompt": "Come posso scrivere un titolo immobiliare chiaro ed efficace?"
+        },
+        "description": {
+          "label": "Descrizione",
+          "prompt": "Come deve essere strutturata una descrizione immobiliare professionale?"
+        },
+        "nextStep": {
+          "label": "Passo successivo",
+          "prompt": "Qual è il prossimo passo nel generatore di annunci?"
+        }
+      },
+      "account": {
+        "reviewProfile": {
+          "label": "Verifica profilo",
+          "prompt": "Quali dati del profilo sono importanti per annunci ed exposé professionali?"
+        },
+        "contactDetails": {
+          "label": "Dati di contatto",
+          "prompt": "Come devono essere presentati i miei dati di contatto in un exposé immobiliare?"
+        },
+        "useInseratAi": {
+          "label": "Usa Inserat-AI",
+          "prompt": "Come posso ottenere il massimo da Inserat-AI?"
+        }
+      }
+    }
   }
 }
