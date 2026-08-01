@@ -518,6 +518,13 @@ export default function Navbar() {
             ) : (
               <>
                 <Link
+                  href="/ueber-uns"
+                  className="siteLoginLink publicMobileLogin"
+                >
+                  {t("items.about.label")}
+                </Link>
+
+                <Link
                   href="/login"
                   className="siteLoginLink publicMobileLogin"
                 >
