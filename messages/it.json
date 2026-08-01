@@ -465,7 +465,8 @@
       "userLoadError": "Non è stato possibile caricare i dati dell’utente.",
       "founderCheckoutOpening": "Apertura del checkout Founder …",
       "founderCheckoutError": "Non è stato possibile aprire il checkout Founder.",
-      "genericError": "Accesso non riuscito."
+      "genericError": "Accesso non riuscito.",
+      "planAlreadyActive": "Il tuo piano professionale è già attivo. Verrai reindirizzato alla dashboard."
     }
   },
   "Footer": {

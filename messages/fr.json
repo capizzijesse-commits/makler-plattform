@@ -465,7 +465,8 @@
       "userLoadError": "Les données utilisateur n’ont pas pu être chargées.",
       "founderCheckoutOpening": "Ouverture du paiement Founder …",
       "founderCheckoutError": "Le paiement Founder n’a pas pu être ouvert.",
-      "genericError": "La connexion a échoué."
+      "genericError": "La connexion a échoué.",
+      "planAlreadyActive": "Votre abonnement professionnel est déjà actif. Vous allez être redirigé vers le tableau de bord."
     }
   },
   "Footer": {

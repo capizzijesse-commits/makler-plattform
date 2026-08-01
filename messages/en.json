@@ -465,7 +465,8 @@
       "userLoadError": "The user details could not be loaded.",
       "founderCheckoutOpening": "Opening Founder checkout …",
       "founderCheckoutError": "Founder checkout could not be opened.",
-      "genericError": "Sign-in failed."
+      "genericError": "Sign-in failed.",
+      "planAlreadyActive": "Your professional plan is already active. You will be redirected to the dashboard."
     }
   },
   "Footer": {

@@ -465,7 +465,8 @@
       "userLoadError": "Die Benutzerdaten konnten nicht geladen werden.",
       "founderCheckoutOpening": "Founder-Checkout wird geöffnet …",
       "founderCheckoutError": "Der Founder-Checkout konnte nicht geöffnet werden.",
-      "genericError": "Die Anmeldung ist fehlgeschlagen."
+      "genericError": "Die Anmeldung ist fehlgeschlagen.",
+      "planAlreadyActive": "Dein Makler-Plan ist bereits aktiv. Du wirst zum Dashboard weitergeleitet."
     }
   },
   "Footer": {

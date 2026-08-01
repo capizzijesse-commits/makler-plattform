@@ -203,8 +203,22 @@ export default function LoginPage() {
                 success?: boolean;
                 url?: string;
                 error?: string;
+                alreadySubscribed?: boolean;
               }
             | null;
+
+        if (checkoutData?.alreadySubscribed) {
+          setMessage(
+            t("messages.planAlreadyActive")
+          );
+          setMessageType("success");
+
+          window.setTimeout(() => {
+            router.replace("/dashboard");
+          }, 900);
+
+          return;
+        }
 
         if (
           !checkoutResponse.ok ||
@@ -212,7 +226,8 @@ export default function LoginPage() {
           !checkoutData.url
         ) {
           throw new Error(
-            t("messages.founderCheckoutError")
+            checkoutData?.error ||
+              t("messages.founderCheckoutError")
           );
         }
 
