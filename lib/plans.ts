@@ -1,6 +1,7 @@
 ﻿export const USER_PLANS = [
   "free",
   "founder",
+  "standard",
   "pro",
   "agency",
   "admin",
@@ -11,6 +12,7 @@ export type UserPlan = (typeof USER_PLANS)[number];
 export const OFFER_PRICES_CENTS = {
   singleObject: 990,
   founder: 1990,
+  standard: 3990,
   pro: 7990,
   agency: 14990,
 } as const;
@@ -18,6 +20,7 @@ export const OFFER_PRICES_CENTS = {
 export const PLAN_LABELS: Record<UserPlan, string> = {
   free: "Einzelobjekt / Testzugang",
   founder: "Founder",
+  standard: "Standard",
   pro: "Pro",
   agency: "Agency",
   admin: "Admin",
@@ -59,14 +62,6 @@ function normalizeString(value: unknown): string {
 export function normalizeUserPlan(value: unknown): UserPlan {
   const normalized = normalizeString(value);
 
-  /*
-   * Frühere Standard-Konten werden sicher auf Founder abgebildet.
-   * Dadurch verlieren bestehende Benutzer keinen Basiszugang.
-   */
-  if (normalized === "standard") {
-    return "founder";
-  }
-
   if (USER_PLANS.includes(normalized as UserPlan)) {
     return normalized as UserPlan;
   }
@@ -88,8 +83,13 @@ export function getPlanCapabilities(
     isAgency ||
     isAdmin;
 
-  const isFounderOrHigher =
+  /*
+   * Founder CHF 19.90 und Standard CHF 39.90 besitzen
+   * dieselben vollständigen Basisfunktionen.
+   */
+  const hasCompleteBasePlan =
     plan === "founder" ||
+    plan === "standard" ||
     isProOrHigher;
 
   return {
@@ -103,14 +103,14 @@ export function getPlanCapabilities(
     canUseGenerator: true,
 
     /*
-     * Founder CHF 19.90 und höhere Pläne:
+     * Founder, Standard, Pro, Agency und Admin:
      * mehrere Immobilien und vollständiger Basis-Arbeitsbereich.
      */
-    canUseMultipleListings: isFounderOrHigher,
-    canUseBasicCockpit: isFounderOrHigher,
-    canUseStandardImageAnalysis: isFounderOrHigher,
-    canUseSocialMedia: isFounderOrHigher,
-    canUseExpose: isFounderOrHigher,
+    canUseMultipleListings: hasCompleteBasePlan,
+    canUseBasicCockpit: hasCompleteBasePlan,
+    canUseStandardImageAnalysis: hasCompleteBasePlan,
+    canUseSocialMedia: hasCompleteBasePlan,
+    canUseExpose: hasCompleteBasePlan,
 
     /*
      * Pro CHF 79.90 und höhere Pläne:
@@ -154,7 +154,7 @@ export function isPaidSingleObjectListing(
 
 /*
  * Basisfunktionen eines konkreten Objekts:
- * Founder/Pro/Agency/Admin oder bezahltes Einzelobjekt.
+ * Founder/Standard/Pro/Agency/Admin oder bezahltes Einzelobjekt.
  */
 export function hasListingCoreAccess(
   planValue: unknown,

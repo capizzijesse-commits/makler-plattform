@@ -5,19 +5,25 @@ import { OFFER_PRICES_CENTS } from "@/lib/plans";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 
+
 const FOUNDER_LIMIT = 50;
-const FOUNDER_TRIAL_DAYS = 30;
+const SUBSCRIPTION_TRIAL_DAYS = 30;
 const SECONDS_PER_DAY = 24 * 60 * 60;
 const TRIAL_WINDOW_TOLERANCE_SECONDS = 5 * 60;
 
-const FOUNDER_ACCESS_STATUSES = [
+const SUBSCRIPTION_ACCESS_STATUSES = [
   "active",
   "trialing",
   "past_due",
 ] as const;
 
-type FounderMetadata = {
+type SubscriptionPlan =
+  | "founder"
+  | "standard";
+
+type SubscriptionMetadata = {
   userId: string;
+  plan: SubscriptionPlan;
   expectedAmountCents: number;
 };
 
@@ -43,31 +49,65 @@ function getReferenceId(
   return "";
 }
 
+
+function readSubscriptionPlan(
+  value: unknown
+): SubscriptionPlan {
+  const plan =
+    typeof value === "string"
+      ? value.trim().toLowerCase()
+      : "";
+
+  if (
+    plan !== "founder" &&
+    plan !== "standard"
+  ) {
+    throw new Error(
+      "Der Stripe-Abo-Plan ist ungültig."
+    );
+  }
+
+  return plan;
+}
+
+function getExpectedPlanAmount(
+  plan: SubscriptionPlan
+): number {
+  return plan === "founder"
+    ? OFFER_PRICES_CENTS.founder
+    : OFFER_PRICES_CENTS.standard;
+}
+
 function readExpectedAmount(
+  plan: SubscriptionPlan,
   value: unknown
 ): number {
   const amount = Number(value);
+  const expectedAmount =
+    getExpectedPlanAmount(plan);
 
   if (
     !Number.isInteger(amount) ||
-    amount !== OFFER_PRICES_CENTS.founder
+    amount !== expectedAmount
   ) {
     throw new Error(
-      "Der erwartete Founder-Betrag ist ungültig."
+      "Der erwartete Abo-Betrag ist ungültig."
     );
   }
 
   return amount;
 }
 
-function readFounderCheckoutMetadata(
+function readCheckoutMetadata(
   session: Stripe.Checkout.Session
-): FounderMetadata {
+): SubscriptionMetadata {
   const userId =
     session.metadata?.userId?.trim() ?? "";
 
   const plan =
-    session.metadata?.plan?.trim() ?? "";
+    readSubscriptionPlan(
+      session.metadata?.plan
+    );
 
   const paymentModel =
     session.metadata?.paymentModel?.trim() ?? "";
@@ -86,42 +126,40 @@ function readFounderCheckoutMetadata(
     );
   }
 
-  if (
-    plan !== "founder" ||
-    paymentModel !== "subscription"
-  ) {
+  if (paymentModel !== "subscription") {
     throw new Error(
-      "Die Stripe-Founder-Metadaten sind ungültig."
+      "Das Stripe-Zahlungsmodell ist ungültig."
     );
   }
 
   if (currency !== "chf") {
     throw new Error(
-      "Die Stripe-Founder-Währung ist ungültig."
+      "Die Stripe-Abo-Währung ist ungültig."
     );
   }
 
-  const expectedAmountCents =
-    readExpectedAmount(
-      session.metadata?.expectedAmountCents
-    );
-
   return {
     userId,
-    expectedAmountCents,
+    plan,
+    expectedAmountCents:
+      readExpectedAmount(
+        plan,
+        session.metadata?.expectedAmountCents
+      ),
   };
 }
 
-function readFounderSubscriptionMetadata(
+function readSubscriptionMetadata(
   subscription: Stripe.Subscription
-): FounderMetadata {
+): SubscriptionMetadata {
   const userId =
     subscription.metadata?.userId?.trim() ??
     "";
 
   const plan =
-    subscription.metadata?.plan?.trim() ??
-    "";
+    readSubscriptionPlan(
+      subscription.metadata?.plan
+    );
 
   const paymentModel =
     subscription.metadata?.paymentModel
@@ -141,25 +179,24 @@ function readFounderSubscriptionMetadata(
     );
   }
 
-  if (
-    plan !== "founder" ||
-    paymentModel !== "subscription"
-  ) {
+  if (paymentModel !== "subscription") {
     throw new Error(
-      "Die Founder-Abo-Metadaten sind ungültig."
+      "Das Abo-Zahlungsmodell ist ungültig."
     );
   }
 
   if (currency !== "chf") {
     throw new Error(
-      "Die Founder-Abo-Währung ist ungültig."
+      "Die Abo-Währung ist ungültig."
     );
   }
 
   return {
     userId,
+    plan,
     expectedAmountCents:
       readExpectedAmount(
+        plan,
         subscription.metadata
           ?.expectedAmountCents
       ),
@@ -213,10 +250,11 @@ function getPrimaryPrice(
   return price;
 }
 
-function validateFounderSubscription(
+
+function validateSubscription(
   expectedLiveMode: boolean,
   subscription: Stripe.Subscription,
-  metadata: FounderMetadata,
+  metadata: SubscriptionMetadata,
   expectedCustomerId: string,
   expectedSubscriptionId: string
 ): void {
@@ -251,13 +289,15 @@ function validateFounderSubscription(
   }
 
   const subscriptionMetadata =
-    readFounderSubscriptionMetadata(
+    readSubscriptionMetadata(
       subscription
     );
 
   if (
     subscriptionMetadata.userId !==
       metadata.userId ||
+    subscriptionMetadata.plan !==
+      metadata.plan ||
     subscriptionMetadata
       .expectedAmountCents !==
       metadata.expectedAmountCents
@@ -274,17 +314,19 @@ function validateFounderSubscription(
     price.currency.toLowerCase() !==
       "chf" ||
     price.unit_amount !==
-      OFFER_PRICES_CENTS.founder ||
+      metadata.expectedAmountCents ||
+    price.unit_amount !==
+      getExpectedPlanAmount(metadata.plan) ||
     price.recurring?.interval !==
       "month"
   ) {
     throw new Error(
-      "Der Stripe-Founder-Preis ist ungültig."
+      "Der Stripe-Abo-Preis ist ungültig."
     );
   }
 }
 
-function validateFounderCheckoutCompletion(
+function validateSubscriptionCheckoutCompletion(
   session: Stripe.Checkout.Session,
   subscription: Stripe.Subscription,
   expectedAmountCents: number
@@ -294,7 +336,7 @@ function validateFounderCheckoutCompletion(
     "chf"
   ) {
     throw new Error(
-      "Die Stripe-Founder-Währung ist ungültig."
+      "Die Stripe-Abo-Währung ist ungültig."
     );
   }
 
@@ -319,7 +361,7 @@ function validateFounderCheckoutCompletion(
     subscription.trial_end;
 
   const expectedTrialSeconds =
-    FOUNDER_TRIAL_DAYS *
+    SUBSCRIPTION_TRIAL_DAYS *
     SECONDS_PER_DAY;
 
   const actualTrialSeconds =
@@ -346,9 +388,9 @@ function validateFounderCheckoutCompletion(
     session.amount_total === 0 &&
     subscription.status === "trialing" &&
     sessionTrialDays ===
-      FOUNDER_TRIAL_DAYS &&
+      SUBSCRIPTION_TRIAL_DAYS &&
     subscriptionTrialDays ===
-      FOUNDER_TRIAL_DAYS &&
+      SUBSCRIPTION_TRIAL_DAYS &&
     trialWindowIsValid;
 
   if (
@@ -356,7 +398,7 @@ function validateFounderCheckoutCompletion(
     !trialCheckoutIsValid
   ) {
     throw new Error(
-      "Der Founder-Checkout besitzt keinen gültigen Zahlungs- oder Teststatus."
+      "Der Abo-Checkout besitzt keinen gültigen Zahlungs- oder Teststatus."
     );
   }
 }
@@ -448,19 +490,20 @@ export function getSubscriptionEventObject(
   return object as Stripe.Subscription;
 }
 
+
 export async function processSuccessfulSubscriptionCheckout(
   event: Stripe.Event,
   session: Stripe.Checkout.Session
 ): Promise<void> {
   const metadata =
-    readFounderCheckoutMetadata(session);
+    readCheckoutMetadata(session);
 
   if (
     session.mode !== "subscription" ||
     session.status !== "complete"
   ) {
     throw new Error(
-      "Der Founder-Checkout wurde nicht vollständig abgeschlossen."
+      "Der Abo-Checkout wurde nicht vollständig abgeschlossen."
     );
   }
 
@@ -495,7 +538,7 @@ export async function processSuccessfulSubscriptionCheckout(
       subscriptionId
     );
 
-  validateFounderSubscription(
+  validateSubscription(
     event.livemode,
     subscription,
     metadata,
@@ -503,7 +546,7 @@ export async function processSuccessfulSubscriptionCheckout(
     subscriptionId
   );
 
-  validateFounderCheckoutCompletion(
+  validateSubscriptionCheckoutCompletion(
     session,
     subscription,
     metadata.expectedAmountCents
@@ -528,6 +571,7 @@ export async function processSuccessfulSubscriptionCheckout(
           },
           select: {
             id: true,
+            role: true,
             plan: true,
             stripeCustomerId: true,
             stripeSubscriptionId: true,
@@ -568,23 +612,51 @@ export async function processSuccessfulSubscriptionCheckout(
         );
       }
 
-      const founderNumber =
-        user.founderNumber ??
-        await getNextFounderNumber(
-          transaction,
-          user.id
+      let founderNumber =
+        user.founderNumber;
+
+      if (
+        metadata.plan === "founder" &&
+        !founderNumber
+      ) {
+        founderNumber =
+          await getNextFounderNumber(
+            transaction,
+            user.id
+          );
+      }
+
+      if (
+        metadata.plan === "founder" &&
+        !founderNumber
+      ) {
+        throw new Error(
+          "Die Founder-Nummer konnte nicht vergeben werden."
         );
+      }
+
+      const preserveAdmin =
+        user.role === "admin" ||
+        user.plan === "admin";
 
       await transaction.user.update({
         where: {
           id: user.id,
         },
         data: {
-          plan: "founder",
-          isFounder: true,
+          plan: preserveAdmin
+            ? "admin"
+            : metadata.plan,
+
+          isFounder:
+            Boolean(founderNumber),
+
           founderNumber,
+
           founderPriceCents:
-            OFFER_PRICES_CENTS.founder,
+            metadata.plan === "founder"
+              ? OFFER_PRICES_CENTS.founder
+              : null,
 
           stripeCustomerId: customerId,
           stripeSubscriptionId:
@@ -609,13 +681,13 @@ export async function processSuccessfulSubscriptionCheckout(
             eventId: event.id,
           },
           data: {
-            outcome: "founder_active",
+            outcome:
+              `${metadata.plan}_active`,
           },
         });
     }
   );
 }
-
 
 function getExpectedStripeLiveMode(): boolean {
   const secretKey =
@@ -653,16 +725,20 @@ function getPrismaErrorCode(
     : null;
 }
 
-export async function verifyAndActivateFounderCheckout(
+
+export async function verifyAndActivateSubscriptionCheckout(
   session: Stripe.Checkout.Session,
   authenticatedUserId: string
 ): Promise<{
-  plan: "founder" | "admin";
-  founderNumber: number;
+  plan:
+    | "founder"
+    | "standard"
+    | "admin";
+  founderNumber: number | null;
   subscriptionStatus: string;
 }> {
   const metadata =
-    readFounderCheckoutMetadata(session);
+    readCheckoutMetadata(session);
 
   if (
     !authenticatedUserId ||
@@ -690,7 +766,7 @@ export async function verifyAndActivateFounderCheckout(
     session.status !== "complete"
   ) {
     throw new Error(
-      "Das Founder-Abonnement wurde nicht vollständig abgeschlossen."
+      "Das Abonnement wurde nicht vollständig abgeschlossen."
     );
   }
 
@@ -725,7 +801,7 @@ export async function verifyAndActivateFounderCheckout(
       subscriptionId
     );
 
-  validateFounderSubscription(
+  validateSubscription(
     session.livemode,
     subscription,
     metadata,
@@ -733,20 +809,20 @@ export async function verifyAndActivateFounderCheckout(
     subscriptionId
   );
 
-  validateFounderCheckoutCompletion(
+  validateSubscriptionCheckoutCompletion(
     session,
     subscription,
     metadata.expectedAmountCents
   );
 
   if (
-    !FOUNDER_ACCESS_STATUSES.includes(
+    !SUBSCRIPTION_ACCESS_STATUSES.includes(
       subscription.status as
-        (typeof FOUNDER_ACCESS_STATUSES)[number]
+        (typeof SUBSCRIPTION_ACCESS_STATUSES)[number]
     )
   ) {
     throw new Error(
-      "Das Founder-Abonnement besitzt keinen aktiven Status."
+      "Das Abonnement besitzt keinen aktiven Status."
     );
   }
 
@@ -809,12 +885,28 @@ export async function verifyAndActivateFounderCheckout(
             );
           }
 
-          const founderNumber =
-            user.founderNumber ??
-            await getNextFounderNumber(
-              transaction,
-              user.id
+          let founderNumber =
+            user.founderNumber;
+
+          if (
+            metadata.plan === "founder" &&
+            !founderNumber
+          ) {
+            founderNumber =
+              await getNextFounderNumber(
+                transaction,
+                user.id
+              );
+          }
+
+          if (
+            metadata.plan === "founder" &&
+            !founderNumber
+          ) {
+            throw new Error(
+              "Die Founder-Nummer konnte nicht vergeben werden."
             );
+          }
 
           const preserveAdmin =
             user.role === "admin" ||
@@ -828,13 +920,17 @@ export async function verifyAndActivateFounderCheckout(
               data: {
                 plan: preserveAdmin
                   ? "admin"
-                  : "founder",
+                  : metadata.plan,
 
-                isFounder: true,
+                isFounder:
+                  Boolean(founderNumber),
+
                 founderNumber,
 
                 founderPriceCents:
-                  OFFER_PRICES_CENTS.founder,
+                  metadata.plan === "founder"
+                    ? OFFER_PRICES_CENTS.founder
+                    : null,
 
                 stripeCustomerId:
                   customerId,
@@ -865,17 +961,11 @@ export async function verifyAndActivateFounderCheckout(
               },
             });
 
-          if (!updatedUser.founderNumber) {
-            throw new Error(
-              "Die Founder-Nummer konnte nicht vergeben werden."
-            );
-          }
-
           return {
             plan:
               updatedUser.plan === "admin"
                 ? "admin"
-                : "founder",
+                : metadata.plan,
             founderNumber:
               updatedUser.founderNumber,
             subscriptionStatus:
@@ -908,16 +998,20 @@ export async function verifyAndActivateFounderCheckout(
   }
 
   throw new Error(
-    "Die Founder-Aktivierung konnte nicht abgeschlossen werden."
+    "Die Abo-Aktivierung konnte nicht abgeschlossen werden."
   );
 }
+
+export const verifyAndActivateFounderCheckout =
+  verifyAndActivateSubscriptionCheckout;
+
 
 export async function processFailedSubscriptionCheckout(
   event: Stripe.Event,
   session: Stripe.Checkout.Session
 ): Promise<void> {
   const metadata =
-    readFounderCheckoutMetadata(session);
+    readCheckoutMetadata(session);
 
   if (
     session.mode !== "subscription" ||
@@ -925,7 +1019,7 @@ export async function processFailedSubscriptionCheckout(
       metadata.userId
   ) {
     throw new Error(
-      "Der fehlgeschlagene Founder-Checkout ist ungültig."
+      "Der fehlgeschlagene Abo-Checkout ist ungültig."
     );
   }
 
@@ -941,12 +1035,13 @@ export async function processFailedSubscriptionCheckout(
   );
 }
 
+
 export async function processSubscriptionLifecycleEvent(
   event: Stripe.Event,
   subscription: Stripe.Subscription
 ): Promise<void> {
   const metadata =
-    readFounderSubscriptionMetadata(
+    readSubscriptionMetadata(
       subscription
     );
 
@@ -976,18 +1071,20 @@ export async function processSubscriptionLifecycleEvent(
       "chf" ||
     price.unit_amount !==
       metadata.expectedAmountCents ||
+    price.unit_amount !==
+      getExpectedPlanAmount(metadata.plan) ||
     price.recurring?.interval !==
       "month"
   ) {
     throw new Error(
-      "Der Founder-Abo-Preis ist ungültig."
+      "Der Abo-Preis ist ungültig."
     );
   }
 
-  const hasFounderAccess =
-    FOUNDER_ACCESS_STATUSES.includes(
+  const hasSubscriptionAccess =
+    SUBSCRIPTION_ACCESS_STATUSES.includes(
       subscription.status as
-        (typeof FOUNDER_ACCESS_STATUSES)[number]
+        (typeof SUBSCRIPTION_ACCESS_STATUSES)[number]
     );
 
   await prisma.$transaction(
@@ -1044,7 +1141,8 @@ export async function processSubscriptionLifecycleEvent(
         user.founderNumber;
 
       if (
-        hasFounderAccess &&
+        metadata.plan === "founder" &&
+        hasSubscriptionAccess &&
         !founderNumber
       ) {
         founderNumber =
@@ -1052,6 +1150,16 @@ export async function processSubscriptionLifecycleEvent(
             transaction,
             user.id
           );
+      }
+
+      if (
+        metadata.plan === "founder" &&
+        hasSubscriptionAccess &&
+        !founderNumber
+      ) {
+        throw new Error(
+          "Die Founder-Nummer konnte nicht vergeben werden."
+        );
       }
 
       const preserveAdmin =
@@ -1065,21 +1173,17 @@ export async function processSubscriptionLifecycleEvent(
         data: {
           plan: preserveAdmin
             ? "admin"
-            : hasFounderAccess
-              ? "founder"
+            : hasSubscriptionAccess
+              ? metadata.plan
               : "free",
 
-          /*
-           * Der Zugriff hängt vom aktiven Plan ab.
-           * Die einmal erworbene Founder-Nummer bleibt
-           * dagegen dauerhaft reserviert.
-           */
           isFounder:
             Boolean(founderNumber),
 
           founderNumber,
 
           founderPriceCents:
+            metadata.plan === "founder" &&
             founderNumber
               ? OFFER_PRICES_CENTS.founder
               : null,
@@ -1115,9 +1219,9 @@ export async function processSubscriptionLifecycleEvent(
           },
           data: {
             outcome:
-              hasFounderAccess
-                ? `founder_${subscription.status}`
-                : `founder_access_removed_${subscription.status}`,
+              hasSubscriptionAccess
+                ? `${metadata.plan}_${subscription.status}`
+                : `${metadata.plan}_access_removed_${subscription.status}`,
           },
         });
     }

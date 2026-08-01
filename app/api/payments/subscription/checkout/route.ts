@@ -14,16 +14,37 @@ import { getStripe } from "@/lib/stripe";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+
 const FOUNDER_LIMIT = 50;
-const FOUNDER_TRIAL_DAYS = 30;
+const SUBSCRIPTION_TRIAL_DAYS = 30;
 
 const LOCALE_COOKIE_NAME = "INSERAT_AI_LOCALE";
 
-const FOUNDER_PRODUCT_DESCRIPTIONS = {
-  de: "30 Tage kostenlos. Die ersten 50 Founder-Kunden behalten CHF 19.90 pro Monat dauerhaft, solange das Abonnement ohne Unterbruch aktiv bleibt. Danach regulär CHF 39.90 pro Monat.",
-  it: "30 giorni gratuiti. I primi 50 clienti Founder mantengono CHF 19.90 al mese finché l’abbonamento rimane attivo senza interruzioni. Successivamente il prezzo regolare è di CHF 39.90 al mese.",
-  fr: "30 jours gratuits. Les 50 premiers clients Founder conservent le tarif de CHF 19.90 par mois tant que l’abonnement reste actif sans interruption. Ensuite, le tarif régulier est de CHF 39.90 par mois.",
-  en: "30 days free. The first 50 Founder customers keep CHF 19.90 per month for as long as the subscription remains continuously active. The regular price afterwards is CHF 39.90 per month.",
+const SUBSCRIPTION_PRODUCT_DESCRIPTIONS = {
+  de: {
+    founder:
+      "30 Tage kostenlos. Die ersten 50 Founder-Kunden behalten CHF 19.90 pro Monat dauerhaft, solange das Abonnement ohne Unterbruch aktiv bleibt.",
+    standard:
+      "30 Tage kostenlos. Danach CHF 39.90 pro Monat. Jederzeit kündbar.",
+  },
+  it: {
+    founder:
+      "30 giorni gratuiti. I primi 50 clienti Founder mantengono CHF 19.90 al mese finché l’abbonamento rimane attivo senza interruzioni.",
+    standard:
+      "30 giorni gratuiti. Successivamente CHF 39.90 al mese. Disdetta possibile in qualsiasi momento.",
+  },
+  fr: {
+    founder:
+      "30 jours gratuits. Les 50 premiers clients Founder conservent le tarif de CHF 19.90 par mois tant que l’abonnement reste actif sans interruption.",
+    standard:
+      "30 jours gratuits. Ensuite CHF 39.90 par mois. Résiliable à tout moment.",
+  },
+  en: {
+    founder:
+      "30 days free. The first 50 Founder customers keep CHF 19.90 per month for as long as the subscription remains continuously active.",
+    standard:
+      "30 days free. Then CHF 39.90 per month. Cancel anytime.",
+  },
 } as const;
 
 const ACTIVE_SUBSCRIPTION_STATUSES = [
@@ -216,12 +237,16 @@ export async function POST(
       | CheckoutRequestBody
       | null;
 
+
     const requestedPlan =
       typeof body?.plan === "string"
         ? body.plan.trim().toLowerCase()
         : "";
 
-    if (requestedPlan !== "founder") {
+    if (
+      requestedPlan !== "founder" &&
+      requestedPlan !== "standard"
+    ) {
       return NextResponse.json(
         {
           success: false,
@@ -266,6 +291,7 @@ export async function POST(
 
     if (
       currentPlan === "founder" ||
+      currentPlan === "standard" ||
       currentPlan === "pro" ||
       currentPlan === "agency" ||
       currentPlan === "admin"
@@ -299,9 +325,11 @@ export async function POST(
       );
     }
 
+
     /*
-     * Gezählt werden nur tatsächlich aktivierte
-     * Founder-Abonnements – keine Registrierungen.
+     * Nur neue Konten ohne frühere Founder-Nummer können
+     * einen noch freien Founder-Platz beanspruchen.
+     * Nach einer Unterbrechung gilt der reguläre Standardpreis.
      */
     const claimedFounderCount =
       await prisma.user.count({
@@ -312,20 +340,17 @@ export async function POST(
         },
       });
 
-    if (
-      claimedFounderCount >= FOUNDER_LIMIT &&
-      !billingUser.founderNumber
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-          founderSoldOut: true,
-          error:
-            "Das Founder-Angebot für die ersten 50 zahlenden Makler ist bereits vergeben.",
-        },
-        { status: 409 }
-      );
-    }
+    const founderIsAvailable =
+      claimedFounderCount < FOUNDER_LIMIT &&
+      !billingUser.founderNumber;
+
+    const selectedPlan:
+      | "founder"
+      | "standard" =
+      requestedPlan === "standard" ||
+      !founderIsAvailable
+        ? "standard"
+        : "founder";
 
     const stripe = getStripe();
 
@@ -335,9 +360,11 @@ export async function POST(
         billingUser
       );
 
+
     /*
-     * Bereits offene Founder-Checkouts desselben
-     * Kunden werden wiederverwendet.
+     * Ein passender offener Checkout wird wiederverwendet.
+     * Veraltete oder für einen anderen Plan erstellte
+     * Sitzungen desselben Kontos werden beendet.
      */
     const openSessions =
       await stripe.checkout.sessions.list({
@@ -346,21 +373,21 @@ export async function POST(
         limit: 10,
       });
 
-    const matchingOpenSessions =
+    const userOpenSessions =
       openSessions.data.filter(
         (session) =>
           session.mode === "subscription" &&
           session.metadata?.userId ===
-            billingUser.id &&
-          session.metadata?.plan ===
-            "founder"
+            billingUser.id
       );
 
     const existingCheckout =
-      matchingOpenSessions.find(
+      userOpenSessions.find(
         (session) =>
+          session.metadata?.plan ===
+            selectedPlan &&
           session.metadata?.trialPeriodDays ===
-            String(FOUNDER_TRIAL_DAYS) &&
+            String(SUBSCRIPTION_TRIAL_DAYS) &&
           typeof session.url === "string"
       );
 
@@ -368,20 +395,18 @@ export async function POST(
       return NextResponse.json({
         success: true,
         reused: true,
+        plan: selectedPlan,
         url: existingCheckout.url,
       });
     }
 
-    /*
-     * Offene Checkout-Sitzungen aus der Zeit vor
-     * dem 30-Tage-Test dürfen nicht wiederverwendet
-     * werden, weil sie sofort kostenpflichtig wären.
-     */
     const staleOpenSessions =
-      matchingOpenSessions.filter(
+      userOpenSessions.filter(
         (session) =>
+          session.metadata?.plan !==
+            selectedPlan ||
           session.metadata?.trialPeriodDays !==
-          String(FOUNDER_TRIAL_DAYS)
+            String(SUBSCRIPTION_TRIAL_DAYS)
       );
 
     await Promise.all(
@@ -390,7 +415,7 @@ export async function POST(
           .expire(session.id)
           .catch((error) => {
             console.warn(
-              "ALTER FOUNDER-CHECKOUT KONNTE NICHT ABGELAUFEN WERDEN:",
+              "ALTER ABO-CHECKOUT KONNTE NICHT ABGELAUFEN WERDEN:",
               session.id,
               error
             );
@@ -414,8 +439,12 @@ export async function POST(
         (subscription) =>
           subscription.metadata?.userId ===
             billingUser.id &&
-          subscription.metadata?.plan ===
-            "founder" &&
+          (
+            subscription.metadata?.plan ===
+              "founder" ||
+            subscription.metadata?.plan ===
+              "standard"
+          ) &&
           ![
             "canceled",
             "incomplete_expired",
@@ -428,14 +457,15 @@ export async function POST(
           success: false,
           subscriptionProcessing: true,
           error:
-            "Stripe verarbeitet für dieses Konto bereits ein Founder-Abonnement.",
+            "Stripe verarbeitet für dieses Konto bereits ein Abonnement.",
         },
         { status: 409 }
       );
     }
 
+
     const amountCents =
-      OFFER_PRICES_CENTS.founder;
+      OFFER_PRICES_CENTS[selectedPlan];
 
     const appUrl = getAppUrl(request.url);
 
@@ -454,12 +484,15 @@ export async function POST(
         ? localeCookie
         : "auto";
 
-    const productDescription =
+    const descriptionLocale =
       checkoutLocale === "auto"
-        ? FOUNDER_PRODUCT_DESCRIPTIONS.de
-        : FOUNDER_PRODUCT_DESCRIPTIONS[
-            checkoutLocale
-          ];
+        ? "de"
+        : checkoutLocale;
+
+    const productDescription =
+      SUBSCRIPTION_PRODUCT_DESCRIPTIONS[
+        descriptionLocale
+      ][selectedPlan];
 
     const checkoutSession =
       await stripe.checkout.sessions.create({
@@ -490,7 +523,9 @@ export async function POST(
               },
               product_data: {
                 name:
-                  "Inserat-AI Founder",
+                  selectedPlan === "founder"
+                    ? "Inserat-AI Founder"
+                    : "Inserat-AI Standard",
                 description:
                   productDescription,
               },
@@ -500,18 +535,18 @@ export async function POST(
 
         metadata: {
           userId: billingUser.id,
-          plan: "founder",
+          plan: selectedPlan,
           paymentModel: "subscription",
           expectedAmountCents:
             String(amountCents),
           expectedCurrency: "chf",
           trialPeriodDays:
-            String(FOUNDER_TRIAL_DAYS),
+            String(SUBSCRIPTION_TRIAL_DAYS),
         },
 
         subscription_data: {
           trial_period_days:
-            FOUNDER_TRIAL_DAYS,
+            SUBSCRIPTION_TRIAL_DAYS,
 
           trial_settings: {
             end_behavior: {
@@ -522,14 +557,14 @@ export async function POST(
 
           metadata: {
             userId: billingUser.id,
-            plan: "founder",
+            plan: selectedPlan,
             paymentModel:
               "subscription",
             expectedAmountCents:
               String(amountCents),
             expectedCurrency: "chf",
             trialPeriodDays:
-              String(FOUNDER_TRIAL_DAYS),
+              String(SUBSCRIPTION_TRIAL_DAYS),
           },
         },
 
@@ -555,6 +590,7 @@ export async function POST(
     return NextResponse.json({
       success: true,
       reused: false,
+      plan: selectedPlan,
       url: checkoutSession.url,
     });
   } catch (error) {
@@ -567,7 +603,7 @@ export async function POST(
       {
         success: false,
         error:
-          "Der Founder-Checkout konnte momentan nicht gestartet werden.",
+          "Der Abo-Checkout konnte momentan nicht gestartet werden.",
       },
       { status: 500 }
     );

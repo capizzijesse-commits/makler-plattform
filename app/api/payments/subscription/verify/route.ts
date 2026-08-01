@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { getAuthenticatedUser } from "@/lib/session";
 import {
-  verifyAndActivateFounderCheckout,
+  verifyAndActivateSubscriptionCheckout,
 } from "@/lib/subscription-billing";
 import { getStripe } from "@/lib/stripe";
 
@@ -70,7 +70,7 @@ export async function POST(
       );
 
     const result =
-      await verifyAndActivateFounderCheckout(
+      await verifyAndActivateSubscriptionCheckout(
         session,
         user.id
       );
@@ -78,7 +78,10 @@ export async function POST(
     return NextResponse.json({
       success: true,
       message:
-        `Founder-Abonnement erfolgreich aktiviert. Du bist Founder Nr. ${result.founderNumber}.`,
+        result.plan === "founder" &&
+        result.founderNumber
+          ? `Founder-Abonnement erfolgreich aktiviert. Du bist Founder Nr. ${result.founderNumber}.`
+          : "Standard-Abonnement erfolgreich aktiviert.",
       plan: result.plan,
       founderNumber:
         result.founderNumber,
@@ -95,7 +98,7 @@ export async function POST(
       {
         success: false,
         error:
-          "Das bezahlte Founder-Abonnement konnte noch nicht bestätigt werden.",
+          "Das Abonnement konnte noch nicht bestätigt werden.",
       },
       {
         status: 500,
