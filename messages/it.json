@@ -803,14 +803,20 @@
         "text": "I dati possono essere trasmessi a fornitori tecnici nella misura necessaria per il funzionamento del sito web, la fornitura delle funzionalità o l’elaborazione dei pagamenti."
       },
       "rights": {
-        "title": "8. Diritti delle persone interessate",
+        "title": "9. Diritti delle persone interessate",
         "text": "Le persone interessate possono richiedere informazioni sui dati conservati e, se necessario, la loro rettifica o cancellazione. Le richieste possono essere inviate a info@inserat-ai.ch."
       },
       "changes": {
-        "title": "9. Modifiche",
+        "title": "10. Modifiche",
         "text": "Possiamo modificare questa informativa in qualsiasi momento. Fa fede la versione pubblicata sul sito web."
+      },
+      "analytics": {
+        "title": "8. Microsoft Clarity e analisi dell’utilizzo",
+        "text": "Con il vostro consenso volontario utilizziamo Microsoft Clarity per comprendere come viene utilizzato Inserat-AI e migliorare l’esperienza utente. Possono essere trattati visualizzazioni di pagina, clic, movimenti del mouse, comportamento di scorrimento, informazioni tecniche sul dispositivo e sul browser e identificatori pseudonimi per mappe di calore e riproduzioni delle sessioni. Clarity viene caricato solo dopo aver selezionato «Consenti analisi»; la memorizzazione per finalità pubblicitarie rimane disattivata. I dati vengono trasmessi a Microsoft quale fornitore tecnico e possono essere trattati anche al di fuori della Svizzera. I campi di inserimento e i menu di selezione vengono mascherati da Clarity. Il consenso può essere revocato o concesso nuovamente in qualsiasi momento tramite «Impostazioni privacy» in basso a sinistra.",
+        "microsoftPrivacy": "Informativa sulla privacy di Microsoft"
       }
-    }
+    },
+    "lastUpdated": "Aggiornamento: 1° agosto 2026"
   },
   "Imprint": {
     "title": "Note legali",

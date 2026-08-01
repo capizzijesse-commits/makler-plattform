@@ -803,14 +803,20 @@
         "text": "Daten können an technische Dienstleister weitergegeben werden, soweit dies für den Betrieb der Website, die Bereitstellung der Funktionen oder die Zahlungsabwicklung erforderlich ist."
       },
       "rights": {
-        "title": "8. Rechte der betroffenen Personen",
+        "title": "9. Rechte der betroffenen Personen",
         "text": "Betroffene Personen können Auskunft über ihre gespeicherten Daten verlangen und gegebenenfalls deren Berichtigung oder Löschung verlangen. Anfragen können an info@inserat-ai.ch gesendet werden."
       },
       "changes": {
-        "title": "9. Änderungen",
+        "title": "10. Änderungen",
         "text": "Wir können diese Datenschutzerklärung jederzeit anpassen. Es gilt die jeweils auf dieser Website veröffentlichte Version."
+      },
+      "analytics": {
+        "title": "8. Microsoft Clarity und Nutzungsanalyse",
+        "text": "Mit Ihrer freiwilligen Einwilligung verwenden wir Microsoft Clarity, um zu verstehen, wie Inserat-AI genutzt wird, und die Benutzerfreundlichkeit zu verbessern. Dabei können Seitenaufrufe, Klicks, Mausbewegungen, Scrollverhalten, technische Geräte- und Browserinformationen sowie pseudonyme Kennungen für Heatmaps und Sitzungswiedergaben verarbeitet werden. Clarity wird erst geladen, nachdem Sie «Analyse erlauben» gewählt haben; die Speicherung für Werbezwecke bleibt deaktiviert. Die Daten werden an Microsoft als technischen Dienstleister übermittelt und können auch ausserhalb der Schweiz bearbeitet werden. Eingabefelder und Auswahllisten werden von Clarity maskiert. Sie können Ihre Einwilligung jederzeit über «Datenschutz-Einstellungen» unten links widerrufen oder erneut erteilen.",
+        "microsoftPrivacy": "Datenschutzerklärung von Microsoft"
       }
-    }
+    },
+    "lastUpdated": "Stand: 1. August 2026"
   },
   "Imprint": {
     "title": "Impressum",

@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+﻿import { getTranslations } from "next-intl/server";
 
 export default async function DatenschutzPage() {
   const t = await getTranslations("Privacy");
@@ -27,13 +27,24 @@ export default async function DatenschutzPage() {
         <h1
           style={{
             marginTop: 0,
-            marginBottom: "24px",
+            marginBottom: "12px",
             fontSize: "clamp(32px, 6vw, 44px)",
             lineHeight: 1.1,
           }}
         >
           {t("title")}
         </h1>
+
+        <p
+          style={{
+            marginTop: 0,
+            marginBottom: "28px",
+            color: "#6b7280",
+            fontSize: "0.95rem",
+          }}
+        >
+          {t("lastUpdated")}
+        </p>
 
         <p>{t("intro")}</p>
 
@@ -66,6 +77,25 @@ export default async function DatenschutzPage() {
 
         <h2>{t("sections.thirdParties.title")}</h2>
         <p>{t("sections.thirdParties.text")}</p>
+
+        <h2>{t("sections.analytics.title")}</h2>
+        <p>{t("sections.analytics.text")}</p>
+
+        <p>
+          <a
+            href="https://privacy.microsoft.com/privacystatement"
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              color: "#9a6700",
+              fontWeight: 600,
+              textDecoration: "underline",
+              textUnderlineOffset: "4px",
+            }}
+          >
+            {t("sections.analytics.microsoftPrivacy")}
+          </a>
+        </p>
 
         <h2>{t("sections.rights.title")}</h2>
         <p>{t("sections.rights.text")}</p>

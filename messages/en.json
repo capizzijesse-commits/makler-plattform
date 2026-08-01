@@ -803,14 +803,20 @@
         "text": "Data may be disclosed to technical service providers where this is necessary to operate the website, provide its functions or process payments."
       },
       "rights": {
-        "title": "8. Rights of data subjects",
+        "title": "9. Rights of data subjects",
         "text": "Data subjects may request information about their stored data and, where applicable, request its correction or deletion. Requests may be sent to info@inserat-ai.ch."
       },
       "changes": {
-        "title": "9. Changes",
+        "title": "10. Changes",
         "text": "We may amend this Privacy Policy at any time. The version published on this website applies."
+      },
+      "analytics": {
+        "title": "8. Microsoft Clarity and usage analytics",
+        "text": "With your voluntary consent, we use Microsoft Clarity to understand how Inserat-AI is used and to improve the user experience. Page views, clicks, mouse movements, scrolling behaviour, technical device and browser information and pseudonymous identifiers may be processed for heatmaps and session replays. Clarity is loaded only after you select “Allow analytics”; storage for advertising purposes remains disabled. Data is transmitted to Microsoft as a technical service provider and may also be processed outside Switzerland. Input fields and selection menus are masked by Clarity. You may withdraw or grant your consent again at any time through “Privacy settings” at the bottom left.",
+        "microsoftPrivacy": "Microsoft Privacy Statement"
       }
-    }
+    },
+    "lastUpdated": "Last updated: 1 August 2026"
   },
   "Imprint": {
     "title": "Legal notice",

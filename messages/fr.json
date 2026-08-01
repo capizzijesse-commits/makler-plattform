@@ -803,14 +803,20 @@
         "text": "Les données peuvent être transmises à des prestataires techniques dans la mesure nécessaire au fonctionnement du site web, à la fourniture des fonctionnalités ou au traitement des paiements."
       },
       "rights": {
-        "title": "8. Droits des personnes concernées",
+        "title": "9. Droits des personnes concernées",
         "text": "Les personnes concernées peuvent demander des informations sur les données enregistrées et, le cas échéant, leur rectification ou leur suppression. Les demandes peuvent être envoyées à info@inserat-ai.ch."
       },
       "changes": {
-        "title": "9. Modifications",
+        "title": "10. Modifications",
         "text": "Nous pouvons modifier cette déclaration de protection des données à tout moment. La version publiée sur ce site web fait foi."
+      },
+      "analytics": {
+        "title": "8. Microsoft Clarity et analyse de l’utilisation",
+        "text": "Avec votre consentement volontaire, nous utilisons Microsoft Clarity afin de comprendre comment Inserat-AI est utilisé et d’améliorer l’expérience utilisateur. Les pages consultées, les clics, les mouvements de la souris, le comportement de défilement, les informations techniques relatives à l’appareil et au navigateur ainsi que des identifiants pseudonymes peuvent être traités pour créer des cartes thermiques et des reconstitutions de sessions. Clarity n’est chargé qu’après la sélection de «Autoriser l’analyse»; le stockage à des fins publicitaires reste désactivé. Les données sont transmises à Microsoft en tant que prestataire technique et peuvent également être traitées en dehors de la Suisse. Les champs de saisie et les listes de sélection sont masqués par Clarity. Vous pouvez retirer ou accorder à nouveau votre consentement à tout moment via «Paramètres de confidentialité» en bas à gauche.",
+        "microsoftPrivacy": "Déclaration de confidentialité de Microsoft"
       }
-    }
+    },
+    "lastUpdated": "Mise à jour : 1er août 2026"
   },
   "Imprint": {
     "title": "Mentions légales",
