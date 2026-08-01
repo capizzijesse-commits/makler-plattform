@@ -78,6 +78,10 @@
       "secretMarketing": {
         "label": "Secret Marketing",
         "description": "Diskrete Immobilienvermarktung"
+      },
+      "about": {
+        "label": "Über uns",
+        "description": "Unsere Geschichte, Mission und Vision"
       }
     }
   },

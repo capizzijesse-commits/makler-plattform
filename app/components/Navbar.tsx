@@ -104,6 +104,13 @@ export default function Navbar() {
   accent: "gold",
 },
     {
+      label: t("items.about.label"),
+      description: t("items.about.description"),
+      icon: "\u{1F465}",
+      href: "/ueber-uns",
+      accent: "gold",
+    },
+    {
       label: t("items.account.label"),
       description: t("items.account.description"),
       icon: "\u{1F464}",

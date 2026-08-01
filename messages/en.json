@@ -78,6 +78,10 @@
       "secretMarketing": {
         "label": "Secret marketing",
         "description": "Market properties discreetly"
+      },
+      "about": {
+        "label": "About us",
+        "description": "Our story, mission and vision"
       }
     }
   },

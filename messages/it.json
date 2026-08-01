@@ -78,6 +78,10 @@
       "secretMarketing": {
         "label": "Marketing riservato",
         "description": "Commercializzazione immobiliare discreta"
+      },
+      "about": {
+        "label": "Chi siamo",
+        "description": "La nostra storia, missione e visione"
       }
     }
   },
