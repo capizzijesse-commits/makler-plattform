@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 
@@ -18,13 +18,14 @@ declare global {
 const CLARITY_PROJECT_ID = "xvk3vfu24c";
 const STORAGE_KEY = "inserat_ai_analytics_consent_v1";
 const CLARITY_SCRIPT_ID = "inserat-ai-clarity-script";
+const ANALYTICS_CONSENT_EVENT = "inserat-ai-analytics-consent";
 
 const translations = {
   de: {
     settings: "Datenschutz-Einstellungen",
     title: "Ihre Privatsphäre",
     text:
-      "Wir verwenden notwendige Technologien für den sicheren Betrieb von Inserat-AI. Mit Ihrer Zustimmung nutzen wir Microsoft Clarity, um Nutzungsabläufe, Heatmaps und Sitzungsaufzeichnungen auszuwerten und unsere Plattform zu verbessern.",
+      "Wir verwenden notwendige Technologien für den sicheren Betrieb von Inserat-AI. Mit Ihrer Zustimmung nutzen wir Google Analytics und Microsoft Clarity, um Nutzungsabläufe, Heatmaps und Sitzungsaufzeichnungen auszuwerten und unsere Plattform zu verbessern.",
     privacy: "Datenschutzerklärung",
     reject: "Nur notwendige",
     accept: "Analyse erlauben",
@@ -33,7 +34,7 @@ const translations = {
     settings: "Impostazioni privacy",
     title: "La vostra privacy",
     text:
-      "Utilizziamo tecnologie necessarie per il funzionamento sicuro di Inserat-AI. Con il vostro consenso utilizziamo Microsoft Clarity per analizzare i percorsi di utilizzo, le mappe di calore e le registrazioni delle sessioni e migliorare la piattaforma.",
+      "Utilizziamo tecnologie necessarie per il funzionamento sicuro di Inserat-AI. Con il vostro consenso utilizziamo Google Analytics e Microsoft Clarity per analizzare i percorsi di utilizzo, le mappe di calore e le registrazioni delle sessioni e migliorare la piattaforma.",
     privacy: "Informativa sulla privacy",
     reject: "Solo necessari",
     accept: "Consenti analisi",
@@ -42,7 +43,7 @@ const translations = {
     settings: "Paramètres de confidentialité",
     title: "Votre vie privée",
     text:
-      "Nous utilisons les technologies nécessaires au fonctionnement sécurisé d’Inserat-AI. Avec votre consentement, nous utilisons Microsoft Clarity afin d’analyser les parcours d’utilisation, les cartes thermiques et les enregistrements de sessions et d’améliorer la plateforme.",
+      "Nous utilisons les technologies nécessaires au fonctionnement sécurisé d’Inserat-AI. Avec votre consentement, nous utilisons Google Analytics et Microsoft Clarity afin d’analyser les parcours d’utilisation, les cartes thermiques et les enregistrements de sessions et d’améliorer la plateforme.",
     privacy: "Politique de confidentialité",
     reject: "Nécessaires uniquement",
     accept: "Autoriser l’analyse",
@@ -51,7 +52,7 @@ const translations = {
     settings: "Privacy settings",
     title: "Your privacy",
     text:
-      "We use necessary technologies for the secure operation of Inserat-AI. With your consent, we use Microsoft Clarity to analyse user journeys, heatmaps and session recordings and improve the platform.",
+      "We use necessary technologies for the secure operation of Inserat-AI. With your consent, we use Google Analytics and Microsoft Clarity to analyse user journeys, heatmaps and session recordings and improve the platform.",
     privacy: "Privacy policy",
     reject: "Necessary only",
     accept: "Allow analytics",
