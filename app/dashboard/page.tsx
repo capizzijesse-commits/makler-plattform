@@ -2002,10 +2002,110 @@ return (
       ? t("images.selected", {
           count: selectedImages.length,
         })
-      : `📷 ${t("images.select")}`}
+      : `${String.fromCodePoint(0x1F4F7)} ${t("images.select")}`}
   </span>
 </label>
 
+<div
+  style={{
+    display: "grid",
+    gap: "10px",
+    marginTop: "14px",
+  }}
+>
+  <button
+    data-analysis-button="true"
+    type="button"
+    onClick={analyzeImage}
+    disabled={
+      !canUseDashboardImages ||
+      imagePreviews.length === 0 ||
+      analyzingImage
+    }
+    style={{
+      width: "100%",
+      border: "1px solid rgba(251, 191, 36, 0.55)",
+      background: analyzingImage
+        ? "rgba(245, 158, 11, 0.16)"
+        : "linear-gradient(135deg, rgba(245, 158, 11, 0.28), rgba(249, 115, 22, 0.22))",
+      color: analyzingImage
+        ? "rgba(254, 243, 199, 0.85)"
+        : "#fbbf24",
+      borderRadius: "14px",
+      padding: "13px 16px",
+      fontWeight: 900,
+      cursor:
+        !canUseDashboardImages ||
+        imagePreviews.length === 0 ||
+        analyzingImage
+          ? "not-allowed"
+          : "pointer",
+      opacity:
+        !canUseDashboardImages ||
+        imagePreviews.length === 0
+          ? 0.48
+          : 1,
+      boxShadow:
+        imagePreviews.length > 0 &&
+        !analyzingImage
+          ? "0 12px 28px rgba(245, 158, 11, 0.16)"
+          : "none",
+      transition:
+        "opacity 160ms ease, box-shadow 160ms ease",
+    }}
+  >
+    {analyzingImage
+      ? locale === "de"
+        ? `🔍 Bild ${
+            analysisProgressIndex !== null
+              ? analysisProgressIndex + 1
+              : 1
+          } von ${imagePreviews.length} wird analysiert …`
+        : locale === "it"
+          ? `🔍 Analisi dell'immagine ${
+              analysisProgressIndex !== null
+                ? analysisProgressIndex + 1
+                : 1
+            } di ${imagePreviews.length} …`
+          : locale === "fr"
+            ? `🔍 Analyse de l'image ${
+                analysisProgressIndex !== null
+                  ? analysisProgressIndex + 1
+                  : 1
+              } sur ${imagePreviews.length} …`
+            : `🔍 Analysing image ${
+                analysisProgressIndex !== null
+                  ? analysisProgressIndex + 1
+                  : 1
+              } of ${imagePreviews.length} …`
+      : locale === "de"
+        ? "🔍 Fotoanalyse starten"
+        : locale === "it"
+          ? "🔍 Avvia analisi delle foto"
+          : locale === "fr"
+            ? "🔍 Lancer l’analyse des photos"
+            : "🔍 Start photo analysis"}
+  </button>
+
+  {imageAnalysisMessage && (
+    <div
+      role="status"
+      aria-live="polite"
+      style={{
+        border: "1px solid rgba(255, 255, 255, 0.10)",
+        background: "rgba(15, 23, 42, 0.42)",
+        borderRadius: "12px",
+        padding: "10px 12px",
+        color: "rgba(226, 232, 240, 0.88)",
+        fontSize: "13px",
+        fontWeight: 700,
+        lineHeight: 1.5,
+      }}
+    >
+      {imageAnalysisMessage}
+    </div>
+  )}
+</div>
 {imagePreviews.length > 0 && (
   <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
     {imagePreviews.map((preview, index) => {
@@ -2055,7 +2155,7 @@ return (
 
             {analysisItem.status === "analyzing" && (
               <div className="mt-3 rounded-xl border border-amber-300/30 bg-amber-400/10 p-3 text-sm font-bold text-amber-200">
-                🔍 {t("images.analyzing")}
+                {String.fromCodePoint(0x1F50D)} {t("images.analyzing")}
               </div>
             )}
 
@@ -2917,6 +3017,3 @@ function MiniStat({ title, value }: { title: string; value: string }) {
     </div>
   );
 }
-   
- 
-  
