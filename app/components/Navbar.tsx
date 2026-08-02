@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -391,6 +391,14 @@ export default function Navbar() {
   <PrivacyModeButton />
 </span>
 
+{/* ALWAYS_VISIBLE_ABOUT_LINK */}
+<Link
+  href="/ueber-uns"
+  className="siteLoginLink"
+>
+  {t("items.about.label")}
+</Link>
+
 <LanguageSwitcher />
 
   {isLoggedInArea ? (
@@ -517,12 +525,6 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link
-                  href="/ueber-uns"
-                  className="siteLoginLink publicMobileLogin"
-                >
-                  {t("items.about.label")}
-                </Link>
 
                 <Link
                   href="/login"
