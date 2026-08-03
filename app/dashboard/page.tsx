@@ -2109,8 +2109,6 @@ return (
 {imagePreviews.length > 0 && (
   <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
     {imagePreviews.map((preview, index) => {
-      const analysisItem =
-        imageAnalyses[index] || createEmptyImageAnalysis();
 
       return (
         <div
@@ -2147,34 +2145,6 @@ return (
                 })}
             </div>
 
-            {analysisItem.status === "idle" && (
-              <div className="mt-3 rounded-xl border border-white/10 bg-slate-950/20 p-3 text-sm text-slate-400">
-                {t("images.notAnalyzed")}
-              </div>
-            )}
-
-            {analysisItem.status === "analyzing" && (
-              <div className="mt-3 rounded-xl border border-amber-300/30 bg-amber-400/10 p-3 text-sm font-bold text-amber-200">
-                {String.fromCodePoint(0x1F50D)} {t("images.analyzing")}
-              </div>
-            )}
-
-            {analysisItem.status === "done" && (
-              <div
-                className="imageAnalysisScroll mt-3 max-h-72 overflow-y-auto rounded-xl border border-white/10 bg-slate-950/30 p-3 text-sm leading-7 text-slate-200"
-                style={{
-                  whiteSpace: "pre-line",
-                }}
-              >
-                {analysisItem.analysis}
-              </div>
-            )}
-
-            {analysisItem.status === "error" && (
-              <div className="mt-3 rounded-xl border border-red-400/30 bg-red-950/30 p-3 text-sm leading-6 text-red-200">
-                ✕ {analysisItem.error}
-              </div>
-            )}
           </div>
         </div>
       );
