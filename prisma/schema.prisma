@@ -75,13 +75,38 @@ model Listing {
 
   images            ListingImage[]
   homeStagingImages HomeStagingImage[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  finance           ListingFinance?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 
   @@index([userId])
   @@index([userId, archivedAt])
   @@index([userId, unlockStatus])
+}
+
+model ListingFinance {
+  id String @id @default(cuid())
+
+  listingId String  @unique
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  marketingType String @default("sale")
+
+  askingPrice    Int?
+  minimumPrice   Int?
+  commissionRate Float?
+
+  netRentMonthly         Int?
+  additionalCostsMonthly Int?
+  heatingCostsMonthly    Int?
+  depositMonths          Int?
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([listingId])
 }
 
 model ListingImage {
