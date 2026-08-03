@@ -4782,3 +4782,508 @@ svg {
 .imageAnalysisScroll::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #f59e0b, #ea580c);
 }
+/* =========================================================
+   INSERAT-AI – MOBILE APP-NAVBAR V3
+   Nur für den eingeloggten App-Bereich
+   ========================================================= */
+
+.appMenuMobileMeta {
+  display: none;
+}
+
+@media screen and (max-width: 700px) {
+  .appLoggedInNavbar
+    > .appCentralNavbarInner {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 64px !important;
+    margin: 0 !important;
+
+    padding:
+      8px
+      max(12px, env(safe-area-inset-right))
+      8px
+      max(12px, env(safe-area-inset-left)) !important;
+
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+  }
+
+  .appLoggedInNavbar .siteBrand {
+    width: auto !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 7px !important;
+  }
+
+  .appLoggedInNavbar .siteBrandIcon {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    flex: 0 0 36px !important;
+    transform: none !important;
+  }
+
+  .appLoggedInNavbar .siteBrandText {
+    min-width: 0 !important;
+    font-size: 17px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  .appLoggedInNavbar .siteNavActions {
+    width: auto !important;
+    min-width: 0 !important;
+    flex: 0 0 auto !important;
+
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 6px !important;
+  }
+
+  .appLoggedInNavbar .appHeaderPrivacy,
+  .appLoggedInNavbar .appHeaderAboutLink,
+  .appLoggedInNavbar .appHeaderAccount,
+  .appLoggedInNavbar .appPlanBadge {
+    display: none !important;
+  }
+
+  .appLoggedInNavbar .appHeaderLanguage {
+    display: inline-flex !important;
+    min-width: 0 !important;
+    flex: 0 0 auto !important;
+    align-items: center !important;
+  }
+
+  .appLoggedInNavbar
+    .appHeaderLanguage button {
+    width: auto !important;
+    min-width: 44px !important;
+    max-width: 62px !important;
+    min-height: 44px !important;
+    padding-inline: 9px !important;
+    touch-action: manipulation;
+  }
+
+  .appLoggedInNavbar .appMenuButton {
+    width: 44px !important;
+    min-width: 44px !important;
+    max-width: 44px !important;
+    min-height: 44px !important;
+    padding: 0 !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 44px !important;
+  }
+
+  .appLoggedInNavbar
+    .appMenuButtonLabel {
+    display: none !important;
+  }
+
+  .appLoggedInNavbar
+    .appMenuButtonIcon {
+    font-size: 21px !important;
+    line-height: 1 !important;
+  }
+
+  .appMenuMobileMeta {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 9px;
+    margin: 12px 0;
+  }
+
+  .appMenuMobileMeta a {
+    width: 100%;
+    min-width: 0;
+    min-height: 58px;
+
+    padding: 11px 13px;
+    border:
+      1px solid rgba(251, 191, 36, 0.22);
+    border-radius: 15px;
+    background:
+      rgba(15, 23, 42, 0.72);
+
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1fr)
+      auto;
+    align-items: center;
+    column-gap: 10px;
+
+    color: #ffffff;
+    text-decoration: none;
+  }
+
+  .appMenuMobileMeta a strong,
+  .appMenuMobileMeta a small {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .appMenuMobileMeta a strong {
+    grid-column: 1;
+    font-size: 14px;
+  }
+
+  .appMenuMobileMeta a small {
+    grid-column: 1;
+    margin-top: 3px;
+    color: rgba(226, 232, 240, 0.72);
+    font-size: 12px;
+  }
+
+  .appMenuMobileMeta a > span {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    color: #fbbf24;
+    font-size: 18px;
+  }
+}
+
+@media screen and (max-width: 340px) {
+  .appLoggedInNavbar .siteBrandText {
+    display: none !important;
+  }
+}
+/* =========================================================
+   INSERAT-AI – PUBLIC LANDING MOBILE V3
+   Öffentliche Landingpage bei kleinen Bildschirmbreiten
+   ========================================================= */
+
+@media screen and (max-width: 700px) {
+  /* Öffentlicher Header */
+
+  .appPublicNavbar {
+    width: 100% !important;
+    overflow: visible !important;
+    padding-top: env(safe-area-inset-top) !important;
+  }
+
+  .appPublicNavbar
+    > .appCentralNavbarInner {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 64px !important;
+    margin: 0 !important;
+
+    padding:
+      8px
+      max(11px, env(safe-area-inset-right))
+      8px
+      max(11px, env(safe-area-inset-left)) !important;
+
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 7px !important;
+  }
+
+  .appPublicNavbar .siteBrand {
+    width: auto !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 6px !important;
+  }
+
+  .appPublicNavbar .siteBrandIcon {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    flex: 0 0 34px !important;
+    transform: none !important;
+  }
+
+  .appPublicNavbar .siteBrandText {
+    display: block !important;
+    min-width: 0 !important;
+    font-size: 16px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  .appPublicNavbar .siteNavActions {
+    width: auto !important;
+    min-width: 0 !important;
+    flex: 0 0 auto !important;
+
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 6px !important;
+  }
+
+  /*
+   * Mobil gehören diese Informationen nicht alle
+   * gleichzeitig in die obere Navigationsleiste.
+   */
+  .appPublicNavbar .appHeaderPrivacy,
+  .appPublicNavbar .appHeaderAboutLink,
+  .appPublicNavbar .publicMobileLogin,
+  .appPublicNavbar .appPlanBadge {
+    display: none !important;
+  }
+
+  .appPublicNavbar .appHeaderLanguage {
+    display: inline-flex !important;
+    min-width: 0 !important;
+    flex: 0 0 auto !important;
+    align-items: center !important;
+  }
+
+  .appPublicNavbar
+    .appHeaderLanguage button {
+    width: auto !important;
+    min-width: 48px !important;
+    max-width: 58px !important;
+    min-height: 44px !important;
+    padding-inline: 8px !important;
+    border-radius: 12px !important;
+    font-size: 12px !important;
+    touch-action: manipulation;
+  }
+
+  .appPublicNavbar .publicMobileCta {
+    width: auto !important;
+    min-width: 132px !important;
+    max-width: 142px !important;
+    min-height: 44px !important;
+    flex: 0 0 auto !important;
+
+    padding: 0 10px !important;
+    border-radius: 13px !important;
+
+    display: inline-flex !important;
+    flex-flow: row nowrap !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+
+    font-size: 10.5px !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+
+  .appPublicNavbar
+    .publicMobileCta > span {
+    display: inline !important;
+    min-width: 0 !important;
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+  }
+
+  .appPublicNavbar
+    .publicMobileCta
+    .siteCtaDesktopText {
+    display: none !important;
+  }
+
+  .appPublicNavbar
+    .publicMobileCta
+    .siteCtaMobileText {
+    display: inline !important;
+  }
+
+  /* Hero-Bereich */
+
+  .landingHero {
+    width: 100% !important;
+    min-height: auto !important;
+    padding: 26px 0 54px !important;
+    overflow-x: clip !important;
+  }
+
+  .landingHeroInner {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding:
+      0
+      max(16px, env(safe-area-inset-right))
+      0
+      max(16px, env(safe-area-inset-left)) !important;
+
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 34px !important;
+  }
+
+  .landingHeroContent,
+  .landingVideoArea {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .landingBadge {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 58px !important;
+    margin: 0 0 26px !important;
+    padding: 11px 14px !important;
+    border-radius: 20px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 11px !important;
+
+    font-size: 13px !important;
+    line-height: 1.45 !important;
+  }
+
+  .landingBadge > span {
+    flex: 0 0 auto !important;
+  }
+
+  .landingHeadline {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+
+    font-size: clamp(36px, 10.3vw, 42px) !important;
+    line-height: 1.06 !important;
+    letter-spacing: -0.045em !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+
+  .landingSubline {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 24px 0 0 !important;
+
+    font-size: 16px !important;
+    line-height: 1.65 !important;
+  }
+
+  .landingHeroActions {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-top: 28px !important;
+
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 17px !important;
+  }
+
+  .landingPrimaryButton {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 54px !important;
+    padding: 0 18px !important;
+    border-radius: 16px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+
+    font-size: 16px !important;
+    text-align: left !important;
+  }
+
+  .landingCheck {
+    width: 100% !important;
+    min-width: 0 !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+  }
+
+  .landingBenefits {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin-top: 34px !important;
+
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .landingBenefit {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 15px !important;
+    border-radius: 17px !important;
+  }
+
+  .landingBenefit strong {
+    font-size: 15px !important;
+  }
+
+  .landingBenefit p {
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+  }
+
+  .landingVideoCard {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 11px !important;
+    border-radius: 19px !important;
+  }
+
+  .landingFloatingCards {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin-top: 14px !important;
+    padding: 0 !important;
+
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 11px !important;
+  }
+
+  .landingTrustBar {
+    width: calc(100% - 32px) !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    margin: 36px auto 0 !important;
+    padding: 22px 16px !important;
+    border-radius: 20px !important;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .appPublicNavbar .siteBrandText {
+    display: none !important;
+  }
+
+  .appPublicNavbar .publicMobileCta {
+    min-width: 128px !important;
+    max-width: 128px !important;
+    padding-inline: 8px !important;
+    font-size: 10px !important;
+  }
+
+  .landingHeadline {
+    font-size: 35px !important;
+  }
+}

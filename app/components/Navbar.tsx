@@ -348,7 +348,11 @@ export default function Navbar() {
   return (
     <>
       <header
-        className={`siteNavbar appCentralNavbar ${moduleClass}`}
+        className={`siteNavbar appCentralNavbar ${
+          isLoggedInArea
+            ? "appLoggedInNavbar"
+            : "appPublicNavbar"
+        } ${moduleClass}`}
       >
         <div className="siteNavbarInner appCentralNavbarInner">
           <Link
@@ -376,6 +380,7 @@ export default function Navbar() {
 
          <nav className="siteNavActions">
 <span
+  className="appHeaderPrivacy"
   aria-hidden={!isLoggedInArea}
   style={{
     display: "inline-flex",
@@ -394,18 +399,21 @@ export default function Navbar() {
 {/* ALWAYS_VISIBLE_ABOUT_LINK */}
 <Link
   href="/ueber-uns"
-  className="siteLoginLink"
+  className="siteLoginLink appHeaderAboutLink"
 >
   {t("items.about.label")}
 </Link>
 
-<LanguageSwitcher />
+<span className="appHeaderLanguage">
+  <LanguageSwitcher />
+</span>
 
   {isLoggedInArea ? (
               
               <>
                 <Link
                   href="/konto"
+                  className="appHeaderAccount"
                   title={displayUserName}
                   aria-label={t("account.ariaLabel", {name: displayUserName})}
                   style={{
@@ -473,6 +481,7 @@ export default function Navbar() {
                   }
                   aria-expanded={menuOpen}
                   aria-controls="inserat-ai-app-menu"
+                  aria-label={t("menuButton")}
                 >
                   <span
                     className="appMenuButtonIcon"
@@ -481,7 +490,9 @@ export default function Navbar() {
                     {"\u2630"}
                   </span>
 
-                  <span>{t("menuButton")}</span>
+                  <span className="appMenuButtonLabel">
+                    {t("menuButton")}
+                  </span>
                 </button>
               </>
             ) : sessionStatus === "loading" ? (
@@ -602,6 +613,32 @@ export default function Navbar() {
                   </Link>
                 )}
             </div>
+            <div className="appMenuMobileMeta">
+              <Link
+                href="/konto"
+                onClick={() => setMenuOpen(false)}
+              >
+                <strong>{displayUserName}</strong>
+                <small>{planLabel}</small>
+                <span aria-hidden="true">
+                  {"\u2192"}
+                </span>
+              </Link>
+
+              <Link
+                href="/ueber-uns"
+                onClick={() => setMenuOpen(false)}
+              >
+                <strong>
+                  {t("items.about.label")}
+                </strong>
+                <small>Inserat-AI</small>
+                <span aria-hidden="true">
+                  {"\u2192"}
+                </span>
+              </Link>
+            </div>
+
 <div className="appMenuPrivacyCard">
   <div className="appMenuPrivacyText">
     <strong>{t("privacyTitle")}</strong>
