@@ -1,0 +1,91 @@
+"use client";
+
+import {useLocale, useTranslations} from "next-intl";
+import type {ChangeEvent} from "react";
+
+import {
+  localeCookieName,
+  locales,
+  type AppLocale,
+} from "@/i18n/config";
+
+const shortLabels: Record<AppLocale, string> = {
+  de: "DE",
+  fr: "FR",
+  it: "IT",
+  en: "EN",
+};
+
+export default function LanguageSwitcher() {
+  const locale = useLocale() as AppLocale;
+  const t = useTranslations("Common");
+
+  function handleLanguageChange(
+    event: ChangeEvent<HTMLSelectElement>
+  ) {
+    const nextLocale = event.target.value as AppLocale;
+
+    if (!locales.includes(nextLocale)) {
+      return;
+    }
+
+    const secure =
+      window.location.protocol === "https:"
+        ? "; Secure"
+        : "";
+
+    document.cookie =
+      `${localeCookieName}=${nextLocale}; ` +
+      `Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
+
+    window.location.reload();
+  }
+
+  return (
+    <div
+      style={{
+        position: "relative",
+        display: "inline-flex",
+        alignItems: "center",
+        flex: "0 0 auto",
+      }}
+    >
+      <label
+        htmlFor="inserat-ai-language"
+        className="sr-only"
+      >
+        {t("language")}
+      </label>
+
+      <select
+        id="inserat-ai-language"
+        value={locale}
+        onChange={handleLanguageChange}
+        aria-label={t("language")}
+        title={t("language")}
+        style={{
+          height: "38px",
+          minWidth: "68px",
+          padding: "0 27px 0 11px",
+          border: "1px solid rgba(212, 175, 55, 0.34)",
+          borderRadius: "12px",
+          background:
+            "linear-gradient(135deg, rgba(9, 18, 44, 0.96), rgba(17, 31, 62, 0.96))",
+          color: "#ffffff",
+          fontSize: "12px",
+          fontWeight: 900,
+          letterSpacing: "0.08em",
+          cursor: "pointer",
+          outline: "none",
+          colorScheme: "dark",
+        }}
+      >
+        {locales.map((item) => (
+          <option key={item} value={item}>
+            {shortLabels[item]}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}

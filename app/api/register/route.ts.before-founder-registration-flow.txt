@@ -1,0 +1,326 @@
+import { createHash, randomBytes } from "node:crypto";
+
+import { NextResponse } from "next/server";
+import { Resend } from "resend";
+
+import { getAppUrl } from "@/lib/app-url";
+import { hashPassword } from "@/lib/password";
+import { prisma } from "@/lib/prisma";
+
+export const runtime = "nodejs";
+
+type RegisterBody = {
+  name?: string;
+  email?: string;
+  password?: string;
+};
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const GENERIC_SUCCESS_MESSAGE =
+  "Falls die E-Mail-Adresse verwendet werden kann, wurde eine Bestätigungs-E-Mail versendet.";
+
+function hashVerificationToken(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+export async function POST(request: Request) {
+  try {
+    let body: RegisterBody;
+
+    try {
+      body = (await request.json()) as RegisterBody;
+    } catch {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Die Registrierungsdaten sind ungültig.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const name = body.name?.trim() ?? "";
+    const email = body.email?.trim().toLowerCase() ?? "";
+
+    /*
+     * Das Passwort absichtlich nicht mit trim() verändern.
+     * Leerzeichen können Bestandteil eines Passworts sein.
+     */
+    const password = body.password ?? "";
+
+    if (!name || !email || !password) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Name, E-Mail und Passwort sind erforderlich.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (name.length < 2 || name.length > 100) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Der Name muss zwischen 2 und 100 Zeichen lang sein.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (
+      email.length > 254 ||
+      !EMAIL_PATTERN.test(email)
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Bitte gib eine gültige E-Mail-Adresse ein.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (password.length < 8 || password.length > 128) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Das Passwort muss zwischen 8 und 128 Zeichen lang sein.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const resendApiKey = process.env.RESEND_API_KEY;
+
+    if (!resendApiKey) {
+      console.error("RESEND_API_KEY fehlt.");
+
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Die Registrierung ist momentan nicht verfügbar.",
+        },
+        { status: 500 }
+      );
+    }
+
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+      select: {
+        id: true,
+        emailVerified: true,
+        emailVerificationExpires: true,
+      },
+    });
+
+    /*
+     * Keine Information darüber preisgeben, ob die Adresse
+     * bereits registriert und bestätigt ist.
+     */
+    if (existingUser?.emailVerified) {
+      return NextResponse.json({
+        success: true,
+        message: GENERIC_SUCCESS_MESSAGE,
+      });
+    }
+
+    /*
+     * Maximal ungefähr eine neue Bestätigungs-E-Mail pro Stunde.
+     * Ein vollständiges IP-/E-Mail-Rate-Limit folgt separat.
+     */
+    if (
+      existingUser?.emailVerificationExpires &&
+      existingUser.emailVerificationExpires.getTime() >
+        Date.now() + 23 * 60 * 60 * 1000
+    ) {
+      return NextResponse.json({
+        success: true,
+        message: GENERIC_SUCCESS_MESSAGE,
+      });
+    }
+
+    const rawVerificationToken =
+      randomBytes(32).toString("hex");
+
+    const verificationTokenHash =
+      hashVerificationToken(rawVerificationToken);
+
+    const emailVerificationExpires = new Date(
+      Date.now() + 24 * 60 * 60 * 1000
+    );
+
+    let userId: string;
+
+    if (existingUser) {
+      /*
+       * Ein bestehendes unbestätigtes Konto darf nicht durch
+       * eine fremde erneute Registrierung übernommen werden.
+       * Name und Passwort bleiben deshalb unverändert.
+       */
+      const updatedUser = await prisma.user.update({
+        where: {
+          id: existingUser.id,
+        },
+        data: {
+          emailVerificationToken: verificationTokenHash,
+          emailVerificationExpires,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      userId = updatedUser.id;
+    } else {
+      const passwordHash = await hashPassword(password);
+
+      const createdUser = await prisma.user.create({
+        data: {
+          name,
+          email,
+          password: passwordHash,
+          role: "user",
+          plan: "free",
+          freeGenerationsUsed: 0,
+          freeGenerationLimit: 1,
+          /*
+           * Founder wird erst nach einer erfolgreich
+           * bezahlten Subscription vergeben.
+           */
+          isFounder: false,
+          founderNumber: null,
+          founderPriceCents: null,
+          emailVerified: false,
+
+          /*
+           * In diesem bestehenden Datenbankfeld wird ab jetzt
+           * nur noch der Hash des Tokens gespeichert.
+           */
+          emailVerificationToken: verificationTokenHash,
+          emailVerificationExpires,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      userId = createdUser.id;
+    }
+
+    const appUrl = getAppUrl(request.url);
+
+    const verificationUrl =
+      `${appUrl}/api/verify-email?token=` +
+      encodeURIComponent(rawVerificationToken);
+
+    const fromEmail =
+      process.env.RESEND_FROM_EMAIL || "info@inserat-ai.ch";
+
+    const resend = new Resend(resendApiKey);
+
+    const { error: resendError } = await resend.emails.send({
+      from: `Inserat-AI <${fromEmail}>`,
+      to: email,
+      subject: "E-Mail-Adresse bestätigen – Inserat-AI",
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:32px;color:#0f172a;">
+          <h1 style="margin-bottom:16px;">
+            Willkommen bei Inserat-AI
+          </h1>
+
+          <p style="font-size:16px;line-height:1.7;">
+            Bitte bestätige deine E-Mail-Adresse, um dein Konto
+            zu aktivieren.
+          </p>
+
+          <a
+            href="${verificationUrl}"
+            style="
+              display:inline-block;
+              margin-top:20px;
+              padding:14px 24px;
+              border-radius:10px;
+              background:#f59e0b;
+              color:#111827;
+              text-decoration:none;
+              font-weight:700;
+            "
+          >
+            E-Mail-Adresse bestätigen
+          </a>
+
+          <p style="margin-top:28px;font-size:13px;color:#64748b;line-height:1.6;">
+            Der Bestätigungslink ist 24 Stunden gültig und kann
+            nur einmal verwendet werden.
+          </p>
+
+          <p style="font-size:13px;color:#64748b;line-height:1.6;">
+            Falls du kein Inserat-AI-Konto erstellt hast,
+            ignoriere diese E-Mail und bestätige den Link nicht.
+          </p>
+
+          <p style="font-size:13px;color:#64748b;word-break:break-all;">
+            ${verificationUrl}
+          </p>
+        </div>
+      `,
+      text:
+        `Bitte bestätige deine E-Mail-Adresse:\n\n` +
+        `${verificationUrl}\n\n` +
+        `Der Link ist 24 Stunden gültig und kann nur einmal verwendet werden.\n\n` +
+        `Falls du kein Inserat-AI-Konto erstellt hast, ignoriere diese E-Mail.`,
+    });
+
+    if (resendError) {
+      console.error(
+        "REGISTER VERIFICATION EMAIL ERROR:",
+        resendError
+      );
+
+      /*
+       * Nur genau den gerade erzeugten Token wieder entfernen.
+       */
+      await prisma.user.updateMany({
+        where: {
+          id: userId,
+          emailVerificationToken: verificationTokenHash,
+        },
+        data: {
+          emailVerificationToken: null,
+          emailVerificationExpires: null,
+        },
+      });
+
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Die Bestätigungs-E-Mail konnte momentan nicht versendet werden.",
+        },
+        { status: 502 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: GENERIC_SUCCESS_MESSAGE,
+    });
+  } catch (error) {
+    console.error("REGISTER API ERROR:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          "Die Registrierung konnte momentan nicht verarbeitet werden.",
+      },
+      { status: 500 }
+    );
+  }
+}

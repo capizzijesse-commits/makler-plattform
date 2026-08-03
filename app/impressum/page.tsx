@@ -36,7 +36,7 @@ export default async function ImpressumPage() {
         </h1>
 
         <p>
-          <strong>Helvetic Immobilien Capizzi</strong>
+          <strong>Capizzi Inserat AI Winterthur</strong>
           <br />
           {t("companyType")}
         </p>

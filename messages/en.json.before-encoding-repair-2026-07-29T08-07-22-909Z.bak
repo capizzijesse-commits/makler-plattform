@@ -1,0 +1,445 @@
+{
+  "Common": {
+    "brand": "Inserat-AI",
+    "language": "Language",
+    "german": "German",
+    "french": "French",
+    "italian": "Italian",
+    "english": "English",
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "continue": "Continue",
+    "back": "Back",
+    "confirm": "Confirm",
+    "edit": "Edit",
+    "delete": "Delete",
+    "error": "An error occurred.",
+    "success": "Saved successfully."
+  },
+  "Navbar": {
+    "menuButton": "Menu",
+    "closeMenu": "Close menu",
+    "drawerLabel": "Inserat-AI menu",
+    "workspaces": "Workspaces",
+    "currentPlan": "Current plan",
+    "upgradeToPro": "Switch to Pro →",
+    "privacyTitle": "Privacy mode",
+    "privacyDescription": "Temporarily protect property images during client appointments",
+    "account": {
+      "fallback": "My account",
+      "ariaLabel": "My account: {name}"
+    },
+    "dashboardCta": "Go to dashboard",
+    "dashboardShort": "Dashboard",
+    "login": "Log in",
+    "register": "Register for free",
+    "logout": "Log out",
+    "loggingOut": "Logging out…",
+    "logoutError": "Logout failed.",
+    "proOnly": "Available only with Pro",
+    "proOnlyAria": "{label} – available only with Pro",
+    "inDevelopment": "In development",
+    "soon": "Coming soon",
+    "items": {
+      "dashboard": {
+        "label": "Dashboard",
+        "description": "Create listings and images"
+      },
+      "projects": {
+        "label": "My projects",
+        "description": "Open, edit and manage properties"
+      },
+      "account": {
+        "label": "My account",
+        "description": "Manage contact details for property brochures"
+      },
+      "social": {
+        "label": "Social media",
+        "description": "Prepare content for each property"
+      },
+      "tour": {
+        "label": "3D video tour",
+        "description": "Create virtual viewings"
+      },
+      "publishing": {
+        "label": "Publishing center",
+        "description": "Plan publications in one place"
+      },
+      "location": {
+        "label": "Location assistant",
+        "description": "Add Swiss location data"
+      },
+      "secretMarketing": {
+        "label": "Secret marketing",
+        "description": "Market properties discreetly"
+      }
+    }
+  },
+  "HomePage": {
+    "hero": {
+      "badge": "The smart solution for real estate professionals in Switzerland 🇨🇭",
+      "headlineLine1": "A few details",
+      "headlineLine2": "become a listing",
+      "headlineLine3": "that convinces.",
+      "subline": "Inserat-AI creates high-quality property listings in seconds – engagingly written, professionally structured and ready for Homegate, ImmoScout24, property brochures and social media.",
+      "register": "Register for free",
+      "noCreditCard": "No credit card required"
+    },
+    "benefits": {
+      "speedTitle": "Created in seconds",
+      "speedText": "Title, description and highlights",
+      "visibilityTitle": "More visibility",
+      "visibilityText": "Optimised for property portals",
+      "inquiriesTitle": "More enquiries",
+      "inquiriesText": "Qualified prospective clients"
+    },
+    "demo": {
+      "label": "Inserat-AI explained in 60 seconds",
+      "unsupported": "Your browser does not support this video.",
+      "listingTextsTitle": "✨ Listing copy",
+      "listingTextsText": "Modern 4.5-room apartment with lake views, a balcony and excellent transport connections.",
+      "highlightsTitle": "⭐ Highlights",
+      "seaView": "Lake view",
+      "balcony": "Balcony",
+      "parking": "Underground parking space",
+      "portalTitle": "Portals and social media",
+      "portalText": "Listing copy, property brochure content and social media versions in a single step."
+    },
+    "trust": {
+      "title": "Benefits",
+      "swissProfessionals": "Developed for Swiss real estate professionals",
+      "dataProtection": "Compliant with Swiss data protection law",
+      "swissMarket": "Swiss market",
+      "portalSocial": "Property portals and social media",
+      "noCreditCard": "No credit card"
+    },
+    "future": {
+      "eyebrow": "Inserat-AI keeps evolving",
+      "headline": "The future of property marketing starts today.",
+      "description": "Inserat-AI grows with your needs. Today, you create professional listings and social media posts in seconds. Tomorrow, you will benefit from additional intelligent features that make your marketing even more efficient.",
+      "closing": "One account. Continuous improvements. Always one step ahead."
+    }
+  },
+  "Pricing": {
+    "header": {
+      "eyebrow": "TRANSPARENT PRICING",
+      "title": "The right plan for your needs",
+      "description": "Choose between a single property without a subscription, the Founder plan for real estate professionals or the Pro plan with premium features."
+    },
+    "singleObject": {
+      "badge": "NO SUBSCRIPTION",
+      "name": "Single property",
+      "description": "A professional workspace for one property. Pay CHF 9.90 once and unlock only this property with up to 5 property images – without a subscription.",
+      "priceLabel": "ONE-TIME PAYMENT",
+      "perProperty": "per property",
+      "button": "Start with one property",
+      "note": "No professional subscription and no access to Pro features.",
+      "features": {
+        "property": "Unlock 1 specific property",
+        "variants": "3 professional listing variants",
+        "images": "Up to 5 property images with standard analysis",
+        "social": "Social media copy",
+        "expose": "Professional property brochure with PDF export",
+        "storage": "Store the property, text and images permanently",
+        "noMonthlyCosts": "No monthly costs"
+      }
+    },
+    "plans": {
+      "demo": {
+        "label": "TRY IT FOR FREE",
+        "cadence": "without a subscription",
+        "description": "Try Inserat-AI with one free text generation and three variants. Images, image analysis and complete exports are not included in the Demo.",
+        "button": "Register for free",
+        "features": {
+          "registration": "Free registration",
+          "generation": "1 free text generation with 3 variants",
+          "noImages": "No images and no image analysis",
+          "noBilling": "No automatic billing"
+        }
+      },
+      "founder": {
+        "label": "FOR THE FIRST 50 REAL ESTATE PROFESSIONALS",
+        "cadence": "30 days free, then per month",
+        "description": "The complete core workspace for real estate professionals. Try Founder free for 30 days, then CHF 19.90 per month.",
+        "button": "Subscribe to Founder",
+        "loading": "Opening Founder checkout…",
+        "features": {
+          "projects": "Multiple properties in the professional cockpit",
+          "variants": "3 professional listing variants per property",
+          "images": "Up to 10 property images per property",
+          "analysis": "Standard image analysis and image management",
+          "social": "Social media copy",
+          "expose": "Professional property brochure with PDF export",
+          "storage": "Store properties, text and images permanently",
+          "trial": "30-day free trial"
+        }
+      },
+      "pro": {
+        "label": "PREMIUM MARKETING",
+        "cadence": "per month",
+        "description": "For professionals who also use AI image features, video tours and premium automations.",
+        "button": "Pro in preparation",
+        "features": {
+          "founder": "Everything included in Founder",
+          "images": "Up to 10 property images per property",
+          "staging": "Virtual home staging",
+          "tour": "3D video tour with AI voices",
+          "analysis": "Advanced image analysis",
+          "parallel": "3 listings simultaneously = 9 variants",
+          "development": "Publishing center and secret marketing – in development"
+        }
+      }
+    },
+    "agency": {
+      "label": "FOR TEAMS AND REAL ESTATE AGENCIES",
+      "description": "Multiple users, shared properties, permissions and company branding.",
+      "month": "month",
+      "status": "Coming soon"
+    },
+    "errors": {
+      "checkoutStart": "The Founder checkout could not be started. Please try again.",
+      "founderExisting": "A Founder subscription already exists. This account already has an active or started Founder subscription. You can manage it under My account."
+    }
+  },
+  "ExampleGenerator": {
+    "intro": {
+      "eyebrow": "Live example",
+      "title": "See how Inserat-AI turns a few property details into a professional listing.",
+      "description": "Enter a few property details and immediately see how a professional title and high-quality description are created."
+    },
+    "input": {
+      "eyebrow": "Input",
+      "title": "Property details",
+      "demo": "Demo",
+      "labels": {
+        "rooms": "Rooms",
+        "propertyType": "Property type",
+        "location": "Location",
+        "livingSpace": "Living space",
+        "price": "Price",
+        "highlights": "Highlights"
+      },
+      "generateButton": "Create example listing",
+      "note": "Try it without registering – more features are available with the free account."
+    },
+    "creates": {
+      "eyebrow": "What Inserat-AI creates",
+      "professionalTitle": {
+        "title": "Professional title",
+        "description": "Concise, persuasive and suitable for property portals."
+      },
+      "emotionalDescription": {
+        "title": "Engaging description",
+        "description": "Professionally written in the style of a real estate expert."
+      },
+      "social": {
+        "title": "Highlights and social media",
+        "description": "Content for property brochures, portals and social media."
+      },
+      "expose": "Property brochure"
+    },
+    "output": {
+      "eyebrow": "Generated listing",
+      "title": "Generated listing",
+      "ready": "Ready",
+      "titleLabel": "Title",
+      "descriptionLabel": "Description",
+      "highlightsLabel": "Highlights",
+      "roomsValue": "{rooms} rooms",
+      "register": "Register for free",
+      "prices": "View pricing"
+    },
+    "defaults": {
+      "rooms": "4.5",
+      "propertyType": "Apartment",
+      "location": "Winterthur, ZH",
+      "livingSpace": "112 m²",
+      "price": "CHF 1'450'000.–",
+      "highlights": "balcony, open-plan kitchen, parquet flooring, quiet location",
+      "fallbackHighlight": "special features",
+      "title": "Stylish 4.5-room apartment with a balcony in Winterthur",
+      "description": "This attractive apartment features bright rooms, a modern open-plan kitchen and a comfortable balcony. The high-quality parquet flooring creates a warm and well-maintained atmosphere."
+    },
+    "generated": {
+      "title": "Stylish {rooms}-room {propertyTypeLower} with {firstHighlight} in {location}",
+      "description": "This attractive {rooms}-room {propertyTypeLower} in {location} combines comfortable living with a well-designed layout. Its main highlights include {highlights}. With {livingSpace} of living space and an asking price of {price}, the property is ideal for buyers who value comfort, location and professional presentation."
+    }
+  },
+  "Register": {
+    "back": "Back to the homepage",
+    "badge": "Free registration",
+    "hero": {
+      "title": "Start with Inserat-AI and create better listings.",
+      "description": "Create your free account and discover Inserat-AI with no obligation. Generate professional titles, descriptions, highlights and property portal content in seconds."
+    },
+    "plans": {
+      "demo": {
+        "eyebrow": "INSERAT-AI",
+        "title": "Create an account",
+        "description": "Start for free and generate your first listing immediately.",
+        "submit": "Start for free",
+        "note": "Registration is free. Charges only arise when you choose a plan or unlock a single property.",
+        "statGeneration": "free generation",
+        "statInstant": "Instant",
+        "statDashboard": "dashboard access",
+        "statNo": "No",
+        "statCreditCard": "credit card required"
+      },
+      "founder": {
+        "eyebrow": "FOUNDER OFFER",
+        "title": "Secure Founder access",
+        "description": "Create your account and try Founder free for 30 days. Then CHF 19.90 per month.",
+        "submit": "Prepare Founder access",
+        "note": "Registration is free. After confirming your email address and logging in, you will be redirected to the secure Stripe checkout. Your 30-day free trial will begin there. Founder will then cost CHF 19.90 per month.",
+        "statPrice": "per month",
+        "statImages": "images per property",
+        "statPlaces": "limited places",
+        "statTrialValue": "30 days",
+        "statTrialLabel": "free trial",
+        "statAfterTrial": "then per month"
+      },
+      "singleObject": {
+        "eyebrow": "SINGLE PROPERTY",
+        "title": "Prepare a single property",
+        "description": "Create your account and then unlock exactly one property for a one-time payment of CHF 9.90.",
+        "submit": "Prepare single property",
+        "note": "Registration is free. After confirming your email address and logging in, you can unlock one specific property for a one-time payment of CHF 9.90 – without a subscription.",
+        "statPrice": "one-time",
+        "statImages": "images for the property",
+        "statNo": "No",
+        "statSubscription": "subscription"
+      }
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Your name",
+      "email": "Email",
+      "password": "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "loading": "Creating account…"
+    },
+    "login": {
+      "alreadyRegistered": "Already registered?",
+      "button": "Log in"
+    },
+    "dialog": {
+      "title": "Check your registration",
+      "close": "Understood"
+    },
+    "errors": {
+      "invalidResponse": "The registration did not return a valid response.",
+      "missingFields": "Please complete your name, email and password.",
+      "invalidName": "The name must be between 2 and 100 characters long.",
+      "invalidEmail": "Please enter a valid email address.",
+      "invalidPassword": "The password must be between 8 and 128 characters long.",
+      "serviceUnavailable": "Registration is currently unavailable.",
+      "emailSendFailed": "The confirmation email could not be sent at this time.",
+      "processingFailed": "The registration could not be processed at this time."
+    }
+  },
+  "Account": {
+    "hero": {
+      "eyebrow": "BROKER PROFILE",
+      "title": "Manage contact details",
+      "description": "These details are automatically included in your sales brochures and PDF documents."
+    },
+    "plan": {
+      "current": "CURRENT PLAN"
+    },
+    "profile": {
+      "eyebrow": "YOUR BROKER PROFILE",
+      "noName": "No name saved",
+      "noCompany": "No company saved",
+      "features": {
+        "nameEmail": "Name and email in brochure",
+        "companyPhone": "Company and phone in PDF",
+        "stored": "Permanently stored in PostgreSQL"
+      },
+      "back": "Back to broker cockpit"
+    },
+    "form": {
+      "eyebrow": "CONTACT DETAILS",
+      "title": "Details for brochure and PDF",
+      "optionalHint": "Company and phone number are optional, but recommended for a complete brochure."
+    },
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "First and last name",
+      "company": "Company",
+      "companyPlaceholder": "Real estate company or brokerage",
+      "email": "Email",
+      "emailLocked": "The login email cannot be changed here.",
+      "phone": "Phone"
+    },
+    "actions": {
+      "saving": "Saving …",
+      "loading": "Loading …",
+      "save": "Save contact details"
+    },
+    "messages": {
+      "loadError": "The account details could not be loaded.",
+      "saveError": "The contact details could not be saved.",
+      "saved": "The contact details have been saved.",
+      "subscriptionActivated": "Founder subscription activated successfully.",
+      "subscriptionVerifying": "Confirming your Founder subscription …",
+      "subscriptionVerifyError": "The Founder subscription could not be confirmed.",
+      "missingSession": "The Stripe checkout ID is missing."
+    }
+  },
+  "Login": {
+    "hero": {
+      "title": "Welcome back",
+      "description": "Sign in and create professional property listings in seconds."
+    },
+    "fields": {
+      "email": "Email",
+      "password": "Password",
+      "passwordPlaceholder": "Password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password"
+    },
+    "actions": {
+      "forgotPassword": "Forgot your password?",
+      "submit": "Sign in",
+      "submitting": "Signing in …"
+    },
+    "account": {
+      "prompt": "Don’t have an account yet?",
+      "register": "Register for free"
+    },
+    "info": {
+      "description": "Inserat-AI turns a few details into professional property listings for portals, websites and social media."
+    },
+    "messages": {
+      "resetSuccess": "Your password has been changed successfully. You can now sign in.",
+      "registrationSuccess": "Registration successful. Check your inbox and confirm your account.",
+      "verificationSuccess": "Your email address has been confirmed. You can now sign in.",
+      "verificationExpired": "The confirmation link has expired. Register again to receive a new link.",
+      "verificationInvalid": "The confirmation link is invalid or has already been used.",
+      "verificationMissing": "The required token is missing from the confirmation link.",
+      "verificationError": "The email address could not be confirmed. Please try again later.",
+      "missingCredentials": "Enter your email address and password.",
+      "invalidResponse": "The sign-in request did not return a valid response.",
+      "emailNotVerified": "Confirm your email address first. Check your spam folder as well.",
+      "invalidCredentials": "Invalid email address or incorrect password.",
+      "loginUnavailable": "Sign-in cannot be processed at the moment.",
+      "userLoadError": "The user details could not be loaded.",
+      "founderCheckoutOpening": "Opening Founder checkout …",
+      "founderCheckoutError": "Founder checkout could not be opened.",
+      "genericError": "Sign-in failed."
+    }
+  },
+  "Footer": {
+    "product": "Inserat-AI is a product of Helvetic Immobilien Capizzi.",
+    "copyright": "Â© {year} Inserat-AI",
+    "links": {
+      "legalNotice": "Legal notice",
+      "privacy": "Privacy",
+      "contact": "Contact"
+    }
+  }
+}

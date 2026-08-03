@@ -53,7 +53,7 @@ export default function KontaktPage() {
         </h1>
 <div style={{ marginTop: "24px", lineHeight: 1.8 }}>
   <p>
-    <strong>Helvetic Immobilien Capizzi</strong><br />
+    <strong>Capizzi Inserat AI Winterthur</strong><br />
     {t("details.owner")}: Jesse Capizzi
   </p>
 

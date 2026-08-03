@@ -1,0 +1,205 @@
+{
+    "Common":  {
+                   "brand":  "Inserat-AI",
+                   "language":  "Sprache",
+                   "german":  "Deutsch",
+                   "french":  "Französisch",
+                   "italian":  "Italienisch",
+                   "english":  "Englisch",
+                   "loading":  "Wird geladen …",
+                   "save":  "Speichern",
+                   "cancel":  "Abbrechen",
+                   "close":  "Schliessen",
+                   "continue":  "Weiter",
+                   "back":  "Zurück",
+                   "confirm":  "Bestätigen",
+                   "edit":  "Bearbeiten",
+                   "delete":  "Löschen",
+                   "error":  "Ein Fehler ist aufgetreten.",
+                   "success":  "Erfolgreich gespeichert."
+               },
+    "Navbar":  {
+                   "menuButton":  "Menü",
+                   "closeMenu":  "Menü schliessen",
+                   "drawerLabel":  "Inserat-AI Menü",
+                   "workspaces":  "Arbeitsbereiche",
+                   "currentPlan":  "Aktueller Plan",
+                   "upgradeToPro":  "Auf Pro wechseln →",
+                   "privacyTitle":  "Privatsphäre-Modus",
+                   "privacyDescription":  "Objektbilder bei Kundenterminen vorübergehend schützen",
+                   "account":  {
+                                   "fallback":  "Mein Konto",
+                                   "ariaLabel":  "Mein Konto: {name}"
+                               },
+                   "dashboardCta":  "Zum Dashboard",
+                   "dashboardShort":  "Dashboard",
+                   "login":  "Login",
+                   "register":  "Kostenlos registrieren",
+                   "logout":  "Abmelden",
+                   "loggingOut":  "Abmeldung läuft …",
+                   "logoutError":  "Logout fehlgeschlagen.",
+                   "proOnly":  "Nur im Pro-Angebot",
+                   "proOnlyAria":  "{label} – nur im Pro-Angebot",
+                   "inDevelopment":  "In Entwicklung",
+                   "soon":  "Bald",
+                   "items":  {
+                                 "dashboard":  {
+                                                   "label":  "Dashboard",
+                                                   "description":  "Inserate und Bilder erstellen"
+                                               },
+                                 "projects":  {
+                                                  "label":  "Meine Projekte",
+                                                  "description":  "Immobilien öffnen, bearbeiten und verwalten"
+                                              },
+                                 "account":  {
+                                                 "label":  "Mein Konto",
+                                                 "description":  "Kontaktdaten für Exposés verwalten"
+                                             },
+                                 "social":  {
+                                                "label":  "Social Media",
+                                                "description":  "Beiträge pro Objekt vorbereiten"
+                                            },
+                                 "tour":  {
+                                              "label":  "3D-Video-Tour",
+                                              "description":  "Virtuelle Besichtigungen erstellen"
+                                          },
+                                 "publishing":  {
+                                                    "label":  "Publishing-Center",
+                                                    "description":  "Veröffentlichungen zentral planen"
+                                                },
+                                 "location":  {
+                                                  "label":  "Standort-Assistent",
+                                                  "description":  "Schweizer Standortdaten ergänzen"
+                                              },
+                                 "secretMarketing":  {
+                                                         "label":  "Secret Marketing",
+                                                         "description":  "Diskrete Immobilienvermarktung"
+                                                     }
+                             }
+               },
+    "HomePage":  {
+                     "hero":  {
+                                  "badge":  "Die smarte Lösung für Immobilienprofis in der Schweiz 🇨🇭",
+                                  "headlineLine1":  "Aus wenigen Angaben",
+                                  "headlineLine2":  "wird ein Inserat,",
+                                  "headlineLine3":  "das überzeugt.",
+                                  "subline":  "Inserat-AI erstellt hochwertige Immobilieninserate in Sekunden – emotional formuliert, professionell strukturiert und bereit für Homegate, ImmoScout24, Exposés und Social Media.",
+                                  "register":  "Kostenlos registrieren",
+                                  "noCreditCard":  "Keine Kreditkarte erforderlich"
+                              },
+                     "benefits":  {
+                                      "speedTitle":  "In Sekunden erstellt",
+                                      "speedText":  "Titel, Beschreibung und Highlights",
+                                      "visibilityTitle":  "Mehr Sichtbarkeit",
+                                      "visibilityText":  "Optimiert für Immobilienportale",
+                                      "inquiriesTitle":  "Mehr Anfragen",
+                                      "inquiriesText":  "Qualifizierte Interessenten"
+                                  },
+                     "demo":  {
+                                  "label":  "Inserat-AI in 60 Sekunden erklärt",
+                                  "unsupported":  "Dein Browser unterstützt dieses Video nicht.",
+                                  "listingTextsTitle":  "✨ Inserat-Texte",
+                                  "listingTextsText":  "Moderne 4.5-Zimmer-Wohnung mit Seesicht, Balkon und perfekter Anbindung.",
+                                  "highlightsTitle":  "⭐ Highlights",
+                                  "seaView":  "Seesicht",
+                                  "balcony":  "Balkon",
+                                  "parking":  "Tiefgaragenplatz",
+                                  "portalTitle":  "Portal \u0026 Social Media",
+                                  "portalText":  "Inseratetexte, Exposé-Inhalte und Social-Media-Varianten in einem Schritt."
+                              },
+                     "trust":  {
+                                   "title":  "Vorteile",
+                                   "swissProfessionals":  "Entwickelt für Schweizer Immobilienprofis",
+                                   "dataProtection":  "DSG-konform",
+                                   "swissMarket":  "Schweizer Markt",
+                                   "portalSocial":  "Portaltexte \u0026 Social Media",
+                                   "noCreditCard":  "Keine Kreditkarte"
+                               },
+                     "future":  {
+                                    "eyebrow":  "Inserat-AI entwickelt sich weiter",
+                                    "headline":  "Die Zukunft der Immobilienvermarktung beginnt heute.",
+                                    "description":  "Inserat-AI wächst mit Ihren Anforderungen. Heute erstellen Sie professionelle Inserate und Social-Media-Posts in Sekunden – morgen profitieren Sie von weiteren intelligenten Funktionen, die Ihre Vermarktung noch effizienter machen.",
+                                    "closing":  "Ein Konto. Laufende Verbesserungen. Immer einen Schritt voraus."
+                                }
+                 },
+    "Pricing":  {
+                    "header":  {
+                                   "eyebrow":  "TRANSPARENTE PREISE",
+                                   "title":  "Das passende Angebot für deinen Bedarf",
+                                   "description":  "Wähle zwischen einer einzelnen Immobilie ohne Abonnement, dem Founder-Basiszugang für Makler oder dem Pro-Angebot mit Premiumfunktionen."
+                               },
+                    "singleObject":  {
+                                         "badge":  "OHNE ABONNEMENT",
+                                         "name":  "Einzelimmobilie",
+                                         "description":  "Ein hochwertiger Arbeitsbereich für genau eine Immobilie. Einmal CHF 9.90 bezahlen und nur dieses konkrete Objekt mit bis zu 5 Objektbildern freischalten – ohne Abonnement.",
+                                         "priceLabel":  "EINMALIG",
+                                         "perProperty":  "pro Immobilie",
+                                         "button":  "Einzelimmobilie starten",
+                                         "note":  "Kein Makler-Abonnement und kein Zugriff auf Pro-Funktionen.",
+                                         "features":  {
+                                                          "property":  "1 konkrete Immobilie freischalten",
+                                                          "variants":  "3 professionelle Inserat-Varianten",
+                                                          "images":  "Bis zu 5 Objektbilder mit Standard-Bildanalyse",
+                                                          "social":  "Social-Media-Texte",
+                                                          "expose":  "Professionelles Exposé mit PDF-Export",
+                                                          "storage":  "Objekt, Texte und Bilder dauerhaft speichern",
+                                                          "noMonthlyCosts":  "Keine monatlichen Kosten"
+                                                      }
+                                     },
+                    "plans":  {
+                                  "demo":  {
+                                               "label":  "KOSTENLOS KENNENLERNEN",
+                                               "cadence":  "ohne Abonnement",
+                                               "description":  "Teste Inserat-AI mit einer kostenlosen Textgenerierung und drei Varianten. Bilder, Bildanalyse und vollständige Exporte sind nicht Bestandteil der Demo.",
+                                               "button":  "Kostenlos registrieren",
+                                               "features":  {
+                                                                "registration":  "Kostenlose Registrierung",
+                                                                "generation":  "1 kostenlose Textgenerierung mit 3 Varianten",
+                                                                "noImages":  "Keine Bilder und keine Bildanalyse",
+                                                                "noBilling":  "Keine automatische Abbuchung"
+                                                            }
+                                           },
+                                  "founder":  {
+                                                  "label":  "FÜR DIE ERSTEN 50 MAKLER",
+                                                  "cadence":  "pro Monat",
+                                                  "description":  "Der vollständige Basis-Arbeitsbereich für Makler, die mehrere Immobilien professionell vermarkten.",
+                                                  "button":  "Founder abonnieren",
+                                                  "loading":  "Founder-Checkout wird geöffnet …",
+                                                  "features":  {
+                                                                   "projects":  "Mehrere Immobilien im Makler-Cockpit",
+                                                                   "variants":  "3 professionelle Inserat-Varianten pro Objekt",
+                                                                   "images":  "Bis zu 10 Objektbilder pro Immobilie",
+                                                                   "analysis":  "Standard-Bildanalyse und Bildverwaltung",
+                                                                   "social":  "Social-Media-Texte",
+                                                                   "expose":  "Professionelles Exposé mit PDF-Export",
+                                                                   "storage":  "Objekte, Texte und Bilder dauerhaft speichern"
+                                                               }
+                                              },
+                                  "pro":  {
+                                              "label":  "PREMIUM-VERMARKTUNG",
+                                              "cadence":  "pro Monat",
+                                              "description":  "Für Makler, die zusätzlich AI-Bildfunktionen, Video-Touren und Premium-Automatisierungen einsetzen.",
+                                              "button":  "Pro in Vorbereitung",
+                                              "features":  {
+                                                               "founder":  "Alles aus Founder",
+                                                               "images":  "Bis zu 10 Objektbilder pro Immobilie",
+                                                               "staging":  "Virtuelles Home Staging",
+                                                               "tour":  "3D-Video-Tour mit AI-Stimmen",
+                                                               "analysis":  "Erweiterte Bildanalyse",
+                                                               "parallel":  "3 Inserate gleichzeitig = 9 Varianten",
+                                                               "development":  "Publishing-Center und Secret Marketing – in Entwicklung"
+                                                           }
+                                          }
+                              },
+                    "agency":  {
+                                   "label":  "FÜR TEAMS UND IMMOBILIENBÜROS",
+                                   "description":  "Mehrere Benutzer, gemeinsame Objekte, Berechtigungen und Firmenbranding.",
+                                   "month":  "Monat",
+                                   "status":  "Demnächst verfügbar"
+                               },
+                    "errors":  {
+                                   "checkoutStart":  "Der Founder-Checkout konnte nicht gestartet werden. Bitte versuche es erneut.",
+                                   "founderExisting":  "Founder-Abonnement bereits vorhanden. Für dieses Konto besteht bereits ein aktives oder begonnenes Founder-Abonnement. Du kannst es unter Mein Konto verwalten."
+                               }
+                }
+}

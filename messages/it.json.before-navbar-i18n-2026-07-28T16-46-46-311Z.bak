@@ -1,0 +1,21 @@
+{
+  "Common": {
+    "brand": "Inserat-AI",
+    "language": "Lingua",
+    "german": "Tedesco",
+    "french": "Francese",
+    "italian": "Italiano",
+    "english": "Inglese",
+    "loading": "Caricamento…",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "close": "Chiudi",
+    "continue": "Continua",
+    "back": "Indietro",
+    "confirm": "Conferma",
+    "edit": "Modifica",
+    "delete": "Elimina",
+    "error": "Si è verificato un errore.",
+    "success": "Salvato correttamente."
+  }
+}

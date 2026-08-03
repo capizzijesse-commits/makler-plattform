@@ -1,0 +1,80 @@
+{
+  "Common": {
+    "brand": "Inserat-AI",
+    "language": "Lingua",
+    "german": "Tedesco",
+    "french": "Francese",
+    "italian": "Italiano",
+    "english": "Inglese",
+    "loading": "Caricamento…",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "close": "Chiudi",
+    "continue": "Continua",
+    "back": "Indietro",
+    "confirm": "Conferma",
+    "edit": "Modifica",
+    "delete": "Elimina",
+    "error": "Si è verificato un errore.",
+    "success": "Salvato correttamente."
+  },
+  "Navbar": {
+    "menuButton": "Menu",
+    "closeMenu": "Chiudi il menu",
+    "drawerLabel": "Menu Inserat-AI",
+    "workspaces": "Aree di lavoro",
+    "currentPlan": "Piano attuale",
+    "upgradeToPro": "Passa a Pro →",
+    "privacyTitle": "Modalità privacy",
+    "privacyDescription": "Proteggi temporaneamente le immagini degli immobili durante gli appuntamenti con i clienti",
+    "account": {
+      "fallback": "Il mio account",
+      "ariaLabel": "Il mio account: {name}"
+    },
+    "dashboardCta": "Vai alla dashboard",
+    "dashboardShort": "Dashboard",
+    "login": "Accedi",
+    "register": "Registrati gratis",
+    "logout": "Esci",
+    "loggingOut": "Disconnessione in corso…",
+    "logoutError": "Disconnessione non riuscita.",
+    "proOnly": "Disponibile solo nel piano Pro",
+    "proOnlyAria": "{label} – disponibile solo nel piano Pro",
+    "inDevelopment": "In sviluppo",
+    "soon": "Prossimamente",
+    "items": {
+      "dashboard": {
+        "label": "Dashboard",
+        "description": "Crea annunci e immagini"
+      },
+      "projects": {
+        "label": "I miei progetti",
+        "description": "Apri, modifica e gestisci gli immobili"
+      },
+      "account": {
+        "label": "Il mio account",
+        "description": "Gestisci i dati di contatto per gli exposé"
+      },
+      "social": {
+        "label": "Social media",
+        "description": "Prepara contenuti per ogni immobile"
+      },
+      "tour": {
+        "label": "Video tour 3D",
+        "description": "Crea visite virtuali"
+      },
+      "publishing": {
+        "label": "Centro pubblicazioni",
+        "description": "Pianifica centralmente le pubblicazioni"
+      },
+      "location": {
+        "label": "Assistente località",
+        "description": "Aggiungi dati sulle località svizzere"
+      },
+      "secretMarketing": {
+        "label": "Marketing riservato",
+        "description": "Commercializzazione immobiliare discreta"
+      }
+    }
+  }
+}

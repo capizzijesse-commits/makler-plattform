@@ -1,0 +1,63 @@
+﻿import "./globals.css";
+import type { Metadata, Viewport } from "next";
+import Script from "next/script";
+import { GoogleAnalytics } from "@next/third-parties/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale } from "next-intl/server";
+import AppDialogProvider from "@/components/AppDialogProvider";
+import LanguageLaunchDialog from "@/app/components/LanguageLaunchDialog";
+import AppShell from "@/app/components/AppShell";
+
+export const metadata: Metadata = {
+  title: "Inserat-AI",
+  description: "Immobilien-Inserate-Generator für die Schweiz",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#050a1d",
+  colorScheme: "dark",
+};
+
+const CLARITY_PROJECT_ID = "xvk3vfu24c";
+
+export default async function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const locale = await getLocale();
+
+  return (
+    <html lang={locale}>
+      <body>
+        <NextIntlClientProvider>
+          <AppDialogProvider>
+            <LanguageLaunchDialog />
+            <AppShell>{children}</AppShell>
+          </AppDialogProvider>
+        </NextIntlClientProvider>
+
+        <Script id="microsoft-clarity" strategy="afterInteractive">
+          {`
+            (function(c,l,a,r,i,t,y){
+              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+              t=l.createElement(r);
+              t.async=1;
+              t.src="https://www.clarity.ms/tag/"+i;
+              y=l.getElementsByTagName(r)[0];
+              y.parentNode.insertBefore(t,y);
+            })(window, document, "clarity", "script", "${CLARITY_PROJECT_ID}");
+          `}
+        </Script>
+
+        {gaMeasurementId ? (
+          <GoogleAnalytics gaId={gaMeasurementId} />
+        ) : null}
+      </body>
+    </html>
+  );
+}

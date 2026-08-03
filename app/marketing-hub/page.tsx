@@ -230,6 +230,41 @@ const COPY = {
   },
 } as const;
 
+const FINANCE_COPY = {
+  de: {
+    eyebrow: "FINANZEN & PREISSTRATEGIE",
+    title: "Preise, Mieten und Provisionen zentral verwalten.",
+    description:
+      "Erfassen Sie die finanziellen Eckdaten dieses Objekts und behalten Sie Ihre interne Preisstrategie im Blick.",
+    status: "Verfügbar",
+    open: "Finanzen öffnen",
+  },
+  it: {
+    eyebrow: "FINANZE E STRATEGIA DI PREZZO",
+    title: "Gestisci prezzi, affitti e provvigioni in un unico posto.",
+    description:
+      "Inserisci i dati finanziari dell’immobile e mantieni sotto controllo la strategia di prezzo interna.",
+    status: "Disponibile",
+    open: "Apri finanze",
+  },
+  fr: {
+    eyebrow: "FINANCES ET STRATÉGIE DE PRIX",
+    title: "Gérez les prix, loyers et commissions au même endroit.",
+    description:
+      "Saisissez les données financières du bien et gardez une vue claire sur votre stratégie de prix interne.",
+    status: "Disponible",
+    open: "Ouvrir les finances",
+  },
+  en: {
+    eyebrow: "FINANCE & PRICING STRATEGY",
+    title: "Manage prices, rents and commissions in one place.",
+    description:
+      "Enter the property’s financial details and keep your internal pricing strategy clearly organised.",
+    status: "Available",
+    open: "Open finance",
+  },
+} as const;
+
 function hasContent(value: unknown): boolean {
   if (Array.isArray(value)) return value.length > 0;
 
@@ -251,6 +286,7 @@ export default function MarketingHubPage() {
   const locale = useLocale();
   const localeKey = locale.toLowerCase().slice(0, 2) as LocaleKey;
   const text = COPY[localeKey] ?? COPY.de;
+  const financeText = FINANCE_COPY[localeKey] ?? FINANCE_COPY.de;
 
   const [listings, setListings] = useState<MarketingListing[]>([]);
   const [selectedId, setSelectedId] = useState("");
@@ -568,6 +604,39 @@ export default function MarketingHubPage() {
                   </Link>
                 ) : null}
               </div>
+            </section>
+
+            <section className="mt-8">
+              {selectedListing.hasCoreAccess !== false ? (
+                <Link
+                  href={`/marketing-hub/finance/${selectedListing.id}`}
+                  className="group block rounded-[28px] border border-amber-300/25 bg-gradient-to-br from-amber-300/[0.09] via-white/[0.045] to-blue-500/[0.08] p-6 transition hover:-translate-y-1 hover:border-amber-300/50 sm:p-8"
+                >
+                  <div className="flex flex-col justify-between gap-7 sm:flex-row sm:items-center">
+                    <div className="max-w-3xl">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="text-xs font-black uppercase tracking-[0.2em] text-amber-300">
+                          {financeText.eyebrow}
+                        </span>
+                        <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-black text-emerald-300">
+                          {financeText.status}
+                        </span>
+                      </div>
+                      <h2 className="mt-4 text-2xl font-black sm:text-3xl">
+                        {financeText.title}
+                      </h2>
+                      <p className="mt-3 leading-7 text-slate-300">
+                        {financeText.description}
+                      </p>
+                    </div>
+
+                    <span className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl bg-amber-400 px-5 font-black text-slate-950">
+                      {financeText.open}
+                      <span className="ml-2" aria-hidden="true">→</span>
+                    </span>
+                  </div>
+                </Link>
+              ) : null}
             </section>
 
             <section className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">

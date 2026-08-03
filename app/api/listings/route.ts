@@ -56,6 +56,7 @@ const listings = await prisma.listing.findMany({
     userId: user.id,
   },
   include: {
+    finance: true,
     images: {
       orderBy: [
         {
@@ -92,6 +93,9 @@ const listings = await prisma.listing.findMany({
             : null,
           socialVariants: hasCoreAccess
             ? parseJsonValue(listing.socialVariants)
+            : null,
+          finance: hasCoreAccess
+            ? listing.finance
             : null,
           imageAnalysis: hasCoreAccess
             ? listing.imageAnalysis

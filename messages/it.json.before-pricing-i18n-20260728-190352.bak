@@ -1,0 +1,125 @@
+{
+  "Common": {
+    "brand": "Inserat-AI",
+    "language": "Lingua",
+    "german": "Tedesco",
+    "french": "Francese",
+    "italian": "Italiano",
+    "english": "Inglese",
+    "loading": "Caricamento…",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "close": "Chiudi",
+    "continue": "Continua",
+    "back": "Indietro",
+    "confirm": "Conferma",
+    "edit": "Modifica",
+    "delete": "Elimina",
+    "error": "Si è verificato un errore.",
+    "success": "Salvato correttamente."
+  },
+  "Navbar": {
+    "menuButton": "Menu",
+    "closeMenu": "Chiudi il menu",
+    "drawerLabel": "Menu Inserat-AI",
+    "workspaces": "Aree di lavoro",
+    "currentPlan": "Piano attuale",
+    "upgradeToPro": "Passa a Pro →",
+    "privacyTitle": "Modalità privacy",
+    "privacyDescription": "Proteggi temporaneamente le immagini degli immobili durante gli appuntamenti con i clienti",
+    "account": {
+      "fallback": "Il mio account",
+      "ariaLabel": "Il mio account: {name}"
+    },
+    "dashboardCta": "Vai alla dashboard",
+    "dashboardShort": "Dashboard",
+    "login": "Accedi",
+    "register": "Registrati gratis",
+    "logout": "Esci",
+    "loggingOut": "Disconnessione in corso…",
+    "logoutError": "Disconnessione non riuscita.",
+    "proOnly": "Disponibile solo nel piano Pro",
+    "proOnlyAria": "{label} – disponibile solo nel piano Pro",
+    "inDevelopment": "In sviluppo",
+    "soon": "Prossimamente",
+    "items": {
+      "dashboard": {
+        "label": "Dashboard",
+        "description": "Crea annunci e immagini"
+      },
+      "projects": {
+        "label": "I miei progetti",
+        "description": "Apri, modifica e gestisci gli immobili"
+      },
+      "account": {
+        "label": "Il mio account",
+        "description": "Gestisci i dati di contatto per gli exposé"
+      },
+      "social": {
+        "label": "Social media",
+        "description": "Prepara contenuti per ogni immobile"
+      },
+      "tour": {
+        "label": "Video tour 3D",
+        "description": "Crea visite virtuali"
+      },
+      "publishing": {
+        "label": "Centro pubblicazioni",
+        "description": "Pianifica centralmente le pubblicazioni"
+      },
+      "location": {
+        "label": "Assistente località",
+        "description": "Aggiungi dati sulle località svizzere"
+      },
+      "secretMarketing": {
+        "label": "Marketing riservato",
+        "description": "Commercializzazione immobiliare discreta"
+      }
+    }
+  },
+  "HomePage": {
+    "hero": {
+      "badge": "La soluzione intelligente per i professionisti immobiliari in Svizzera 🇨🇭",
+      "headlineLine1": "Da poche informazioni",
+      "headlineLine2": "nasce un annuncio",
+      "headlineLine3": "che convince.",
+      "subline": "Inserat-AI crea annunci immobiliari di alta qualità in pochi secondi – con un linguaggio coinvolgente, una struttura professionale e pronti per Homegate, ImmoScout24, dossier di vendita e social media.",
+      "register": "Registrati gratuitamente",
+      "noCreditCard": "Nessuna carta di credito richiesta"
+    },
+    "benefits": {
+      "speedTitle": "Creato in pochi secondi",
+      "speedText": "Titolo, descrizione e punti di forza",
+      "visibilityTitle": "Maggiore visibilità",
+      "visibilityText": "Ottimizzato per i portali immobiliari",
+      "inquiriesTitle": "Più richieste",
+      "inquiriesText": "Persone interessate qualificate"
+    },
+    "demo": {
+      "label": "Inserat-AI spiegato in 60 secondi",
+      "unsupported": "Il tuo browser non supporta questo video.",
+      "listingTextsTitle": "✨ Testi per annunci",
+      "listingTextsText": "Moderno appartamento di 4,5 locali con vista lago, balcone e ottimi collegamenti.",
+      "highlightsTitle": "⭐ Punti di forza",
+      "seaView": "Vista lago",
+      "balcony": "Balcone",
+      "parking": "Posto auto in autorimessa",
+      "portalTitle": "Portali e social media",
+      "portalText": "Testi per annunci, contenuti per dossier di vendita e varianti per i social media in un solo passaggio."
+    },
+    "trust": {
+      "title": "Vantaggi",
+      "swissProfessionals": "Sviluppato per i professionisti immobiliari svizzeri",
+      "dataProtection": "Conforme alla LPD",
+      "swissMarket": "Mercato svizzero",
+      "portalSocial": "Testi per portali e social media",
+      "noCreditCard": "Nessuna carta di credito"
+    },
+    "future": {
+      "eyebrow": "Inserat-AI continua a evolversi",
+      "headline": "Il futuro della commercializzazione immobiliare inizia oggi.",
+      "description": "Inserat-AI cresce insieme alle vostre esigenze. Oggi create annunci professionali e contenuti per i social media in pochi secondi; domani beneficerete di ulteriori funzioni intelligenti che renderanno la commercializzazione ancora più efficiente.",
+      "closing": "Un account. Miglioramenti continui. Sempre un passo avanti."
+    }
+  }
+}

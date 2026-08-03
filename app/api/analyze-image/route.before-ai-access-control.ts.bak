@@ -1,0 +1,139 @@
+import OpenAI from "openai";
+import { NextResponse } from "next/server";
+
+export const runtime = "nodejs";
+
+const MAX_IMAGE_SIZE = 8 * 1024 * 1024;
+
+const ALLOWED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+];
+
+export async function POST(request: Request) {
+  try {
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        {
+          error:
+            "OPENAI_API_KEY fehlt. Bitte die Datei .env.local kontrollieren.",
+        },
+        { status: 500 }
+      );
+    }
+
+    const formData = await request.formData();
+    const image = formData.get("image");
+
+    if (!(image instanceof File)) {
+      return NextResponse.json(
+        { error: "Es wurde kein gültiges Bild übermittelt." },
+        { status: 400 }
+      );
+    }
+
+    if (!ALLOWED_IMAGE_TYPES.includes(image.type)) {
+      return NextResponse.json(
+        {
+          error:
+            "Dieses Bildformat wird nicht unterstützt. Bitte JPG, PNG oder WEBP verwenden.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (image.size > MAX_IMAGE_SIZE) {
+      return NextResponse.json(
+        {
+          error: "Das Bild ist zu gross. Maximal erlaubt sind 8 MB.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const bytes = await image.arrayBuffer();
+    const base64Image = Buffer.from(bytes).toString("base64");
+
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
+    const response = await openai.chat.completions.create({
+  model: "gpt-4.1-mini",
+  temperature: 0.2,
+  max_tokens: 900,
+  messages: [
+    {
+      role: "system",
+      content:
+        "Du bist ein präziser Schweizer Immobilienfoto-Analyst. " +
+        "Du analysierst immer nur das tatsächlich übermittelte einzelne Foto. " +
+        "Du erfindest keine Räume, Flächen, Ausstattungen, Materialien, Aussichten oder baulichen Merkmale. " +
+        "Wenn etwas nicht eindeutig erkennbar ist, bezeichnest du es ausdrücklich als unklar oder nicht beurteilbar. " +
+        "Formuliere in professionellem Schweizer Standarddeutsch und verwende kein ß.",
+    },
+    {
+      role: "user",
+      content: [
+        {
+          type: "text",
+          text:
+            "Analysiere dieses einzelne Immobilienfoto sorgfältig und ausführlich für ein Schweizer Immobilieninserat.\n\n" +
+            "Umfang: ungefähr 120 bis 220 Wörter.\n\n" +
+            "Verwende genau diese Struktur:\n\n" +
+            "Raum oder Bereich:\n" +
+            "Benenne nur den tatsächlich sichtbaren Raum oder Bereich. Wenn der Bildausschnitt keine sichere Bestimmung erlaubt, sage dies klar.\n\n" +
+            "Sichtbare Elemente:\n" +
+            "Beschreibe Einrichtung, Sanitäranlagen, Fenster, Türen, Boden, Wände, Decke, Licht, Einbauten und weitere klar erkennbare Merkmale.\n\n" +
+            "Zustand und Eindruck:\n" +
+            "Beurteile den sichtbaren Zustand vorsichtig und neutral. Verwende keine unbelegten Aussagen wie renoviert, hochwertig oder neuwertig.\n\n" +
+            "Vermarktungsrelevante Stärken:\n" +
+            "Nenne nur Vorteile, die durch dieses Foto tatsächlich belegt werden.\n\n" +
+            "Hinweise und Einschränkungen:\n" +
+            "Nenne unklare, abgeschnittene oder nicht zuverlässig beurteilbare Bereiche. Verwechsle Innenräume niemals mit Balkonen, Terrassen oder Aussenbereichen.",
+        },
+        {
+          type: "image_url",
+          image_url: {
+            url: `data:${image.type};base64,${base64Image}`,
+            detail: "high",
+          },
+        },
+      ],
+    },
+  ],
+});
+
+    const analysis = response.choices[0]?.message?.content?.trim();
+
+    if (!analysis) {
+      return NextResponse.json(
+        {
+          error: "Die AI hat keine Bildanalyse zurückgegeben.",
+        },
+        { status: 502 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      analysis,
+    });
+  } catch (error) {
+    console.error("ANALYZE IMAGE API ERROR:", error);
+
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Unbekannter Fehler bei der Bildanalyse.";
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: message,
+      },
+      { status: 500 }
+    );
+  }
+}

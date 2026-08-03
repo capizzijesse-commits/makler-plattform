@@ -1,0 +1,125 @@
+{
+  "Common": {
+    "brand": "Inserat-AI",
+    "language": "Language",
+    "german": "German",
+    "french": "French",
+    "italian": "Italian",
+    "english": "English",
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "continue": "Continue",
+    "back": "Back",
+    "confirm": "Confirm",
+    "edit": "Edit",
+    "delete": "Delete",
+    "error": "An error occurred.",
+    "success": "Saved successfully."
+  },
+  "Navbar": {
+    "menuButton": "Menu",
+    "closeMenu": "Close menu",
+    "drawerLabel": "Inserat-AI menu",
+    "workspaces": "Workspaces",
+    "currentPlan": "Current plan",
+    "upgradeToPro": "Switch to Pro →",
+    "privacyTitle": "Privacy mode",
+    "privacyDescription": "Temporarily protect property images during client appointments",
+    "account": {
+      "fallback": "My account",
+      "ariaLabel": "My account: {name}"
+    },
+    "dashboardCta": "Go to dashboard",
+    "dashboardShort": "Dashboard",
+    "login": "Log in",
+    "register": "Register for free",
+    "logout": "Log out",
+    "loggingOut": "Logging out…",
+    "logoutError": "Logout failed.",
+    "proOnly": "Available only with Pro",
+    "proOnlyAria": "{label} – available only with Pro",
+    "inDevelopment": "In development",
+    "soon": "Coming soon",
+    "items": {
+      "dashboard": {
+        "label": "Dashboard",
+        "description": "Create listings and images"
+      },
+      "projects": {
+        "label": "My projects",
+        "description": "Open, edit and manage properties"
+      },
+      "account": {
+        "label": "My account",
+        "description": "Manage contact details for property brochures"
+      },
+      "social": {
+        "label": "Social media",
+        "description": "Prepare content for each property"
+      },
+      "tour": {
+        "label": "3D video tour",
+        "description": "Create virtual viewings"
+      },
+      "publishing": {
+        "label": "Publishing center",
+        "description": "Plan publications in one place"
+      },
+      "location": {
+        "label": "Location assistant",
+        "description": "Add Swiss location data"
+      },
+      "secretMarketing": {
+        "label": "Secret marketing",
+        "description": "Market properties discreetly"
+      }
+    }
+  },
+  "HomePage": {
+    "hero": {
+      "badge": "The smart solution for real estate professionals in Switzerland 🇨🇭",
+      "headlineLine1": "A few details",
+      "headlineLine2": "become a listing",
+      "headlineLine3": "that convinces.",
+      "subline": "Inserat-AI creates high-quality property listings in seconds – engagingly written, professionally structured and ready for Homegate, ImmoScout24, property brochures and social media.",
+      "register": "Register for free",
+      "noCreditCard": "No credit card required"
+    },
+    "benefits": {
+      "speedTitle": "Created in seconds",
+      "speedText": "Title, description and highlights",
+      "visibilityTitle": "More visibility",
+      "visibilityText": "Optimised for property portals",
+      "inquiriesTitle": "More enquiries",
+      "inquiriesText": "Qualified prospective clients"
+    },
+    "demo": {
+      "label": "Inserat-AI explained in 60 seconds",
+      "unsupported": "Your browser does not support this video.",
+      "listingTextsTitle": "✨ Listing copy",
+      "listingTextsText": "Modern 4.5-room apartment with lake views, a balcony and excellent transport connections.",
+      "highlightsTitle": "⭐ Highlights",
+      "seaView": "Lake view",
+      "balcony": "Balcony",
+      "parking": "Underground parking space",
+      "portalTitle": "Portals and social media",
+      "portalText": "Listing copy, property brochure content and social media versions in a single step."
+    },
+    "trust": {
+      "title": "Benefits",
+      "swissProfessionals": "Developed for Swiss real estate professionals",
+      "dataProtection": "Compliant with Swiss data protection law",
+      "swissMarket": "Swiss market",
+      "portalSocial": "Property portals and social media",
+      "noCreditCard": "No credit card"
+    },
+    "future": {
+      "eyebrow": "Inserat-AI keeps evolving",
+      "headline": "The future of property marketing starts today.",
+      "description": "Inserat-AI grows with your needs. Today, you create professional listings and social media posts in seconds. Tomorrow, you will benefit from additional intelligent features that make your marketing even more efficient.",
+      "closing": "One account. Continuous improvements. Always one step ahead."
+    }
+  }
+}

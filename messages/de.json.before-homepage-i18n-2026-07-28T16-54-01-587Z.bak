@@ -1,0 +1,80 @@
+{
+  "Common": {
+    "brand": "Inserat-AI",
+    "language": "Sprache",
+    "german": "Deutsch",
+    "french": "Französisch",
+    "italian": "Italienisch",
+    "english": "Englisch",
+    "loading": "Wird geladen …",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "close": "Schliessen",
+    "continue": "Weiter",
+    "back": "Zurück",
+    "confirm": "Bestätigen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "error": "Ein Fehler ist aufgetreten.",
+    "success": "Erfolgreich gespeichert."
+  },
+  "Navbar": {
+    "menuButton": "Menü",
+    "closeMenu": "Menü schliessen",
+    "drawerLabel": "Inserat-AI Menü",
+    "workspaces": "Arbeitsbereiche",
+    "currentPlan": "Aktueller Plan",
+    "upgradeToPro": "Auf Pro wechseln →",
+    "privacyTitle": "Privatsphäre-Modus",
+    "privacyDescription": "Objektbilder bei Kundenterminen vorübergehend schützen",
+    "account": {
+      "fallback": "Mein Konto",
+      "ariaLabel": "Mein Konto: {name}"
+    },
+    "dashboardCta": "Zum Dashboard",
+    "dashboardShort": "Dashboard",
+    "login": "Login",
+    "register": "Kostenlos registrieren",
+    "logout": "Abmelden",
+    "loggingOut": "Abmeldung läuft …",
+    "logoutError": "Logout fehlgeschlagen.",
+    "proOnly": "Nur im Pro-Angebot",
+    "proOnlyAria": "{label} – nur im Pro-Angebot",
+    "inDevelopment": "In Entwicklung",
+    "soon": "Bald",
+    "items": {
+      "dashboard": {
+        "label": "Dashboard",
+        "description": "Inserate und Bilder erstellen"
+      },
+      "projects": {
+        "label": "Meine Projekte",
+        "description": "Immobilien öffnen, bearbeiten und verwalten"
+      },
+      "account": {
+        "label": "Mein Konto",
+        "description": "Kontaktdaten für Exposés verwalten"
+      },
+      "social": {
+        "label": "Social Media",
+        "description": "Beiträge pro Objekt vorbereiten"
+      },
+      "tour": {
+        "label": "3D-Video-Tour",
+        "description": "Virtuelle Besichtigungen erstellen"
+      },
+      "publishing": {
+        "label": "Publishing-Center",
+        "description": "Veröffentlichungen zentral planen"
+      },
+      "location": {
+        "label": "Standort-Assistent",
+        "description": "Schweizer Standortdaten ergänzen"
+      },
+      "secretMarketing": {
+        "label": "Secret Marketing",
+        "description": "Diskrete Immobilienvermarktung"
+      }
+    }
+  }
+}

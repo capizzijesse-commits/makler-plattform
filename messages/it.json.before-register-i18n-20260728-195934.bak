@@ -1,0 +1,269 @@
+{
+  "Common": {
+    "brand": "Inserat-AI",
+    "language": "Lingua",
+    "german": "Tedesco",
+    "french": "Francese",
+    "italian": "Italiano",
+    "english": "Inglese",
+    "loading": "Caricamento…",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "close": "Chiudi",
+    "continue": "Continua",
+    "back": "Indietro",
+    "confirm": "Conferma",
+    "edit": "Modifica",
+    "delete": "Elimina",
+    "error": "Si è verificato un errore.",
+    "success": "Salvato correttamente."
+  },
+  "Navbar": {
+    "menuButton": "Menu",
+    "closeMenu": "Chiudi il menu",
+    "drawerLabel": "Menu Inserat-AI",
+    "workspaces": "Aree di lavoro",
+    "currentPlan": "Piano attuale",
+    "upgradeToPro": "Passa a Pro →",
+    "privacyTitle": "Modalità privacy",
+    "privacyDescription": "Proteggi temporaneamente le immagini degli immobili durante gli appuntamenti con i clienti",
+    "account": {
+      "fallback": "Il mio account",
+      "ariaLabel": "Il mio account: {name}"
+    },
+    "dashboardCta": "Vai alla dashboard",
+    "dashboardShort": "Dashboard",
+    "login": "Accedi",
+    "register": "Registrati gratis",
+    "logout": "Esci",
+    "loggingOut": "Disconnessione in corso…",
+    "logoutError": "Disconnessione non riuscita.",
+    "proOnly": "Disponibile solo nel piano Pro",
+    "proOnlyAria": "{label} – disponibile solo nel piano Pro",
+    "inDevelopment": "In sviluppo",
+    "soon": "Prossimamente",
+    "items": {
+      "dashboard": {
+        "label": "Dashboard",
+        "description": "Crea annunci e immagini"
+      },
+      "projects": {
+        "label": "I miei progetti",
+        "description": "Apri, modifica e gestisci gli immobili"
+      },
+      "account": {
+        "label": "Il mio account",
+        "description": "Gestisci i dati di contatto per gli exposé"
+      },
+      "social": {
+        "label": "Social media",
+        "description": "Prepara contenuti per ogni immobile"
+      },
+      "tour": {
+        "label": "Video tour 3D",
+        "description": "Crea visite virtuali"
+      },
+      "publishing": {
+        "label": "Centro pubblicazioni",
+        "description": "Pianifica centralmente le pubblicazioni"
+      },
+      "location": {
+        "label": "Assistente località",
+        "description": "Aggiungi dati sulle località svizzere"
+      },
+      "secretMarketing": {
+        "label": "Marketing riservato",
+        "description": "Commercializzazione immobiliare discreta"
+      }
+    }
+  },
+  "HomePage": {
+    "hero": {
+      "badge": "La soluzione intelligente per i professionisti immobiliari in Svizzera 🇨🇭",
+      "headlineLine1": "Da poche informazioni",
+      "headlineLine2": "nasce un annuncio",
+      "headlineLine3": "che convince.",
+      "subline": "Inserat-AI crea annunci immobiliari di alta qualità in pochi secondi – con un linguaggio coinvolgente, una struttura professionale e pronti per Homegate, ImmoScout24, dossier di vendita e social media.",
+      "register": "Registrati gratuitamente",
+      "noCreditCard": "Nessuna carta di credito richiesta"
+    },
+    "benefits": {
+      "speedTitle": "Creato in pochi secondi",
+      "speedText": "Titolo, descrizione e punti di forza",
+      "visibilityTitle": "Maggiore visibilità",
+      "visibilityText": "Ottimizzato per i portali immobiliari",
+      "inquiriesTitle": "Più richieste",
+      "inquiriesText": "Persone interessate qualificate"
+    },
+    "demo": {
+      "label": "Inserat-AI spiegato in 60 secondi",
+      "unsupported": "Il tuo browser non supporta questo video.",
+      "listingTextsTitle": "✨ Testi per annunci",
+      "listingTextsText": "Moderno appartamento di 4,5 locali con vista lago, balcone e ottimi collegamenti.",
+      "highlightsTitle": "⭐ Punti di forza",
+      "seaView": "Vista lago",
+      "balcony": "Balcone",
+      "parking": "Posto auto in autorimessa",
+      "portalTitle": "Portali e social media",
+      "portalText": "Testi per annunci, contenuti per dossier di vendita e varianti per i social media in un solo passaggio."
+    },
+    "trust": {
+      "title": "Vantaggi",
+      "swissProfessionals": "Sviluppato per i professionisti immobiliari svizzeri",
+      "dataProtection": "Conforme alla LPD",
+      "swissMarket": "Mercato svizzero",
+      "portalSocial": "Testi per portali e social media",
+      "noCreditCard": "Nessuna carta di credito"
+    },
+    "future": {
+      "eyebrow": "Inserat-AI continua a evolversi",
+      "headline": "Il futuro della commercializzazione immobiliare inizia oggi.",
+      "description": "Inserat-AI cresce insieme alle vostre esigenze. Oggi create annunci professionali e contenuti per i social media in pochi secondi; domani beneficerete di ulteriori funzioni intelligenti che renderanno la commercializzazione ancora più efficiente.",
+      "closing": "Un account. Miglioramenti continui. Sempre un passo avanti."
+    }
+  },
+  "Pricing": {
+    "header": {
+      "eyebrow": "PREZZI TRASPARENTI",
+      "title": "L’offerta giusta per le tue esigenze",
+      "description": "Scegli tra l’accesso per un singolo immobile senza abbonamento, il piano Founder per professionisti immobiliari oppure il piano Pro con funzioni premium."
+    },
+    "singleObject": {
+      "badge": "SENZA ABBONAMENTO",
+      "name": "Singolo immobile",
+      "description": "Un’area di lavoro professionale per un solo immobile. Paghi CHF 9.90 una volta e attivi esclusivamente questo immobile con un massimo di 5 immagini – senza abbonamento.",
+      "priceLabel": "PAGAMENTO UNICO",
+      "perProperty": "per immobile",
+      "button": "Inizia con un immobile",
+      "note": "Nessun abbonamento per agenti immobiliari e nessun accesso alle funzioni Pro.",
+      "features": {
+        "property": "Attiva 1 immobile specifico",
+        "variants": "3 varianti professionali dell’annuncio",
+        "images": "Fino a 5 immagini con analisi standard",
+        "social": "Testi per i social media",
+        "expose": "Dossier di vendita professionale con esportazione PDF",
+        "storage": "Salva in modo permanente immobile, testi e immagini",
+        "noMonthlyCosts": "Nessun costo mensile"
+      }
+    },
+    "plans": {
+      "demo": {
+        "label": "PROVA GRATUITA",
+        "cadence": "senza abbonamento",
+        "description": "Prova Inserat-AI con una generazione di testo gratuita e tre varianti. Immagini, analisi delle immagini ed esportazioni complete non sono incluse nella Demo.",
+        "button": "Registrati gratuitamente",
+        "features": {
+          "registration": "Registrazione gratuita",
+          "generation": "1 generazione di testo gratuita con 3 varianti",
+          "noImages": "Nessuna immagine e nessuna analisi delle immagini",
+          "noBilling": "Nessun addebito automatico"
+        }
+      },
+      "founder": {
+        "label": "PER I PRIMI 50 AGENTI IMMOBILIARI",
+        "cadence": "al mese",
+        "description": "L’area di lavoro completa di base per professionisti che commercializzano più immobili.",
+        "button": "Abbonati a Founder",
+        "loading": "Apertura del checkout Founder…",
+        "features": {
+          "projects": "Più immobili nel cockpit per agenti immobiliari",
+          "variants": "3 varianti professionali per ogni immobile",
+          "images": "Fino a 10 immagini per immobile",
+          "analysis": "Analisi standard e gestione delle immagini",
+          "social": "Testi per i social media",
+          "expose": "Dossier di vendita professionale con esportazione PDF",
+          "storage": "Salvataggio permanente di immobili, testi e immagini"
+        }
+      },
+      "pro": {
+        "label": "MARKETING PREMIUM",
+        "cadence": "al mese",
+        "description": "Per professionisti che utilizzano anche funzioni AI per le immagini, video tour e automazioni premium.",
+        "button": "Pro in preparazione",
+        "features": {
+          "founder": "Tutto ciò che include Founder",
+          "images": "Fino a 10 immagini per immobile",
+          "staging": "Home staging virtuale",
+          "tour": "Video tour 3D con voci AI",
+          "analysis": "Analisi avanzata delle immagini",
+          "parallel": "3 annunci contemporaneamente = 9 varianti",
+          "development": "Centro pubblicazioni e marketing riservato – in sviluppo"
+        }
+      }
+    },
+    "agency": {
+      "label": "PER TEAM E AGENZIE IMMOBILIARI",
+      "description": "Più utenti, immobili condivisi, autorizzazioni e branding aziendale.",
+      "month": "mese",
+      "status": "Disponibile prossimamente"
+    },
+    "errors": {
+      "checkoutStart": "Non è stato possibile avviare il checkout Founder. Riprova.",
+      "founderExisting": "Abbonamento Founder già presente. Per questo account esiste già un abbonamento Founder attivo o avviato. Puoi gestirlo nella sezione Il mio account."
+    }
+  },
+  "ExampleGenerator": {
+    "intro": {
+      "eyebrow": "Esempio interattivo",
+      "title": "Scopri subito come Inserat-AI trasforma poche informazioni in un annuncio.",
+      "description": "Inserisci alcuni dati dell’immobile e osserva come vengono creati immediatamente un titolo professionale e una descrizione di alta qualità."
+    },
+    "input": {
+      "eyebrow": "Inserimento",
+      "title": "Dati dell’immobile",
+      "demo": "Demo",
+      "labels": {
+        "rooms": "Locali",
+        "propertyType": "Tipo di immobile",
+        "location": "Località",
+        "livingSpace": "Superficie abitabile",
+        "price": "Prezzo",
+        "highlights": "Punti di forza"
+      },
+      "generateButton": "Crea l’annuncio di esempio",
+      "note": "Provalo senza registrazione – nell’account gratuito sono disponibili altre funzioni."
+    },
+    "creates": {
+      "eyebrow": "Cosa crea Inserat-AI",
+      "professionalTitle": {
+        "title": "Titolo professionale",
+        "description": "Breve, efficace e adatto ai portali immobiliari."
+      },
+      "emotionalDescription": {
+        "title": "Descrizione coinvolgente",
+        "description": "Formulata professionalmente nello stile di un agente immobiliare."
+      },
+      "social": {
+        "title": "Punti di forza e social media",
+        "description": "Contenuti per dossier di vendita, portali e social media."
+      },
+      "expose": "Dossier di vendita"
+    },
+    "output": {
+      "eyebrow": "Annuncio generato",
+      "title": "Annuncio generato",
+      "ready": "Pronto",
+      "titleLabel": "Titolo",
+      "descriptionLabel": "Descrizione",
+      "highlightsLabel": "Punti di forza",
+      "roomsValue": "{rooms} locali",
+      "register": "Registrati gratuitamente",
+      "prices": "Visualizza i prezzi"
+    },
+    "defaults": {
+      "rooms": "4.5",
+      "propertyType": "Appartamento",
+      "location": "Winterthur, ZH",
+      "livingSpace": "112 m²",
+      "price": "CHF 1'450'000.–",
+      "highlights": "balcone, cucina aperta, parquet, posizione tranquilla",
+      "fallbackHighlight": "caratteristiche particolari",
+      "title": "Elegante appartamento di 4.5 locali con balcone a Winterthur",
+      "description": "Questo interessante appartamento offre ambienti luminosi, una moderna cucina aperta e un accogliente balcone. Il parquet di alta qualità conferisce all’abitazione un’atmosfera calda e curata."
+    },
+    "generated": {
+      "title": "Elegante {propertyTypeLower} di {rooms} locali con {firstHighlight} a {location}",
+      "description": "Questo interessante {propertyTypeLower} di {rooms} locali a {location} combina un piacevole comfort abitativo con una distribuzione degli spazi ben studiata. Tra i principali punti di forza figurano {highlights}. Con una superficie abitabile di {livingSpace} e un prezzo di acquisto di {price}, l’immobile è ideale per chi cerca comfort, una buona posizione e una presentazione professionale."
+    }
+  }
+}

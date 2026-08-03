@@ -470,7 +470,7 @@
     }
   },
   "Footer": {
-    "product": "Inserat-AI is a product of Helvetic Immobilien Capizzi.",
+   "product": "Inserat-AI is a product of Capizzi Inserat AI Winterthur.",
     "copyright": "© {year} Inserat-AI",
     "links": {
       "legalNotice": "Legal notice",
@@ -831,7 +831,8 @@
       "website": "Website"
     },
     "country": "Switzerland",
-    "productNotice": "Inserat-AI is a product of Helvetic Immobilien Capizzi."
+   "product": "Inserat-AI is a product of Capizzi Inserat AI Winterthur.",
+"productNotice": "Inserat-AI is a product of Capizzi Inserat AI Winterthur."
   },
   "CockpitOverview": {
     "navigation": {

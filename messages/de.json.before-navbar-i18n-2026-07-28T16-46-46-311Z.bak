@@ -1,0 +1,21 @@
+{
+  "Common": {
+    "brand": "Inserat-AI",
+    "language": "Sprache",
+    "german": "Deutsch",
+    "french": "Französisch",
+    "italian": "Italienisch",
+    "english": "Englisch",
+    "loading": "Wird geladen …",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "close": "Schliessen",
+    "continue": "Weiter",
+    "back": "Zurück",
+    "confirm": "Bestätigen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "error": "Ein Fehler ist aufgetreten.",
+    "success": "Erfolgreich gespeichert."
+  }
+}

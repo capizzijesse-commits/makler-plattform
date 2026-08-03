@@ -1,0 +1,340 @@
+{
+    "Common":  {
+                   "brand":  "Inserat-AI",
+                   "language":  "Langue",
+                   "german":  "Allemand",
+                   "french":  "Français",
+                   "italian":  "Italien",
+                   "english":  "Anglais",
+                   "loading":  "Chargement…",
+                   "save":  "Enregistrer",
+                   "cancel":  "Annuler",
+                   "close":  "Fermer",
+                   "continue":  "Continuer",
+                   "back":  "Retour",
+                   "confirm":  "Confirmer",
+                   "edit":  "Modifier",
+                   "delete":  "Supprimer",
+                   "error":  "Une erreur est survenue.",
+                   "success":  "Enregistré avec succès."
+               },
+    "Navbar":  {
+                   "menuButton":  "Menu",
+                   "closeMenu":  "Fermer le menu",
+                   "drawerLabel":  "Menu Inserat-AI",
+                   "workspaces":  "Espaces de travail",
+                   "currentPlan":  "Forfait actuel",
+                   "upgradeToPro":  "Passer à Pro →",
+                   "privacyTitle":  "Mode confidentialité",
+                   "privacyDescription":  "Protéger temporairement les photos des biens lors des rendez-vous clients",
+                   "account":  {
+                                   "fallback":  "Mon compte",
+                                   "ariaLabel":  "Mon compte : {name}"
+                               },
+                   "dashboardCta":  "Accéder au tableau de bord",
+                   "dashboardShort":  "Tableau de bord",
+                   "login":  "Connexion",
+                   "register":  "S’inscrire gratuitement",
+                   "logout":  "Se déconnecter",
+                   "loggingOut":  "Déconnexion en cours…",
+                   "logoutError":  "Échec de la déconnexion.",
+                   "proOnly":  "Réservé à l’offre Pro",
+                   "proOnlyAria":  "{label} – réservé à l’offre Pro",
+                   "inDevelopment":  "En développement",
+                   "soon":  "Bientôt",
+                   "items":  {
+                                 "dashboard":  {
+                                                   "label":  "Tableau de bord",
+                                                   "description":  "Créer des annonces et des images"
+                                               },
+                                 "projects":  {
+                                                  "label":  "Mes projets",
+                                                  "description":  "Ouvrir, modifier et gérer les biens"
+                                              },
+                                 "account":  {
+                                                 "label":  "Mon compte",
+                                                 "description":  "Gérer les coordonnées pour les dossiers de vente"
+                                             },
+                                 "social":  {
+                                                "label":  "Réseaux sociaux",
+                                                "description":  "Préparer des contenus pour chaque bien"
+                                            },
+                                 "tour":  {
+                                              "label":  "Visite vidéo 3D",
+                                              "description":  "Créer des visites virtuelles"
+                                          },
+                                 "publishing":  {
+                                                    "label":  "Centre de publication",
+                                                    "description":  "Planifier les publications de manière centralisée"
+                                                },
+                                 "location":  {
+                                                  "label":  "Assistant de localisation",
+                                                  "description":  "Ajouter des données locales suisses"
+                                              },
+                                 "secretMarketing":  {
+                                                         "label":  "Marketing confidentiel",
+                                                         "description":  "Commercialisation immobilière discrète"
+                                                     }
+                             }
+               },
+    "HomePage":  {
+                     "hero":  {
+                                  "badge":  "La solution intelligente pour les professionnels de l’immobilier en Suisse 🇨🇭",
+                                  "headlineLine1":  "Quelques informations suffisent",
+                                  "headlineLine2":  "pour créer une annonce",
+                                  "headlineLine3":  "qui convainc.",
+                                  "subline":  "Inserat-AI crée des annonces immobilières de haute qualité en quelques secondes – avec un texte engageant, une structure professionnelle et des contenus prêts pour Homegate, ImmoScout24, les dossiers de vente et les réseaux sociaux.",
+                                  "register":  "S’inscrire gratuitement",
+                                  "noCreditCard":  "Aucune carte de crédit requise"
+                              },
+                     "benefits":  {
+                                      "speedTitle":  "Créée en quelques secondes",
+                                      "speedText":  "Titre, description et points forts",
+                                      "visibilityTitle":  "Plus de visibilité",
+                                      "visibilityText":  "Optimisée pour les portails immobiliers",
+                                      "inquiriesTitle":  "Plus de demandes",
+                                      "inquiriesText":  "Des personnes intéressées qualifiées"
+                                  },
+                     "demo":  {
+                                  "label":  "Inserat-AI expliqué en 60 secondes",
+                                  "unsupported":  "Votre navigateur ne prend pas en charge cette vidéo.",
+                                  "listingTextsTitle":  "✨ Textes d’annonces",
+                                  "listingTextsText":  "Appartement moderne de 4,5 pièces avec vue sur le lac, balcon et excellente desserte.",
+                                  "highlightsTitle":  "⭐ Points forts",
+                                  "seaView":  "Vue sur le lac",
+                                  "balcony":  "Balcon",
+                                  "parking":  "Place de parking souterrain",
+                                  "portalTitle":  "Portails et réseaux sociaux",
+                                  "portalText":  "Textes d’annonces, contenus pour dossiers de vente et variantes pour les réseaux sociaux en une seule étape."
+                              },
+                     "trust":  {
+                                   "title":  "Avantages",
+                                   "swissProfessionals":  "Conçu pour les professionnels de l’immobilier en Suisse",
+                                   "dataProtection":  "Conforme à la LPD",
+                                   "swissMarket":  "Marché suisse",
+                                   "portalSocial":  "Portails et réseaux sociaux",
+                                   "noCreditCard":  "Aucune carte de crédit"
+                               },
+                     "future":  {
+                                    "eyebrow":  "Inserat-AI continue d’évoluer",
+                                    "headline":  "L’avenir de la commercialisation immobilière commence aujourd’hui.",
+                                    "description":  "Inserat-AI évolue avec vos besoins. Aujourd’hui, vous créez des annonces professionnelles et des publications pour les réseaux sociaux en quelques secondes. Demain, vous profiterez de nouvelles fonctions intelligentes qui rendront votre commercialisation encore plus efficace.",
+                                    "closing":  "Un compte. Des améliorations continues. Toujours une longueur d’avance."
+                                }
+                 },
+    "Pricing":  {
+                    "header":  {
+                                   "eyebrow":  "PRIX TRANSPARENTS",
+                                   "title":  "L’offre adaptée à vos besoins",
+                                   "description":  "Choisissez entre un bien unique sans abonnement, l’accès Founder destiné aux professionnels de l’immobilier ou l’offre Pro avec des fonctions premium."
+                               },
+                    "singleObject":  {
+                                         "badge":  "SANS ABONNEMENT",
+                                         "name":  "Bien unique",
+                                         "description":  "Un espace de travail professionnel pour un seul bien immobilier. Payez CHF 9.90 une seule fois et débloquez uniquement ce bien avec jusqu’à 5 photos – sans abonnement.",
+                                         "priceLabel":  "PAIEMENT UNIQUE",
+                                         "perProperty":  "par bien",
+                                         "button":  "Démarrer avec un bien",
+                                         "note":  "Aucun abonnement professionnel et aucun accès aux fonctions Pro.",
+                                         "features":  {
+                                                          "property":  "Débloquer 1 bien immobilier précis",
+                                                          "variants":  "3 variantes professionnelles de l’annonce",
+                                                          "images":  "Jusqu’à 5 photos avec analyse standard",
+                                                          "social":  "Textes pour les réseaux sociaux",
+                                                          "expose":  "Dossier de vente professionnel avec export PDF",
+                                                          "storage":  "Enregistrer durablement le bien, les textes et les photos",
+                                                          "noMonthlyCosts":  "Aucun coût mensuel"
+                                                      }
+                                     },
+                    "plans":  {
+                                  "demo":  {
+                                               "label":  "DÉCOUVRIR GRATUITEMENT",
+                                               "cadence":  "sans abonnement",
+                                               "description":  "Testez Inserat-AI avec une génération de texte gratuite et trois variantes. Les photos, l’analyse d’images et les exports complets ne font pas partie de la Demo.",
+                                               "button":  "S’inscrire gratuitement",
+                                               "features":  {
+                                                                "registration":  "Inscription gratuite",
+                                                                "generation":  "1 génération de texte gratuite avec 3 variantes",
+                                                                "noImages":  "Aucune photo et aucune analyse d’images",
+                                                                "noBilling":  "Aucun prélèvement automatique"
+                                                            }
+                                           },
+                                  "founder":  {
+                                                  "label":  "POUR LES 50 PREMIERS COURTIERS",
+                                                  "cadence":  "par mois",
+                                                  "description":  "L’espace de travail de base complet pour les professionnels qui commercialisent plusieurs biens.",
+                                                  "button":  "S’abonner à Founder",
+                                                  "loading":  "Ouverture du paiement Founder…",
+                                                  "features":  {
+                                                                   "projects":  "Plusieurs biens dans le cockpit professionnel",
+                                                                   "variants":  "3 variantes professionnelles par bien",
+                                                                   "images":  "Jusqu’à 10 photos par bien",
+                                                                   "analysis":  "Analyse standard et gestion des images",
+                                                                   "social":  "Textes pour les réseaux sociaux",
+                                                                   "expose":  "Dossier de vente professionnel avec export PDF",
+                                                                   "storage":  "Enregistrement durable des biens, textes et photos"
+                                                               }
+                                              },
+                                  "pro":  {
+                                              "label":  "COMMERCIALISATION PREMIUM",
+                                              "cadence":  "par mois",
+                                              "description":  "Pour les professionnels qui utilisent également les fonctions AI d’image, les visites vidéo et les automatisations premium.",
+                                              "button":  "Pro en préparation",
+                                              "features":  {
+                                                               "founder":  "Tout ce qui est inclus dans Founder",
+                                                               "images":  "Jusqu’à 10 photos par bien",
+                                                               "staging":  "Home staging virtuel",
+                                                               "tour":  "Visite vidéo 3D avec voix AI",
+                                                               "analysis":  "Analyse d’images avancée",
+                                                               "parallel":  "3 annonces simultanément = 9 variantes",
+                                                               "development":  "Centre de publication et marketing confidentiel – en développement"
+                                                           }
+                                          }
+                              },
+                    "agency":  {
+                                   "label":  "POUR LES ÉQUIPES ET AGENCES IMMOBILIÈRES",
+                                   "description":  "Plusieurs utilisateurs, biens partagés, autorisations et identité visuelle de l’entreprise.",
+                                   "month":  "mois",
+                                   "status":  "Bientôt disponible"
+                               },
+                    "errors":  {
+                                   "checkoutStart":  "Le paiement Founder n’a pas pu être lancé. Veuillez réessayer.",
+                                   "founderExisting":  "Un abonnement Founder existe déjà. Un abonnement Founder actif ou commencé est déjà associé à ce compte. Vous pouvez le gérer dans la rubrique Mon compte."
+                               }
+                },
+    "ExampleGenerator":  {
+                             "intro":  {
+                                           "eyebrow":  "Exemple interactif",
+                                           "title":  "Découvrez directement comment Inserat-AI transforme quelques informations en une annonce.",
+                                           "description":  "Saisissez quelques données sur le bien et découvrez immédiatement comment un titre professionnel et une description de qualité sont créés."
+                                       },
+                             "input":  {
+                                           "eyebrow":  "Saisie",
+                                           "title":  "Données du bien",
+                                           "demo":  "Demo",
+                                           "labels":  {
+                                                          "rooms":  "Pièces",
+                                                          "propertyType":  "Type de bien",
+                                                          "location":  "Localité",
+                                                          "livingSpace":  "Surface habitable",
+                                                          "price":  "Prix",
+                                                          "highlights":  "Points forts"
+                                                      },
+                                           "generateButton":  "Créer l’annonce d’exemple",
+                                           "note":  "Testez sans inscription – d’autres fonctions vous attendent dans le compte gratuit."
+                                       },
+                             "creates":  {
+                                             "eyebrow":  "Ce que crée Inserat-AI",
+                                             "professionalTitle":  {
+                                                                       "title":  "Titre professionnel",
+                                                                       "description":  "Court, convaincant et adapté aux portails immobiliers."
+                                                                   },
+                                             "emotionalDescription":  {
+                                                                          "title":  "Description engageante",
+                                                                          "description":  "Rédigée avec soin dans le style d’un professionnel de l’immobilier."
+                                                                      },
+                                             "social":  {
+                                                            "title":  "Points forts et réseaux sociaux",
+                                                            "description":  "Contenus pour dossier de vente, portails et réseaux sociaux."
+                                                        },
+                                             "expose":  "Dossier de vente"
+                                         },
+                             "output":  {
+                                            "eyebrow":  "Annonce générée",
+                                            "title":  "Annonce générée",
+                                            "ready":  "Prête",
+                                            "titleLabel":  "Titre",
+                                            "descriptionLabel":  "Description",
+                                            "highlightsLabel":  "Points forts",
+                                            "roomsValue":  "{rooms} pièces",
+                                            "register":  "S’inscrire gratuitement",
+                                            "prices":  "Voir les prix"
+                                        },
+                             "defaults":  {
+                                              "rooms":  "4.5",
+                                              "propertyType":  "Appartement",
+                                              "location":  "Winterthur, ZH",
+                                              "livingSpace":  "112 m²",
+                                              "price":  "CHF 1\u0027450\u0027000.–",
+                                              "highlights":  "balcon, cuisine ouverte, parquet, emplacement calme",
+                                              "fallbackHighlight":  "caractéristiques particulières",
+                                              "title":  "Appartement de 4.5 pièces avec balcon à Winterthur",
+                                              "description":  "Cet appartement attrayant séduit par ses pièces lumineuses, sa cuisine ouverte moderne et son agréable balcon. Le parquet de qualité apporte au logement une atmosphère chaleureuse et soignée."
+                                          },
+                             "generated":  {
+                                               "title":  "{propertyType} de {rooms} pièces avec {firstHighlight} à {location}",
+                                               "description":  "Ce bien de {rooms} pièces de type {propertyTypeLower}, situé à {location}, associe un cadre de vie agréable à une distribution intelligente des espaces. Ses principaux atouts sont {highlights}. Avec une surface habitable de {livingSpace} et un prix de vente de {price}, ce bien convient parfaitement aux personnes qui recherchent confort, emplacement et présentation professionnelle."
+                                           }
+                         },
+    "Register":  {
+                     "back":  "Retour à la page d’accueil",
+                     "badge":  "Inscription gratuite",
+                     "hero":  {
+                                  "title":  "Commencez avec Inserat-AI et créez de meilleures annonces.",
+                                  "description":  "Créez gratuitement votre compte et découvrez Inserat-AI sans engagement. Générez en quelques secondes des titres, descriptions, points forts et contenus professionnels pour les portails immobiliers."
+                              },
+                     "plans":  {
+                                   "demo":  {
+                                                "eyebrow":  "INSERAT-AI",
+                                                "title":  "Créer un compte",
+                                                "description":  "Commencez gratuitement et générez immédiatement votre première annonce.",
+                                                "submit":  "Commencer gratuitement",
+                                                "note":  "L’inscription est gratuite. Des frais ne sont facturés que lorsque vous choisissez une offre ou débloquez un bien unique.",
+                                                "statGeneration":  "génération gratuite",
+                                                "statInstant":  "Immédiatement",
+                                                "statDashboard":  "utiliser le tableau de bord",
+                                                "statNo":  "Aucune",
+                                                "statCreditCard":  "carte de crédit requise"
+                                            },
+                                   "founder":  {
+                                                   "eyebrow":  "OFFRE FOUNDER",
+                                                   "title":  "Réserver l’accès Founder",
+                                                   "description":  "Créez votre compte, puis souscrivez au forfait Founder pour CHF 19.90 par mois.",
+                                                   "submit":  "Préparer l’accès Founder",
+                                                   "note":  "L’inscription est gratuite. Après la confirmation de votre adresse e-mail et votre connexion, vous serez redirigé vers le paiement sécurisé Stripe. L’abonnement à CHF 19.90 par mois ne commencera qu’à ce moment-là.",
+                                                   "statPrice":  "par mois",
+                                                   "statImages":  "photos par bien",
+                                                   "statPlaces":  "places limitées"
+                                               },
+                                   "singleObject":  {
+                                                        "eyebrow":  "BIEN UNIQUE",
+                                                        "title":  "Préparer un bien unique",
+                                                        "description":  "Créez votre compte, puis débloquez un seul bien pour un paiement unique de CHF 9.90.",
+                                                        "submit":  "Préparer le bien unique",
+                                                        "note":  "L’inscription est gratuite. Après la confirmation de votre adresse e-mail et votre connexion, vous pourrez débloquer un bien précis pour CHF 9.90 une seule fois – sans abonnement.",
+                                                        "statPrice":  "paiement unique",
+                                                        "statImages":  "photos pour le bien",
+                                                        "statNo":  "Aucun",
+                                                        "statSubscription":  "abonnement"
+                                                    }
+                               },
+                     "form":  {
+                                  "name":  "Nom",
+                                  "namePlaceholder":  "Votre nom",
+                                  "email":  "E-mail",
+                                  "password":  "Mot de passe",
+                                  "passwordPlaceholder":  "Au moins 8 caractères",
+                                  "showPassword":  "Afficher le mot de passe",
+                                  "hidePassword":  "Masquer le mot de passe",
+                                  "loading":  "Création du compte…"
+                              },
+                     "login":  {
+                                   "alreadyRegistered":  "Déjà inscrit?",
+                                   "button":  "Se connecter"
+                               },
+                     "dialog":  {
+                                    "title":  "Vérifier l’inscription",
+                                    "close":  "Compris"
+                                },
+                     "errors":  {
+                                    "invalidResponse":  "L’inscription n’a pas renvoyé de réponse valide.",
+                                    "missingFields":  "Veuillez remplir entièrement le nom, l’adresse e-mail et le mot de passe.",
+                                    "invalidName":  "Le nom doit comporter entre 2 et 100 caractères.",
+                                    "invalidEmail":  "Veuillez saisir une adresse e-mail valide.",
+                                    "invalidPassword":  "Le mot de passe doit comporter entre 8 et 128 caractères.",
+                                    "serviceUnavailable":  "L’inscription est momentanément indisponible.",
+                                    "emailSendFailed":  "L’e-mail de confirmation n’a pas pu être envoyé pour le moment.",
+                                    "processingFailed":  "L’inscription n’a pas pu être traitée pour le moment."
+                                }
+                 }
+}

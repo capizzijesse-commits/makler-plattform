@@ -1,0 +1,930 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+type AccountUser = {
+  id: string;
+  name: string;
+  email: string;
+  company: string | null;
+  phone: string | null;
+  plan: string;
+};
+
+type AccountResponse = {
+  success?: boolean;
+  message?: string;
+  error?: string;
+  user?: AccountUser;
+};
+
+type Notice = {
+  type: "success" | "error";
+  text: string;
+} | null;
+
+function getPlanLabel(plan: string): string {
+  const normalized = plan.trim().toLowerCase();
+
+  if (normalized === "agency") {
+    return "Agency";
+  }
+
+  if (normalized === "pro") {
+    return "Pro";
+  }
+
+  if (
+    normalized === "founder" ||
+    normalized === "standard"
+  ) {
+    return "Founder";
+  }
+
+  return "Free";
+}
+
+export default function AccountPage() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [company, setCompany] = useState("");
+  const [phone, setPhone] = useState("");
+  const [plan, setPlan] = useState("free");
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState<Notice>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadAccount() {
+      try {
+        setLoading(true);
+        setNotice(null);
+
+        const response = await fetch("/api/account", {
+          method: "GET",
+          cache: "no-store",
+          credentials: "include",
+          signal: controller.signal,
+        });
+
+        const data = (await response.json().catch(() => null)) as
+          | AccountResponse
+          | null;
+
+        if (!response.ok || !data?.user) {
+          throw new Error(
+            data?.error || "Die Kontodaten konnten nicht geladen werden."
+          );
+        }
+
+        setName(data.user.name || "");
+        setEmail(data.user.email || "");
+        setCompany(data.user.company || "");
+        setPhone(data.user.phone || "");
+        setPlan(data.user.plan || "free");
+      } catch (error) {
+        if (
+          error instanceof DOMException &&
+          error.name === "AbortError"
+        ) {
+          return;
+        }
+
+        setNotice({
+          type: "error",
+          text:
+            error instanceof Error
+              ? error.message
+              : "Die Kontodaten konnten nicht geladen werden.",
+        });
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadAccount();
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
+
+  useEffect(() => {
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const subscriptionState =
+      params.get("subscription");
+
+    if (
+      subscriptionState === "activated"
+    ) {
+      setNotice({
+        type: "success",
+        text:
+          "Founder-Abonnement erfolgreich aktiviert.",
+      });
+
+      window.history.replaceState(
+        {},
+        "",
+        "/konto"
+      );
+
+      return;
+    }
+
+    if (
+      subscriptionState !== "success"
+    ) {
+      return;
+    }
+
+    const sessionId =
+      params.get("session_id")?.trim() ??
+      "";
+
+    if (!sessionId) {
+      setNotice({
+        type: "error",
+        text:
+          "Die Stripe-Checkout-ID fehlt.",
+      });
+
+      return;
+    }
+
+    const verificationKey =
+      `founder-verification:${sessionId}`;
+
+    /*
+     * Erst nach erfolgreicher Bestätigung als erledigt
+     * markieren. So blockiert React Strict Mode die
+     * Stripe-Prüfung nicht.
+     */
+    if (
+      sessionStorage.getItem(
+        verificationKey
+      ) === "done"
+    ) {
+      return;
+    }
+
+    async function verifySubscription() {
+      try {
+        setNotice({
+          type: "success",
+          text:
+            "Dein Founder-Abonnement wird bestätigt …",
+        });
+
+        const response = await fetch(
+          "/api/payments/subscription/verify",
+          {
+            method: "POST",
+            credentials: "include",
+            cache: "no-store",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              sessionId,
+            }),
+          }
+        );
+
+        const data = (await response
+          .json()
+          .catch(() => null)) as
+          | {
+              success?: boolean;
+              message?: string;
+              error?: string;
+            }
+          | null;
+
+        if (
+          !response.ok ||
+          !data?.success
+        ) {
+          throw new Error(
+            data?.error ||
+              "Das Founder-Abonnement konnte nicht bestätigt werden."
+          );
+        }
+
+        sessionStorage.setItem(
+          verificationKey,
+          "done"
+        );
+
+        /*
+         * Vollständiger Reload:
+         * Navbar, Sessionanzeige und Konto laden
+         * unmittelbar den neuen Founder-Plan.
+         */
+        window.location.replace(
+          "/konto?subscription=activated"
+        );
+      } catch (error) {
+        sessionStorage.removeItem(
+          verificationKey
+        );
+
+        setNotice({
+          type: "error",
+          text:
+            error instanceof Error
+              ? error.message
+              : "Das Founder-Abonnement konnte nicht bestätigt werden.",
+        });
+      }
+    }
+
+    void verifySubscription();
+
+  }, []);
+
+  async function saveAccount(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (saving) {
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setNotice(null);
+
+      const response = await fetch("/api/account", {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          company,
+          phone,
+        }),
+      });
+
+      const data = (await response.json().catch(() => null)) as
+        | AccountResponse
+        | null;
+
+      if (!response.ok || !data?.user) {
+        throw new Error(
+          data?.error || "Die Kontodaten konnten nicht gespeichert werden."
+        );
+      }
+
+      setName(data.user.name || "");
+      setCompany(data.user.company || "");
+      setPhone(data.user.phone || "");
+
+      localStorage.setItem("userName", data.user.name || "");
+      localStorage.setItem("userEmail", data.user.email || "");
+      localStorage.setItem("companyName", data.user.company || "");
+      localStorage.setItem("userPhone", data.user.phone || "");
+
+      setNotice({
+        type: "success",
+        text: data.message || "Kontaktdaten wurden gespeichert.",
+      });
+    } catch (error) {
+      setNotice({
+        type: "error",
+        text:
+          error instanceof Error
+            ? error.message
+            : "Die Kontodaten konnten nicht gespeichert werden.",
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <main className="account-page">
+      <div className="account-orb account-orb--one" />
+      <div className="account-orb account-orb--two" />
+
+      <section className="account-shell">
+        <header className="account-hero">
+          <div>
+            <span className="account-eyebrow">MAKLERPROFIL</span>
+            <h1>Kontaktdaten verwalten</h1>
+            <p>
+              Diese Angaben erscheinen automatisch in deinen Exposés und
+              PDF-Dokumenten.
+            </p>
+          </div>
+
+          <div className="account-plan">
+            <span>AKTUELLER PLAN</span>
+            <strong>{getPlanLabel(plan)}</strong>
+          </div>
+        </header>
+
+        <div className="account-grid">
+          <aside className="account-info-card">
+            <div className="account-avatar">
+              {(name || "IA")
+                .split(" ")
+                .map((part) => part[0])
+                .join("")
+                .slice(0, 2)
+                .toUpperCase()}
+            </div>
+
+            <div>
+              <span>DEIN MAKLERPROFIL</span>
+              <h2>{name || "Noch kein Name hinterlegt"}</h2>
+              <p>{company || "Noch keine Firma hinterlegt"}</p>
+            </div>
+
+            <div className="account-feature-list">
+              <div>
+                <span className="account-check">✓</span>
+                <p>Name und E-Mail im Exposé</p>
+              </div>
+              <div>
+                <span className="account-check">✓</span>
+                <p>Firma und Telefon im PDF</p>
+              </div>
+              <div>
+                <span className="account-check">✓</span>
+                <p>Dauerhaft in PostgreSQL gespeichert</p>
+              </div>
+            </div>
+
+            <Link href="/cockpit" className="account-back-link">
+              ← Zu meinen Projekten
+            </Link>
+          </aside>
+
+          <form className="account-form-card" onSubmit={saveAccount}>
+            <div className="account-form-heading">
+              <span>KONTAKTANGABEN</span>
+              <h2>Angaben für Exposé und PDF</h2>
+            </div>
+
+            {notice && (
+              <div
+                className={`account-notice account-notice--${notice.type}`}
+                role="status"
+                aria-live="polite"
+              >
+                <span>{notice.type === "success" ? "✓" : "!"}</span>
+                <p>{notice.text}</p>
+              </div>
+            )}
+
+            <div className="account-field-grid">
+              <label className="account-field">
+                <span>Name</span>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder="Vor- und Nachname"
+                  minLength={2}
+                  maxLength={80}
+                  required
+                  disabled={loading || saving}
+                />
+              </label>
+
+              <label className="account-field">
+                <span>Firma</span>
+                <input
+                  type="text"
+                  value={company}
+                  onChange={(event) => setCompany(event.target.value)}
+                  placeholder="Immobilienfirma oder Maklerbüro"
+                  maxLength={120}
+                  disabled={loading || saving}
+                />
+              </label>
+
+              <label className="account-field">
+                <span>E-Mail</span>
+                <input
+                  type="email"
+                  value={email}
+                  readOnly
+                  disabled
+                />
+                <small>
+                  Die Login-E-Mail kann hier nicht geändert werden.
+                </small>
+              </label>
+
+              <label className="account-field">
+                <span>Telefon</span>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(event) => setPhone(event.target.value)}
+                  placeholder="+41 79 000 00 00"
+                  maxLength={40}
+                  disabled={loading || saving}
+                />
+              </label>
+            </div>
+
+            <div className="account-form-footer">
+              <p>
+                Firma und Telefonnummer sind optional, werden aber für ein
+                vollständiges Exposé empfohlen.
+              </p>
+
+              <button
+                type="submit"
+                className="account-save-button"
+                disabled={loading || saving}
+              >
+                <span aria-hidden="true">✓</span>
+                {saving
+                  ? "Wird gespeichert …"
+                  : loading
+                    ? "Wird geladen …"
+                    : "Kontaktdaten speichern"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <style jsx global>{`
+        .account-page {
+          position: relative;
+          min-height: 100vh;
+          padding: 54px 20px 90px;
+          overflow: hidden;
+          color: #f8fafc;
+          background:
+            radial-gradient(
+              circle at 12% 12%,
+              rgba(34, 211, 238, 0.1),
+              transparent 26%
+            ),
+            radial-gradient(
+              circle at 88% 20%,
+              rgba(99, 102, 241, 0.15),
+              transparent 30%
+            ),
+            linear-gradient(145deg, #030817, #071126 55%, #050a18);
+        }
+
+        .account-orb {
+          position: absolute;
+          width: 420px;
+          height: 420px;
+          border-radius: 50%;
+          filter: blur(90px);
+          pointer-events: none;
+          opacity: 0.16;
+        }
+
+        .account-orb--one {
+          top: -180px;
+          right: -120px;
+          background: #6b5cff;
+        }
+
+        .account-orb--two {
+          bottom: -220px;
+          left: -140px;
+          background: #ff7a1a;
+        }
+
+        .account-shell {
+          position: relative;
+          z-index: 2;
+          width: min(1180px, 100%);
+          margin: 0 auto;
+        }
+
+        .account-hero {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 28px;
+          margin-bottom: 26px;
+        }
+
+        .account-eyebrow,
+        .account-form-heading > span,
+        .account-info-card > div:nth-child(2) > span {
+          color: #55d8ff;
+          font-size: 11px;
+          font-weight: 950;
+          letter-spacing: 0.18em;
+        }
+
+        .account-hero h1 {
+          margin: 8px 0 10px;
+          font-size: clamp(34px, 5vw, 58px);
+          font-weight: 950;
+          letter-spacing: -0.055em;
+          line-height: 0.98;
+        }
+
+        .account-hero p {
+          max-width: 700px;
+          margin: 0;
+          color: #9aa9c6;
+          font-size: 16px;
+          line-height: 1.6;
+        }
+
+        .account-plan {
+          min-width: 150px;
+          padding: 16px 20px;
+          display: grid;
+          gap: 4px;
+          background:
+            linear-gradient(
+              145deg,
+              rgba(245, 189, 33, 0.14),
+              rgba(245, 189, 33, 0.04)
+            );
+          border: 1px solid rgba(245, 189, 33, 0.32);
+          border-radius: 18px;
+          box-shadow: 0 18px 45px rgba(245, 189, 33, 0.08);
+        }
+
+        .account-plan span {
+          color: #9aa9c6;
+          font-size: 9px;
+          font-weight: 900;
+          letter-spacing: 0.15em;
+        }
+
+        .account-plan strong {
+          color: #f5bd21;
+          font-size: 22px;
+          font-weight: 950;
+        }
+
+        .account-grid {
+          display: grid;
+          grid-template-columns: 0.78fr 1.22fr;
+          gap: 24px;
+        }
+
+        .account-info-card,
+        .account-form-card {
+          background:
+            linear-gradient(
+              145deg,
+              rgba(16, 29, 66, 0.94),
+              rgba(5, 11, 29, 0.98)
+            );
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 26px;
+          box-shadow:
+            0 28px 80px rgba(0, 0, 0, 0.34),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .account-info-card {
+          padding: 30px;
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
+
+        .account-avatar {
+          width: 84px;
+          height: 84px;
+          display: grid;
+          place-items: center;
+          color: #07111f;
+          background: linear-gradient(135deg, #f5bd21, #ffd96a);
+          border-radius: 25px;
+          font-size: 28px;
+          font-weight: 950;
+          box-shadow:
+            0 20px 45px rgba(245, 189, 33, 0.18),
+            inset 0 1px 0 rgba(255, 255, 255, 0.45);
+        }
+
+        .account-info-card h2 {
+          margin: 8px 0 6px;
+          font-size: 24px;
+          font-weight: 950;
+          letter-spacing: -0.035em;
+        }
+
+        .account-info-card p {
+          margin: 0;
+          color: #9aa9c6;
+          line-height: 1.5;
+        }
+
+        .account-feature-list {
+          display: grid;
+          gap: 12px;
+        }
+
+        .account-feature-list > div {
+          padding: 13px 14px;
+          display: grid;
+          grid-template-columns: 32px 1fr;
+          gap: 10px;
+          align-items: center;
+          background: rgba(255, 255, 255, 0.035);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 14px;
+        }
+
+        .account-check {
+          width: 32px;
+          height: 32px;
+          display: grid;
+          place-items: center;
+          color: #07111f;
+          background: #55d8ff;
+          border-radius: 10px;
+          font-weight: 950;
+          box-shadow: 0 0 18px rgba(85, 216, 255, 0.18);
+        }
+
+        .account-feature-list p {
+          color: #dbe5f4;
+          font-size: 13px;
+          font-weight: 750;
+        }
+
+        .account-back-link {
+  margin-top: auto;
+  width: 100%;
+  min-height: 58px;
+  padding: 14px 22px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #081126;
+  background: linear-gradient(
+    180deg,
+    #ffe98a 0%,
+    #ffc83d 50%,
+    #e99a0b 100%
+  );
+
+  border: 1px solid #ffe082;
+  border-radius: 16px;
+
+  font-size: 16px;
+  font-weight: 950;
+  text-decoration: none;
+
+  box-shadow:
+    0 0 0 2px rgba(251, 191, 36, 0.14),
+    0 0 24px rgba(251, 191, 36, 0.42),
+    0 14px 30px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    filter 180ms ease;
+}
+
+.account-back-link:hover {
+  color: #081126;
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 0 0 3px rgba(251, 191, 36, 0.18),
+    0 0 34px rgba(251, 191, 36, 0.58),
+    0 18px 36px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+.account-back-link:active {
+  transform: scale(0.98);
+}
+
+.account-back-link:focus-visible {
+  outline: 3px solid #38bdf8;
+  outline-offset: 4px;
+}
+
+        .account-form-card {
+          padding: 30px;
+        }
+
+        .account-form-heading h2 {
+          margin: 7px 0 24px;
+          font-size: 28px;
+          font-weight: 950;
+          letter-spacing: -0.04em;
+        }
+
+        .account-notice {
+          margin-bottom: 20px;
+          padding: 14px 16px;
+          display: grid;
+          grid-template-columns: 34px 1fr;
+          gap: 11px;
+          align-items: center;
+          border-radius: 15px;
+        }
+
+        .account-notice > span {
+          width: 34px;
+          height: 34px;
+          display: grid;
+          place-items: center;
+          border-radius: 11px;
+          font-weight: 950;
+        }
+
+        .account-notice p {
+          margin: 0;
+          font-size: 14px;
+          font-weight: 750;
+        }
+
+        .account-notice--success {
+          color: #d1fae5;
+          background: rgba(16, 185, 129, 0.1);
+          border: 1px solid rgba(16, 185, 129, 0.28);
+        }
+
+        .account-notice--success > span {
+          color: #052e23;
+          background: #34d399;
+        }
+
+        .account-notice--error {
+          color: #fee2e2;
+          background: rgba(239, 68, 68, 0.1);
+          border: 1px solid rgba(239, 68, 68, 0.28);
+        }
+
+        .account-notice--error > span {
+          color: #450a0a;
+          background: #f87171;
+        }
+
+        .account-field-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 18px;
+        }
+
+        .account-field {
+          display: grid;
+          gap: 8px;
+        }
+
+        .account-field > span {
+          color: #dce6f5;
+          font-size: 13px;
+          font-weight: 900;
+        }
+
+        .account-field input {
+          width: 100%;
+          min-height: 54px;
+          padding: 0 16px;
+          color: #f8fafc;
+          background: rgba(255, 255, 255, 0.045);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 15px;
+          outline: none;
+          font: inherit;
+          transition:
+            border-color 150ms ease,
+            box-shadow 150ms ease,
+            background 150ms ease;
+        }
+
+        .account-field input::placeholder {
+          color: #667792;
+        }
+
+        .account-field input:focus {
+          background: rgba(85, 216, 255, 0.055);
+          border-color: rgba(85, 216, 255, 0.55);
+          box-shadow: 0 0 0 4px rgba(85, 216, 255, 0.08);
+        }
+
+        .account-field input:disabled {
+          cursor: not-allowed;
+          opacity: 0.7;
+        }
+
+        .account-field small {
+          color: #71809a;
+          font-size: 11px;
+          line-height: 1.45;
+        }
+
+        .account-form-footer {
+          margin-top: 26px;
+          padding-top: 22px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 20px;
+          border-top: 1px solid rgba(255, 255, 255, 0.09);
+        }
+
+        .account-form-footer p {
+          max-width: 390px;
+          margin: 0;
+          color: #8290aa;
+          font-size: 12px;
+          line-height: 1.5;
+        }
+
+        .account-save-button {
+          min-height: 54px;
+          padding: 0 22px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          color: #08101f;
+          background:
+            linear-gradient(135deg, #f5b914, #ffd45f 58%, #f7b51a);
+          border: 1px solid rgba(255, 255, 255, 0.28);
+          border-radius: 16px;
+          box-shadow:
+            0 16px 36px rgba(245, 185, 20, 0.22),
+            inset 0 1px 0 rgba(255, 255, 255, 0.44);
+          cursor: pointer;
+          font: inherit;
+          font-weight: 950;
+        }
+
+        .account-save-button:disabled {
+          cursor: wait;
+          opacity: 0.65;
+        }
+
+        @media (max-width: 900px) {
+          .account-page {
+            padding: 32px 14px 60px;
+          }
+
+          .account-hero {
+            align-items: flex-start;
+            flex-direction: column;
+          }
+
+          .account-plan {
+            min-width: 140px;
+          }
+
+          .account-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 620px) {
+          .account-hero h1 {
+            font-size: 38px;
+          }
+
+          .account-info-card,
+          .account-form-card {
+            padding: 20px;
+            border-radius: 20px;
+          }
+
+          .account-field-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .account-form-footer {
+            align-items: stretch;
+            flex-direction: column;
+          }
+
+          .account-save-button {
+            width: 100%;
+          }
+        }
+      `}</style>
+    </main>
+  );
+}
