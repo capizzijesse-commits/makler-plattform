@@ -968,6 +968,159 @@ export default function HomeStagingPage() {
     ? `data:${preview.mimeType};base64,${preview.imageBase64}`
     : "";
 
+  type BatchGenerationItem = {
+    image: ListingImage;
+    workflow: ImageWorkflowState;
+  };
+
+  async function analyzeSingleImage(
+    image: ListingImage
+  ): Promise<ImageWorkflowState | null> {
+    if (!listing) {
+      return null;
+    }
+
+    try {
+      const response = await fetch(
+        "/api/home-staging/analyze",
+        {
+          method: "POST",
+          credentials: "include",
+          cache: "no-store",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            listingId: listing.id,
+            sourceImageId: image.id,
+          }),
+        }
+      );
+
+      if (response.status === 401) {
+        router.replace("/login");
+
+        throw new Error(
+          "Die Sitzung ist abgelaufen."
+        );
+      }
+
+      const data =
+        (await response
+          .json()
+          .catch(() => ({}))) as
+          AnalyzeResponse;
+
+      if (
+        !response.ok ||
+        !data.success ||
+        !data.analysis ||
+        !data.transformationBrief
+      ) {
+        throw new Error(
+          data.details ||
+            data.error ||
+            "Das Raumfoto konnte nicht analysiert werden."
+        );
+      }
+
+      const roomTypeIsSelectable =
+        isSelectableRoomType(
+          data.analysis.roomType
+        );
+
+      const analyzedRoomType:
+        RoomType =
+          roomTypeIsSelectable
+            ? data.analysis
+                .roomType as RoomType
+            : "livingRoom";
+
+      const analyzedStyle =
+        isSelectableStyle(
+          data.analysis.style
+        )
+          ? data.analysis.style
+          : "modern";
+
+      const canGenerate =
+        Boolean(
+          data.transformationBrief
+            .canGenerate
+        ) &&
+        roomTypeIsSelectable;
+
+      const nextWorkflow:
+        ImageWorkflowState = {
+          roomAnalysis:
+            data.analysis,
+          transformationBrief:
+            data.transformationBrief,
+          analysisConfirmed:
+            canGenerate,
+          analysisError: "",
+          preview: null,
+          savedImageUrl: "",
+          statusMessage:
+            canGenerate
+              ? "Die Analyse wurde für die Batch-Transformation bestätigt."
+              : "Dieses Raumfoto muss vor der Transformation geprüft werden.",
+          roomType:
+            analyzedRoomType,
+          style:
+            analyzedStyle,
+          generationMode:
+            "preview",
+          variationIndex: 0,
+          customInstructions: "",
+        };
+
+      setImageWorkflowById(
+        (current) => ({
+          ...current,
+          [image.id]:
+            nextWorkflow,
+        })
+      );
+
+      return nextWorkflow;
+    } catch (imageAnalysisError) {
+      const message =
+        imageAnalysisError instanceof
+        Error
+          ? imageAnalysisError.message
+          : "Das Raumfoto konnte nicht analysiert werden.";
+
+      setImageWorkflowById(
+        (current) => ({
+          ...current,
+          [image.id]: {
+            roomAnalysis: null,
+            transformationBrief:
+              null,
+            analysisConfirmed:
+              false,
+            analysisError:
+              message,
+            preview: null,
+            savedImageUrl: "",
+            statusMessage: "",
+            roomType:
+              "livingRoom",
+            style: "modern",
+            generationMode:
+              "preview",
+            variationIndex: 0,
+            customInstructions: "",
+          },
+        })
+      );
+
+      return null;
+    }
+  }
+
   async function analyzeAllImages() {
     if (
       !listing ||
@@ -982,14 +1135,64 @@ export default function HomeStagingPage() {
       return;
     }
 
+    const readyItems:
+      BatchGenerationItem[] = [];
+
+    const imagesToAnalyze:
+      ListingImage[] = [];
+
+    for (
+      const image of stagingImages
+    ) {
+      const workflow =
+        imageWorkflowById[
+          image.id
+        ];
+
+      if (
+        workflow?.roomAnalysis &&
+        workflow
+          .transformationBrief &&
+        !workflow.analysisError
+      ) {
+        const canGenerate =
+          Boolean(
+            workflow
+              .transformationBrief
+              .canGenerate
+          ) &&
+          isSelectableRoomType(
+            workflow
+              .roomAnalysis
+              .roomType
+          );
+
+        if (canGenerate) {
+          readyItems.push({
+            image,
+            workflow: {
+              ...workflow,
+              analysisConfirmed:
+                true,
+            },
+          });
+        }
+
+        continue;
+      }
+
+      imagesToAnalyze.push(
+        image
+      );
+    }
+
     const total =
-      stagingImages.length;
+      imagesToAnalyze.length;
+
+    let completed = 0;
 
     try {
       setBatchAnalyzing(true);
-      setBatchAnalysisMessage(
-        "Die Raumfotos werden nacheinander analysiert."
-      );
       setError("");
 
       setBatchAnalysisProgress({
@@ -998,165 +1201,153 @@ export default function HomeStagingPage() {
         currentImageId: "",
       });
 
-      for (
-        let index = 0;
-        index < stagingImages.length;
-        index++
-      ) {
-        const image =
-          stagingImages[index];
+      if (total > 0) {
+        setBatchAnalysisMessage(
+          "Bis zu 2 Raumfotos werden gleichzeitig analysiert."
+        );
 
-        setBatchAnalysisProgress({
-          current: index,
-          total,
-          currentImageId: image.id,
-        });
+        const queue = [
+          ...imagesToAnalyze,
+        ];
 
-        const existingWorkflow =
-          imageWorkflowById[image.id];
+        const workerCount =
+          Math.min(
+            2,
+            queue.length
+          );
 
-        if (
-          existingWorkflow?.roomAnalysis &&
-          existingWorkflow.transformationBrief &&
-          !existingWorkflow.analysisError
-        ) {
-          setBatchAnalysisProgress({
-            current: index + 1,
-            total,
-            currentImageId: image.id,
-          });
-
-          continue;
-        }
-
-        try {
-          const response = await fetch(
-            "/api/home-staging/analyze",
+        await Promise.all(
+          Array.from(
             {
-              method: "POST",
-              credentials: "include",
-              cache: "no-store",
-              headers: {
-                "Content-Type":
-                  "application/json",
-              },
-              body: JSON.stringify({
-                listingId: listing.id,
-                sourceImageId: image.id,
-              }),
+              length:
+                workerCount,
+            },
+            async () => {
+              while (
+                queue.length > 0
+              ) {
+                const image =
+                  queue.shift();
+
+                if (!image) {
+                  return;
+                }
+
+                setBatchAnalysisProgress(
+                  {
+                    current:
+                      completed,
+                    total,
+                    currentImageId:
+                      image.id,
+                  }
+                );
+
+                const workflow =
+                  await analyzeSingleImage(
+                    image
+                  );
+
+                completed += 1;
+
+                setBatchAnalysisProgress(
+                  {
+                    current:
+                      completed,
+                    total,
+                    currentImageId:
+                      image.id,
+                  }
+                );
+
+                if (
+                  workflow
+                    ?.analysisConfirmed
+                ) {
+                  readyItems.push({
+                    image,
+                    workflow,
+                  });
+                }
+              }
             }
-          );
+          )
+        );
+      }
 
-          if (response.status === 401) {
-            router.replace("/login");
-            return;
-          }
+      setBatchAnalysisProgress({
+        current: total,
+        total,
+        currentImageId: "",
+      });
 
-          const data =
-            (await response
-              .json()
-              .catch(() => ({}))) as
-              AnalyzeResponse;
+      if (
+        readyItems.length === 0
+      ) {
+        setBatchAnalysisMessage(
+          "Die Analyse ist abgeschlossen. Kein Bild konnte automatisch zur Transformation freigegeben werden."
+        );
 
-          if (
-            !response.ok ||
-            !data.success ||
-            !data.analysis ||
-            !data.transformationBrief
-          ) {
-            throw new Error(
-              data.details ||
-              data.error ||
-              "Das Raumfoto konnte nicht analysiert werden."
-            );
-          }
-
-          const analyzedRoomType =
-            isSelectableRoomType(
-              data.analysis.roomType
-            )
-              ? data.analysis.roomType
-              : "livingRoom";
-
-          const analyzedStyle =
-            isSelectableStyle(
-              data.analysis.style
-            )
-              ? data.analysis.style
-              : "modern";
-
-          const nextWorkflow:
-            ImageWorkflowState = {
-              roomAnalysis: data.analysis,
-              transformationBrief:
-                data.transformationBrief,
-              analysisConfirmed: false,
-              analysisError: "",
-              preview: null,
-              savedImageUrl: "",
-              statusMessage: "",
-              roomType: analyzedRoomType,
-              style: analyzedStyle,
-              generationMode: "preview",
-              variationIndex: 0,
-              customInstructions: "",
-            };
-
-          setImageWorkflowById(
-            (current) => ({
-              ...current,
-              [image.id]: nextWorkflow,
-            })
-          );
-        } catch (imageAnalysisError) {
-          const message =
-            imageAnalysisError instanceof Error
-              ? imageAnalysisError.message
-              : "Das Raumfoto konnte nicht analysiert werden.";
-
-          setImageWorkflowById(
-            (current) => ({
-              ...current,
-              [image.id]: {
-                roomAnalysis: null,
-                transformationBrief: null,
-                analysisConfirmed: false,
-                analysisError: message,
-                preview: null,
-                savedImageUrl: "",
-                statusMessage: "",
-                roomType: "livingRoom",
-                style: "modern",
-                generationMode: "preview",
-                variationIndex: 0,
-                customInstructions: "",
-              },
-            })
-          );
-        }
-
-        setBatchAnalysisProgress({
-          current: index + 1,
-          total,
-          currentImageId: image.id,
-        });
+        return;
       }
 
       setBatchAnalysisMessage(
-        "Die Mehrbildanalyse ist abgeschlossen. Prüfe und bestätige jedes erkannte Raumfoto."
+        "Analyse abgeschlossen. " +
+          readyItems.length +
+          " Bild(er) werden jetzt parallel transformiert."
+      );
+
+      const generationResult =
+        await generateImagesInBatch(
+          readyItems
+        );
+
+      if (
+        generationResult.failed >
+        0
+      ) {
+        setBatchAnalysisMessage(
+          generationResult.completed +
+            " Bild(er) transformiert, " +
+            generationResult.failed +
+            " fehlgeschlagen."
+        );
+
+        return;
+      }
+
+      if (
+        generationResult.completed ===
+          0 &&
+        generationResult.skipped >
+          0
+      ) {
+        setBatchAnalysisMessage(
+          "Alle geeigneten Bilder waren bereits transformiert."
+        );
+
+        return;
+      }
+
+      setBatchAnalysisMessage(
+        generationResult.completed +
+          " Bild(er) wurden erfolgreich transformiert."
       );
     } catch (batchError) {
       console.error(
-        "Mehrbildanalyse fehlgeschlagen:",
+        "Mehrbildverarbeitung fehlgeschlagen:",
         batchError
       );
 
-      setBatchAnalysisMessage("");
+      setBatchAnalysisMessage(
+        ""
+      );
 
       setError(
-        batchError instanceof Error
+        batchError instanceof
+        Error
           ? batchError.message
-          : "Die Mehrbildanalyse konnte nicht abgeschlossen werden."
+          : "Die Mehrbildverarbeitung konnte nicht abgeschlossen werden."
       );
     } finally {
       setBatchAnalyzing(false);
@@ -1696,7 +1887,299 @@ export default function HomeStagingPage() {
     );
   }
 
-  async function runGeneration(variationIndexForRequest: number) {
+  async function runGenerationForImage(
+    image: ListingImage,
+    workflow: ImageWorkflowState,
+    variationIndexForRequest: number
+  ): Promise<HomeStagingPreview> {
+    if (!listing) {
+      throw new Error(
+        "Das Objekt wurde nicht geladen."
+      );
+    }
+
+    const processingMessage =
+      "Das Raumfoto wird von der AI transformiert.";
+
+    setImageWorkflowById(
+      (current) => ({
+        ...current,
+        [image.id]: {
+          ...(current[image.id] ??
+            workflow),
+          analysisConfirmed:
+            true,
+          analysisError: "",
+          preview: null,
+          savedImageUrl: "",
+          statusMessage:
+            processingMessage,
+          variationIndex:
+            variationIndexForRequest,
+        },
+      })
+    );
+
+    const outputSize =
+      await detectOutputSize(
+        image.url,
+        workflow.generationMode
+      );
+
+    const response = await fetch(
+      "/api/home-staging/generate",
+      {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify({
+          listingId: listing.id,
+          sourceImageId:
+            image.id,
+          roomType:
+            workflow.roomType,
+          style:
+            workflow.style,
+          customInstructions:
+            workflow
+              .customInstructions,
+          outputSize,
+          mode:
+            workflow
+              .generationMode,
+          variationIndex:
+            variationIndexForRequest,
+        }),
+      }
+    );
+
+    if (response.status === 401) {
+      router.replace("/login");
+
+      throw new Error(
+        "Die Sitzung ist abgelaufen."
+      );
+    }
+
+    const data =
+      (await response
+        .json()
+        .catch(() => ({}))) as
+        GenerateResponse;
+
+    if (
+      !response.ok ||
+      !data.success ||
+      !data.preview
+    ) {
+      throw new Error(
+        data.details ||
+          data.error ||
+          "Die AI-Visualisierung konnte nicht erstellt werden."
+      );
+    }
+
+    const generatedPreview =
+      data.preview as HomeStagingPreview;
+
+    const previewMessage =
+      "Die Vorschau wurde erstellt. Sie ist noch nicht gespeichert.";
+
+    setImageWorkflowById(
+      (current) => ({
+        ...current,
+        [image.id]: {
+          ...(current[image.id] ??
+            workflow),
+          analysisConfirmed:
+            true,
+          analysisError: "",
+          preview:
+            generatedPreview,
+          savedImageUrl: "",
+          statusMessage:
+            previewMessage,
+          variationIndex:
+            variationIndexForRequest,
+        },
+      })
+    );
+
+    if (
+      selectedImage?.id ===
+      image.id
+    ) {
+      setPreview(
+        generatedPreview
+      );
+
+      setSavedImageUrl("");
+
+      setStatusMessage(
+        previewMessage
+      );
+    }
+
+    return generatedPreview;
+  }
+
+  async function generateImagesInBatch(
+    items: BatchGenerationItem[]
+  ): Promise<{
+    completed: number;
+    failed: number;
+    skipped: number;
+  }> {
+    const pendingItems =
+      items.filter(
+        (item) =>
+          !item.workflow
+            .preview &&
+          !item.workflow
+            .savedImageUrl
+      );
+
+    const skipped =
+      items.length -
+      pendingItems.length;
+
+    if (
+      pendingItems.length === 0
+    ) {
+      return {
+        completed: 0,
+        failed: 0,
+        skipped,
+      };
+    }
+
+    const queue = [
+      ...pendingItems,
+    ];
+
+    const workerCount =
+      Math.min(
+        2,
+        queue.length
+      );
+
+    let completed = 0;
+    let failed = 0;
+
+    setGenerating(true);
+
+    try {
+      await Promise.all(
+        Array.from(
+          {
+            length:
+              workerCount,
+          },
+          async () => {
+            while (
+              queue.length > 0
+            ) {
+              const item =
+                queue.shift();
+
+              if (!item) {
+                return;
+              }
+
+              try {
+                await runGenerationForImage(
+                  item.image,
+                  item.workflow,
+                  item.workflow
+                    .variationIndex
+                );
+
+                completed += 1;
+              } catch (
+                generationError
+              ) {
+                failed += 1;
+
+                const message =
+                  generationError instanceof
+                  Error
+                    ? generationError
+                        .message
+                    : "Die AI-Visualisierung konnte nicht erstellt werden.";
+
+                console.error(
+                  "Batch-Transformation fehlgeschlagen:",
+                  {
+                    sourceImageId:
+                      item.image.id,
+                    message,
+                  }
+                );
+
+                setImageWorkflowById(
+                  (current) => ({
+                    ...current,
+                    [
+                      item.image.id
+                    ]: {
+                      ...(current[
+                        item.image.id
+                      ] ??
+                        item.workflow),
+                      preview: null,
+                      savedImageUrl:
+                        "",
+                      statusMessage:
+                        "Transformation fehlgeschlagen: " +
+                        message,
+                    },
+                  })
+                );
+
+                if (
+                  selectedImage
+                    ?.id ===
+                  item.image.id
+                ) {
+                  setError(
+                    message
+                  );
+                }
+              } finally {
+                const processed =
+                  completed +
+                  failed;
+
+                setBatchAnalysisMessage(
+                  "Transformation: " +
+                    processed +
+                    " von " +
+                    pendingItems.length +
+                    " Bild(ern) abgeschlossen."
+                );
+              }
+            }
+          }
+        )
+      );
+    } finally {
+      setGenerating(false);
+    }
+
+    return {
+      completed,
+      failed,
+      skipped,
+    };
+  }
+
+  async function runGeneration(
+    variationIndexForRequest: number
+  ) {
     if (
       !listing ||
       !selectedImage ||
@@ -1707,6 +2190,23 @@ export default function HomeStagingPage() {
     ) {
       return;
     }
+
+    const selectedWorkflow:
+      ImageWorkflowState = {
+        roomAnalysis,
+        transformationBrief,
+        analysisConfirmed,
+        analysisError: "",
+        preview,
+        savedImageUrl,
+        statusMessage,
+        roomType,
+        style,
+        generationMode,
+        variationIndex:
+          variationIndexForRequest,
+        customInstructions,
+      };
 
     try {
       setGenerating(true);
@@ -1719,68 +2219,15 @@ export default function HomeStagingPage() {
         preview: null,
         savedImageUrl: "",
         statusMessage: "",
-      });
-
-      const outputSize = await detectOutputSize(
-        selectedImage.url,
-        generationMode
-      );
-
-      const response = await fetch(
-        "/api/home-staging/generate",
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            listingId: listing.id,
-            sourceImageId: selectedImage.id,
-            roomType,
-            style,
-            customInstructions,
-            outputSize,
-            mode: generationMode,
-            variationIndex:
-              variationIndexForRequest,
-          }),
-        }
-      );
-
-      if (response.status === 401) {
-        router.replace("/login");
-        return;
-      }
-
-      const data =
-        (await response.json()) as GenerateResponse;
-
-      if (
-        !response.ok ||
-        !data.success ||
-        !data.preview
-      ) {
-        throw new Error(
-          data.details ||
-            data.error ||
-            "Die AI-Visualisierung konnte nicht erstellt werden."
-        );
-      }
-
-      const previewMessage =
-        "Die Vorschau wurde erstellt. Sie ist noch nicht gespeichert.";
-
-      setPreview(data.preview);
-      setStatusMessage(previewMessage);
-
-      updateSelectedImageWorkflow({
-        preview: data.preview,
-        savedImageUrl: "",
-        statusMessage: previewMessage,
         variationIndex:
           variationIndexForRequest,
       });
+
+      await runGenerationForImage(
+        selectedImage,
+        selectedWorkflow,
+        variationIndexForRequest
+      );
     } catch (generateError) {
       console.error(
         "Home-Staging-Vorschau fehlgeschlagen:",
@@ -1788,7 +2235,8 @@ export default function HomeStagingPage() {
       );
 
       setError(
-        generateError instanceof Error
+        generateError instanceof
+        Error
           ? generateError.message
           : "Die AI-Visualisierung konnte nicht erstellt werden."
       );
@@ -2288,11 +2736,11 @@ export default function HomeStagingPage() {
                   <div className="multiImageBatchHeader">
                     <div>
                       <small>
-                        MEHRBILD-ANALYSE
+                        MEHRBILD-VERARBEITUNG
                       </small>
 
                       <h3>
-                        Alle Raumfotos vorbereiten
+                        Alle Raumfotos analysieren und transformieren
                       </h3>
 
                       <p>
@@ -2328,8 +2776,8 @@ export default function HomeStagingPage() {
                           } wird analysiert …`
                         : analyzedImageCount ===
                           stagingImages.length
-                        ? "Analysen aktualisieren"
-                        : "Alle Bilder analysieren"}
+                        ? "Fehlende Bilder verarbeiten"
+                        : "Alle Bilder verarbeiten"}
                     </button>
                   </div>
 
