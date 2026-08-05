@@ -784,113 +784,232 @@ export async function POST(
       "Die Zusammenfassung soll kurz und direkt für die Benutzeroberfläche geeignet sein.",
     ].join("\n");
 
-    const openAIResponse =
-      await fetch(
-        "https://api.openai.com/v1/responses",
-        {
-          method: "POST",
+    const requestRoomAnalysis =
+      async (
+        maxOutputTokens: number,
+        retryInstruction = "",
+        timeoutMs = 45_000
+      ) => {
+        const requestPrompt =
+          retryInstruction
+            ? `${prompt}\n\n${retryInstruction}`
+            : prompt;
 
-          headers: {
-            Authorization:
-              `Bearer ${apiKey}`,
-            "Content-Type":
-              "application/json",
-          },
+        const response =
+          await fetch(
+            "https://api.openai.com/v1/responses",
+            {
+              method: "POST",
 
-          body: JSON.stringify({
-            model,
+              headers: {
+                Authorization:
+                  `Bearer ${apiKey}`,
+                "Content-Type":
+                  "application/json",
+              },
 
-            max_output_tokens: 1800,
+              body: JSON.stringify({
+                model,
 
-            input: [
-              {
-                role: "user",
+                max_output_tokens:
+                  maxOutputTokens,
 
-                content: [
+                input: [
                   {
-                    type: "input_text",
-                    text: prompt,
-                  },
+                    role: "user",
 
-                  {
-                    type: "input_image",
-                    image_url:
-                      sourceImage.url,
-                    detail: "high",
+                    content: [
+                      {
+                        type:
+                          "input_text",
+                        text:
+                          requestPrompt,
+                      },
+
+                      {
+                        type:
+                          "input_image",
+                        image_url:
+                          sourceImage.url,
+                        detail: "high",
+                      },
+                    ],
                   },
                 ],
-              },
-            ],
 
-            text: {
-              format: {
-                type: "json_schema",
-                name:
-                  "home_staging_room_analysis",
-                strict: true,
-                schema:
-                  ROOM_ANALYSIS_SCHEMA,
-              },
-            },
-          }),
+                text: {
+                  format: {
+                    type:
+                      "json_schema",
+                    name:
+                      "home_staging_room_analysis",
+                    strict: true,
+                    schema:
+                      ROOM_ANALYSIS_SCHEMA,
+                  },
+                },
+              }),
 
-          cache: "no-store",
+              cache: "no-store",
 
-          signal:
-            AbortSignal.timeout(
-              45_000
-            ),
-        }
+              signal:
+                AbortSignal.timeout(
+                  timeoutMs
+                ),
+            }
+          );
+
+        const data =
+          (await response
+            .json()
+            .catch(() => ({}))) as
+            OpenAIResponse;
+
+        return {
+          response,
+          data,
+        };
+      };
+
+    const buildUpstreamErrorResponse =
+      (
+        response: Response,
+        data: OpenAIResponse
+      ) => {
+        const upstreamMessage =
+          typeof data.error
+            ?.message === "string"
+            ? data.error.message
+            : "";
+
+        console.error(
+          "HOME-STAGING ANALYSIS OPENAI ERROR:",
+          {
+            status:
+              response.status,
+            message:
+              upstreamMessage,
+          }
+        );
+
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "Das Raumfoto konnte momentan nicht analysiert werden.",
+
+            details:
+              process.env.NODE_ENV ===
+              "development"
+                ? upstreamMessage
+                : undefined,
+          },
+          {
+            status:
+              response.status >= 400 &&
+              response.status < 600
+                ? response.status
+                : 502,
+          }
+        );
+      };
+
+    let analysisAttempt =
+      await requestRoomAnalysis(
+        3200
       );
 
-    const openAIData =
-      (await openAIResponse
-        .json()
-        .catch(() => ({}))) as
-        OpenAIResponse;
-
-    if (!openAIResponse.ok) {
-      const upstreamMessage =
-        typeof openAIData.error
-          ?.message === "string"
-          ? openAIData.error.message
-          : "";
-
-      console.error(
-        "HOME-STAGING ANALYSIS OPENAI ERROR:",
-        {
-          status:
-            openAIResponse.status,
-          message:
-            upstreamMessage,
-        }
-      );
-
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            "Das Raumfoto konnte momentan nicht analysiert werden.",
-
-          details:
-            process.env.NODE_ENV ===
-            "development"
-              ? upstreamMessage
-              : undefined,
-        },
-        {
-          status:
-            openAIResponse.status >=
-              400 &&
-            openAIResponse.status < 600
-              ? openAIResponse.status
-              : 502,
-        }
+    if (
+      !analysisAttempt.response.ok
+    ) {
+      return buildUpstreamErrorResponse(
+        analysisAttempt.response,
+        analysisAttempt.data
       );
     }
 
-    const outputText =
-      extractOutputText(openAIData);
+    let outputText =
+      extractOutputText(
+        analysisAttempt.data
+      );
+
+    let analysis =
+      outputText
+        ? parseRoomAnalysis(
+            outputText
+          )
+        : null;
+
+    if (!analysis) {
+      const responseMetadata =
+        analysisAttempt.data as
+          OpenAIResponse & {
+            status?: string;
+            incomplete_details?:
+              | {
+                  reason?: string;
+                }
+              | null;
+          };
+
+      console.warn(
+        "HOME-STAGING ANALYSIS RETRY:",
+        {
+          status:
+            responseMetadata.status ??
+            "unknown",
+          incompleteReason:
+            responseMetadata
+              .incomplete_details
+              ?.reason ??
+            null,
+          outputLength:
+            outputText.length,
+        }
+      );
+
+      const compactRetryInstruction =
+        [
+          "WIEDERHOLUNG WEGEN UNVOLLSTÄNDIGER AUSGABE:",
+          "- Gib das vollständige JSON-Objekt zurück.",
+          "- Kürze die Ausgabe, ohne Pflichtfelder auszulassen.",
+          "- Maximal 8 visibleFacts.",
+          "- Maximal 8 lockedArchitecture-Einträge.",
+          "- Maximal 5 warnings.",
+          "- Maximal 8 forbiddenElements.",
+          "- Jeder Listeneintrag enthält höchstens 16 Wörter.",
+          "- Die summary enthält höchstens 45 Wörter.",
+          "- Beende alle Arrays und das JSON-Objekt vollständig.",
+        ].join("\n");
+
+      analysisAttempt =
+        await requestRoomAnalysis(
+          5000,
+          compactRetryInstruction,
+          60_000
+        );
+
+      if (
+        !analysisAttempt.response.ok
+      ) {
+        return buildUpstreamErrorResponse(
+          analysisAttempt.response,
+          analysisAttempt.data
+        );
+      }
+
+      outputText =
+        extractOutputText(
+          analysisAttempt.data
+        );
+
+      analysis =
+        outputText
+          ? parseRoomAnalysis(
+              outputText
+            )
+          : null;
+    }
 
     if (!outputText) {
       return NextResponse.json(
@@ -903,13 +1022,34 @@ export async function POST(
       );
     }
 
-    const analysis =
-      parseRoomAnalysis(outputText);
-
     if (!analysis) {
+      const responseMetadata =
+        analysisAttempt.data as
+          OpenAIResponse & {
+            status?: string;
+            incomplete_details?:
+              | {
+                  reason?: string;
+                }
+              | null;
+          };
+
       console.error(
         "HOME-STAGING ANALYSIS INVALID OUTPUT:",
-        outputText
+        {
+          status:
+            responseMetadata.status ??
+            "unknown",
+          incompleteReason:
+            responseMetadata
+              .incomplete_details
+              ?.reason ??
+            null,
+          outputLength:
+            outputText.length,
+          output:
+            outputText,
+        }
       );
 
       return NextResponse.json(
