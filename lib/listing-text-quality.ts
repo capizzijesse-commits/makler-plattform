@@ -1327,8 +1327,8 @@ export function evaluateListingQuality(
       }
 
       if (
-        wordCount < 85 ||
-        wordCount > 190
+        wordCount < 110 ||
+        wordCount > 200
       ) {
         deductScore(
           scores,
@@ -1341,10 +1341,10 @@ export function evaluateListingQuality(
           code:
             "WORD_COUNT_OUTSIDE_TARGET",
           message:
-            `Variante ${index + 1} enthält ${wordCount} Wörter. Der bevorzugte Bereich liegt bei 85 bis 190 Wörtern.`,
+            `Variante ${index + 1} enthält ${wordCount} Wörter. Der bevorzugte Bereich liegt bei 110 bis 200 Wörtern.`,
           severity:
-            wordCount < 35 ||
-            wordCount > 260
+            wordCount < 95 ||
+            wordCount > 240
               ? "error"
               : "warning",
         });

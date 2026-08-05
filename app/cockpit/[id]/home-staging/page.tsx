@@ -94,6 +94,144 @@ type SessionResponse = {
   error?: string;
 };
 
+type AnalysisRoomType =
+  | RoomType
+  | "kitchen"
+  | "bathroom"
+  | "hallway"
+  | "balcony"
+  | "terrace"
+  | "garden"
+  | "exterior"
+  | "other"
+  | "unclear";
+
+type RoomCondition =
+  | "empty"
+  | "sparselyFurnished"
+  | "furnished"
+  | "renovationNeeded"
+  | "unclear";
+
+type TransformationType =
+  | "furnishEmpty"
+  | "redesignFurnished"
+  | "renovateKitchen"
+  | "renovateBathroom"
+  | "designOutdoor"
+  | "notRecommended"
+  | "needsConfirmation";
+
+type RoomAnalysis = {
+  analysisVersion: string;
+  roomType: AnalysisRoomType;
+  roomTypeLabel: string;
+  roomCondition: RoomCondition;
+  transformation: TransformationType;
+  style: StagingStyle;
+  confidence: number;
+  summary: string;
+  visibleFacts: string[];
+  lockedArchitecture: string[];
+  layoutGoal: string;
+  furnitureScale: string;
+  forbiddenElements: string[];
+  warnings: string[];
+};
+
+type TransformationBrief = {
+  canGenerate: boolean;
+  objective: string;
+  visibleFacts: string[];
+  protectedArchitecture: string[];
+  layoutRules: string[];
+  allowedChanges: string[];
+  forbiddenChanges: string[];
+  warnings: string[];
+};
+
+type AnalyzeResponse = {
+  success?: boolean;
+  error?: string;
+  details?: string;
+  analysis?: RoomAnalysis;
+  transformationBrief?: TransformationBrief;
+};
+
+type ImageWorkflowState = {
+  roomAnalysis: RoomAnalysis | null;
+  transformationBrief: TransformationBrief | null;
+  analysisConfirmed: boolean;
+  analysisError: string;
+  preview: HomeStagingPreview | null;
+  savedImageUrl: string;
+  statusMessage: string;
+  roomType: RoomType;
+  style: StagingStyle;
+  generationMode: GenerationMode;
+  variationIndex: number;
+  customInstructions: string;
+};
+
+type BatchAnalysisProgress = {
+  current: number;
+  total: number;
+  currentImageId: string;
+};
+
+function getImageWorkflowStatus(
+  workflow: ImageWorkflowState | undefined
+): {
+  label: string;
+  tone: string;
+} {
+  if (!workflow) {
+    return {
+      label: "Wartet",
+      tone: "waiting",
+    };
+  }
+
+  if (workflow.analysisError) {
+    return {
+      label: "Fehler",
+      tone: "error",
+    };
+  }
+
+  if (workflow.savedImageUrl) {
+    return {
+      label: "Gespeichert",
+      tone: "saved",
+    };
+  }
+
+  if (workflow.preview) {
+    return {
+      label: "Visualisiert",
+      tone: "generated",
+    };
+  }
+
+  if (workflow.analysisConfirmed) {
+    return {
+      label: "Bestätigt",
+      tone: "confirmed",
+    };
+  }
+
+  if (workflow.roomAnalysis) {
+    return {
+      label: "Analysiert",
+      tone: "analyzed",
+    };
+  }
+
+  return {
+    label: "Wartet",
+    tone: "waiting",
+  };
+}
 const ROOM_TYPES: Array<{
   value: RoomType;
   label: string;
@@ -153,6 +291,47 @@ const STYLES: Array<{
   },
 ];
 
+const ROOM_CONDITION_LABELS: Record<
+  RoomCondition,
+  string
+> = {
+  empty: "Leer",
+  sparselyFurnished: "Wenig möbliert",
+  furnished: "Möbliert",
+  renovationNeeded: "Renovationsbedarf erkannt",
+  unclear: "Nicht eindeutig",
+};
+
+const TRANSFORMATION_LABELS: Record<
+  TransformationType,
+  string
+> = {
+  furnishEmpty: "Leeren Raum einrichten",
+  redesignFurnished: "Möblierten Raum neu gestalten",
+  renovateKitchen: "Küche renovieren",
+  renovateBathroom: "Bad renovieren",
+  designOutdoor: "Aussenbereich gestalten",
+  notRecommended: "Foto nicht geeignet",
+  needsConfirmation: "Bestätigung erforderlich",
+};
+
+function isSelectableRoomType(
+  value: string
+): value is RoomType {
+  return ROOM_TYPES.some(
+    (option) =>
+      option.value === value
+  );
+}
+
+function isSelectableStyle(
+  value: string
+): value is StagingStyle {
+  return STYLES.some(
+    (option) =>
+      option.value === value
+  );
+}
 function base64ToFile(
   base64: string,
   fileName: string,
@@ -258,6 +437,35 @@ export default function HomeStagingPage() {
   const [preview, setPreview] =
     useState<HomeStagingPreview | null>(null);
 
+  const [roomAnalysis, setRoomAnalysis] =
+    useState<RoomAnalysis | null>(null);
+
+  const [
+    transformationBrief,
+    setTransformationBrief,
+  ] = useState<TransformationBrief | null>(
+    null
+  );
+
+  const [
+    analyzingRoom,
+    setAnalyzingRoom,
+  ] = useState(false);
+
+  const [
+    analysisConfirmed,
+    setAnalysisConfirmed,
+  ] = useState(false);
+
+  const [
+    analysisError,
+    setAnalysisError,
+  ] = useState("");
+
+  const [
+    analysisRefreshKey,
+    setAnalysisRefreshKey,
+  ] = useState(0);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] =
     useState(false);
@@ -282,6 +490,32 @@ export default function HomeStagingPage() {
     useState("");
   const [savedImageUrl, setSavedImageUrl] =
     useState("");
+
+  const [
+    imageWorkflowById,
+    setImageWorkflowById,
+  ] = useState<Record<string, ImageWorkflowState>>(
+    {}
+  );
+
+  const [
+    batchAnalyzing,
+    setBatchAnalyzing,
+  ] = useState(false);
+
+  const [
+    batchAnalysisProgress,
+    setBatchAnalysisProgress,
+  ] = useState<BatchAnalysisProgress>({
+    current: 0,
+    total: 0,
+    currentImageId: "",
+  });
+
+  const [
+    batchAnalysisMessage,
+    setBatchAnalysisMessage,
+  ] = useState("");
 
   const [
     accessChecked,
@@ -459,6 +693,12 @@ export default function HomeStagingPage() {
     };
   }, [listingId, router]);
 
+  const stagingImages = useMemo(
+    () =>
+      listing?.images.slice(0, 5) || [],
+    [listing]
+  );
+
   const selectedImage = useMemo(
     () =>
       listing?.images.find(
@@ -467,31 +707,572 @@ export default function HomeStagingPage() {
     [listing, selectedImageId]
   );
 
+  const analyzedImageCount = useMemo(
+    () =>
+      stagingImages.filter((image) => {
+        const workflow =
+          imageWorkflowById[image.id];
+
+        return Boolean(
+          workflow?.roomAnalysis &&
+          workflow.transformationBrief &&
+          !workflow.analysisError
+        );
+      }).length,
+    [stagingImages, imageWorkflowById]
+  );
+
+  function updateSelectedImageWorkflow(
+    patch: Partial<ImageWorkflowState>
+  ) {
+    if (!selectedImageId) {
+      return;
+    }
+
+    setImageWorkflowById((current) => {
+      const existing =
+        current[selectedImageId];
+
+      if (!existing) {
+        return current;
+      }
+
+      return {
+        ...current,
+        [selectedImageId]: {
+          ...existing,
+          ...patch,
+        },
+      };
+    });
+  }
+
+  function restoreImageWorkflow(
+    workflow: ImageWorkflowState
+  ) {
+    setRoomAnalysis(workflow.roomAnalysis);
+    setTransformationBrief(
+      workflow.transformationBrief
+    );
+    setAnalysisConfirmed(
+      workflow.analysisConfirmed
+    );
+    setAnalysisError(workflow.analysisError);
+    setPreview(workflow.preview);
+    setSavedImageUrl(workflow.savedImageUrl);
+    setStatusMessage(workflow.statusMessage);
+    setRoomType(workflow.roomType);
+    setStyle(workflow.style);
+    setGenerationMode(workflow.generationMode);
+    setVariationIndex(workflow.variationIndex);
+    setCustomInstructions(
+      workflow.customInstructions
+    );
+    setError("");
+  }
+
+  function clearImageWorkflowEditor() {
+    setRoomAnalysis(null);
+    setTransformationBrief(null);
+    setAnalysisConfirmed(false);
+    setAnalysisError("");
+    setPreview(null);
+    setSavedImageUrl("");
+    setStatusMessage("");
+    setRoomType("livingRoom");
+    setStyle("modern");
+    setGenerationMode("preview");
+    setVariationIndex(0);
+    setCustomInstructions("");
+    setError("");
+  }
+
+  useEffect(() => {
+    const controller =
+      new AbortController();
+
+    async function analyzeRoom() {
+      if (
+        !listing ||
+        !selectedImage ||
+        !hasHomeStagingAccess ||
+        listing.archivedAt ||
+        batchAnalyzing
+      ) {
+        return;
+      }
+
+      const cachedWorkflow =
+        imageWorkflowById[selectedImage.id];
+
+      if (cachedWorkflow) {
+        restoreImageWorkflow(cachedWorkflow);
+        return;
+      }
+
+      try {
+        setAnalyzingRoom(true);
+        setAnalysisError("");
+        setAnalysisConfirmed(false);
+        setRoomAnalysis(null);
+        setTransformationBrief(null);
+        setPreview(null);
+        setSavedImageUrl("");
+        setStatusMessage("");
+
+        const response = await fetch(
+          "/api/home-staging/analyze",
+          {
+            method: "POST",
+            credentials: "include",
+            cache: "no-store",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              listingId: listing.id,
+              sourceImageId:
+                selectedImage.id,
+            }),
+            signal: controller.signal,
+          }
+        );
+
+        if (response.status === 401) {
+          router.replace("/login");
+          return;
+        }
+
+        const data =
+          (await response
+            .json()
+            .catch(() => ({}))) as
+            AnalyzeResponse;
+
+        if (
+          !response.ok ||
+          !data.success ||
+          !data.analysis ||
+          !data.transformationBrief
+        ) {
+          throw new Error(
+            data.details ||
+              data.error ||
+              "Das Raumfoto konnte nicht analysiert werden."
+          );
+        }
+
+        const analyzedRoomType =
+          isSelectableRoomType(
+            data.analysis.roomType
+          )
+            ? data.analysis.roomType
+            : "livingRoom";
+
+        const analyzedStyle =
+          isSelectableStyle(
+            data.analysis.style
+          )
+            ? data.analysis.style
+            : "modern";
+
+        setRoomAnalysis(data.analysis);
+        setTransformationBrief(
+          data.transformationBrief
+        );
+        setRoomType(analyzedRoomType);
+        setStyle(analyzedStyle);
+
+        const nextWorkflow: ImageWorkflowState = {
+          roomAnalysis: data.analysis,
+          transformationBrief:
+            data.transformationBrief,
+          analysisConfirmed: false,
+          analysisError: "",
+          preview: null,
+          savedImageUrl: "",
+          statusMessage: "",
+          roomType: analyzedRoomType,
+          style: analyzedStyle,
+          generationMode: "preview",
+          variationIndex: 0,
+          customInstructions: "",
+        };
+
+        setImageWorkflowById((current) => ({
+          ...current,
+          [selectedImage.id]: nextWorkflow,
+        }));
+      } catch (analysisRequestError) {
+        if (
+          analysisRequestError instanceof
+            DOMException &&
+          analysisRequestError.name ===
+            "AbortError"
+        ) {
+          return;
+        }
+
+        console.error(
+          "Automatische Raumanalyse fehlgeschlagen:",
+          analysisRequestError
+        );
+
+        const analysisMessage =
+          analysisRequestError instanceof Error
+            ? analysisRequestError.message
+            : "Das Raumfoto konnte nicht analysiert werden.";
+
+        setAnalysisError(analysisMessage);
+
+        setImageWorkflowById((current) => ({
+          ...current,
+          [selectedImage.id]: {
+            roomAnalysis: null,
+            transformationBrief: null,
+            analysisConfirmed: false,
+            analysisError: analysisMessage,
+            preview: null,
+            savedImageUrl: "",
+            statusMessage: "",
+            roomType: "livingRoom",
+            style: "modern",
+            generationMode: "preview",
+            variationIndex: 0,
+            customInstructions: "",
+          },
+        }));
+      } finally {
+        if (!controller.signal.aborted) {
+          setAnalyzingRoom(false);
+        }
+      }
+    }
+
+    void analyzeRoom();
+
+    return () => {
+      controller.abort();
+    };
+  }, [
+    listing,
+    selectedImage,
+    hasHomeStagingAccess,
+    analysisRefreshKey,
+    router,
+    imageWorkflowById,
+    batchAnalyzing,
+  ]);
   const previewUrl = preview
     ? `data:${preview.mimeType};base64,${preview.imageBase64}`
     : "";
 
+  async function analyzeAllImages() {
+    if (
+      !listing ||
+      stagingImages.length === 0 ||
+      batchAnalyzing ||
+      analyzingRoom ||
+      generating ||
+      saving ||
+      uploadingImages ||
+      listing.archivedAt
+    ) {
+      return;
+    }
+
+    const total =
+      stagingImages.length;
+
+    try {
+      setBatchAnalyzing(true);
+      setBatchAnalysisMessage(
+        "Die Raumfotos werden nacheinander analysiert."
+      );
+      setError("");
+
+      setBatchAnalysisProgress({
+        current: 0,
+        total,
+        currentImageId: "",
+      });
+
+      for (
+        let index = 0;
+        index < stagingImages.length;
+        index++
+      ) {
+        const image =
+          stagingImages[index];
+
+        setBatchAnalysisProgress({
+          current: index,
+          total,
+          currentImageId: image.id,
+        });
+
+        const existingWorkflow =
+          imageWorkflowById[image.id];
+
+        if (
+          existingWorkflow?.roomAnalysis &&
+          existingWorkflow.transformationBrief &&
+          !existingWorkflow.analysisError
+        ) {
+          setBatchAnalysisProgress({
+            current: index + 1,
+            total,
+            currentImageId: image.id,
+          });
+
+          continue;
+        }
+
+        try {
+          const response = await fetch(
+            "/api/home-staging/analyze",
+            {
+              method: "POST",
+              credentials: "include",
+              cache: "no-store",
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+              body: JSON.stringify({
+                listingId: listing.id,
+                sourceImageId: image.id,
+              }),
+            }
+          );
+
+          if (response.status === 401) {
+            router.replace("/login");
+            return;
+          }
+
+          const data =
+            (await response
+              .json()
+              .catch(() => ({}))) as
+              AnalyzeResponse;
+
+          if (
+            !response.ok ||
+            !data.success ||
+            !data.analysis ||
+            !data.transformationBrief
+          ) {
+            throw new Error(
+              data.details ||
+              data.error ||
+              "Das Raumfoto konnte nicht analysiert werden."
+            );
+          }
+
+          const analyzedRoomType =
+            isSelectableRoomType(
+              data.analysis.roomType
+            )
+              ? data.analysis.roomType
+              : "livingRoom";
+
+          const analyzedStyle =
+            isSelectableStyle(
+              data.analysis.style
+            )
+              ? data.analysis.style
+              : "modern";
+
+          const nextWorkflow:
+            ImageWorkflowState = {
+              roomAnalysis: data.analysis,
+              transformationBrief:
+                data.transformationBrief,
+              analysisConfirmed: false,
+              analysisError: "",
+              preview: null,
+              savedImageUrl: "",
+              statusMessage: "",
+              roomType: analyzedRoomType,
+              style: analyzedStyle,
+              generationMode: "preview",
+              variationIndex: 0,
+              customInstructions: "",
+            };
+
+          setImageWorkflowById(
+            (current) => ({
+              ...current,
+              [image.id]: nextWorkflow,
+            })
+          );
+        } catch (imageAnalysisError) {
+          const message =
+            imageAnalysisError instanceof Error
+              ? imageAnalysisError.message
+              : "Das Raumfoto konnte nicht analysiert werden.";
+
+          setImageWorkflowById(
+            (current) => ({
+              ...current,
+              [image.id]: {
+                roomAnalysis: null,
+                transformationBrief: null,
+                analysisConfirmed: false,
+                analysisError: message,
+                preview: null,
+                savedImageUrl: "",
+                statusMessage: "",
+                roomType: "livingRoom",
+                style: "modern",
+                generationMode: "preview",
+                variationIndex: 0,
+                customInstructions: "",
+              },
+            })
+          );
+        }
+
+        setBatchAnalysisProgress({
+          current: index + 1,
+          total,
+          currentImageId: image.id,
+        });
+      }
+
+      setBatchAnalysisMessage(
+        "Die Mehrbildanalyse ist abgeschlossen. Prüfe und bestätige jedes erkannte Raumfoto."
+      );
+    } catch (batchError) {
+      console.error(
+        "Mehrbildanalyse fehlgeschlagen:",
+        batchError
+      );
+
+      setBatchAnalysisMessage("");
+
+      setError(
+        batchError instanceof Error
+          ? batchError.message
+          : "Die Mehrbildanalyse konnte nicht abgeschlossen werden."
+      );
+    } finally {
+      setBatchAnalyzing(false);
+    }
+  }
+
+  function confirmRoomAnalysis() {
+    if (
+      !roomAnalysis ||
+      !transformationBrief?.canGenerate
+    ) {
+      setError(
+        "Die Raumanalyse ist noch nicht ausreichend sicher."
+      );
+      return;
+    }
+
+    if (
+      !isSelectableRoomType(
+        roomAnalysis.roomType
+      )
+    ) {
+      setError(
+        "Die erkannte Spezialtransformation wird im nächsten Schritt mit der Generierung verbunden."
+      );
+      return;
+    }
+
+    const confirmationMessage =
+      "Die Raumanalyse wurde bestätigt.";
+
+    setAnalysisConfirmed(true);
+    setError("");
+    setStatusMessage(
+      confirmationMessage
+    );
+
+    updateSelectedImageWorkflow({
+      analysisConfirmed: true,
+      statusMessage: confirmationMessage,
+    });
+  }
+
+  function retryRoomAnalysis() {
+    if (selectedImageId) {
+      setImageWorkflowById((current) => {
+        if (!current[selectedImageId]) {
+          return current;
+        }
+
+        const next = {
+          ...current,
+        };
+
+        delete next[selectedImageId];
+
+        return next;
+      });
+    }
+
+    clearImageWorkflowEditor();
+
+    setAnalysisRefreshKey(
+      (currentValue) =>
+        currentValue + 1
+    );
+  }
   function resetResult() {
     setPreview(null);
     setSavedImageUrl("");
     setStatusMessage("");
     setError("");
     setVariationIndex(0);
+
+    updateSelectedImageWorkflow({
+      preview: null,
+      savedImageUrl: "",
+      statusMessage: "",
+      variationIndex: 0,
+    });
   }
 
   function chooseImage(imageId: string) {
+    const storedWorkflow =
+      imageWorkflowById[imageId];
+
     setSelectedImageId(imageId);
-    resetResult();
+
+    if (storedWorkflow) {
+      restoreImageWorkflow(storedWorkflow);
+      return;
+    }
+
+    clearImageWorkflowEditor();
   }
 
   function chooseRoomType(value: RoomType) {
     setRoomType(value);
+    setAnalysisConfirmed(false);
     resetResult();
+
+    updateSelectedImageWorkflow({
+      roomType: value,
+      analysisConfirmed: false,
+    });
   }
 
   function chooseStyle(value: StagingStyle) {
     setStyle(value);
+    setAnalysisConfirmed(false);
     resetResult();
+
+    updateSelectedImageWorkflow({
+      style: value,
+      analysisConfirmed: false,
+    });
   }
 
   function chooseGenerationMode(
@@ -499,13 +1280,24 @@ export default function HomeStagingPage() {
   ) {
     setGenerationMode(mode);
     resetResult();
+
+    updateSelectedImageWorkflow({
+      generationMode: mode,
+    });
   }
 
   function changeCustomInstructions(
     value: string
   ) {
-    setCustomInstructions(value.slice(0, 500));
+    const nextValue =
+      value.slice(0, 500);
+
+    setCustomInstructions(nextValue);
     resetResult();
+
+    updateSelectedImageWorkflow({
+      customInstructions: nextValue,
+    });
   }
 
   async function handleImageUpload(
@@ -521,6 +1313,7 @@ export default function HomeStagingPage() {
       !listing ||
       selectedFiles.length === 0 ||
       uploadingImages ||
+      batchAnalyzing ||
       generating ||
       saving
     ) {
@@ -529,7 +1322,7 @@ export default function HomeStagingPage() {
 
     const availableSlots = Math.max(
       0,
-      10 - listing.images.length
+      5 - listing.images.length
     );
 
     if (availableSlots === 0) {
@@ -666,7 +1459,7 @@ export default function HomeStagingPage() {
       });
 
       if (uploadedImages[0]) {
-        setSelectedImageId(
+        chooseImage(
           uploadedImages[0].id
         );
       }
@@ -702,6 +1495,7 @@ export default function HomeStagingPage() {
       generating ||
       saving ||
       uploadingImages ||
+      batchAnalyzing ||
       deletingImageId
     ) {
       return;
@@ -729,7 +1523,8 @@ export default function HomeStagingPage() {
       deletingImageId ||
       generating ||
       saving ||
-      uploadingImages
+      uploadingImages ||
+      batchAnalyzing
     ) {
       return;
     }
@@ -798,6 +1593,20 @@ export default function HomeStagingPage() {
         images: updatedImages,
       });
 
+      setImageWorkflowById((current) => {
+        if (!current[image.id]) {
+          return current;
+        }
+
+        const next = {
+          ...current,
+        };
+
+        delete next[image.id];
+
+        return next;
+      });
+
       setSelectedImageId((currentId) =>
         currentId === image.id
           ? nextPrimaryId ||
@@ -833,9 +1642,10 @@ export default function HomeStagingPage() {
 
     const uploadDisabled =
       uploadingImages ||
+      batchAnalyzing ||
       generating ||
       saving ||
-      imageCount >= 10;
+      imageCount >= 5;
 
     return (
       <div className="directImageUpload">
@@ -890,6 +1700,8 @@ export default function HomeStagingPage() {
     if (
       !listing ||
       !selectedImage ||
+      !analysisConfirmed ||
+      analyzingRoom ||
       generating ||
       saving
     ) {
@@ -902,6 +1714,12 @@ export default function HomeStagingPage() {
       setSavedImageUrl("");
       setStatusMessage("");
       setError("");
+
+      updateSelectedImageWorkflow({
+        preview: null,
+        savedImageUrl: "",
+        statusMessage: "",
+      });
 
       const outputSize = await detectOutputSize(
         selectedImage.url,
@@ -950,10 +1768,19 @@ export default function HomeStagingPage() {
         );
       }
 
+      const previewMessage =
+        "Die Vorschau wurde erstellt. Sie ist noch nicht gespeichert.";
+
       setPreview(data.preview);
-      setStatusMessage(
-        "Die Vorschau wurde erstellt. Sie ist noch nicht gespeichert."
-      );
+      setStatusMessage(previewMessage);
+
+      updateSelectedImageWorkflow({
+        preview: data.preview,
+        savedImageUrl: "",
+        statusMessage: previewMessage,
+        variationIndex:
+          variationIndexForRequest,
+      });
     } catch (generateError) {
       console.error(
         "Home-Staging-Vorschau fehlgeschlagen:",
@@ -979,6 +1806,10 @@ export default function HomeStagingPage() {
       variationIndex + 1;
 
     setVariationIndex(nextVariationIndex);
+
+    updateSelectedImageWorkflow({
+      variationIndex: nextVariationIndex,
+    });
 
     void runGeneration(
       nextVariationIndex
@@ -1078,12 +1909,20 @@ export default function HomeStagingPage() {
         );
       }
 
-      setSavedImageUrl(
-        saveData.image?.url || uploadedBlob.url
-      );
-      setStatusMessage(
-        "Die AI-Visualisierung wurde dauerhaft mit dem Objekt gespeichert."
-      );
+      const nextSavedImageUrl =
+        saveData.image?.url ||
+        uploadedBlob.url;
+
+      const saveMessage =
+        "Die AI-Visualisierung wurde dauerhaft mit dem Objekt gespeichert.";
+
+      setSavedImageUrl(nextSavedImageUrl);
+      setStatusMessage(saveMessage);
+
+      updateSelectedImageWorkflow({
+        savedImageUrl: nextSavedImageUrl,
+        statusMessage: saveMessage,
+      });
     } catch (saveError) {
       console.error(
         "Home-Staging-Ergebnis konnte nicht gespeichert werden:",
@@ -1373,6 +2212,7 @@ export default function HomeStagingPage() {
                             generating ||
                             saving ||
                             uploadingImages ||
+                            batchAnalyzing ||
                             deletingImageId !== null
                           }
                           aria-label={`Bild ${
@@ -1407,6 +2247,7 @@ export default function HomeStagingPage() {
                             generating ||
                             saving ||
                             uploadingImages ||
+                            batchAnalyzing ||
                             deletingImageId !== null
                           }
                           aria-label={`Bild ${
@@ -1442,6 +2283,177 @@ export default function HomeStagingPage() {
                 </div>
 
                 {renderImageUpload()}
+
+                <section className="multiImageBatchPanel">
+                  <div className="multiImageBatchHeader">
+                    <div>
+                      <small>
+                        MEHRBILD-ANALYSE
+                      </small>
+
+                      <h3>
+                        Alle Raumfotos vorbereiten
+                      </h3>
+
+                      <p>
+                        Bis zu fünf Bilder werden
+                        einzeln erkannt und erhalten
+                        einen eigenen kontrollierten
+                        Transformationsplan.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="analyzeAllImagesButton"
+                      onClick={analyzeAllImages}
+                      disabled={
+                        batchAnalyzing ||
+                        analyzingRoom ||
+                        generating ||
+                        saving ||
+                        uploadingImages ||
+                        isArchived
+                      }
+                    >
+                      {batchAnalyzing
+                        ? `Bild ${
+                            Math.min(
+                              batchAnalysisProgress.current +
+                                1,
+                              batchAnalysisProgress.total
+                            )
+                          } von ${
+                            batchAnalysisProgress.total
+                          } wird analysiert …`
+                        : analyzedImageCount ===
+                          stagingImages.length
+                        ? "Analysen aktualisieren"
+                        : "Alle Bilder analysieren"}
+                    </button>
+                  </div>
+
+                  <div className="multiImageProgressTrack">
+                    <span
+                      style={{
+                        width:
+                          batchAnalysisProgress.total >
+                          0
+                            ? `${Math.round(
+                                (batchAnalysisProgress.current /
+                                  batchAnalysisProgress.total) *
+                                  100
+                              )}%`
+                            : `${Math.round(
+                                (analyzedImageCount /
+                                  Math.max(
+                                    stagingImages.length,
+                                    1
+                                  )) *
+                                  100
+                              )}%`,
+                      }}
+                    />
+                  </div>
+
+                  <div className="multiImageStatusSummary">
+                    <strong>
+                      {analyzedImageCount} von{" "}
+                      {stagingImages.length} Bildern
+                      analysiert
+                    </strong>
+
+                    {batchAnalysisMessage && (
+                      <span>
+                        {batchAnalysisMessage}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="multiImageStatusList">
+                    {stagingImages.map(
+                      (image, index) => {
+                        const workflow =
+                          imageWorkflowById[
+                            image.id
+                          ];
+
+                        const normalStatus =
+                          getImageWorkflowStatus(
+                            workflow
+                          );
+
+                        const isCurrentBatchImage =
+                          batchAnalyzing &&
+                          batchAnalysisProgress
+                            .currentImageId ===
+                            image.id &&
+                          batchAnalysisProgress
+                            .current <
+                            batchAnalysisProgress
+                              .total;
+
+                        const status =
+                          isCurrentBatchImage
+                            ? {
+                                label:
+                                  "Wird analysiert",
+                                tone:
+                                  "processing",
+                              }
+                            : normalStatus;
+
+                        return (
+                          <button
+                            key={image.id}
+                            type="button"
+                            className={
+                              image.id ===
+                              selectedImageId
+                                ? "multiImageStatusItem multiImageStatusItemActive"
+                                : "multiImageStatusItem"
+                            }
+                            onClick={() =>
+                              chooseImage(
+                                image.id
+                              )
+                            }
+                            disabled={
+                              batchAnalyzing ||
+                              generating ||
+                              saving
+                            }
+                          >
+                            <span className="multiImageStatusNumber">
+                              {index + 1}
+                            </span>
+
+                            <span className="multiImageStatusName">
+                              <strong>
+                                Bild {index + 1}
+                              </strong>
+
+                              <small>
+                                {workflow
+                                  ?.roomAnalysis
+                                  ?.roomTypeLabel ||
+                                  image.fileName ||
+                                  "Raumfoto"}
+                              </small>
+                            </span>
+
+                            <span
+                              className={`multiImageStatusBadge multiImageStatusBadge-${status.tone}`}
+                            >
+                              {status.label}
+                            </span>
+                          </button>
+                        );
+                      }
+                    )}
+                  </div>
+                </section>
+
                 {pendingDeleteImage ? (
                   <div
                     className="imageDeleteConfirmation"
@@ -1508,7 +2520,188 @@ export default function HomeStagingPage() {
 
               </div>
 
-                          <section className="roomDesignGroup">
+                          <section className="roomAnalysisPanel">
+              <div className="roomAnalysisIntro">
+                <div className="roomAnalysisIcon">AI</div>
+
+                <div>
+                  <small>AUTOMATISCHE RAUMANALYSE</small>
+
+                  <h2>Inserat-AI versteht das Raumfoto</h2>
+
+                  <p>
+                    Raumart, Zustand, sichtbare Fakten und
+                    geschützte Architektur werden vor der
+                    Transformation objektbezogen geprüft.
+                  </p>
+                </div>
+              </div>
+
+              {analyzingRoom ? (
+                <div className="roomAnalysisLoading">
+                  <span className="roomAnalysisSpinner" />
+
+                  <div>
+                    <strong>Raumfoto wird analysiert …</strong>
+
+                    <p>
+                      Inserat-AI erstellt einen kontrollierten
+                      Transformationsplan.
+                    </p>
+                  </div>
+                </div>
+              ) : analysisError ? (
+                <div className="roomAnalysisError">
+                  <div>
+                    <strong>Analyse nicht abgeschlossen</strong>
+                    <span>{analysisError}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={retryRoomAnalysis}
+                    disabled={generating || saving}
+                  >
+                    Erneut analysieren
+                  </button>
+                </div>
+              ) : roomAnalysis ? (
+                <div className="roomAnalysisResult">
+                  <div className="roomAnalysisHeader">
+                    <div>
+                      <small>ERKANNTES RAUMFOTO</small>
+                      <h3>{roomAnalysis.roomTypeLabel}</h3>
+                    </div>
+
+                    <span className="roomConfidenceBadge">
+                      {Math.round(roomAnalysis.confidence * 100)}%
+                      Sicherheit
+                    </span>
+                  </div>
+
+                  <p className="roomAnalysisSummary">
+                    {roomAnalysis.summary}
+                  </p>
+
+                  <div className="roomAnalysisMetrics">
+                    <article>
+                      <small>ZUSTAND</small>
+                      <strong>
+                        {
+                          ROOM_CONDITION_LABELS[
+                            roomAnalysis.roomCondition
+                          ]
+                        }
+                      </strong>
+                    </article>
+
+                    <article>
+                      <small>TRANSFORMATION</small>
+                      <strong>
+                        {
+                          TRANSFORMATION_LABELS[
+                            roomAnalysis.transformation
+                          ]
+                        }
+                      </strong>
+                    </article>
+
+                    <article>
+                      <small>STILEMPFEHLUNG</small>
+                      <strong>
+                        {STYLES.find(
+                          (option) =>
+                            option.value === roomAnalysis.style
+                        )?.label || roomAnalysis.style}
+                      </strong>
+                    </article>
+                  </div>
+
+                  {roomAnalysis.visibleFacts.length > 0 && (
+                    <div className="roomAnalysisFacts">
+                      <small>SICHTBARE FAKTEN</small>
+
+                      <ul>
+                        {roomAnalysis.visibleFacts
+                          .slice(0, 8)
+                          .map((fact, index) => (
+                            <li key={`${fact}-${index}`}>
+                              {fact}
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {roomAnalysis.lockedArchitecture.length > 0 && (
+                    <div className="roomArchitectureFacts">
+                      <small>GESCHÜTZTE ARCHITEKTUR</small>
+
+                      <ul>
+                        {roomAnalysis.lockedArchitecture
+                          .slice(0, 6)
+                          .map((rule, index) => (
+                            <li key={`${rule}-${index}`}>
+                              {rule}
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {roomAnalysis.warnings.length > 0 && (
+                    <div className="roomAnalysisWarnings">
+                      <strong>Hinweise der Analyse</strong>
+
+                      {roomAnalysis.warnings.map(
+                        (warning, index) => (
+                          <span
+                            key={`${warning}-${index}`}
+                          >
+                            {warning}
+                          </span>
+                        )
+                      )}
+                    </div>
+                  )}
+
+                  <div className="roomAnalysisConfirmation">
+                    <div>
+                      <strong>Analyse prüfen und bestätigen</strong>
+
+                      <p>
+                        Raumart und Stil können im nächsten
+                        Bereich korrigiert werden.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      className={
+                        analysisConfirmed
+                          ? "confirmAnalysisButton confirmAnalysisButtonDone"
+                          : "confirmAnalysisButton"
+                      }
+                      onClick={confirmRoomAnalysis}
+                      disabled={
+                        !transformationBrief?.canGenerate ||
+                        !isSelectableRoomType(
+                          roomAnalysis.roomType
+                        ) ||
+                        generating ||
+                        saving
+                      }
+                    >
+                      {analysisConfirmed
+                        ? "✓ Analyse bestätigt"
+                        : "Analyse bestätigen"}
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </section>
+
+            <section className="roomDesignGroup">
               <div className="workflowGroupHeading">
                 <span>2</span>
 
@@ -1809,13 +3002,19 @@ export default function HomeStagingPage() {
                 className="generateButton"
                 onClick={generatePreview}
                 disabled={
+                  analyzingRoom ||
+                  !analysisConfirmed ||
                   generating ||
                   saving ||
                   isArchived ||
                   !selectedImage
                 }
               >
-                {generating ? (
+                {analyzingRoom ? (
+                  "Raum wird analysiert …"
+                ) : !analysisConfirmed ? (
+                  "Raumanalyse zuerst bestätigen"
+                ) : generating ? (
                   <>
                     <span className="buttonSpinner" />
                     AI richtet den Raum ein …
@@ -3417,6 +4616,434 @@ function PageStyles() {
           align-items: flex-start;
         }
       }
+      .roomAnalysisPanel {
+        display: grid;
+        gap: 20px;
+        margin-top: 20px;
+        padding: 24px;
+        border: 1px solid rgba(34, 211, 238, 0.28);
+        border-radius: 22px;
+        background:
+          linear-gradient(
+            145deg,
+            rgba(8, 47, 73, 0.34),
+            rgba(15, 23, 42, 0.96)
+          );
+        box-shadow: 0 24px 65px rgba(0, 0, 0, 0.22);
+      }
+
+      .roomAnalysisIntro,
+      .roomAnalysisHeader,
+      .roomAnalysisLoading,
+      .roomAnalysisError,
+      .roomAnalysisConfirmation {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .roomAnalysisIntro {
+        align-items: flex-start;
+      }
+
+      .roomAnalysisIcon {
+        display: grid;
+        width: 48px;
+        height: 48px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid rgba(34, 211, 238, 0.5);
+        border-radius: 15px;
+        background: rgba(8, 145, 178, 0.17);
+        color: #a5f3fc;
+        font-weight: 950;
+      }
+
+      .roomAnalysisPanel small {
+        color: #67e8f9;
+        font-size: 10px;
+        font-weight: 950;
+        letter-spacing: 0.12em;
+      }
+
+      .roomAnalysisPanel h2,
+      .roomAnalysisPanel h3 {
+        margin: 5px 0 0;
+        color: #ffffff;
+      }
+
+      .roomAnalysisIntro p,
+      .roomAnalysisLoading p,
+      .roomAnalysisConfirmation p {
+        margin: 7px 0 0;
+        color: #94a3b8;
+        line-height: 1.55;
+      }
+
+      .roomAnalysisLoading,
+      .roomAnalysisError {
+        padding: 17px;
+        border-radius: 14px;
+        background: rgba(2, 6, 23, 0.5);
+      }
+
+      .roomAnalysisSpinner {
+        width: 36px;
+        height: 36px;
+        flex: 0 0 auto;
+        border: 3px solid rgba(148, 163, 184, 0.2);
+        border-top-color: #22d3ee;
+        border-radius: 50%;
+        animation: stagingSpin 0.8s linear infinite;
+      }
+
+      .roomAnalysisError,
+      .roomAnalysisHeader,
+      .roomAnalysisConfirmation {
+        justify-content: space-between;
+      }
+
+      .roomAnalysisError > div,
+      .roomAnalysisResult {
+        display: grid;
+        gap: 16px;
+      }
+
+      .roomConfidenceBadge {
+        padding: 8px 12px;
+        border: 1px solid rgba(52, 211, 153, 0.4);
+        border-radius: 999px;
+        color: #a7f3d0;
+        font-size: 11px;
+        font-weight: 950;
+      }
+
+      .roomAnalysisSummary {
+        margin: 0;
+        color: #cbd5e1;
+        line-height: 1.65;
+      }
+
+      .roomAnalysisMetrics {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 11px;
+      }
+
+      .roomAnalysisMetrics article {
+        display: grid;
+        gap: 7px;
+        padding: 14px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        border-radius: 13px;
+        background: rgba(2, 6, 23, 0.5);
+      }
+
+      .roomAnalysisMetrics strong {
+        color: #ffffff;
+        font-size: 13px;
+      }
+
+      .roomAnalysisFacts,
+      .roomArchitectureFacts {
+        display: grid;
+        gap: 10px;
+        padding: 16px;
+        border-radius: 13px;
+      }
+
+      .roomAnalysisFacts {
+        border-left: 3px solid #22d3ee;
+        background: rgba(8, 47, 73, 0.24);
+      }
+
+      .roomArchitectureFacts {
+        border-left: 3px solid #34d399;
+        background: rgba(6, 78, 59, 0.17);
+      }
+
+      .roomAnalysisFacts ul,
+      .roomArchitectureFacts ul {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px 20px;
+        margin: 0;
+        padding-left: 18px;
+        color: #cbd5e1;
+      }
+
+      .roomAnalysisWarnings {
+        display: grid;
+        gap: 6px;
+        padding: 14px;
+        border: 1px solid rgba(251, 191, 36, 0.27);
+        border-radius: 12px;
+        color: #fef3c7;
+      }
+
+      .roomAnalysisConfirmation {
+        padding: 17px;
+        border: 1px solid rgba(52, 211, 153, 0.25);
+        border-radius: 15px;
+        background: rgba(6, 78, 59, 0.14);
+      }
+
+      .confirmAnalysisButton {
+        min-height: 48px;
+        padding: 0 19px;
+        border: 0;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #059669, #10b981);
+        color: #ffffff;
+        cursor: pointer;
+        font-weight: 950;
+      }
+
+      .confirmAnalysisButton:disabled {
+        cursor: not-allowed;
+        opacity: 0.45;
+      }
+
+      .confirmAnalysisButtonDone {
+        background: linear-gradient(135deg, #0e7490, #0891b2);
+      }
+
+      @media (max-width: 760px) {
+        .roomAnalysisPanel {
+          padding: 17px;
+        }
+
+        .roomAnalysisHeader,
+        .roomAnalysisConfirmation,
+        .roomAnalysisError {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .roomAnalysisMetrics,
+        .roomAnalysisFacts ul,
+        .roomArchitectureFacts ul {
+          grid-template-columns: 1fr;
+        }
+
+        .confirmAnalysisButton,
+        .roomAnalysisError button {
+          width: 100%;
+        }
+      }
+
+      .multiImageBatchPanel {
+        display: grid;
+        gap: 18px;
+        margin-top: 20px;
+        padding: 20px;
+        border: 1px solid rgba(212, 175, 55, 0.28);
+        border-radius: 18px;
+        background:
+          linear-gradient(
+            145deg,
+            rgba(30, 41, 59, 0.96),
+            rgba(15, 23, 42, 0.98)
+          );
+      }
+
+      .multiImageBatchHeader {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+      }
+
+      .multiImageBatchHeader h3 {
+        margin: 5px 0 0;
+        color: #ffffff;
+      }
+
+      .multiImageBatchHeader p {
+        max-width: 620px;
+        margin: 8px 0 0;
+        color: #94a3b8;
+        line-height: 1.55;
+      }
+
+      .multiImageBatchHeader small {
+        color: #d4af37;
+        font-size: 10px;
+        font-weight: 950;
+        letter-spacing: 0.12em;
+      }
+
+      .analyzeAllImagesButton {
+        min-height: 48px;
+        padding: 0 18px;
+        border: 1px solid rgba(212, 175, 55, 0.42);
+        border-radius: 12px;
+        background:
+          linear-gradient(
+            135deg,
+            #9a7618,
+            #d4af37
+          );
+        color: #07111f;
+        cursor: pointer;
+        font-weight: 950;
+        white-space: nowrap;
+      }
+
+      .analyzeAllImagesButton:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+
+      .multiImageProgressTrack {
+        height: 8px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.16);
+      }
+
+      .multiImageProgressTrack span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background:
+          linear-gradient(
+            90deg,
+            #d4af37,
+            #22d3ee
+          );
+        transition: width 220ms ease;
+      }
+
+      .multiImageStatusSummary {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        color: #cbd5e1;
+        font-size: 13px;
+      }
+
+      .multiImageStatusSummary strong {
+        color: #ffffff;
+      }
+
+      .multiImageStatusList {
+        display: grid;
+        gap: 9px;
+      }
+
+      .multiImageStatusItem {
+        display: grid;
+        grid-template-columns:
+          34px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 11px 13px;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        border-radius: 12px;
+        background: rgba(2, 6, 23, 0.42);
+        color: inherit;
+        cursor: pointer;
+        text-align: left;
+      }
+
+      .multiImageStatusItemActive {
+        border-color: rgba(34, 211, 238, 0.55);
+        background: rgba(8, 145, 178, 0.12);
+      }
+
+      .multiImageStatusNumber {
+        display: grid;
+        width: 30px;
+        height: 30px;
+        place-items: center;
+        border-radius: 9px;
+        background: rgba(148, 163, 184, 0.13);
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 950;
+      }
+
+      .multiImageStatusName {
+        display: grid;
+        gap: 3px;
+        min-width: 0;
+      }
+
+      .multiImageStatusName strong {
+        color: #ffffff;
+        font-size: 13px;
+      }
+
+      .multiImageStatusName small {
+        overflow: hidden;
+        color: #94a3b8;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .multiImageStatusBadge {
+        padding: 6px 9px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 950;
+      }
+
+      .multiImageStatusBadge-waiting {
+        background: rgba(148, 163, 184, 0.14);
+        color: #cbd5e1;
+      }
+
+      .multiImageStatusBadge-processing {
+        background: rgba(34, 211, 238, 0.14);
+        color: #a5f3fc;
+      }
+
+      .multiImageStatusBadge-analyzed {
+        background: rgba(59, 130, 246, 0.14);
+        color: #bfdbfe;
+      }
+
+      .multiImageStatusBadge-confirmed {
+        background: rgba(52, 211, 153, 0.14);
+        color: #a7f3d0;
+      }
+
+      .multiImageStatusBadge-generated,
+      .multiImageStatusBadge-saved {
+        background: rgba(212, 175, 55, 0.16);
+        color: #fde68a;
+      }
+
+      .multiImageStatusBadge-error {
+        background: rgba(248, 113, 113, 0.14);
+        color: #fecaca;
+      }
+
+      @media (max-width: 760px) {
+        .multiImageBatchHeader,
+        .multiImageStatusSummary {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .analyzeAllImagesButton {
+          width: 100%;
+        }
+
+        .multiImageStatusItem {
+          grid-template-columns:
+            30px minmax(0, 1fr);
+        }
+
+        .multiImageStatusBadge {
+          grid-column: 1 / -1;
+          justify-self: start;
+          margin-left: 42px;
+        }
+      }
+
       @media print {
         .stagingPage {
           display: none !important;

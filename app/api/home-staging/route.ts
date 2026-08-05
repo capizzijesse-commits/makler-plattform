@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 const AI_MODEL = "gpt-image-2";
-const PROMPT_VERSION = "home-staging-v1";
+const PROMPT_VERSION = "home-staging-v2-variants";
 
 const ROOM_TYPES = new Set([
   "livingRoom",

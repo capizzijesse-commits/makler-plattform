@@ -566,12 +566,13 @@ TITLE RULES:
 
 BODY RULES:
 - Write a complete professional real estate listing, not a teaser, summary, caption or social-media post.
-- Each body must contain 105 to 145 useful words.
-- Use 2 or 3 complete paragraphs and 8 to 10 complete sentences.
-- Silently verify that every body contains at least 100 words before returning JSON.
+- Each body must contain 120 to 180 useful words.
+- Use 3 or 4 complete paragraphs and 8 to 12 complete sentences.
+- Silently verify that every body contains at least 110 words before returning JSON.
 - The first paragraph should introduce the property and its primary verified angle.
 - The following paragraph or paragraphs should develop documented features, layout, outdoor space, parking or location information.
 - The description must feel complete enough to publish on a Swiss real estate portal.
+- Avoid database-style reporting phrases such as "aufgeführt", "angegeben", "erfasst", "ausgewiesen", "Objektmerkmale" or "fasst ... zusammen" when natural real-estate language is possible.
 - Factual accuracy remains mandatory, but brevity must not reduce the text to a short promotional post.
 - Do not use bullet points inside the body.
 - Do not repeat the title as the first sentence.
@@ -706,7 +707,7 @@ async function requestInitialVariants(
       temperature: 0.38,
       frequency_penalty: 0.25,
       presence_penalty: 0.15,
-      max_tokens: 1100,
+      max_tokens: 2200,
       response_format: {
         type: "json_object",
       },
@@ -798,9 +799,10 @@ NON-NEGOTIABLE REPAIR RULES:
 - A bare feature may be mentioned neutrally. Do not add an assumed benefit.
 - Do not add atmosphere, comfort, quality, security or lifestyle judgements.
 - Prefer concrete and factual sentences over advertising language.
-- Each repaired variant must still be a complete real estate listing of approximately 110 to 170 words.
-- Use at least two natural paragraphs per variant.
+- Each repaired variant must still be a complete real estate listing of approximately 120 to 180 words.
+- Use 3 or 4 natural paragraphs per variant.
 - Do not reduce the repair to a short factual summary.
+- Avoid database-style wording such as "aufgeführt", "angegeben", "erfasst", "ausgewiesen" or "Objektmerkmale".
 - Do not write a teaser, social-media caption or portal preview.
 - Return exactly three variants.
 - Return only the required JSON object.
@@ -1094,8 +1096,9 @@ STRICT REPAIR RULES:
 - Do not use generic evaluations such as ideal, attractive, outstanding, comfortable or perfect.
 - Use a different title and opening from the accepted variants.
 - Prefer neutral factual wording.
-- The rewritten variant must contain approximately 110 to 170 words.
-- Use 2 or 3 complete paragraphs and 8 to 10 complete sentences.
+- Avoid database-style wording such as "aufgeführt", "angegeben", "erfasst", "ausgewiesen", "Objektmerkmale" or "fasst ... zusammen".
+- The rewritten variant must contain approximately 120 to 180 words.
+- Use 3 or 4 complete paragraphs and 8 to 12 complete sentences.
 - Produce a full professional real estate listing, not a teaser, summary or social-media post.
 - Develop the verified property facts into a coherent description without inventing additional benefits.
 - Do not copy the failed text.
@@ -1117,7 +1120,7 @@ OUTPUT FORMAT:
       temperature: 0.18,
       frequency_penalty: 0.3,
       presence_penalty: 0.05,
-      max_tokens: 1200,
+      max_tokens: 2200,
       response_format: {
         type: "json_object",
       },
@@ -1617,74 +1620,82 @@ function buildPublishableFallbackVariant(
         "de-CH"
       );
 
+  const hasBalcony =
+    /\bbalkon\b/i.test(
+      factCorpus
+    );
+
+  const hasTerrace =
+    /\bterrasse\b/i.test(
+      factCorpus
+    );
+
+  const hasParkingHall =
+    /\beinstellhallenplatz\b/i.test(
+      factCorpus
+    );
+
+  const hasParkingSpace =
+    /\bgaragenplatz\b/i.test(
+      factCorpus
+    );
+
+  const hasGarage =
+    !hasParkingHall &&
+    !hasParkingSpace &&
+    /\bgarage\b/i.test(
+      factCorpus
+    );
+
+  const hasLift =
+    /\blift\b/i.test(
+      factCorpus
+    );
+
+  const hasGarden =
+    /\b(?:garten|gartensitzplatz)\b/i
+      .test(factCorpus);
+
+  const hasStorage =
+    /\b(?:keller|redui|reduit)\b/i
+      .test(factCorpus);
+
   const features: string[] =
     [];
 
-  if (
-    /\bbalkon\b/i.test(
-      factCorpus
-    )
-  ) {
+  if (hasBalcony) {
     features.push("Balkon");
   }
 
-  if (
-    /\bterrasse\b/i.test(
-      factCorpus
-    )
-  ) {
+  if (hasTerrace) {
     features.push("Terrasse");
   }
 
-  if (
-    /\beinstellhallenplatz\b/i.test(
-      factCorpus
-    )
-  ) {
+  if (hasParkingHall) {
     features.push(
       "Einstellhallenplatz"
     );
   }
-  else if (
-    /\bgaragenplatz\b/i.test(
-      factCorpus
-    )
-  ) {
+  else if (hasParkingSpace) {
     features.push(
       "Garagenplatz"
     );
   }
-  else if (
-    /\bgarage\b/i.test(
-      factCorpus
-    )
-  ) {
-    features.push(
-      "Garage"
-    );
+  else if (hasGarage) {
+    features.push("Garage");
   }
 
-  if (
-    /\blift\b/i.test(
-      factCorpus
-    )
-  ) {
+  if (hasLift) {
     features.push("Lift");
   }
 
-  if (
-    /\b(?:garten|gartensitzplatz)\b/i
-      .test(factCorpus)
-  ) {
+  if (hasGarden) {
     features.push(
       "Garten beziehungsweise Gartensitzplatz"
     );
   }
 
-  if (
-    /\b(?:keller|redui|reduit)\b/i
-      .test(factCorpus)
-  ) {
+  if (hasStorage) {
     features.push(
       "Keller beziehungsweise Reduit"
     );
@@ -1697,12 +1708,26 @@ function buildPublishableFallbackVariant(
 
   const locationLabel =
     location ||
-    "der angegebenen Ortschaft";
+    "der genannten Ortschaft";
 
   const roomPropertyLabel =
     rooms
       ? `${rooms}-Zimmer-${propertyType}`
       : propertyType;
+
+  const usesNeutralArticle =
+    /\b(?:haus|chalet|studio|loft|objekt|apartment)\b/i
+      .test(propertyType);
+
+  const article =
+    usesNeutralArticle
+      ? "ein"
+      : "eine";
+
+  const propertySubject =
+    usesNeutralArticle
+      ? "Das Objekt"
+      : "Die Immobilie";
 
   const titleByVariant = [
     `${roomPropertyLabel} in ${locationLabel}`,
@@ -1711,119 +1736,228 @@ function buildPublishableFallbackVariant(
       ? `${propertyType} mit ${livingArea} in ${locationLabel}`
       : `${propertyType} in ${locationLabel}`,
 
-    featureList
-      ? `${propertyType} mit ${featureList} in ${locationLabel}`
+    features[0]
+      ? `${propertyType} mit ${features[0]} in ${locationLabel}`
       : `${propertyType} in ${locationLabel}`,
   ];
 
-  const featureSentenceByVariant = [
-    featureList
-      ? `Als weitere Objektmerkmale sind ${featureList} aufgef\u00fchrt.`
-      : "",
+  const roomSentence =
+    rooms && livingArea
+      ? `${propertySubject} umfasst ${rooms} Zimmer und ${livingArea} Wohnfl\u00e4che.`
+      : rooms
+        ? `${propertySubject} umfasst ${rooms} Zimmer.`
+        : livingArea
+          ? `Die Wohnfl\u00e4che betr\u00e4gt ${livingArea}.`
+          : "";
 
+  const featureSentence =
     featureList
-      ? `Zum angegebenen Ausstattungsumfang z\u00e4hlen ${featureList}.`
-      : "",
+      ? `Zum Angebot z\u00e4hlen ${featureList}.`
+      : "Die Beschreibung konzentriert sich auf die best\u00e4tigten Eckdaten des Angebots.";
 
-    featureList
-      ? `${featureList} erg\u00e4nzen die wesentlichen Eckdaten dieses Angebots.`
-      : "",
+  const outdoorSentence =
+    hasBalcony ||
+    hasTerrace ||
+    hasGarden
+      ? "Damit ist auch ein Aussenbereich Teil des Angebots."
+      : "";
+
+  const parkingSentence =
+    hasParkingHall
+      ? "F\u00fcr die Parkierung steht ein Einstellhallenplatz zur Verf\u00fcgung."
+      : hasParkingSpace
+        ? "F\u00fcr die Parkierung steht ein Garagenplatz zur Verf\u00fcgung."
+        : hasGarage
+          ? "F\u00fcr die Parkierung steht eine Garage zur Verf\u00fcgung."
+          : "";
+
+  const priceSentence =
+    price
+      ? `Der Verkaufspreis betr\u00e4gt ${price}.`
+      : "";
+
+  const openingByVariant = [
+    `In ${locationLabel} steht ${article} ${roomPropertyLabel} zum Verkauf.`,
+
+    `${propertySubject} befindet sich in ${locationLabel} und wird zum Verkauf angeboten.`,
+
+    `Dieses Immobilienangebot in ${locationLabel} stellt ${article} ${roomPropertyLabel} in den Mittelpunkt.`,
   ];
 
-  const priceSentenceByVariant = [
-    price
-      ? `Der angegebene Verkaufspreis betr\u00e4gt ${price}.`
-      : "",
+  const overviewByVariant = [
+    "Zimmerzahl und Wohnfl\u00e4che bilden die Grundlage f\u00fcr die erste r\u00e4umliche Einordnung.",
 
-    price
-      ? `F\u00fcr die Immobilie ist ein Angebotspreis von ${price} ausgewiesen.`
-      : "",
+    "Die wichtigsten Angaben betreffen Standort, Objektart, Zimmerzahl und Wohnfl\u00e4che.",
 
-    price
-      ? `Preislich ist das Objekt mit ${price} erfasst.`
-      : "",
+    "Das Angebot wird durch seine klar benannten Fl\u00e4chen- und Ausstattungsmerkmale beschrieben.",
   ];
 
-  const texts = [
+  const summaryByVariant = [
+    "Damit sind die wesentlichen Informationen f\u00fcr eine erste Pr\u00fcfung der Immobilie zusammengefasst.",
+
+    "Die genannten Eckdaten erm\u00f6glichen eine sachliche erste Beurteilung des Angebots.",
+
+    "Zimmerzahl, Wohnfl\u00e4che, Preis und Zusatzmerkmale bilden die Grundlage f\u00fcr die weitere Pr\u00fcfung.",
+  ];
+
+  const closingByVariant = [
+    [
+      "F\u00fcr weitere Einzelheiten empfiehlt sich ein Blick in den Grundriss und die vollst\u00e4ndige Verkaufsdokumentation.",
+      "Bei einer Besichtigung lassen sich Raumaufteilung, Proportionen und Gesamteindruck direkt vor Ort beurteilen.",
+      "Offene Fragen zu Ausf\u00fchrung und weiteren Objektdetails k\u00f6nnen im pers\u00f6nlichen Austausch gekl\u00e4rt werden.",
+    ],
+
+    [
+      "Erg\u00e4nzende Informationen k\u00f6nnen den ausf\u00fchrlichen Objektunterlagen entnommen werden.",
+      "Eine pers\u00f6nliche Besichtigung bietet die M\u00f6glichkeit, die R\u00e4ume und ihre Aufteilung vor Ort zu pr\u00fcfen.",
+      "Damit kann das Angebot auf Grundlage der Unterlagen und des eigenen Eindrucks beurteilt werden.",
+    ],
+
+    [
+      "F\u00fcr eine vertiefte Beurteilung sollten Grundriss, Verkaufsunterlagen und Besichtigung gemeinsam betrachtet werden.",
+      "Vor Ort lassen sich insbesondere Raumproportionen und die tats\u00e4chliche Aufteilung nachvollziehen.",
+      "Weitere Fragen zum Objekt k\u00f6nnen im Rahmen der Besichtigung gekl\u00e4rt werden.",
+    ],
+  ];
+
+  const paragraphsByVariant = [
     [
       [
-        `Zum Verkauf steht eine ${roomPropertyLabel} in ${locationLabel}.`,
+        openingByVariant[0],
+        roomSentence,
+        overviewByVariant[0],
+      ]
+        .filter(Boolean)
+        .join(" "),
+
+      [
+        featureSentence,
+        outdoorSentence,
+        parkingSentence,
+      ]
+        .filter(Boolean)
+        .join(" "),
+
+      [
+        priceSentence,
+        summaryByVariant[0],
+      ]
+        .filter(Boolean)
+        .join(" "),
+
+      closingByVariant[0][0],
+    ],
+
+    [
+      [
+        openingByVariant[1],
+        livingArea
+          ? `Die angegebene Wohnfl\u00e4che betr\u00e4gt ${livingArea}.`
+          : "",
         rooms
           ? `Das Raumangebot umfasst ${rooms} Zimmer.`
           : "",
-        livingArea
-          ? `Die ausgewiesene Wohnfl\u00e4che betr\u00e4gt ${livingArea}.`
-          : "",
+        overviewByVariant[1],
       ]
         .filter(Boolean)
         .join(" "),
 
       [
-        featureSentenceByVariant[0],
-        priceSentenceByVariant[0],
-        "Zimmerangebot, Wohnfl\u00e4che und die genannten Zusatzmerkmale bilden die wesentlichen Eckpunkte dieser Immobilie.",
+        featureSentence,
+        parkingSentence,
+        outdoorSentence,
       ]
         .filter(Boolean)
         .join(" "),
-    ]
-      .filter(Boolean)
-      .join("\n\n"),
+
+      [
+        priceSentence,
+        summaryByVariant[1],
+      ]
+        .filter(Boolean)
+        .join(" "),
+
+      closingByVariant[1][0],
+    ],
 
     [
       [
-        livingArea
-          ? `Mit einer angegebenen Wohnfl\u00e4che von ${livingArea} pr\u00e4sentiert sich dieses Angebot in ${locationLabel}.`
-          : `Dieses Immobilienangebot befindet sich in ${locationLabel}.`,
-
-        rooms
-          ? `Aufgef\u00fchrt sind insgesamt ${rooms} Zimmer.`
-          : "",
-
-        `Als Objektart ist ${propertyType} angegeben.`,
+        openingByVariant[2],
+        featureSentence,
+        outdoorSentence,
+        parkingSentence,
       ]
         .filter(Boolean)
         .join(" "),
 
       [
-        featureSentenceByVariant[1],
-        priceSentenceByVariant[1],
-        "Die Kombination aus Fl\u00e4che, Zimmerzahl und den genannten Ausstattungsmerkmalen gibt dem Angebot ein klar umrissenes Profil.",
-      ]
-        .filter(Boolean)
-        .join(" "),
-    ]
-      .filter(Boolean)
-      .join("\n\n"),
-
-    [
-      [
-        featureList
-          ? `Bei diesem Angebot in ${locationLabel} stehen ${featureList} als zus\u00e4tzliche Merkmale im Vordergrund.`
-          : `In ${locationLabel} wird eine ${propertyType.toLocaleLowerCase(
-              "de-CH"
-            )} angeboten.`,
-
-        rooms
-          ? `Die Immobilie verf\u00fcgt gem\u00e4ss den Angaben \u00fcber ${rooms} Zimmer.`
-          : "",
-
-        livingArea
-          ? `Die Wohnfl\u00e4che ist mit ${livingArea} ausgewiesen.`
-          : "",
+        roomSentence,
+        overviewByVariant[2],
       ]
         .filter(Boolean)
         .join(" "),
 
       [
-        priceSentenceByVariant[2],
-        "Die erfassten Eckdaten fassen Raumangebot, Fl\u00e4che und die aufgef\u00fchrten Objektmerkmale in einer sachlichen Gesamtbeschreibung zusammen.",
+        priceSentence,
+        summaryByVariant[2],
       ]
         .filter(Boolean)
         .join(" "),
-    ]
-      .filter(Boolean)
-      .join("\n\n"),
+
+      closingByVariant[2][0],
+    ],
   ];
+
+  const paragraphs =
+    (
+      paragraphsByVariant[
+        variantIndex
+      ] ??
+      paragraphsByVariant[0]
+    )
+      .map(
+        (paragraph) =>
+          paragraph.trim()
+      )
+      .filter(Boolean);
+
+  const countWords = (
+    value: string
+  ) =>
+    value
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .length;
+
+  const additionalClosingSentences =
+    closingByVariant[
+      variantIndex
+    ] ??
+    closingByVariant[0];
+
+  let text =
+    paragraphs.join("\n\n");
+
+  for (
+    const sentence of
+    additionalClosingSentences.slice(1)
+  ) {
+    if (
+      countWords(text) >= 115
+    ) {
+      break;
+    }
+
+    const lastIndex =
+      paragraphs.length - 1;
+
+    paragraphs[lastIndex] =
+      `${paragraphs[lastIndex]} ${sentence}`;
+
+    text =
+      paragraphs.join("\n\n");
+  }
 
   return {
     title:
@@ -1831,15 +1965,9 @@ function buildPublishableFallbackVariant(
         variantIndex
       ] ??
       titleByVariant[0],
-
-    text:
-      texts[
-        variantIndex
-      ] ??
-      texts[0],
+    text,
   };
 }
-
 function buildPublishableFallbackVariants(
   facts: ListingFacts,
   locale: SupportedLocale
@@ -1980,7 +2108,7 @@ function repairVariantLocally(
       .filter(Boolean)
       .length;
 
-  if (repairedWordCount >= 55) {
+  if (repairedWordCount >= 100) {
     return {
       title:
         title.trim() ||
@@ -2022,6 +2150,21 @@ function getTotalScore(
   return result.scores.reduce(
     (total, score) =>
       total + score,
+    0
+  );
+}
+
+function getTotalWordCount(
+  variants: ListingTextVariant[]
+): number {
+  return variants.reduce(
+    (total, variant) =>
+      total +
+      variant.text
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .length,
     0
   );
 }
@@ -2204,8 +2347,215 @@ export async function POST(
       initialQuality;
 
     let repairAttempted = false;
-    const attempts = 1;
+    let attempts = 1;
     let publishableFallbackUsed = false;
+
+    const initialBlockingIssues =
+      selectedQuality.issues.filter(
+        (issue) =>
+          issue.severity ===
+            "error"
+      );
+
+    const initialHasOnlyWordCountErrors =
+      initialBlockingIssues.length > 0 &&
+      initialBlockingIssues.every(
+        (issue) =>
+          issue.code ===
+            "WORD_COUNT_OUTSIDE_TARGET"
+      );
+
+    if (
+      !selectedQuality.passed &&
+      !initialHasOnlyWordCountErrors
+    ) {
+      try {
+        const repairedVariants =
+          await requestRepairedVariants(
+            openai,
+            prompt,
+            locale,
+            selectedVariants,
+            selectedQuality
+          );
+
+        const repairedQuality =
+          evaluateListingQuality(
+            repairedVariants,
+            locale,
+            qualityFacts
+          );
+
+        attempts += 1;
+        repairAttempted = true;
+
+        const currentBlockingCount =
+          selectedQuality.issues.filter(
+            (issue) =>
+              issue.severity ===
+                "error"
+          ).length;
+
+        const repairedBlockingCount =
+          repairedQuality.issues.filter(
+            (issue) =>
+              issue.severity ===
+                "error"
+          ).length;
+
+        if (
+          repairedQuality.passed ||
+          repairedBlockingCount <
+            currentBlockingCount ||
+          (
+            repairedBlockingCount ===
+              currentBlockingCount &&
+            getTotalWordCount(
+              repairedVariants
+            ) >
+              getTotalWordCount(
+                selectedVariants
+              )
+          ) ||
+          (
+            repairedBlockingCount ===
+              currentBlockingCount &&
+            getTotalScore(
+              repairedQuality
+            ) >
+              getTotalScore(
+                selectedQuality
+              )
+          )
+        ) {
+          selectedVariants =
+            repairedVariants;
+
+          selectedQuality =
+            repairedQuality;
+        }
+      } catch (repairError) {
+        console.warn(
+          "LISTING FULL REPAIR FAILED:",
+          repairError
+        );
+      }
+    }
+
+    for (
+      let targetedPass = 0;
+      targetedPass < 1 &&
+      !selectedQuality.passed;
+      targetedPass += 1
+    ) {
+      const blockingIssues =
+        selectedQuality.issues.filter(
+          (issue) =>
+            issue.severity ===
+              "error"
+        );
+
+      const hasOnlyWordCountErrors =
+        blockingIssues.length > 0 &&
+        blockingIssues.every(
+          (issue) =>
+            issue.code ===
+              "WORD_COUNT_OUTSIDE_TARGET"
+        );
+
+      if (hasOnlyWordCountErrors) {
+        break;
+      }
+
+      try {
+        const targetedRepairs =
+          await requestTargetedVariantRepairs(
+            openai,
+            prompt,
+            locale,
+            selectedVariants,
+            selectedQuality
+          );
+
+        if (
+          targetedRepairs.length === 0
+        ) {
+          break;
+        }
+
+        const targetedVariants =
+          mergeTargetedRepairs(
+            selectedVariants,
+            targetedRepairs
+          );
+
+        const targetedQuality =
+          evaluateListingQuality(
+            targetedVariants,
+            locale,
+            qualityFacts
+          );
+
+        attempts += 1;
+        repairAttempted = true;
+
+        const currentBlockingCount =
+          selectedQuality.issues.filter(
+            (issue) =>
+              issue.severity ===
+                "error"
+          ).length;
+
+        const targetedBlockingCount =
+          targetedQuality.issues.filter(
+            (issue) =>
+              issue.severity ===
+                "error"
+          ).length;
+
+        const improved =
+          targetedQuality.passed ||
+          targetedBlockingCount <
+            currentBlockingCount ||
+          (
+            targetedBlockingCount ===
+              currentBlockingCount &&
+            getTotalWordCount(
+              targetedVariants
+            ) >
+              getTotalWordCount(
+                selectedVariants
+              )
+          ) ||
+          (
+            targetedBlockingCount ===
+              currentBlockingCount &&
+            getTotalScore(
+              targetedQuality
+            ) >
+              getTotalScore(
+                selectedQuality
+              )
+          );
+
+        if (!improved) {
+          break;
+        }
+
+        selectedVariants =
+          targetedVariants;
+
+        selectedQuality =
+          targetedQuality;
+      } catch (targetedRepairError) {
+        console.warn(
+          "LISTING TARGETED REPAIR FAILED:",
+          targetedRepairError
+        );
+
+        break;
+      }
+    }
 
     for (
       let localPass = 0;
