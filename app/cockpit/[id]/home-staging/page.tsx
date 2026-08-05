@@ -1169,7 +1169,7 @@ export default function HomeStagingPage() {
 
     const workerCount =
       Math.min(
-        2,
+        4,
         queue.length
       );
 
@@ -1184,7 +1184,7 @@ export default function HomeStagingPage() {
       setError("");
 
       setBatchAnalysisMessage(
-        "Zwei Raumfotos werden gleichzeitig analysiert und direkt transformiert."
+        "Bis zu vier Raumfotos werden gleichzeitig analysiert und direkt transformiert."
       );
 
       setBatchAnalysisProgress({
@@ -3420,7 +3420,7 @@ export default function HomeStagingPage() {
                 </h2>
 
                 <p>
-                  Zwei Raumfotos werden parallel analysiert und transformiert. Fertige Ergebnisse erscheinen sofort.
+                  Bis zu vier Raumfotos werden parallel analysiert und transformiert. Fertige Ergebnisse erscheinen sofort.
                 </p>
               </section>
             )}
