@@ -417,20 +417,20 @@ function parseRoomAnalysis(
       cleanStringArray(
         parsed.visibleFacts ??
           parsed.visible_facts,
-        20
+        6
       ),
 
     lockedArchitecture:
       cleanStringArray(
         parsed.lockedArchitecture ??
           parsed.locked_architecture,
-        20
+        6
       ),
 
     warnings:
       cleanStringArray(
         parsed.warnings,
-        12
+        3
       ),
 
     layoutGoal,
@@ -441,7 +441,7 @@ function parseRoomAnalysis(
       cleanStringArray(
         parsed.forbiddenElements ??
           parsed.forbidden_elements,
-        20
+        6
       ),
   };
 }
@@ -738,50 +738,42 @@ export async function POST(
       "gpt-5-mini";
 
     const prompt = [
-      "Du bist ein professioneller Schweizer Immobilienfoto- und Home-Staging-Analyst.",
+      "Analysiere dieses einzelne Immobilienfoto für professionelles virtuelles Home Staging.",
+      "Antworte ausschliesslich im vorgegebenen JSON-Schema.",
       "",
-      "Analysiere ausschliesslich das tatsächlich sichtbare einzelne Immobilienfoto.",
-      "Die Analyse dient einer objektbezogenen Raumtransformation ohne visuelle Floskeln.",
+      "Regeln:",
+      "- Verwende nur tatsächlich sichtbare Merkmale.",
+      "- Erfinde keine Fenster, Türen, Räume, Masse oder Materialien.",
+      "- Halte alle Texte sehr kurz.",
+      "- Maximal 6 visibleFacts.",
+      "- Maximal 6 lockedArchitecture-Einträge.",
+      "- Maximal 3 warnings.",
+      "- Maximal 6 forbiddenElements.",
+      "- Jeder Listeneintrag maximal 12 Wörter.",
+      "- Summary maximal 30 Wörter.",
+      "- Professionelles Schweizer Standarddeutsch, kein ß.",
       "",
-      "Zwingende Grundsätze:",
-      "- Erfinde keine Räume, Masse, Materialien, Fenster, Türen, Ausblicke oder baulichen Elemente.",
-      "- Verwende keine allgemeinen Werbeaussagen wie schön, traumhaft, exklusiv oder einladend.",
-      "- Jede visibleFact muss konkret im Bild erkennbar sein.",
-      "- Bei Unsicherheit muss der Punkt als unklar bezeichnet werden.",
-      "- Objektdaten sind nur Kontext und dürfen das Foto niemals überstimmen.",
-      "- Formuliere in professionellem Schweizer Standarddeutsch und verwende kein ß.",
+      "Raumarten:",
+      "- livingRoom, bedroom, office, diningRoom, kidsRoom",
+      "- storageRoom für Abstellraum, Lager, Réduit oder Utility Room",
+      "- kitchen, bathroom, hallway, balcony, terrace, garden, exterior",
+      "- other nur wenn keine passendere Raumart möglich ist",
+      "- unclear nur bei wirklich unbrauchbarer Erkennung",
       "",
-      "Erkenne:",
-      "1. die wahrscheinlichste Raumart",
-      "2. den sichtbaren Möblierungs- oder Renovationszustand",
-      "3. die fachlich passende Transformation",
-      "4. konkrete sichtbare Merkmale",
-      "5. alle zu schützenden baulichen Elemente",
-      "6. einen realistischen Möblierungs- und Laufwegplan",
-      "7. unzulässige oder räumlich unplausible Elemente",
-      "8. Unsicherheiten und Einschränkungen",
-      "",
-      "Transformationslogik:",
-      "- Leerer oder fast leerer Innenraum: furnishEmpty",
-      "- Bereits möblierter Innenraum: redesignFurnished",
-      "- Sichtbare Küche mit Renovationsbedarf: renovateKitchen",
-      "- Sichtbares Bad mit Renovationsbedarf: renovateBathroom",
-      "- Balkon, Terrasse oder Garten: designOutdoor",
-      "- Unsichere Raumart oder Zustand: needsConfirmation",
-      "- Ungeeignetes, stark abgeschnittenes oder nicht räumliches Foto: notRecommended",
-      "",
-      "Stilempfehlung:",
-      "- Wähle modern, scandinavian, luxurious oder minimalist.",
-      "- Die Empfehlung muss zur sichtbaren Raumgrösse, Helligkeit und vorhandenen Architektur passen.",
-      "- Luxus darf niemals nur über Marmor, Gold, Bouclé oder übermässige Dekoration simuliert werden.",
+      "Transformation:",
+      "- leer oder fast leer: furnishEmpty",
+      "- möbliert oder unaufgeräumt: redesignFurnished",
+      "- Küche mit Renovationsbedarf: renovateKitchen",
+      "- Bad mit Renovationsbedarf: renovateBathroom",
+      "- Aussenbereich: designOutdoor",
+      "- ungeeignet: notRecommended",
+      "- wichtige Unsicherheit: needsConfirmation",
       "",
       "Objektkontext:",
       `Objektart: ${listing.propertyType || "nicht angegeben"}`,
       `Zimmerzahl: ${listing.rooms ?? "nicht angegeben"}`,
       `Wohnfläche: ${listing.livingArea ?? "nicht angegeben"}`,
       `Ort: ${listing.location || "nicht angegeben"}`,
-      "",
-      "Die Zusammenfassung soll kurz und direkt für die Benutzeroberfläche geeignet sein.",
     ].join("\n");
 
     const requestRoomAnalysis =
@@ -831,7 +823,7 @@ export async function POST(
                           "input_image",
                         image_url:
                           sourceImage.url,
-                        detail: "high",
+                        detail: "low",
                       },
                     ],
                   },
@@ -916,7 +908,7 @@ export async function POST(
 
     let analysisAttempt =
       await requestRoomAnalysis(
-        3200
+        2200
       );
 
     if (
@@ -973,18 +965,18 @@ export async function POST(
           "WIEDERHOLUNG WEGEN UNVOLLSTÄNDIGER AUSGABE:",
           "- Gib das vollständige JSON-Objekt zurück.",
           "- Kürze die Ausgabe, ohne Pflichtfelder auszulassen.",
-          "- Maximal 8 visibleFacts.",
-          "- Maximal 8 lockedArchitecture-Einträge.",
-          "- Maximal 5 warnings.",
-          "- Maximal 8 forbiddenElements.",
-          "- Jeder Listeneintrag enthält höchstens 16 Wörter.",
-          "- Die summary enthält höchstens 45 Wörter.",
+          "- Maximal 6 visibleFacts.",
+          "- Maximal 6 lockedArchitecture-Einträge.",
+          "- Maximal 3 warnings.",
+          "- Maximal 6 forbiddenElements.",
+          "- Jeder Listeneintrag enthält höchstens 12 Wörter.",
+          "- Die summary enthält höchstens 30 Wörter.",
           "- Beende alle Arrays und das JSON-Objekt vollständig.",
         ].join("\n");
 
       analysisAttempt =
         await requestRoomAnalysis(
-          5000,
+          3200,
           compactRetryInstruction,
           60_000
         );

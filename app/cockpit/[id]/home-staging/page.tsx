@@ -37,7 +37,8 @@ type RoomType =
   | "bedroom"
   | "office"
   | "diningRoom"
-  | "kidsRoom";
+  | "kidsRoom"
+  | "storageRoom";
 
 type StagingStyle =
   | "modern"
@@ -262,6 +263,11 @@ const ROOM_TYPES: Array<{
     label: "Kinderzimmer",
     description: "Freundliche und altersneutrale Einrichtung",
   },
+  {
+    value: "storageRoom",
+    label: "Abstellraum / Lager",
+    description: "Aufgeräumter, funktionaler Stauraum mit klaren Laufwegen",
+  },
 ];
 
 const STYLES: Array<{
@@ -322,6 +328,42 @@ function isSelectableRoomType(
     (option) =>
       option.value === value
   );
+}
+
+function resolveGeneratableRoomType(
+  analysis: RoomAnalysis
+): RoomType | null {
+  if (
+    isSelectableRoomType(
+      analysis.roomType
+    )
+  ) {
+    return analysis.roomType;
+  }
+
+  const roomLabel =
+    analysis.roomTypeLabel
+      .trim()
+      .toLowerCase();
+
+  const isStorageRoom =
+    analysis.roomType === "other" &&
+    [
+      "abstell",
+      "lager",
+      "storage",
+      "utility",
+      "nebenraum",
+      "vorrat",
+      "réduit",
+      "ripostiglio",
+    ].some((keyword) =>
+      roomLabel.includes(keyword)
+    );
+
+  return isStorageRoom
+    ? "storageRoom"
+    : null;
 }
 
 function isSelectableStyle(
@@ -1050,17 +1092,10 @@ export default function HomeStagingPage() {
         );
       }
 
-      const roomTypeIsSelectable =
-        isSelectableRoomType(
-          data.analysis.roomType
+      const analyzedRoomType =
+        resolveGeneratableRoomType(
+          data.analysis
         );
-
-      const analyzedRoomType:
-        RoomType =
-          roomTypeIsSelectable
-            ? data.analysis
-                .roomType as RoomType
-            : "livingRoom";
 
       const analyzedStyle =
         isSelectableStyle(
@@ -1074,7 +1109,7 @@ export default function HomeStagingPage() {
           data.transformationBrief
             .canGenerate
         ) &&
-        roomTypeIsSelectable;
+        analyzedRoomType !== null;
 
       const nextWorkflow:
         ImageWorkflowState = {
@@ -1092,7 +1127,8 @@ export default function HomeStagingPage() {
               ? "Die Analyse wurde für die Batch-Transformation bestätigt."
               : "Dieses Raumfoto muss vor der Transformation geprüft werden.",
           roomType:
-            analyzedRoomType,
+            analyzedRoomType ??
+            "livingRoom",
           style:
             analyzedStyle,
           generationMode:
@@ -1244,17 +1280,25 @@ export default function HomeStagingPage() {
                   workflow
                     .transformationBrief
                     .canGenerate &&
-                  isSelectableRoomType(
+                  resolveGeneratableRoomType(
                     workflow
                       .roomAnalysis
-                      .roomType
-                  ) &&
+                  ) !== null &&
                   !workflow
                     .analysisConfirmed
                 ) {
+                  const confirmedRoomType =
+                    resolveGeneratableRoomType(
+                      workflow
+                        .roomAnalysis
+                    );
+
                   const confirmedWorkflow:
                     ImageWorkflowState = {
                       ...workflow,
+                      roomType:
+                        confirmedRoomType ??
+                        workflow.roomType,
                       analysisConfirmed:
                         true,
                     };
@@ -3270,6 +3314,131 @@ export default function HomeStagingPage() {
             />
                         </section>
 
+            {batchPreviewItems.length > 1 && (
+              <section className="multiResultSection">
+                <div className="multiResultHeading">
+                  <div>
+                    <span className="eyebrow">
+                      MEHRBILD-ERGEBNISSE
+                    </span>
+
+                    <h2>
+                      Alle AI-Transformationen
+                    </h2>
+
+                    <p>
+                      Jedes Raumfoto besitzt ein eigenes
+                      Original und ein eigenes AI-Ergebnis.
+                    </p>
+                  </div>
+
+                  <span className="aiLabel">
+                    {batchPreviewItems.length}
+                    {" "}BILDER FERTIG
+                  </span>
+                </div>
+
+                <div className="multiResultGrid">
+                  {batchPreviewItems.map(
+                    (
+                      {
+                        image,
+                        workflow,
+                        previewUrl:
+                          resultPreviewUrl,
+                      },
+                      index
+                    ) => (
+                      <article
+                        key={image.id}
+                        className={
+                          selectedImage?.id ===
+                          image.id
+                            ? "multiResultCard multiResultCardActive"
+                            : "multiResultCard"
+                        }
+                      >
+                        <div className="multiResultCardHeader">
+                          <div>
+                            <strong>
+                              Bild {index + 1}
+                            </strong>
+
+                            <span>
+                              {workflow
+                                .roomAnalysis
+                                ?.roomTypeLabel ||
+                                image.fileName ||
+                                "Raumfoto"}
+                            </span>
+                          </div>
+
+                          <button
+                            type="button"
+                            className="multiResultSelectButton"
+                            onClick={() =>
+                              chooseImage(
+                                image.id
+                              )
+                            }
+                          >
+                            Öffnen
+                          </button>
+                        </div>
+
+                        <div className="multiResultComparison">
+                          <div className="multiResultImage">
+                            <span>
+                              ORIGINAL
+                            </span>
+
+                            <img
+                              src={image.url}
+                              alt={
+                                "Originalbild " +
+                                (index + 1)
+                              }
+                            />
+                          </div>
+
+                          <div className="multiResultImage multiResultImageAi">
+                            <span>
+                              AI-ERGEBNIS
+                            </span>
+
+                            <img
+                              src={
+                                resultPreviewUrl
+                              }
+                              alt={
+                                "AI-Visualisierung " +
+                                (index + 1)
+                              }
+                            />
+                          </div>
+                        </div>
+
+                        <div className="multiResultStatus">
+                          <strong>
+                            {workflow
+                              .savedImageUrl
+                              ? "Gespeichert"
+                              : "Vorschau bereit"}
+                          </strong>
+
+                          <span>
+                            {workflow
+                              .statusMessage}
+                          </span>
+                        </div>
+                      </article>
+                    )
+                  )}
+                </div>
+              </section>
+            )}
+
+
             <section className="generationPanel">
               <div className="generationModeSection">
                 <div className="generationModeHeading">
@@ -3425,129 +3594,6 @@ export default function HomeStagingPage() {
               </section>
             )}
 
-            {batchPreviewItems.length > 1 && (
-              <section className="multiResultSection">
-                <div className="multiResultHeading">
-                  <div>
-                    <span className="eyebrow">
-                      MEHRBILD-ERGEBNISSE
-                    </span>
-
-                    <h2>
-                      Alle AI-Transformationen
-                    </h2>
-
-                    <p>
-                      Jedes Raumfoto besitzt ein eigenes
-                      Original und ein eigenes AI-Ergebnis.
-                    </p>
-                  </div>
-
-                  <span className="aiLabel">
-                    {batchPreviewItems.length}
-                    {" "}BILDER FERTIG
-                  </span>
-                </div>
-
-                <div className="multiResultGrid">
-                  {batchPreviewItems.map(
-                    (
-                      {
-                        image,
-                        workflow,
-                        previewUrl:
-                          resultPreviewUrl,
-                      },
-                      index
-                    ) => (
-                      <article
-                        key={image.id}
-                        className={
-                          selectedImage?.id ===
-                          image.id
-                            ? "multiResultCard multiResultCardActive"
-                            : "multiResultCard"
-                        }
-                      >
-                        <div className="multiResultCardHeader">
-                          <div>
-                            <strong>
-                              Bild {index + 1}
-                            </strong>
-
-                            <span>
-                              {workflow
-                                .roomAnalysis
-                                ?.roomTypeLabel ||
-                                image.fileName ||
-                                "Raumfoto"}
-                            </span>
-                          </div>
-
-                          <button
-                            type="button"
-                            className="multiResultSelectButton"
-                            onClick={() =>
-                              chooseImage(
-                                image.id
-                              )
-                            }
-                          >
-                            Öffnen
-                          </button>
-                        </div>
-
-                        <div className="multiResultComparison">
-                          <div className="multiResultImage">
-                            <span>
-                              ORIGINAL
-                            </span>
-
-                            <img
-                              src={image.url}
-                              alt={
-                                "Originalbild " +
-                                (index + 1)
-                              }
-                            />
-                          </div>
-
-                          <div className="multiResultImage multiResultImageAi">
-                            <span>
-                              AI-ERGEBNIS
-                            </span>
-
-                            <img
-                              src={
-                                resultPreviewUrl
-                              }
-                              alt={
-                                "AI-Visualisierung " +
-                                (index + 1)
-                              }
-                            />
-                          </div>
-                        </div>
-
-                        <div className="multiResultStatus">
-                          <strong>
-                            {workflow
-                              .savedImageUrl
-                              ? "Gespeichert"
-                              : "Vorschau bereit"}
-                          </strong>
-
-                          <span>
-                            {workflow
-                              .statusMessage}
-                          </span>
-                        </div>
-                      </article>
-                    )
-                  )}
-                </div>
-              </section>
-            )}
 
             {preview && selectedImage && (
               <section className="resultSection">

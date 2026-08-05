@@ -32,6 +32,8 @@ const ROOM_TYPES = {
   office: "home office",
   diningRoom: "dining room",
   kidsRoom: "children's room",
+  storageRoom:
+    "storage room or utility room",
 } as const;
 
 const STYLES = {

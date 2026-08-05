@@ -7,6 +7,7 @@ export const HOME_STAGING_ROOM_TYPES = [
   "office",
   "diningRoom",
   "kidsRoom",
+  "storageRoom",
   "kitchen",
   "bathroom",
   "hallway",
