@@ -14,10 +14,10 @@ const AI_MODEL = "gpt-image-2";
 const PROMPT_VERSION = "home-staging-v2-variants";
 const MAX_SOURCE_IMAGE_SIZE = 10 * 1024 * 1024;
 
-const PREVIEW_SOURCE_EDGE = 1280;
+const PREVIEW_SOURCE_EDGE = 1024;
 const FINAL_SOURCE_EDGE = 2048;
 
-const PREVIEW_SOURCE_WEBP_QUALITY = 80;
+const PREVIEW_SOURCE_WEBP_QUALITY = 72;
 const FINAL_SOURCE_WEBP_QUALITY = 92;
 
 const ALLOWED_IMAGE_TYPES = new Set([
@@ -504,8 +504,11 @@ export async function POST(
       );
     }
 
+    const sourceDownloadStartedAt =
+      Date.now();
+
     const sourceResponse = await fetch(sourceImage.url, {
-      cache: "no-store",
+      cache: "force-cache",
       signal: AbortSignal.timeout(30_000),
     });
 
@@ -541,6 +544,10 @@ export async function POST(
     const sourceBytes =
       await sourceResponse.arrayBuffer();
 
+    const sourceDownloadMs =
+      Date.now() -
+      sourceDownloadStartedAt;
+
     if (sourceBytes.byteLength > MAX_SOURCE_IMAGE_SIZE) {
       return NextResponse.json(
         {
@@ -551,6 +558,9 @@ export async function POST(
         { status: 400 }
       );
     }
+
+    const sourcePreparationStartedAt =
+      Date.now();
 
     const optimizedSourceBuffer = await sharp(
       Buffer.from(sourceBytes)
@@ -569,6 +579,10 @@ export async function POST(
         smartSubsample: true,
       })
       .toBuffer();
+
+    const sourcePreparationMs =
+      Date.now() -
+      sourcePreparationStartedAt;
 
     const sourceFile = new File(
       [
@@ -634,6 +648,9 @@ textiles, lighting and decoration.
     formData.append("moderation", "auto");
     formData.append("user", user.id);
 
+    const openAIStartedAt =
+      Date.now();
+
     const openAIResponse = await fetch(
       "https://api.openai.com/v1/images/edits",
       {
@@ -645,6 +662,10 @@ textiles, lighting and decoration.
         signal: AbortSignal.timeout(170_000),
       }
     );
+
+    const openAIMs =
+      Date.now() -
+      openAIStartedAt;
 
     const result =
       (await openAIResponse
@@ -699,6 +720,23 @@ textiles, lighting and decoration.
         { status: 502 }
       );
     }
+
+    console.info(
+      "HOME-STAGING PERFORMANCE:",
+      {
+        sourceImageId:
+          sourceImage.id,
+        mode:
+          generationMode,
+        sourceDownloadMs,
+        sourcePreparationMs,
+        openAIMs,
+        totalMeasuredMs:
+          sourceDownloadMs +
+          sourcePreparationMs +
+          openAIMs,
+      }
+    );
 
     return NextResponse.json({
       success: true,

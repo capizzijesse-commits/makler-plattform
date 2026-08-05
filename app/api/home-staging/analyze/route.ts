@@ -361,8 +361,78 @@ function parseRoomAnalysis(
           )
         : 0;
 
+  const roomEvidence =
+    [
+      roomTypeLabel,
+      summary,
+      ...cleanStringArray(
+        parsed.visibleFacts ??
+          parsed.visible_facts,
+        6
+      ),
+    ]
+      .join(" ")
+      .toLowerCase();
+
+  const hasOfficeEvidence =
+    [
+      "schreibtisch",
+      "bürostuhl",
+      "arbeitsplatz",
+      "monitor",
+      "bildschirm",
+      "computer",
+      "desk",
+      "office chair",
+      "workstation",
+    ].some((keyword) =>
+      roomEvidence.includes(keyword)
+    );
+
+  const hasBedroomEvidence =
+    [
+      "bett",
+      "matratze",
+      "nachttisch",
+      "schlafzone",
+      "duvet",
+      "bed",
+      "mattress",
+      "bedside",
+    ].some((keyword) =>
+      roomEvidence.includes(keyword)
+    );
+
+  let resolvedRoomType =
+    roomType;
+
+  let resolvedRoomTypeLabel =
+    roomTypeLabel;
+
   if (
-    !ROOM_TYPE_SET.has(roomType) ||
+    (
+      roomType === "bedroom" ||
+      roomType === "other" ||
+      roomType === "unclear"
+    ) &&
+    hasOfficeEvidence &&
+    !hasBedroomEvidence
+  ) {
+    resolvedRoomType = "office";
+    resolvedRoomTypeLabel = "Büro";
+  }
+
+  if (
+    roomType === "office" &&
+    hasBedroomEvidence
+  ) {
+    resolvedRoomType = "bedroom";
+    resolvedRoomTypeLabel =
+      "Schlafzimmer";
+  }
+
+  if (
+    !ROOM_TYPE_SET.has(resolvedRoomType) ||
     !ROOM_CONDITION_SET.has(
       roomCondition
     ) ||
@@ -396,9 +466,10 @@ function parseRoomAnalysis(
       ANALYSIS_VERSION,
 
     roomType:
-      roomType as HomeStagingRoomType,
+      resolvedRoomType as HomeStagingRoomType,
 
-    roomTypeLabel,
+    roomTypeLabel:
+      resolvedRoomTypeLabel,
 
     roomCondition:
       roomCondition as HomeStagingRoomCondition,
@@ -755,6 +826,10 @@ export async function POST(
       "",
       "Raumarten:",
       "- livingRoom, bedroom, office, diningRoom, kidsRoom",
+      "- office nur bei sichtbarem Arbeitsplatz: Schreibtisch, Bürostuhl, Monitor oder Computer.",
+      "- bedroom nur bei sichtbarem Bett, Matratze oder einer klaren Schlafzone.",
+      "- Ein leerer Raum ohne sichtbares Bett ist nicht automatisch ein Schlafzimmer.",
+      "- Bei sichtbarem Arbeitsplatz ohne Bett muss roomType office sein.",
       "- storageRoom für Abstellraum, Lager, Réduit oder Utility Room",
       "- kitchen, bathroom, hallway, balcony, terrace, garden, exterior",
       "- other nur wenn keine passendere Raumart möglich ist",

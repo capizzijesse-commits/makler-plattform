@@ -707,7 +707,7 @@ async function requestInitialVariants(
       temperature: 0.38,
       frequency_penalty: 0.25,
       presence_penalty: 0.15,
-      max_tokens: 2200,
+      max_tokens: 1800,
       response_format: {
         type: "json_object",
       },
