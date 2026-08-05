@@ -2326,6 +2326,12 @@ export async function POST(
 
     const generationStartedAt = Date.now();
 
+    // Schneller Standardlauf:
+    // Nur eine OpenAI-Generierung pro Anfrage.
+    // Qualitätsprüfung und Faktenkorrektur erfolgen danach lokal.
+    const enableSecondaryAiRepairs =
+      false;
+
     const initialVariants =
       await requestInitialVariants(
         openai,
@@ -2366,6 +2372,7 @@ export async function POST(
       );
 
     if (
+      enableSecondaryAiRepairs &&
       !selectedQuality.passed &&
       !initialHasOnlyWordCountErrors
     ) {
@@ -2444,7 +2451,12 @@ export async function POST(
 
     for (
       let targetedPass = 0;
-      targetedPass < 1 &&
+      targetedPass <
+        (
+          enableSecondaryAiRepairs
+            ? 1
+            : 0
+        ) &&
       !selectedQuality.passed;
       targetedPass += 1
     ) {
