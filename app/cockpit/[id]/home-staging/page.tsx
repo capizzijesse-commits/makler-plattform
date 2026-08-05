@@ -968,10 +968,35 @@ export default function HomeStagingPage() {
     ? `data:${preview.mimeType};base64,${preview.imageBase64}`
     : "";
 
-  type BatchGenerationItem = {
-    image: ListingImage;
-    workflow: ImageWorkflowState;
-  };
+  const batchPreviewItems =
+    stagingImages.flatMap(
+      (image) => {
+        const workflow =
+          imageWorkflowById[
+            image.id
+          ];
+
+        if (
+          !workflow?.preview
+        ) {
+          return [];
+        }
+
+        return [
+          {
+            image,
+            workflow,
+            previewUrl:
+              "data:" +
+              workflow.preview
+                .mimeType +
+              ";base64," +
+              workflow.preview
+                .imageBase64,
+          },
+        ];
+      }
+    );
 
   async function analyzeSingleImage(
     image: ListingImage
@@ -1135,65 +1160,32 @@ export default function HomeStagingPage() {
       return;
     }
 
-    const readyItems:
-      BatchGenerationItem[] = [];
-
-    const imagesToAnalyze:
-      ListingImage[] = [];
-
-    for (
-      const image of stagingImages
-    ) {
-      const workflow =
-        imageWorkflowById[
-          image.id
-        ];
-
-      if (
-        workflow?.roomAnalysis &&
-        workflow
-          .transformationBrief &&
-        !workflow.analysisError
-      ) {
-        const canGenerate =
-          Boolean(
-            workflow
-              .transformationBrief
-              .canGenerate
-          ) &&
-          isSelectableRoomType(
-            workflow
-              .roomAnalysis
-              .roomType
-          );
-
-        if (canGenerate) {
-          readyItems.push({
-            image,
-            workflow: {
-              ...workflow,
-              analysisConfirmed:
-                true,
-            },
-          });
-        }
-
-        continue;
-      }
-
-      imagesToAnalyze.push(
-        image
-      );
-    }
-
     const total =
-      imagesToAnalyze.length;
+      stagingImages.length;
+
+    const queue = [
+      ...stagingImages,
+    ];
+
+    const workerCount =
+      Math.min(
+        2,
+        queue.length
+      );
 
     let completed = 0;
+    let generated = 0;
+    let skipped = 0;
+    let failed = 0;
 
     try {
       setBatchAnalyzing(true);
+      setGenerating(true);
       setError("");
+
+      setBatchAnalysisMessage(
+        "Zwei Raumfotos werden gleichzeitig analysiert und direkt transformiert."
+      );
 
       setBatchAnalysisProgress({
         current: 0,
@@ -1201,146 +1193,223 @@ export default function HomeStagingPage() {
         currentImageId: "",
       });
 
-      if (total > 0) {
-        setBatchAnalysisMessage(
-          "Bis zu 2 Raumfotos werden gleichzeitig analysiert."
-        );
+      await Promise.all(
+        Array.from(
+          {
+            length:
+              workerCount,
+          },
+          async (
+            _,
+            workerIndex
+          ) => {
+            while (
+              queue.length > 0
+            ) {
+              const image =
+                queue.shift();
 
-        const queue = [
-          ...imagesToAnalyze,
-        ];
+              if (!image) {
+                return;
+              }
 
-        const workerCount =
-          Math.min(
-            2,
-            queue.length
-          );
-
-        await Promise.all(
-          Array.from(
-            {
-              length:
-                workerCount,
-            },
-            async () => {
-              while (
-                queue.length > 0
-              ) {
-                const image =
-                  queue.shift();
-
-                if (!image) {
-                  return;
-                }
-
-                setBatchAnalysisProgress(
-                  {
-                    current:
-                      completed,
-                    total,
-                    currentImageId:
-                      image.id,
-                  }
+              try {
+                setBatchAnalysisMessage(
+                  "Pipeline " +
+                    (workerIndex + 1) +
+                    ": Raumfoto wird analysiert."
                 );
 
-                const workflow =
-                  await analyzeSingleImage(
-                    image
-                  );
-
-                completed += 1;
-
-                setBatchAnalysisProgress(
-                  {
-                    current:
-                      completed,
-                    total,
-                    currentImageId:
-                      image.id,
-                  }
-                );
+                let workflow:
+                  | ImageWorkflowState
+                  | null
+                  | undefined =
+                    imageWorkflowById[
+                      image.id
+                    ];
 
                 if (
+                  !workflow
+                    ?.roomAnalysis ||
+                  !workflow
+                    .transformationBrief ||
                   workflow
-                    ?.analysisConfirmed
+                    .analysisError
                 ) {
-                  readyItems.push({
-                    image,
-                    workflow,
-                  });
+                  workflow =
+                    await analyzeSingleImage(
+                      image
+                    );
+                } else if (
+                  workflow
+                    .transformationBrief
+                    .canGenerate &&
+                  isSelectableRoomType(
+                    workflow
+                      .roomAnalysis
+                      .roomType
+                  ) &&
+                  !workflow
+                    .analysisConfirmed
+                ) {
+                  const confirmedWorkflow:
+                    ImageWorkflowState = {
+                      ...workflow,
+                      analysisConfirmed:
+                        true,
+                    };
+
+                  workflow =
+                    confirmedWorkflow;
+
+                  setImageWorkflowById(
+                    (current) => ({
+                      ...current,
+                      [image.id]:
+                        confirmedWorkflow,
+                    })
+                  );
                 }
+
+                if (
+                  !workflow ||
+                  !workflow
+                    .analysisConfirmed
+                ) {
+                  skipped += 1;
+
+                  continue;
+                }
+
+                if (
+                  workflow.preview ||
+                  workflow
+                    .savedImageUrl
+                ) {
+                  skipped += 1;
+
+                  continue;
+                }
+
+                setBatchAnalysisMessage(
+                  "Pipeline " +
+                    (workerIndex + 1) +
+                    ": Bild wird jetzt von der AI transformiert."
+                );
+
+                await runGenerationForImage(
+                  image,
+                  workflow,
+                  workflow
+                    .variationIndex
+                );
+
+                generated += 1;
+              } catch (
+                pipelineError
+              ) {
+                failed += 1;
+
+                const message =
+                  pipelineError instanceof
+                  Error
+                    ? pipelineError
+                        .message
+                    : "Dieses Raumfoto konnte nicht vollständig verarbeitet werden.";
+
+                console.error(
+                  "HOME-STAGING PIPELINE ERROR:",
+                  {
+                    sourceImageId:
+                      image.id,
+                    message,
+                  }
+                );
+
+                setImageWorkflowById(
+                  (current) => {
+                    const currentWorkflow =
+                      current[
+                        image.id
+                      ];
+
+                    if (
+                      !currentWorkflow
+                    ) {
+                      return current;
+                    }
+
+                    return {
+                      ...current,
+                      [image.id]: {
+                        ...currentWorkflow,
+                        statusMessage:
+                          "Verarbeitung fehlgeschlagen: " +
+                          message,
+                      },
+                    };
+                  }
+                );
+              } finally {
+                completed += 1;
+
+                setBatchAnalysisProgress({
+                  current:
+                    completed,
+                  total,
+                  currentImageId:
+                    image.id,
+                });
+
+                setBatchAnalysisMessage(
+                  completed +
+                    " von " +
+                    total +
+                    " Raumfotos verarbeitet. " +
+                    generated +
+                    " Transformation(en) fertig."
+                );
               }
             }
-          )
-        );
-      }
-
-      setBatchAnalysisProgress({
-        current: total,
-        total,
-        currentImageId: "",
-      });
-
-      if (
-        readyItems.length === 0
-      ) {
-        setBatchAnalysisMessage(
-          "Die Analyse ist abgeschlossen. Kein Bild konnte automatisch zur Transformation freigegeben werden."
-        );
-
-        return;
-      }
-
-      setBatchAnalysisMessage(
-        "Analyse abgeschlossen. " +
-          readyItems.length +
-          " Bild(er) werden jetzt parallel transformiert."
+          }
+        )
       );
 
-      const generationResult =
-        await generateImagesInBatch(
-          readyItems
-        );
-
       if (
-        generationResult.failed >
-        0
+        generated === 0 &&
+        failed === 0 &&
+        skipped > 0
       ) {
         setBatchAnalysisMessage(
-          generationResult.completed +
-            " Bild(er) transformiert, " +
-            generationResult.failed +
-            " fehlgeschlagen."
+          "Alle geeigneten Raumfotos waren bereits verarbeitet oder benötigen eine manuelle Prüfung."
         );
 
         return;
       }
 
-      if (
-        generationResult.completed ===
-          0 &&
-        generationResult.skipped >
-          0
-      ) {
+      if (failed > 0) {
         setBatchAnalysisMessage(
-          "Alle geeigneten Bilder waren bereits transformiert."
+          generated +
+            " Bild(er) erfolgreich transformiert, " +
+            failed +
+            " fehlgeschlagen und " +
+            skipped +
+            " übersprungen."
         );
 
         return;
       }
 
       setBatchAnalysisMessage(
-        generationResult.completed +
-          " Bild(er) wurden erfolgreich transformiert."
+        generated +
+          " Bild(er) wurden erfolgreich transformiert. " +
+          skipped +
+          " Bild(er) wurden übersprungen."
       );
     } catch (batchError) {
       console.error(
-        "Mehrbildverarbeitung fehlgeschlagen:",
+        "Mehrbild-Pipeline fehlgeschlagen:",
         batchError
-      );
-
-      setBatchAnalysisMessage(
-        ""
       );
 
       setError(
@@ -1350,7 +1419,15 @@ export default function HomeStagingPage() {
           : "Die Mehrbildverarbeitung konnte nicht abgeschlossen werden."
       );
     } finally {
+      setGenerating(false);
       setBatchAnalyzing(false);
+
+      setBatchAnalysisProgress({
+        current:
+          completed,
+        total,
+        currentImageId: "",
+      });
     }
   }
 
@@ -2027,155 +2104,6 @@ export default function HomeStagingPage() {
     return generatedPreview;
   }
 
-  async function generateImagesInBatch(
-    items: BatchGenerationItem[]
-  ): Promise<{
-    completed: number;
-    failed: number;
-    skipped: number;
-  }> {
-    const pendingItems =
-      items.filter(
-        (item) =>
-          !item.workflow
-            .preview &&
-          !item.workflow
-            .savedImageUrl
-      );
-
-    const skipped =
-      items.length -
-      pendingItems.length;
-
-    if (
-      pendingItems.length === 0
-    ) {
-      return {
-        completed: 0,
-        failed: 0,
-        skipped,
-      };
-    }
-
-    const queue = [
-      ...pendingItems,
-    ];
-
-    const workerCount =
-      Math.min(
-        2,
-        queue.length
-      );
-
-    let completed = 0;
-    let failed = 0;
-
-    setGenerating(true);
-
-    try {
-      await Promise.all(
-        Array.from(
-          {
-            length:
-              workerCount,
-          },
-          async () => {
-            while (
-              queue.length > 0
-            ) {
-              const item =
-                queue.shift();
-
-              if (!item) {
-                return;
-              }
-
-              try {
-                await runGenerationForImage(
-                  item.image,
-                  item.workflow,
-                  item.workflow
-                    .variationIndex
-                );
-
-                completed += 1;
-              } catch (
-                generationError
-              ) {
-                failed += 1;
-
-                const message =
-                  generationError instanceof
-                  Error
-                    ? generationError
-                        .message
-                    : "Die AI-Visualisierung konnte nicht erstellt werden.";
-
-                console.error(
-                  "Batch-Transformation fehlgeschlagen:",
-                  {
-                    sourceImageId:
-                      item.image.id,
-                    message,
-                  }
-                );
-
-                setImageWorkflowById(
-                  (current) => ({
-                    ...current,
-                    [
-                      item.image.id
-                    ]: {
-                      ...(current[
-                        item.image.id
-                      ] ??
-                        item.workflow),
-                      preview: null,
-                      savedImageUrl:
-                        "",
-                      statusMessage:
-                        "Transformation fehlgeschlagen: " +
-                        message,
-                    },
-                  })
-                );
-
-                if (
-                  selectedImage
-                    ?.id ===
-                  item.image.id
-                ) {
-                  setError(
-                    message
-                  );
-                }
-              } finally {
-                const processed =
-                  completed +
-                  failed;
-
-                setBatchAnalysisMessage(
-                  "Transformation: " +
-                    processed +
-                    " von " +
-                    pendingItems.length +
-                    " Bild(ern) abgeschlossen."
-                );
-              }
-            }
-          }
-        )
-      );
-    } finally {
-      setGenerating(false);
-    }
-
-    return {
-      completed,
-      failed,
-      skipped,
-    };
-  }
 
   async function runGeneration(
     variationIndexForRequest: number
@@ -3488,15 +3416,136 @@ export default function HomeStagingPage() {
                 <div className="largeSpinner" />
 
                 <h2>
-                  Der Raum wird visualisiert
+                  Die Räume werden visualisiert
                 </h2>
 
                 <p>
-                  Die AI analysiert Perspektive,
-                  Geometrie und vorhandene
-                  Raumelemente. Dieser Vorgang kann
-                  etwas dauern.
+                  Zwei Raumfotos werden parallel analysiert und transformiert. Fertige Ergebnisse erscheinen sofort.
                 </p>
+              </section>
+            )}
+
+            {batchPreviewItems.length > 1 && (
+              <section className="multiResultSection">
+                <div className="multiResultHeading">
+                  <div>
+                    <span className="eyebrow">
+                      MEHRBILD-ERGEBNISSE
+                    </span>
+
+                    <h2>
+                      Alle AI-Transformationen
+                    </h2>
+
+                    <p>
+                      Jedes Raumfoto besitzt ein eigenes
+                      Original und ein eigenes AI-Ergebnis.
+                    </p>
+                  </div>
+
+                  <span className="aiLabel">
+                    {batchPreviewItems.length}
+                    {" "}BILDER FERTIG
+                  </span>
+                </div>
+
+                <div className="multiResultGrid">
+                  {batchPreviewItems.map(
+                    (
+                      {
+                        image,
+                        workflow,
+                        previewUrl:
+                          resultPreviewUrl,
+                      },
+                      index
+                    ) => (
+                      <article
+                        key={image.id}
+                        className={
+                          selectedImage?.id ===
+                          image.id
+                            ? "multiResultCard multiResultCardActive"
+                            : "multiResultCard"
+                        }
+                      >
+                        <div className="multiResultCardHeader">
+                          <div>
+                            <strong>
+                              Bild {index + 1}
+                            </strong>
+
+                            <span>
+                              {workflow
+                                .roomAnalysis
+                                ?.roomTypeLabel ||
+                                image.fileName ||
+                                "Raumfoto"}
+                            </span>
+                          </div>
+
+                          <button
+                            type="button"
+                            className="multiResultSelectButton"
+                            onClick={() =>
+                              chooseImage(
+                                image.id
+                              )
+                            }
+                          >
+                            Öffnen
+                          </button>
+                        </div>
+
+                        <div className="multiResultComparison">
+                          <div className="multiResultImage">
+                            <span>
+                              ORIGINAL
+                            </span>
+
+                            <img
+                              src={image.url}
+                              alt={
+                                "Originalbild " +
+                                (index + 1)
+                              }
+                            />
+                          </div>
+
+                          <div className="multiResultImage multiResultImageAi">
+                            <span>
+                              AI-ERGEBNIS
+                            </span>
+
+                            <img
+                              src={
+                                resultPreviewUrl
+                              }
+                              alt={
+                                "AI-Visualisierung " +
+                                (index + 1)
+                              }
+                            />
+                          </div>
+                        </div>
+
+                        <div className="multiResultStatus">
+                          <strong>
+                            {workflow
+                              .savedImageUrl
+                              ? "Gespeichert"
+                              : "Vorschau bereit"}
+                          </strong>
+
+                          <span>
+                            {workflow
+                              .statusMessage}
+                          </span>
+                        </div>
+                      </article>
+                    )
+                  )}
+                </div>
               </section>
             )}
 
@@ -5489,6 +5538,171 @@ function PageStyles() {
           grid-column: 1 / -1;
           justify-self: start;
           margin-left: 42px;
+        }
+      }
+
+      .multiResultSection {
+        display: grid;
+        gap: 20px;
+        margin-top: 24px;
+        padding: 22px;
+        border: 1px solid rgba(34, 211, 238, 0.28);
+        border-radius: 22px;
+        background:
+          linear-gradient(
+            145deg,
+            rgba(8, 47, 73, 0.28),
+            rgba(15, 23, 42, 0.98)
+          );
+      }
+
+      .multiResultHeading,
+      .multiResultCardHeader,
+      .multiResultStatus {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .multiResultHeading h2 {
+        margin: 5px 0 0;
+        color: #ffffff;
+      }
+
+      .multiResultHeading p {
+        margin: 7px 0 0;
+        color: #94a3b8;
+      }
+
+      .multiResultGrid {
+        display: grid;
+        grid-template-columns:
+          repeat(
+            2,
+            minmax(0, 1fr)
+          );
+        gap: 18px;
+      }
+
+      .multiResultCard {
+        display: grid;
+        gap: 14px;
+        padding: 15px;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 17px;
+        background: rgba(2, 6, 23, 0.68);
+      }
+
+      .multiResultCardActive {
+        border-color: rgba(34, 211, 238, 0.68);
+        box-shadow:
+          0 0 0 1px rgba(34, 211, 238, 0.16);
+      }
+
+      .multiResultCardHeader > div {
+        display: grid;
+        gap: 4px;
+      }
+
+      .multiResultCardHeader strong {
+        color: #ffffff;
+      }
+
+      .multiResultCardHeader span,
+      .multiResultStatus span {
+        color: #94a3b8;
+        font-size: 12px;
+      }
+
+      .multiResultSelectButton {
+        min-height: 38px;
+        padding: 0 13px;
+        border: 1px solid rgba(34, 211, 238, 0.4);
+        border-radius: 10px;
+        background: rgba(8, 145, 178, 0.16);
+        color: #cffafe;
+        cursor: pointer;
+        font-weight: 900;
+      }
+
+      .multiResultComparison {
+        display: grid;
+        grid-template-columns:
+          repeat(
+            2,
+            minmax(0, 1fr)
+          );
+        gap: 10px;
+      }
+
+      .multiResultImage {
+        position: relative;
+        min-width: 0;
+        overflow: hidden;
+        border-radius: 12px;
+        background: #020617;
+      }
+
+      .multiResultImage > span {
+        position: absolute;
+        z-index: 2;
+        top: 8px;
+        left: 8px;
+        padding: 5px 7px;
+        border-radius: 999px;
+        background: rgba(2, 6, 23, 0.78);
+        color: #ffffff;
+        font-size: 8px;
+        font-weight: 950;
+        letter-spacing: 0.08em;
+      }
+
+      .multiResultImageAi {
+        border: 1px solid rgba(212, 175, 55, 0.4);
+      }
+
+      .multiResultImage img {
+        display: block;
+        width: 100%;
+        height: 280px;
+        object-fit: contain;
+      }
+
+      .multiResultStatus {
+        padding-top: 4px;
+      }
+
+      .multiResultStatus strong {
+        color: #a7f3d0;
+        font-size: 12px;
+      }
+
+      @media (max-width: 900px) {
+        .multiResultGrid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 600px) {
+        .multiResultHeading,
+        .multiResultCardHeader,
+        .multiResultStatus {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .multiResultComparison {
+          grid-template-columns: 1fr;
+        }
+
+        .multiResultSelectButton {
+          width: 100%;
+        }
+
+        .multiResultImage img {
+          height: auto;
+          max-height: 420px;
         }
       }
 
