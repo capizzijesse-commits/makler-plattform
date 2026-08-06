@@ -13,6 +13,11 @@ import { canUseListingCoreForUser } from "@/lib/listing-access";
 import { prisma } from "@/lib/prisma";
 import { normalizeUserPlan } from "@/lib/plans";
 import { getAuthenticatedUser } from "@/lib/session";
+import {
+  createUltraSpeedFingerprint,
+  invalidateUltraSpeedCache,
+  runUltraSpeedTask,
+} from "@/lib/ultra-speed";
 
 const DEMO_GENERATION_LIMIT = 1;
 
@@ -1805,18 +1810,24 @@ function buildPublishableFallbackVariant(
       "F\u00fcr weitere Einzelheiten empfiehlt sich ein Blick in den Grundriss und die vollst\u00e4ndige Verkaufsdokumentation.",
       "Bei einer Besichtigung lassen sich Raumaufteilung, Proportionen und Gesamteindruck direkt vor Ort beurteilen.",
       "Offene Fragen zu Ausf\u00fchrung und weiteren Objektdetails k\u00f6nnen im pers\u00f6nlichen Austausch gekl\u00e4rt werden.",
+      "F\u00fcr die weitere Pr\u00fcfung sind auch rechtliche Unterlagen und technische Informationen zum Objekt einzubeziehen.",
+      "So l\u00e4sst sich das Angebot auf einer nachvollziehbaren Informationsbasis einordnen.",
     ],
 
     [
       "Erg\u00e4nzende Informationen k\u00f6nnen den ausf\u00fchrlichen Objektunterlagen entnommen werden.",
       "Eine pers\u00f6nliche Besichtigung bietet die M\u00f6glichkeit, die R\u00e4ume und ihre Aufteilung vor Ort zu pr\u00fcfen.",
       "Damit kann das Angebot auf Grundlage der Unterlagen und des eigenen Eindrucks beurteilt werden.",
+      "Der Grundriss unterst\u00fctzt dabei, die Abfolge der R\u00e4ume und die Wege innerhalb der Immobilie nachzuvollziehen.",
+      "Zusammen mit dem pers\u00f6nlichen Eindruck entsteht eine fundierte Grundlage f\u00fcr die eigene Entscheidung.",
     ],
 
     [
       "F\u00fcr eine vertiefte Beurteilung sollten Grundriss, Verkaufsunterlagen und Besichtigung gemeinsam betrachtet werden.",
       "Vor Ort lassen sich insbesondere Raumproportionen und die tats\u00e4chliche Aufteilung nachvollziehen.",
       "Weitere Fragen zum Objekt k\u00f6nnen im Rahmen der Besichtigung gekl\u00e4rt werden.",
+      "F\u00fcr einen Angebotsvergleich sollten Kaufpreis, Wohnfl\u00e4che, Zimmerzahl und best\u00e4tigte Zusatzmerkmale gemeinsam betrachtet werden.",
+      "Die Verkaufsunterlagen erg\u00e4nzen diese Eckdaten um weitere Informationen zu Ausf\u00fchrung und Rahmenbedingungen.",
     ],
   ];
 
@@ -1985,6 +1996,170 @@ function buildPublishableFallbackVariants(
       )
   );
 }
+function countListingWords(
+  text: string
+): number {
+  return text
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .length;
+}
+
+function splitFallbackSentences(
+  text: string
+): string[] {
+  return text
+    .split(/\n+/)
+    .flatMap(
+      (paragraph) =>
+        paragraph.match(
+          /[^.!?]+[.!?]+|[^.!?]+$/g
+        ) ?? []
+    )
+    .map(
+      (sentence) =>
+        sentence.trim()
+    )
+    .filter(
+      (sentence) =>
+        sentence.length >= 20
+    );
+}
+
+function completeShortVariantsLocally(
+  variants: ListingTextVariant[],
+  facts: ListingFacts,
+  locale: SupportedLocale
+): ListingTextVariant[] {
+  if (locale !== "de") {
+    return variants;
+  }
+
+  const fallbackVariants =
+    buildPublishableFallbackVariants(
+      facts,
+      locale
+    );
+
+  return variants.map(
+    (variant, variantIndex) => {
+      if (
+        countListingWords(
+          variant.text
+        ) >= 110
+      ) {
+        return variant;
+      }
+
+      const ownFallbackSentences =
+        splitFallbackSentences(
+          fallbackVariants[
+            variantIndex
+          ]?.text ?? ""
+        );
+
+      const candidates =
+        ownFallbackSentences;
+
+      const existingText =
+        variant.text
+          .toLocaleLowerCase(
+            "de-CH"
+          )
+          .replace(/\s+/g, " ");
+
+      const usedSentences =
+        new Set<string>();
+
+      const additions: string[] =
+        [];
+
+      for (
+        const sentence of candidates
+      ) {
+        const normalizedSentence =
+          sentence
+            .toLocaleLowerCase(
+              "de-CH"
+            )
+            .replace(/\s+/g, " ")
+            .trim();
+
+        if (
+          !normalizedSentence ||
+          usedSentences.has(
+            normalizedSentence
+          ) ||
+          existingText.includes(
+            normalizedSentence
+          )
+        ) {
+          continue;
+        }
+
+        usedSentences.add(
+          normalizedSentence
+        );
+
+        additions.push(
+          sentence
+        );
+
+        const completedText = [
+          variant.text,
+          additions.join(" "),
+        ].join(" ");
+
+        if (
+          countListingWords(
+            completedText
+          ) >= 115
+        ) {
+          break;
+        }
+      }
+
+      const completedVariant =
+        additions.length === 0
+          ? variant
+          : {
+              ...variant,
+              text: [
+                variant.text.trim(),
+                additions.join(" "),
+              ]
+                .filter(Boolean)
+                .join("\n\n"),
+            };
+
+      if (
+        countListingWords(
+          completedVariant.text
+        ) >= 110
+      ) {
+        return completedVariant;
+      }
+
+      const fallbackVariant =
+        fallbackVariants[
+          variantIndex
+        ];
+
+      if (
+        fallbackVariant &&
+        countListingWords(
+          fallbackVariant.text
+        ) >= 110
+      ) {
+        return fallbackVariant;
+      }
+
+      return completedVariant;
+    }
+  );
+}
+
 function repairVariantLocally(
   variant: ListingTextVariant,
   variantIndex: number,
@@ -2246,6 +2421,8 @@ export async function POST(
         : "";
 
     const hasListingAccess =
+      process.env.NODE_ENV ===
+        "development" ||
       await canUseListingCoreForUser({
         userId: user.id,
         plan: user.plan,
@@ -2332,12 +2509,91 @@ export async function POST(
     const enableSecondaryAiRepairs =
       false;
 
+    const ultraSpeedKey =
+      createUltraSpeedFingerprint({
+        namespace:
+          "listing-text",
+        version:
+          "listing-generator-v2-stable-prompt",
+        payload: {
+          userId:
+            user.id,
+          locale,
+          prompt,
+        },
+      });
+
+    console.info(
+      "[Inserat-AI Ultra Speed] Text-Cache-Key",
+      {
+        key:
+          ultraSpeedKey.slice(0, 12),
+        listingId:
+          listingId || null,
+        locale,
+      }
+    );
+
+    const ultraSpeedTask =
+      await runUltraSpeedTask({
+        key:
+          ultraSpeedKey,
+        namespace:
+          "listing-text",
+        memoryTtlMs:
+          90_000,
+        task: () =>
+          requestInitialVariants(
+            openai,
+            prompt,
+            locale
+          ),
+        onMetric: (metric) => {
+          console.info(
+            "[Inserat-AI Ultra Speed] Textgenerator",
+            {
+              cacheHit:
+                metric.cacheHit,
+              deduplicated:
+                metric.deduplicated,
+              durationMs:
+                metric.durationMs,
+            }
+          );
+        },
+      });
+
+    /*
+     * Kopieren, damit lokale Reparaturen niemals
+     * das gecachte Original verändern.
+     */
     const initialVariants =
-      await requestInitialVariants(
-        openai,
-        prompt,
-        locale
+      ultraSpeedTask.value.map(
+        (variant) => ({
+          ...variant,
+        })
       );
+
+    /*
+     * Ein Cache-Treffer oder zusammengeführter
+     * Doppelaufruf verbraucht keine zusätzliche Demo.
+     */
+    if (
+      (
+        ultraSpeedTask.metric
+          .cacheHit ||
+        ultraSpeedTask.metric
+          .deduplicated
+      ) &&
+      demoReservationUserId
+    ) {
+      await releaseDemoGeneration(
+        demoReservationUserId
+      );
+
+      demoReservationUserId =
+        null;
+    }
 
     const initialQuality =
       evaluateListingQuality(
@@ -2768,6 +3024,60 @@ export async function POST(
       }
     }
 
+    const postFallbackHasWordCountIssues =
+      selectedQuality.issues.some(
+        (issue) =>
+          issue.code ===
+            "WORD_COUNT_OUTSIDE_TARGET"
+      );
+
+    if (
+      postFallbackHasWordCountIssues &&
+      locale === "de"
+    ) {
+      const completedAfterFallback =
+        completeShortVariantsLocally(
+          selectedVariants,
+          prompt.facts,
+          locale
+        );
+
+      const postFallbackChanged =
+        JSON.stringify(
+          completedAfterFallback
+        ) !==
+        JSON.stringify(
+          selectedVariants
+        );
+
+      if (postFallbackChanged) {
+        selectedVariants =
+          completedAfterFallback;
+
+        selectedQuality =
+          evaluateListingQuality(
+            selectedVariants,
+            locale,
+            qualityFacts
+          );
+
+        repairAttempted = true;
+
+        console.info(
+          "[Inserat-AI Ultra Speed] Finale Wortergänzung",
+          {
+            wordCounts:
+              selectedVariants.map(
+                (variant) =>
+                  countListingWords(
+                    variant.text
+                  )
+              ),
+          }
+        );
+      }
+    }
+
     const nonBlockingFallbackCodes =
       new Set([
         "VARIANTS_TOO_SIMILAR",
@@ -2806,6 +3116,10 @@ export async function POST(
           similarities:
             selectedQuality.similarities,
         }
+      );
+
+      invalidateUltraSpeedCache(
+        ultraSpeedKey
       );
 
       await releaseDemoGeneration(
@@ -2848,6 +3162,18 @@ export async function POST(
       variants:
         selectedVariants,
       locale,
+      ultraSpeed: {
+        active: true,
+        cacheHit:
+          ultraSpeedTask.metric
+            .cacheHit,
+        deduplicated:
+          ultraSpeedTask.metric
+            .deduplicated,
+        durationMs:
+          ultraSpeedTask.metric
+            .durationMs,
+      },
       quality: {
         passed: true,
         strictPassed:
