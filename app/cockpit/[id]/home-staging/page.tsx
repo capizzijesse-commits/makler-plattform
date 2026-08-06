@@ -852,8 +852,15 @@ export default function HomeStagingPage() {
         return;
       }
 
+      let analysisSpinnerTimer:
+        number | null = null;
+
       try {
-        setAnalyzingRoom(true);
+        analysisSpinnerTimer =
+          window.setTimeout(() => {
+            setAnalyzingRoom(true);
+          }, 800);
+
         setAnalysisError("");
         setAnalysisConfirmed(false);
         setRoomAnalysis(null);
@@ -986,6 +993,12 @@ export default function HomeStagingPage() {
           },
         }));
       } finally {
+        if (analysisSpinnerTimer !== null) {
+          window.clearTimeout(
+            analysisSpinnerTimer
+          );
+        }
+
         if (!controller.signal.aborted) {
           setAnalyzingRoom(false);
         }
@@ -1253,7 +1266,7 @@ export default function HomeStagingPage() {
                 setBatchAnalysisMessage(
                   "Pipeline " +
                     (workerIndex + 1) +
-                    ": Raumfoto wird analysiert."
+                    ": Fotoanalyse wird geprüft."
                 );
 
                 let workflow:

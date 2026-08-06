@@ -16,6 +16,11 @@ import {
 import { getPlanCapabilities } from "@/lib/plans";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/session";
+import {
+  buildHomeStagingAnalysisFromListingText,
+  parseListingImageAnalysisCache,
+  serializeListingImageAnalysisCache,
+} from "@/lib/home-staging-analysis-cache";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -727,6 +732,9 @@ export async function POST(
               fileName: true,
               mimeType: true,
               sizeBytes: true,
+              analysis: true,
+              analysisStatus: true,
+              analyzedAt: true,
             },
 
             take: 1,
@@ -801,11 +809,83 @@ export async function POST(
       );
     }
 
+    const existingImageCache =
+      parseListingImageAnalysisCache(
+        sourceImage.analysis
+      );
+
+    const cachedBaseAnalysis =
+      existingImageCache?.homeStaging ??
+      (
+        existingImageCache?.listingText
+          ? buildHomeStagingAnalysisFromListingText(
+              existingImageCache
+                .listingText
+            )
+          : null
+      );
+
+    if (cachedBaseAnalysis) {
+      const cachedAnalysis:
+        RoomAnalysisResult = {
+        ...cachedBaseAnalysis,
+        analysisVersion:
+          ANALYSIS_VERSION,
+      };
+
+      const transformationBrief =
+        buildTransformationBrief(
+          cachedAnalysis
+        );
+
+      if (
+        !existingImageCache
+          ?.homeStaging
+      ) {
+        await prisma.listingImage.update({
+          where: {
+            id: sourceImage.id,
+          },
+          data: {
+            analysis:
+              serializeListingImageAnalysisCache({
+                listingText:
+                  existingImageCache
+                    ?.listingText ??
+                  "",
+                homeStaging:
+                  cachedAnalysis,
+              }),
+            analysisStatus:
+              "analyzed",
+            analyzedAt:
+              new Date(),
+          },
+        });
+      }
+
+      return NextResponse.json({
+        success: true,
+        analysis:
+          cachedAnalysis,
+        transformationBrief,
+        sourceImage: {
+          id: sourceImage.id,
+          url: sourceImage.url,
+          fileName:
+            sourceImage.fileName,
+        },
+        model:
+          "dashboard-analysis-cache",
+        durationMs:
+          Date.now() - startedAt,
+        cacheHit: true,
+      });
+    }
+
     const model =
       process.env
         .OPENAI_HOME_STAGING_ANALYSIS_MODEL ||
-      process.env.OPENAI_GUIDE_MODEL ||
-      process.env.OPENAI_MODEL ||
       "gpt-5-mini";
 
     const prompt = [
@@ -816,12 +896,12 @@ export async function POST(
       "- Verwende nur tatsächlich sichtbare Merkmale.",
       "- Erfinde keine Fenster, Türen, Räume, Masse oder Materialien.",
       "- Halte alle Texte sehr kurz.",
-      "- Maximal 6 visibleFacts.",
-      "- Maximal 6 lockedArchitecture-Einträge.",
-      "- Maximal 3 warnings.",
-      "- Maximal 6 forbiddenElements.",
-      "- Jeder Listeneintrag maximal 12 Wörter.",
-      "- Summary maximal 30 Wörter.",
+      "- Maximal 4 visibleFacts.",
+      "- Maximal 4 lockedArchitecture-Einträge.",
+      "- Maximal 2 warnings.",
+      "- Maximal 4 forbiddenElements.",
+      "- Jeder Listeneintrag maximal 8 Wörter.",
+      "- Summary maximal 18 Wörter.",
       "- Professionelles Schweizer Standarddeutsch, kein ß.",
       "",
       "Raumarten:",
@@ -877,6 +957,10 @@ export async function POST(
 
               body: JSON.stringify({
                 model,
+
+                reasoning: {
+                  effort: "low",
+                },
 
                 max_output_tokens:
                   maxOutputTokens,
@@ -983,7 +1067,7 @@ export async function POST(
 
     let analysisAttempt =
       await requestRoomAnalysis(
-        2200
+        1600
       );
 
     if (
@@ -1040,10 +1124,10 @@ export async function POST(
           "WIEDERHOLUNG WEGEN UNVOLLSTÄNDIGER AUSGABE:",
           "- Gib das vollständige JSON-Objekt zurück.",
           "- Kürze die Ausgabe, ohne Pflichtfelder auszulassen.",
-          "- Maximal 6 visibleFacts.",
-          "- Maximal 6 lockedArchitecture-Einträge.",
-          "- Maximal 3 warnings.",
-          "- Maximal 6 forbiddenElements.",
+          "- Maximal 4 visibleFacts.",
+          "- Maximal 4 lockedArchitecture-Einträge.",
+          "- Maximal 2 warnings.",
+          "- Maximal 4 forbiddenElements.",
           "- Jeder Listeneintrag enthält höchstens 12 Wörter.",
           "- Die summary enthält höchstens 30 Wörter.",
           "- Beende alle Arrays und das JSON-Objekt vollständig.",
@@ -1051,7 +1135,7 @@ export async function POST(
 
       analysisAttempt =
         await requestRoomAnalysis(
-          3200,
+          2200,
           compactRetryInstruction,
           60_000
         );
@@ -1133,6 +1217,34 @@ export async function POST(
       buildTransformationBrief(
         analysis
       );
+
+    try {
+      await prisma.listingImage.update({
+        where: {
+          id: sourceImage.id,
+        },
+        data: {
+          analysis:
+            serializeListingImageAnalysisCache({
+              listingText:
+                existingImageCache
+                  ?.listingText ??
+                "",
+              homeStaging:
+                analysis,
+            }),
+          analysisStatus:
+            "analyzed",
+          analyzedAt:
+            new Date(),
+        },
+      });
+    } catch (cacheError) {
+      console.error(
+        "HOME-STAGING ANALYSIS CACHE SAVE ERROR:",
+        cacheError
+      );
+    }
 
     return NextResponse.json({
       success: true,

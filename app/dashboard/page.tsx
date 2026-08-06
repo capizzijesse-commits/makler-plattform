@@ -595,7 +595,10 @@ const saveObjectTemplate = () => {
   setTemplateName("");
 };
 async function uploadListingImages(listingId: string) {
-  for (const file of selectedImages) {
+  const uploadOneImage = async (
+    file: File,
+    index: number
+  ) => {
     const safeFileName = file.name
       .normalize("NFKD")
       .replace(/[^a-zA-Z0-9._-]+/g, "-")
@@ -616,21 +619,40 @@ async function uploadListingImages(listingId: string) {
       }
     );
 
-    const imageResponse = await fetch("/api/listing-images", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        listingId,
-        url: blob.url,
-        storageKey: blob.pathname,
-        fileName: file.name,
-        mimeType: file.type,
-        sizeBytes: file.size,
-      }),
-    });
+    const imageResponse = await fetch(
+      "/api/listing-images",
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          listingId,
+          url: blob.url,
+          storageKey: blob.pathname,
+          fileName: file.name,
+          mimeType: file.type,
+          sizeBytes: file.size,
+          analysis:
+            imageAnalyses[index]?.status ===
+              "done" &&
+            imageAnalyses[
+              index
+            ].analysis.trim()
+              ? JSON.stringify({
+                  version:
+                    "listing-image-analysis-cache-v1",
+                  listingText:
+                    imageAnalyses[
+                      index
+                    ].analysis.trim(),
+                  homeStaging: null,
+                })
+              : null,
+        }),
+      }
+    );
 
     const imageData = (await imageResponse
       .json()
@@ -642,11 +664,35 @@ async function uploadListingImages(listingId: string) {
       throw new Error(
         localizedApiError(
           imageData.error,
-          t("images.saveError", { fileName: file.name })
+          t("images.saveError", {
+            fileName: file.name,
+          })
         )
       );
     }
-  }
+  };
+
+  const uploadStartedAt = performance.now();
+
+  await Promise.all(
+    selectedImages.map(
+      (file, index) =>
+        uploadOneImage(
+          file,
+          index
+        )
+    )
+  );
+
+  console.info(
+    "[Inserat-AI Speed] Bilder parallel gespeichert",
+    {
+      imageCount: selectedImages.length,
+      uploadMs: Math.round(
+        performance.now() - uploadStartedAt
+      ),
+    }
+  );
 }
 const saveListingPermanently = async (
   uploadImages = true
@@ -707,6 +753,11 @@ if (!listingId) {
   );
 }
 
+if (uploadImages) {
+  router.prefetch(
+    `/cockpit/${encodeURIComponent(listingId)}`
+  );
+}
 if (uploadImages && selectedImages.length > 0) {
   try {
     setSaveProgress(
@@ -887,6 +938,12 @@ const startSingleObjectCheckoutFromDemo =
   };
 
 const saveListingAndOpenCockpit = async () => {
+  if (savingListing) {
+    return;
+  }
+
+  const speedStartedAt = performance.now();
+
   const normalizedPlan =
     (userPlan ?? "").trim().toLowerCase();
 
@@ -903,16 +960,42 @@ const saveListingAndOpenCockpit = async () => {
     return;
   }
 
+  sessionStorage.setItem(
+    "inserat-ai:dashboard-save-start",
+    String(speedStartedAt)
+  );
+
   const listingId = await saveListingPermanently();
 
   if (!listingId) {
+    sessionStorage.removeItem(
+      "inserat-ai:dashboard-save-start"
+    );
     return;
   }
 
-  window.setTimeout(() => {
-    window.location.href =
-      `/cockpit/${encodeURIComponent(listingId)}`;
-  }, 900);
+  const cockpitPath =
+    `/cockpit/${encodeURIComponent(listingId)}`;
+
+  const navigationStartedAt = performance.now();
+
+  sessionStorage.setItem(
+    "inserat-ai:cockpit-navigation-start",
+    String(navigationStartedAt)
+  );
+
+  console.info(
+    "[Inserat-AI Speed] Dashboard gespeichert",
+    {
+      listingId,
+      saveAndUploadMs: Math.round(
+        navigationStartedAt - speedStartedAt
+      ),
+      target: cockpitPath,
+    }
+  );
+
+  router.push(cockpitPath);
 };
 
 const loadObjectTemplate = (template: ObjectTemplate) => {

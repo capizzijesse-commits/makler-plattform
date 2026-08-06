@@ -75,6 +75,7 @@ export async function POST(request: NextRequest) {
       listingId?: unknown;
       storageKey?: unknown;
       fileName?: unknown;
+      analysis?: unknown;
 
       /*
        * Diese alten Browserwerte werden absichtlich nicht mehr
@@ -94,6 +95,12 @@ export async function POST(request: NextRequest) {
       typeof body?.storageKey === "string"
         ? body.storageKey.trim()
         : "";
+
+    const cachedAnalysis =
+      optionalText(
+        body?.analysis,
+        20_000
+      );
 
     if (
       !listingId ||
@@ -215,9 +222,28 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      const image =
+        cachedAnalysis &&
+        existingImage.analysis !==
+          cachedAnalysis
+          ? await prisma.listingImage.update({
+              where: {
+                id: existingImage.id,
+              },
+              data: {
+                analysis:
+                  cachedAnalysis,
+                analysisStatus:
+                  "analyzed",
+                analyzedAt:
+                  new Date(),
+              },
+            })
+          : existingImage;
+
       return NextResponse.json({
         success: true,
-        image: existingImage,
+        image,
       });
     }
 
@@ -397,6 +423,16 @@ export async function POST(request: NextRequest) {
         sizeBytes: imageBytes.byteLength,
         position: storedImageCount,
         isPrimary: storedImageCount === 0,
+        analysis:
+          cachedAnalysis,
+        analysisStatus:
+          cachedAnalysis
+            ? "analyzed"
+            : "not_analyzed",
+        analyzedAt:
+          cachedAnalysis
+            ? new Date()
+            : null,
       },
     });
 
