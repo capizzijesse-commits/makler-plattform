@@ -1,5 +1,7 @@
 "use client";
 
+import { trackAnalyticsEvent } from "@/lib/analytics";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -207,6 +209,16 @@ export default function AccountPage() {
           .catch(() => null)) as
           | {
               success?: boolean;
+              plan?: string;
+              founderNumber?:
+                number | null;
+              subscriptionStatus?:
+                string;
+              currency?: string;
+              amountTotalCents?:
+                number;
+              expectedAmountCents?:
+                number;
               message?: string;
               error?: string;
             }
@@ -219,6 +231,122 @@ export default function AccountPage() {
           throw new Error(
             t("messages.subscriptionVerifyError")
           );
+        }
+
+        const subscriptionStatus =
+          data?.subscriptionStatus ??
+          "";
+
+        const subscriptionEventName =
+          subscriptionStatus ===
+            "trialing"
+            ? "start_trial"
+            : "purchase";
+
+        const subscriptionEventKey =
+          `ga4-subscription:${subscriptionEventName}:${sessionId}`;
+
+        const subscriptionEventState =
+          sessionStorage.getItem(
+            subscriptionEventKey
+          );
+
+        if (
+          subscriptionEventState !== "sent" &&
+          subscriptionEventState !== "pending"
+        ) {
+          sessionStorage.setItem(
+            subscriptionEventKey,
+            "pending"
+          );
+
+          const expectedValue =
+            Math.max(
+              0,
+              Number(
+                data
+                  ?.expectedAmountCents ??
+                0
+              )
+            ) / 100;
+
+          const paidValue =
+            Math.max(
+              0,
+              Number(
+                data
+                  ?.amountTotalCents ??
+                0
+              )
+            ) / 100;
+
+          const eventValue =
+            subscriptionEventName ===
+              "start_trial"
+              ? expectedValue
+              : paidValue;
+
+          const subscriptionSent =
+            trackAnalyticsEvent(
+              subscriptionEventName,
+              {
+                ...(
+                  subscriptionEventName ===
+                    "purchase"
+                    ? {
+                        transaction_id:
+                          sessionId,
+                      }
+                    : {
+                        trial_days:
+                          30,
+                      }
+                ),
+                currency:
+                  data?.currency ??
+                  "CHF",
+                value:
+                  eventValue,
+                plan:
+                  data?.plan ??
+                  "unknown",
+                subscription_status:
+                  subscriptionStatus,
+                checkout_type:
+                  "subscription",
+                transport_type:
+                  "beacon",
+                items: [
+                  {
+                    item_id:
+                      `subscription-${
+                        data?.plan ??
+                        "unknown"
+                      }`,
+                    item_name:
+                      `Inserat-AI ${
+                        data?.plan ??
+                        "Abonnement"
+                      }`,
+                    price:
+                      eventValue,
+                    quantity:
+                      1,
+                  },
+                ],
+              }
+            );
+
+          if (subscriptionSent) {
+            sessionStorage.setItem(
+              subscriptionEventKey,
+              "sent"
+            );
+          } else {
+            sessionStorage.removeItem(
+              subscriptionEventKey
+            );
+          }
         }
 
         sessionStorage.setItem(

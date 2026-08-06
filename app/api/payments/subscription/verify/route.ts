@@ -87,6 +87,20 @@ export async function POST(
         result.founderNumber,
       subscriptionStatus:
         result.subscriptionStatus,
+      currency:
+        (
+          session.currency ??
+          "chf"
+        ).toUpperCase(),
+      amountTotalCents:
+        session.amount_total ??
+        0,
+      expectedAmountCents:
+        Number(
+          session.metadata
+            ?.expectedAmountCents ??
+          "0"
+        ),
     });
   } catch (error) {
     console.error(

@@ -1,4 +1,6 @@
 "use client";
+
+import { trackAnalyticsEvent } from "@/lib/analytics";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -133,7 +135,10 @@ export default function DashboardPage() {
   } = useAppDialog();
 
   const [userPlan, setUserPlan] = useState("free");
-  const canUseDashboardImages = userPlan !== "free";
+  const canUseDashboardImages =
+    process.env.NODE_ENV ===
+      "development" ||
+    userPlan !== "free";
 
 const [instagramPost, setInstagramPost] = useState("");
   const [linkedinPost, setLinkedinPost] = useState("");
@@ -267,6 +272,17 @@ async function analyzeImage() {
 
   setAnalyzingImage(true);
   setImageAnalysisMessage("");
+
+  trackAnalyticsEvent(
+    "photo_analysis_started",
+    {
+      image_count:
+        totalImages,
+      locale,
+      plan:
+        userPlan,
+    }
+  );
   setAnalysisProgressIndex(0);
 
   // Verhindert, dass eine alte Einzelanalyse erneut verwendet wird.
@@ -280,49 +296,101 @@ async function analyzeImage() {
   setImageAnalyses([...nextResults]);
 
   try {
-    for (let index = 0; index < totalImages; index += 1) {
-      setAnalysisProgressIndex(index);
+    const batchStartedAt =
+      Date.now();
 
+    /*
+     * Maximal vier Bilder gleichzeitig analysieren.
+     * Weitere Bilder werden automatisch vom nächsten
+     * freien Worker übernommen.
+     */
+    const workerCount =
+      Math.min(
+        4,
+        totalImages
+      );
+
+    let nextImageIndex = 0;
+    let completedImages = 0;
+
+    for (
+      let index = 0;
+      index < totalImages;
+      index += 1
+    ) {
       nextResults[index] = {
         status: "analyzing",
         analysis: "",
         error: "",
       };
+    }
 
-      setImageAnalyses([...nextResults]);
+    setImageAnalyses([
+      ...nextResults,
+    ]);
 
+    async function analyzeSingleImage(
+      index: number
+    ) {
       try {
-        const imageFile = await getImageFileForAnalysis(index);
+        const imageFile =
+          await getImageFileForAnalysis(
+            index
+          );
 
         if (!imageFile) {
           throw new Error(
-            t("imageAnalysis.invalidPreview")
+            t(
+              "imageAnalysis.invalidPreview"
+            )
           );
         }
 
-        const formData = new FormData();
-        formData.append("image", imageFile);
+        const formData =
+          new FormData();
 
-        const response = await fetch("/api/analyze-image", {
-          method: "POST",
-          body: formData,
-        });
+        formData.append(
+          "image",
+          imageFile
+        );
 
-        const responseText = await response.text();
+        const response =
+          await fetch(
+            "/api/analyze-image",
+            {
+              method: "POST",
+              body: formData,
+            }
+          );
+
+        const responseText =
+          await response.text();
 
         let data: {
           success?: boolean;
           analysis?: string;
           error?: string;
+          ultraSpeed?: {
+            active?: boolean;
+            cacheHit?: boolean;
+            deduplicated?: boolean;
+            durationMs?: number;
+            totalDurationMs?: number;
+          };
         };
 
         try {
-          data = responseText ? JSON.parse(responseText) : {};
+          data = responseText
+            ? JSON.parse(responseText)
+            : {};
         } catch {
           throw new Error(
-            locale === "de" && responseText
+            locale === "de" &&
+              responseText
               ? responseText
-              : t("imageAnalysis.invalidResponse")
+              : t(
+                  "imageAnalysis.invalidResponse"
+                )
           );
         }
 
@@ -330,22 +398,31 @@ async function analyzeImage() {
           throw new Error(
             localizedApiError(
               data.error,
-              t("imageAnalysis.httpError", {
-                status: response.status,
-              })
+              t(
+                "imageAnalysis.httpError",
+                {
+                  status:
+                    response.status,
+                }
+              )
             )
           );
         }
 
-        if (!data.analysis?.trim()) {
+        if (
+          !data.analysis?.trim()
+        ) {
           throw new Error(
-            t("imageAnalysis.noResult")
+            t(
+              "imageAnalysis.noResult"
+            )
           );
         }
 
         nextResults[index] = {
           status: "done",
-          analysis: data.analysis.trim(),
+          analysis:
+            data.analysis.trim(),
           error: "",
         };
       } catch (error) {
@@ -360,12 +437,65 @@ async function analyzeImage() {
           error:
             error instanceof Error
               ? error.message
-              : t("imageAnalysis.genericError"),
+              : t(
+                  "imageAnalysis.genericError"
+                ),
         };
-      }
+      } finally {
+        completedImages += 1;
 
-      setImageAnalyses([...nextResults]);
+        setAnalysisProgressIndex(
+          Math.min(
+            completedImages,
+            totalImages - 1
+          )
+        );
+
+        setImageAnalyses([
+          ...nextResults,
+        ]);
+      }
     }
+
+    async function runWorker() {
+      while (true) {
+        const index =
+          nextImageIndex;
+
+        if (
+          index >= totalImages
+        ) {
+          return;
+        }
+
+        nextImageIndex += 1;
+
+        await analyzeSingleImage(
+          index
+        );
+      }
+    }
+
+    await Promise.all(
+      Array.from(
+        {
+          length:
+            workerCount,
+        },
+        () => runWorker()
+      )
+    );
+
+    console.info(
+      "[Inserat-AI Ultra Speed] Bildanalyse parallel abgeschlossen",
+      {
+        totalImages,
+        workerCount,
+        durationMs:
+          Date.now() -
+          batchStartedAt,
+      }
+    );
 
     const successfulAnalyses = nextResults.filter(
       (item) => item.status === "done"
@@ -374,6 +504,24 @@ async function analyzeImage() {
     const failedAnalyses = nextResults.filter(
       (item) => item.status === "error"
     ).length;
+
+    trackAnalyticsEvent(
+      "photo_analysis_completed",
+      {
+        image_count:
+          totalImages,
+        successful_count:
+          successfulAnalyses,
+        failed_count:
+          failedAnalyses,
+        duration_ms:
+          Date.now() -
+          batchStartedAt,
+        locale,
+        plan:
+          userPlan,
+      }
+    );
 
     if (successfulAnalyses === totalImages) {
       setImageAnalysisMessage(
@@ -921,6 +1069,34 @@ const startSingleObjectCheckoutFromDemo =
         t("save.redirectPayment")
       );
 
+      trackAnalyticsEvent(
+        "begin_checkout",
+        {
+          currency:
+            "CHF",
+          value:
+            9.9,
+          checkout_type:
+            "single_object",
+          listing_id:
+            listingId,
+          image_count:
+            selectedImages.length,
+          items: [
+            {
+              item_id:
+                "single-object",
+              item_name:
+                "Inserat-AI Einzelobjekt",
+              price:
+                9.9,
+              quantity:
+                1,
+            },
+          ],
+        }
+      );
+
       window.location.href =
         data.checkoutUrl;
     } catch (checkoutError) {
@@ -1208,6 +1384,24 @@ try {
 
       setVariants(newVariants);
       setActiveIndex(0);
+
+      trackAnalyticsEvent(
+        "listing_generated",
+        {
+          locale,
+          variant_count:
+            newVariants.length,
+          image_count:
+            imagePreviews.length,
+          cache_hit:
+            Boolean(
+              data?.ultraSpeed
+                ?.cacheHit
+            ),
+          plan:
+            userPlan,
+        }
+      );
      setInstagramPost(data?.social?.instagram || "");
 setLinkedinPost(data?.social?.linkedin || "");
 setFacebookPost(data?.social?.facebook || "");

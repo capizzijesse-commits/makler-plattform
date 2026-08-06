@@ -1,5 +1,7 @@
 "use client";
 
+import { trackAnalyticsEvent } from "@/lib/analytics";
+
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -90,6 +92,8 @@ export default function CockpitListingPage() {
     const controller = new AbortController();
 
     async function loadListing() {
+      const loadStartedAt = performance.now();
+
       try {
         setLoading(true);
         setError("");
@@ -116,6 +120,23 @@ export default function CockpitListingPage() {
             data.error || "Das Objekt konnte nicht geladen werden."
           );
         }
+
+        const listingLoadedAt = performance.now();
+
+        console.info(
+          "[Inserat-AI Speed] Cockpit-Daten geladen",
+          {
+            listingId,
+            requestAndParseMs: Math.round(
+              listingLoadedAt - loadStartedAt
+            ),
+            imageCount: Array.isArray(
+              data.listing?.images
+            )
+              ? data.listing.images.length
+              : 0,
+          }
+        );
 
         setListing(data.listing);
       } catch (loadError) {
@@ -146,6 +167,103 @@ export default function CockpitListingPage() {
       controller.abort();
     };
   }, [listingId, router]);
+
+  useEffect(() => {
+    if (loading || !listing) {
+      return;
+    }
+
+    const navigationStartValue =
+      sessionStorage.getItem(
+        "inserat-ai:cockpit-navigation-start"
+      );
+
+    const saveStartValue =
+      sessionStorage.getItem(
+        "inserat-ai:dashboard-save-start"
+      );
+
+    const navigationStartedAt =
+      Number(navigationStartValue);
+
+    const saveStartedAt =
+      Number(saveStartValue);
+
+    if (
+      !Number.isFinite(navigationStartedAt) ||
+      navigationStartedAt <= 0
+    ) {
+      return;
+    }
+
+    let secondFrameId = 0;
+
+    const firstFrameId =
+      window.requestAnimationFrame(() => {
+        secondFrameId =
+          window.requestAnimationFrame(() => {
+            const cockpitVisibleAt =
+              performance.now();
+
+            const routeToVisibleMs =
+              cockpitVisibleAt -
+              navigationStartedAt;
+
+            const saveAndUploadMs =
+              Number.isFinite(saveStartedAt) &&
+              saveStartedAt > 0
+                ? navigationStartedAt -
+                  saveStartedAt
+                : null;
+
+            const totalClickToVisibleMs =
+              Number.isFinite(saveStartedAt) &&
+              saveStartedAt > 0
+                ? cockpitVisibleAt -
+                  saveStartedAt
+                : null;
+
+            console.info(
+              "[Inserat-AI Speed] Cockpit sichtbar",
+              {
+                listingId: listing.id,
+                saveAndUploadMs:
+                  saveAndUploadMs === null
+                    ? null
+                    : Math.round(saveAndUploadMs),
+                routeToVisibleMs:
+                  Math.round(routeToVisibleMs),
+                totalClickToVisibleMs:
+                  totalClickToVisibleMs === null
+                    ? null
+                    : Math.round(
+                        totalClickToVisibleMs
+                      ),
+              }
+            );
+
+            sessionStorage.removeItem(
+              "inserat-ai:cockpit-navigation-start"
+            );
+
+            sessionStorage.removeItem(
+              "inserat-ai:dashboard-save-start"
+            );
+          });
+      });
+
+    return () => {
+      window.cancelAnimationFrame(
+        firstFrameId
+      );
+
+      if (secondFrameId) {
+        window.cancelAnimationFrame(
+          secondFrameId
+        );
+      }
+    };
+  }, [listing, loading]);
 
   useEffect(() => {
     if (!listingId) {
@@ -222,6 +340,66 @@ export default function CockpitListingPage() {
             data?.success &&
             data.unlockStatus === "paid"
           ) {
+            const purchaseEventKey =
+              `ga4-purchase-single-object:${sessionId}`;
+
+            const purchaseEventState =
+              sessionStorage.getItem(
+                purchaseEventKey
+              );
+
+            if (
+              purchaseEventState !== "sent" &&
+              purchaseEventState !== "pending"
+            ) {
+              sessionStorage.setItem(
+                purchaseEventKey,
+                "pending"
+              );
+
+              const purchaseSent =
+                trackAnalyticsEvent(
+                  "purchase",
+                  {
+                    transaction_id:
+                      sessionId,
+                    currency:
+                      "CHF",
+                    value:
+                      9.9,
+                    checkout_type:
+                      "single_object",
+                    listing_id:
+                      verifiedListingId,
+                    transport_type:
+                      "beacon",
+                    items: [
+                      {
+                        item_id:
+                          "single-object",
+                        item_name:
+                          "Inserat-AI Einzelobjekt",
+                        price:
+                          9.9,
+                        quantity:
+                          1,
+                      },
+                    ],
+                  }
+                );
+
+              if (purchaseSent) {
+                sessionStorage.setItem(
+                  purchaseEventKey,
+                  "sent"
+                );
+              } else {
+                sessionStorage.removeItem(
+                  purchaseEventKey
+                );
+              }
+            }
+
             setListing((currentListing) =>
               currentListing
                 ? {

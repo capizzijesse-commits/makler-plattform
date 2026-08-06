@@ -1,5 +1,7 @@
 "use client";
 
+import { trackAnalyticsEvent } from "@/lib/analytics";
+
 import { useState } from "react";
 import { useAppDialog } from "../../../components/AppDialogProvider";
 
@@ -216,6 +218,38 @@ if (!confirmed) {
             "Die Zahlungsseite konnte nicht geöffnet werden."
         );
       }
+
+      trackAnalyticsEvent(
+        "begin_checkout",
+        {
+          currency:
+            "CHF",
+          value:
+            singleObjectPriceCents /
+            100,
+          checkout_type:
+            "single_object",
+          checkout_source:
+            "cockpit",
+          listing_id:
+            listingId,
+          transport_type:
+            "beacon",
+          items: [
+            {
+              item_id:
+                "single-object",
+              item_name:
+                "Inserat-AI Einzelobjekt",
+              price:
+                singleObjectPriceCents /
+                100,
+              quantity:
+                1,
+            },
+          ],
+        }
+      );
 
       window.location.href =
         data.checkoutUrl;
