@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   useEffect,
@@ -7,7 +7,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { sendGAEvent } from "@next/third-parties/google";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 import {
   useLocale,
   useTranslations,
@@ -352,9 +352,7 @@ export default function RegisterPage() {
         );
       }
 
-      sendGAEvent("event", "sign_up", {
-        method: "email",
-      });
+      trackAnalyticsEvent("sign_up", { method: "email" });
 
       const loginParameters =
         new URLSearchParams({

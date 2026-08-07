@@ -21,6 +21,11 @@ import {
 
 const DEMO_GENERATION_LIMIT = 1;
 
+const LISTING_GENERATION_MODEL =
+  process.env.OPENAI_LISTING_MODEL
+    ?.trim() ||
+  "gpt-4.1-mini";
+
 const SUPPORTED_LOCALES = [
   "de",
   "it",
@@ -696,35 +701,319 @@ async function requestInitialVariants(
   prompt: PromptBundle,
   locale: SupportedLocale
 ): Promise<ListingTextVariant[]> {
-  const completion =
-    await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: prompt.system,
-        },
-        {
-          role: "user",
-          content: prompt.user,
-        },
-      ],
-      temperature: 0.38,
-      frequency_penalty: 0.25,
-      presence_penalty: 0.15,
-      max_tokens: 1800,
-      response_format: {
-        type: "json_object",
-      },
-    });
+  const parallelStartedAt =
+    Date.now();
 
-  const content =
-    completion.choices[0]
-      ?.message?.content ?? "";
+  /*
+   * Der gemeinsame Prompt enthält am Ende noch das
+   * alte Drei-Varianten-Ausgabeformat.
+   * Für die parallelen Einzelrequests entfernen wir
+   * nur diesen OUTPUT-FORMAT-Block.
+   */
+  const outputFormatMarker =
+    "\nOUTPUT FORMAT:";
 
-  return parseVariants(
-    content,
-    locale
+  const outputFormatIndex =
+    prompt.user.lastIndexOf(
+      outputFormatMarker
+    );
+
+  const baseUserPrompt =
+    (
+      outputFormatIndex >= 0
+        ? prompt.user.slice(
+            0,
+            outputFormatIndex
+          )
+        : prompt.user
+    ).trim();
+
+  const variantTasks = [
+    {
+      variantNumber: 1,
+      angle: `
+FACT-FIRST VARIANT:
+- Lead with the property's strongest verified core facts.
+- Prefer property type, rooms, living area, layout or another documented primary characteristic.
+- Structure the title around a concrete property fact.
+- Keep the opening direct, professional and portal-ready.
+`.trim(),
+    },
+    {
+      variantNumber: 2,
+      angle: `
+FEATURE-FIRST VARIANT:
+- Lead with the strongest verified differentiating feature.
+- Prefer documented outdoor space, parking, layout, permanent visual characteristics or another explicit highlight.
+- Do not repeat the opening structure of a fact-first listing.
+- Build the title around a verified feature rather than generic praise.
+`.trim(),
+    },
+    {
+      variantNumber: 3,
+      angle: `
+ALTERNATIVE SALES-ANGLE VARIANT:
+- Use a clearly different editorial structure.
+- Lead with verified spatial, architectural, location or usage facts when available.
+- Do not invent suitability for a target group.
+- Use a title and opening construction that differ clearly from the first two intended variants.
+`.trim(),
+    },
+  ] as const;
+
+  const results =
+    await Promise.all(
+      variantTasks.map(
+        async (variantTask) => {
+          const variantStartedAt =
+            Date.now();
+
+          const completion =
+            await openai.chat.completions.create({
+              model:
+                LISTING_GENERATION_MODEL,
+              messages: [
+                {
+                  role: "system",
+                  content:
+                    prompt.system,
+                },
+                {
+                  role: "user",
+                  content: `
+${baseUserPrompt}
+
+PARALLEL SPEED MODE:
+
+You are generating exactly ONE member of a coordinated three-variant real-estate listing set.
+
+ASSIGNED VARIANT:
+${variantTask.variantNumber}
+
+ASSIGNED EDITORIAL ANGLE:
+${variantTask.angle}
+
+IMPORTANT:
+- Return exactly one complete listing.
+- The body must still contain 120 to 180 useful words.
+- Keep all factual and anti-cliche rules from above.
+- Do not shorten the result into a teaser or social-media post.
+- Do not claim knowledge about the two other generated texts.
+- Return only valid JSON in exactly this structure:
+
+{
+  "variant": {
+    "title": "Object-specific title",
+    "text": "Complete professional body text"
+  }
+}
+`.trim(),
+                },
+              ],
+              temperature:
+                variantTask.variantNumber ===
+                  1
+                  ? 0.32
+                  : variantTask.variantNumber ===
+                      2
+                    ? 0.38
+                    : 0.44,
+              frequency_penalty:
+                0.25,
+              presence_penalty:
+                0.15,
+              max_tokens:
+                520,
+              response_format: {
+                type:
+                  "json_object",
+              },
+            });
+
+          const content =
+            completion.choices[0]
+              ?.message?.content ??
+            "";
+
+          let parsed:
+            | {
+                variant?: {
+                  title?: unknown;
+                  text?: unknown;
+                };
+                variants?: unknown[];
+              }
+            | undefined;
+
+          try {
+            parsed =
+              JSON.parse(content);
+          } catch {
+            parsed =
+              undefined;
+          }
+
+          let rawVariant:
+            | {
+                title?: unknown;
+                text?: unknown;
+              }
+            | undefined;
+
+          if (
+            parsed?.variant &&
+            typeof parsed.variant ===
+              "object"
+          ) {
+            rawVariant =
+              parsed.variant;
+          } else if (
+            Array.isArray(
+              parsed?.variants
+            ) &&
+            parsed.variants.length >
+              0 &&
+            parsed.variants[0] &&
+            typeof parsed.variants[0] ===
+              "object"
+          ) {
+            rawVariant =
+              parsed.variants[0] as {
+                title?: unknown;
+                text?: unknown;
+              };
+          }
+
+          const rawTitle =
+            typeof rawVariant?.title ===
+              "string"
+              ? rawVariant.title
+              : "";
+
+          const rawText =
+            typeof rawVariant?.text ===
+              "string"
+              ? rawVariant.text
+              : "";
+
+          const text =
+            normalizeSwissTypography(
+              rawText,
+              locale
+            );
+
+          if (!text) {
+            throw new Error(
+              `Parallele Variante ${variantTask.variantNumber} enthielt keinen gültigen Text.`
+            );
+          }
+
+          const normalizedTitle =
+            normalizeSwissTypography(
+              rawTitle,
+              locale
+            );
+
+          const variant: ListingTextVariant =
+            {
+              title:
+                normalizedTitle ||
+                `${LANGUAGE_CONFIG[locale].fallbackTitle} ${variantTask.variantNumber}`,
+              text,
+            };
+
+          const metric = {
+            variantNumber:
+              variantTask.variantNumber,
+            durationMs:
+              Date.now() -
+              variantStartedAt,
+            promptTokens:
+              completion.usage
+                ?.prompt_tokens ??
+              null,
+            completionTokens:
+              completion.usage
+                ?.completion_tokens ??
+              null,
+            totalTokens:
+              completion.usage
+                ?.total_tokens ??
+              null,
+            finishReason:
+              completion.choices[0]
+                ?.finish_reason ??
+              null,
+          };
+
+          console.info(
+            "[Inserat-AI Speed] Parallel-Variante",
+            metric
+          );
+
+          return {
+            variant,
+            metric,
+          };
+        }
+      )
+    );
+
+  const promptTokens =
+    results.reduce(
+      (sum, result) =>
+        sum +
+        (
+          result.metric
+            .promptTokens ??
+          0
+        ),
+      0
+    );
+
+  const completionTokens =
+    results.reduce(
+      (sum, result) =>
+        sum +
+        (
+          result.metric
+            .completionTokens ??
+          0
+        ),
+      0
+    );
+
+  const slowestVariantMs =
+    Math.max(
+      ...results.map(
+        (result) =>
+          result.metric.durationMs
+      )
+    );
+
+  console.info(
+    "[Inserat-AI Speed] OpenAI parallel gesamt",
+    {
+      durationMs:
+        Date.now() -
+        parallelStartedAt,
+      slowestVariantMs,
+      promptTokens,
+      completionTokens,
+      variants:
+        results.length,
+      finishReasons:
+        results.map(
+          (result) =>
+            result.metric
+              .finishReason
+        ),
+    }
+  );
+
+  return results.map(
+    (result) =>
+      result.variant
   );
 }
 
@@ -2514,11 +2803,13 @@ export async function POST(
         namespace:
           "listing-text",
         version:
-          "listing-generator-v2-stable-prompt",
+          "listing-generator-v4-parallel-variants",
         payload: {
           userId:
             user.id,
           locale,
+          model:
+            LISTING_GENERATION_MODEL,
           prompt,
         },
       });
@@ -2527,7 +2818,7 @@ export async function POST(
       "[Inserat-AI Ultra Speed] Text-Cache-Key",
       {
         key:
-          ultraSpeedKey.slice(0, 12),
+          ultraSpeedKey.slice(-12),
         listingId:
           listingId || null,
         locale,
@@ -2541,7 +2832,7 @@ export async function POST(
         namespace:
           "listing-text",
         memoryTtlMs:
-          90_000,
+          10 * 60_000,
         task: () =>
           requestInitialVariants(
             openai,

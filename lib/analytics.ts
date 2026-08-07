@@ -1,7 +1,102 @@
-"use client";
+﻿"use client";
 
 export type AnalyticsEventParameters =
   Record<string, unknown>;
+
+type QueuedAnalyticsEvent = {
+  eventName: string;
+  parameters: AnalyticsEventParameters;
+};
+
+const CONSENT_STORAGE_KEY =
+  "inserat_ai_analytics_consent_v1";
+
+const QUEUE_STORAGE_KEY =
+  "inserat_ai_ga4_queue_v1";
+
+function hasAnalyticsConsent(): boolean {
+  if (
+    typeof window === "undefined"
+  ) {
+    return false;
+  }
+
+  return (
+    window.localStorage.getItem(
+      CONSENT_STORAGE_KEY
+    ) === "accepted"
+  );
+}
+
+function readQueue(): QueuedAnalyticsEvent[] {
+  if (
+    typeof window === "undefined"
+  ) {
+    return [];
+  }
+
+  try {
+    const raw =
+      window.sessionStorage.getItem(
+        QUEUE_STORAGE_KEY
+      );
+
+    if (!raw) {
+      return [];
+    }
+
+    const parsed =
+      JSON.parse(raw);
+
+    return Array.isArray(parsed)
+      ? parsed
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeQueue(
+  queue: QueuedAnalyticsEvent[]
+): void {
+  if (
+    typeof window === "undefined"
+  ) {
+    return;
+  }
+
+  try {
+    if (queue.length === 0) {
+      window.sessionStorage.removeItem(
+        QUEUE_STORAGE_KEY
+      );
+
+      return;
+    }
+
+    window.sessionStorage.setItem(
+      QUEUE_STORAGE_KEY,
+      JSON.stringify(queue)
+    );
+  } catch {
+    // Analytics darf die App niemals blockieren.
+  }
+}
+
+function queueAnalyticsEvent(
+  eventName: string,
+  parameters: AnalyticsEventParameters
+): void {
+  const queue =
+    readQueue();
+
+  queue.push({
+    eventName,
+    parameters,
+  });
+
+  writeQueue(queue);
+}
 
 export function trackAnalyticsEvent(
   eventName: string,
@@ -14,36 +109,36 @@ export function trackAnalyticsEvent(
     return false;
   }
 
-  const analyticsWindow =
-    window as Window & {
-      gtag?: (
-        ...args: unknown[]
-      ) => void;
-    };
+  if (!hasAnalyticsConsent()) {
+    return false;
+  }
 
   if (
-    typeof analyticsWindow.gtag !==
+    typeof window.gtag !==
       "function"
   ) {
+    queueAnalyticsEvent(
+      eventName,
+      parameters
+    );
+
     if (
       process.env.NODE_ENV ===
         "development"
     ) {
       console.info(
-        "[GA4] Event nicht gesendet",
+        "[GA4] Event vorgemerkt",
         {
           eventName,
-          reason:
-            "gtag noch nicht verfügbar",
           parameters,
         }
       );
     }
 
-    return false;
+    return true;
   }
 
-  analyticsWindow.gtag(
+  window.gtag(
     "event",
     eventName,
     parameters
@@ -63,4 +158,49 @@ export function trackAnalyticsEvent(
   }
 
   return true;
+}
+
+export function flushAnalyticsQueue(): void {
+  if (
+    typeof window === "undefined" ||
+    !hasAnalyticsConsent() ||
+    typeof window.gtag !==
+      "function"
+  ) {
+    return;
+  }
+
+  const queue =
+    readQueue();
+
+  if (queue.length === 0) {
+    return;
+  }
+
+  /*
+   * Erst entfernen, danach senden.
+   * So entstehen bei einem erneuten Flush
+   * keine Doppelereignisse.
+   */
+  writeQueue([]);
+
+  for (const event of queue) {
+    window.gtag(
+      "event",
+      event.eventName,
+      event.parameters
+    );
+  }
+
+  if (
+    process.env.NODE_ENV ===
+      "development"
+  ) {
+    console.info(
+      "[GA4] Warteschlange gesendet",
+      {
+        count: queue.length,
+      }
+    );
+  }
 }

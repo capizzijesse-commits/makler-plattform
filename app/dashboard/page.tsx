@@ -150,6 +150,9 @@ const [imageAnalyses, setImageAnalyses] = useState<
 
 const [analyzingImage, setAnalyzingImage] = useState(false);
 
+const imageAnalysisRunningRef =
+  useRef(false);
+
 const [analysisProgressIndex, setAnalysisProgressIndex] = useState<
   number | null
 >(null);
@@ -266,9 +269,16 @@ async function getImageFileForAnalysis(
 async function analyzeImage() {
   const totalImages = imagePreviews.length;
 
-  if (totalImages === 0 || analyzingImage) {
+  if (
+    totalImages === 0 ||
+    analyzingImage ||
+    imageAnalysisRunningRef.current
+  ) {
     return;
   }
+
+  imageAnalysisRunningRef.current =
+    true;
 
   setAnalyzingImage(true);
   setImageAnalysisMessage("");
@@ -543,6 +553,9 @@ async function analyzeImage() {
       );
     }
   } finally {
+    imageAnalysisRunningRef.current =
+      false;
+
     setAnalyzingImage(false);
     setAnalysisProgressIndex(null);
   }
@@ -577,6 +590,68 @@ const imageAnalysis = imageAnalyses
     return parts;
   }, [])
   .join("\n\n");
+
+useEffect(() => {
+  const imageCount =
+    imagePreviews.length;
+
+  const stateIsReady =
+    imageCount > 0 &&
+    selectedImages.length ===
+      imageCount &&
+    imageAnalyses.length ===
+      imageCount;
+
+  const hasIdleAnalysis =
+    imageAnalyses.some(
+      (item) =>
+        item.status === "idle"
+    );
+
+  if (
+    !canUseDashboardImages ||
+    !stateIsReady ||
+    !hasIdleAnalysis ||
+    analyzingImage ||
+    imageAnalysisRunningRef.current
+  ) {
+    return;
+  }
+
+  const timer =
+    window.setTimeout(
+      () => {
+        if (
+          imageAnalysisRunningRef.current
+        ) {
+          return;
+        }
+
+        console.info(
+          "[Inserat-AI Speed] Auto-Fotoanalyse",
+          {
+            imageCount,
+          }
+        );
+
+        void analyzeImage();
+      },
+      25
+    );
+
+  return () => {
+    window.clearTimeout(
+      timer
+    );
+  };
+}, [
+  canUseDashboardImages,
+  selectedImages.length,
+  imagePreviews.length,
+  imageAnalyses,
+  analyzingImage,
+]);
+
 const [formLoaded, setFormLoaded] = useState(false);
 const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
 const [templateName, setTemplateName] = useState("");
