@@ -328,6 +328,26 @@ export async function POST(request: NextRequest) {
     const generationStartedAt =
       Date.now();
 
+    /*
+     * Nur eine echte inhaltliche Bildanalyse darf als
+     * Objektfakt verwendet werden.
+     *
+     * Die UI setzt aktuell teilweise lediglich eine Meldung
+     * wie "4 Immobilienbilder wurden hochgeladen".
+     * Daraus dürfen keinerlei sichtbare Merkmale abgeleitet
+     * werden.
+     */
+    const usableImageAnalysis =
+      imageAnalysis &&
+      !imageAnalysis.includes(
+        "Immobilienbilder wurden hochgeladen"
+      ) &&
+      !imageAnalysis.includes(
+        "Social-Media-Texte sollen die Bilder"
+      )
+        ? imageAnalysis
+        : "";
+
     const platformConfigs = [
       {
         platform:
@@ -340,7 +360,7 @@ export async function POST(request: NextRequest) {
           "4 bis 6 gezielte Hashtags",
 
         styleRule:
-          "Visuell und emotional, aber seriös. Starker erster Satz, kurze Absätze, maximal 2 passende Emojis. Fokus auf Wohngefühl und konkrete Objektmerkmale.",
+          "Instagram-first: konkret, leicht emotional und visuell lesbar. Beginne direkt mit 1 bis 2 belegten Objektmerkmalen statt mit einer Werbefloskel. Kurze Absätze, maximal 2 passende Emojis. Keine Superlative und keine Aufwertung vorhandener Fakten.",
       },
 
       {
@@ -354,7 +374,7 @@ export async function POST(request: NextRequest) {
           "2 bis 4 gezielte Hashtags",
 
         styleRule:
-          "Nahbar, informativ und lokal verständlich. Mehr Kontext als Instagram, klare Eckdaten und natürlicher Besichtigungs-CTA.",
+          "Facebook-first: nahbar, verständlich und informativ. Starte mit konkreten Eckdaten oder einem klaren Nutzungsaspekt. Etwas mehr Kontext als Instagram, aber keine klassische Inserat-Sprache und keine künstliche Begeisterung.",
       },
 
       {
@@ -368,7 +388,7 @@ export async function POST(request: NextRequest) {
           "2 bis 4 professionelle Hashtags",
 
         styleRule:
-          "Professionell, präzise und hochwertig. Keine Instagram-Sprache. Fokus auf Objektpositionierung, relevante Merkmale und sachlich überzeugende Vermarktung.",
+          "LinkedIn-first: professionell, nüchtern und präzise. Beginne bevorzugt mit konkreten Eckdaten, zum Beispiel Zimmerzahl, Wohnfläche und Ort. Keine Begrüssungs- oder Entdecken-Sprache, keine Emojis, keine emotionale Konsumentenwerbung. Zeige knapp, wie sich das Objekt anhand seiner belegten Merkmale positioniert.",
       },
 
       {
@@ -382,7 +402,7 @@ export async function POST(request: NextRequest) {
           "1 bis 2 relevante Hashtags",
 
         styleRule:
-          "Sehr kompakt. Ein klarer Hook, 1 bis 2 starke belegte Eckdaten und ein kurzer CTA. Keine Füllsätze.",
+          "X-first: sehr kompakt und faktisch. Beginne mit der stärksten belegten Kennzahl oder Kombination aus Ort und Objektart. 1 bis 2 konkrete Merkmale, kurzer CTA, keine Füllsätze und keine Werbesuperlative.",
       },
     ] as const;
 
@@ -447,12 +467,9 @@ export async function POST(request: NextRequest) {
             "keine zusätzlichen Highlights angegeben"
           ),
 
-        "Stil: " +
-          styleText,
-
         "Verfügbare Bildinformationen: " +
           (
-            imageAnalysis ||
+            usableImageAnalysis ||
             "keine konkrete Bildanalyse vorhanden"
           ),
       ].join("\n");
@@ -475,6 +492,13 @@ export async function POST(request: NextRequest) {
 
         "",
 
+        "GEWÜNSCHTER SCHREIBTON:",
+        styleText,
+
+        "WICHTIG: Der Schreibton ist KEIN Objektfakt. Wörter aus dem Schreibton dürfen niemals als Eigenschaft der Immobilie dargestellt werden.",
+
+        "",
+
         "LÄNGE:",
         config.lengthRule,
 
@@ -487,43 +511,105 @@ export async function POST(request: NextRequest) {
 
         "DIE DREI VARIANTEN MÜSSEN KLAR UNTERSCHIEDLICH SEIN:",
 
-        "Variante 1: Einstieg über das stärkste konkrete Objektmerkmal.",
+        "Variante 1: Einstieg über eine konkrete Kennzahl, zum Beispiel Zimmerzahl oder Wohnfläche.",
 
-        "Variante 2: Einstieg über Nutzung oder Wohngefühl, aber nur auf Basis belegter Fakten.",
+        "Variante 2: Einstieg über ein ausdrücklich genanntes Objektmerkmal wie Terrasse, Balkon, Garten, Lift oder Parkplatz.",
 
-        "Variante 3: Moderner, direkter Vermarktungswinkel mit konkretem Call-to-Action.",
+        "Variante 3: Einstieg über Ort plus zwei belegte Eckdaten. Danach ein zurückhaltender Call-to-Action.",
 
         "",
 
         "VERBINDLICHE QUALITÄTSREGELN:",
 
+        "FACT LOCK:",
+
+        "- Verwende ausschliesslich Informationen, die unter OBJEKTDATEN ausdrücklich stehen.",
+
+        "- Der GEWÜNSCHTE SCHREIBTON ist niemals ein Objektmerkmal.",
+
+        "- Ergänze zu einem vorhandenen Hauptwort niemals selbst ein positives Adjektiv.",
+
+        "- Garten darf beispielsweise nicht zu idyllischem, gepflegtem, sonnigem oder grosszügigem Garten werden.",
+
+        "- Terrasse darf nicht zu grosszügiger, sonniger oder einladender Terrasse werden.",
+
+        "- Wohnung oder Haus darf nicht automatisch hochwertig, exklusiv, charmant oder luxuriös genannt werden.",
+
+        "- Aus Bahnhof, Bus oder öffentlichen Verkehrsmitteln darfst du keine gute, hervorragende oder optimale Anbindung ableiten.",
+
+        "- Aus Schule oder Kindergarten darfst du keine Familienfreundlichkeit ableiten.",
+
+        "- Aus Schwimmbad darfst du keine Entspannung, Freizeitqualität oder Lebensqualität ableiten.",
+
+        "- Aus Garten, Terrasse oder Balkon darfst du kein Wohngefühl oder Lifestyle-Versprechen ableiten.",
+
+        "- Aus einem Foto darfst du nur Merkmale verwenden, die unter Verfügbare Bildinformationen ausdrücklich als Text genannt wurden.",
+
+        "- Wenn eine Aussage nicht nahezu wortgleich durch einen Objektfakt gestützt wird, lasse sie weg.",
+
+        "",
+
         "- Verwende ausschliesslich die angegebenen Fakten.",
 
-        "- Keine erfundenen Eigenschaften, Distanzen, Schulen, Aussicht, Garten, Balkon, Materialien oder Lagevorteile.",
+        "- Jeder beschreibende Ausdruck muss unmittelbar durch einen angegebenen Fakt gedeckt sein.",
 
-        "- Bildinformationen dürfen nur verwendet werden, wenn sie oben konkret genannt sind.",
+        "- Werte Fakten sprachlich niemals auf.",
+
+        "- Beispiel: Garten bedeutet nur Garten, nicht gepflegter Garten, idyllischer Garten oder Gartenparadies.",
+
+        "- Beispiel: Sitzplatz bedeutet nur Sitzplatz, nicht grosszügiger, sonniger oder einladender Sitzplatz.",
+
+        "- Beispiel: modern bedeutet nicht hochwertige Ausstattung, luxuriös oder exklusiv.",
+
+        "- Beispiel: Nähe zum Bahnhof bedeutet nicht unmittelbare Nähe, sehr gute Anbindung oder zentrale Lage.",
+
+        "- Beispiel: ruhige Lage bedeutet nicht idyllisch, paradiesisch oder absolute Ruhe.",
+
+        "- Beispiel: Schulen oder Kindergarten in der Nähe bedeutet nicht automatisch familienfreundlich oder ideal für Familien.",
+
+        "- Keine erfundenen Eigenschaften, Distanzen, Zielgruppen, Aussicht, Materialien, Raumwirkungen oder Lagevorteile.",
+
+        "- Bildinformationen dürfen nur verwendet werden, wenn unter Verfügbare Bildinformationen tatsächlich konkrete sichtbare Merkmale stehen.",
+
+        "- Wenn dort keine konkrete Bildanalyse vorhanden steht, darfst du nichts aus Bildern ableiten.",
 
         "- Erwähne niemals die Begriffe Bildanalyse, AI oder künstliche Intelligenz im Post.",
 
-        "- Vermeide leere Maklerfloskeln.",
+        "- Vermeide abstrakte Aussagen wie hochwertige Ausstattung, hohe Wohnqualität, starkes Gesamtpaket, besonderer Charakter oder überzeugende Gesamtwirkung, wenn diese nicht ausdrücklich belegt sind.",
 
-        "- Verbotene Formulierungen sind insbesondere: Traumhaus, Wohntraum, lässt keine Wünsche offen, alles was Sie brauchen, einzigartiges Juwel, wunderschön, perfekte Lage, Oase.",
+        "- Verbotene Formulierungen sind insbesondere: Traumhaus, Wohntraum, lässt keine Wünsche offen, alles was Sie brauchen, einzigartiges Juwel, wunderschön, perfekte Lage, Oase, Gelegenheit nicht entgehen lassen, überzeugen Sie sich selbst, perfektes Zuhause, Traumimmobilie, ideal für, perfekt für, geniessen Sie, erleben Sie, entdecken Sie, lädt zum Verweilen ein, Lebensqualität, hervorragende Anbindung, gute Anbindung.",
 
-        "- Verwende konkrete Objektmerkmale statt Superlativen.",
+        "- Verwende konkrete Zahlen und Objektmerkmale statt Superlativen.",
 
-        "- Keine künstliche Dringlichkeit wie nur heute oder letzte Chance.",
+        "- Schreibe bevorzugt: Die Wohnung verfügt über eine Terrasse. Nicht: Geniessen Sie entspannte Stunden auf der Terrasse.",
+
+        "- Schreibe bevorzugt: Ein Schwimmbad befindet sich laut Angaben in der Nähe. Nicht: Das Schwimmbad ist ideal für entspannte Tage.",
+
+        "- Schreibe bevorzugt: Bahnhof und öffentliche Verkehrsmittel sind laut Angaben in der Nähe. Nicht: Profitieren Sie von einer hervorragenden Anbindung.",
+
+        "- Keine künstliche Dringlichkeit und keine Verknappung.",
 
         "- Preis nur erwähnen, wenn tatsächlich ein Preis angegeben wurde.",
 
-        "- Schweizer Standarddeutsch verwenden und kein ß.",
+        "- Schweizer Standarddeutsch verwenden und niemals ß schreiben.",
 
-        "- CTA natürlich formulieren, zum Beispiel: Mehr erfahren, Unterlagen anfordern oder Besichtigung anfragen.",
+        "- Kontrolliere vor der Ausgabe Grammatik, Kasus, Singular und Plural sowie alle Adjektivendungen.",
+
+        "- Formuliere vollständige, natürliche Sätze. Keine holprigen Satzketten.",
+
+        "- CTA zurückhaltend und konkret formulieren: Mehr erfahren, Unterlagen anfordern, Besichtigung anfragen oder Kontakt aufnehmen.",
 
         "- Die drei Varianten dürfen weder denselben Einstieg noch denselben CTA kopieren.",
 
+        "- Instagram, Facebook, LinkedIn und X müssen erkennbar unterschiedlich klingen.",
+
+        "- LinkedIn darf niemals mit Entdecken Sie beginnen und soll keine Konsumenten-Werbesprache verwenden.",
+
         "- Hashtags nicht als generische Hashtag-Wand schreiben.",
 
-        "- Jeder Text muss direkt veröffentlichbar wirken.",
+        "- Verwende Orts- und Objekt-Hashtags bevorzugt vor abstrakten Marketing-Hashtags.",
+
+        "- Jeder Text muss ohne manuelle sprachliche Korrektur direkt veröffentlichbar sein.",
 
         "",
 
@@ -554,7 +640,7 @@ export async function POST(request: NextRequest) {
                     "gpt-4o-mini",
 
                   temperature:
-                    0.55,
+                    0.35,
 
                   response_format: {
                     type:
@@ -619,7 +705,7 @@ export async function POST(request: NextRequest) {
                         "system",
 
                       content:
-                        "Du bist der Social-Media-Redaktor von Inserat-AI für den Schweizer Immobilienmarkt. Schreibe faktenbasiert, professionell, plattformspezifisch und ohne austauschbare Maklerfloskeln.",
+                        "Du bist der Social-Media-Redaktor von Inserat-AI für den Schweizer Immobilienmarkt. FACT LOCK hat höchste Priorität: Verwende nur ausdrücklich gelieferte Objektfakten. Erfinde keine Vorteile, Wirkungen, Zielgruppen oder Qualitätsurteile und verstärke vorhandene Fakten nicht durch zusätzliche Adjektive. Der gewünschte Schreibton ist kein Objektmerkmal. Schreibe professionell, grammatikalisch sauber und plattformspezifisch.",
                     },
 
                     {
