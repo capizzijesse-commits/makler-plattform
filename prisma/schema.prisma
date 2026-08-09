@@ -96,6 +96,10 @@ model ListingFinance {
   minimumPrice   Int?
   commissionRate Float?
 
+  financingEquity            Int?
+  financingHardEquity        Int?
+  financingAnnualGrossIncome Int?
+
   netRentMonthly         Int?
   additionalCostsMonthly Int?
   heatingCostsMonthly    Int?

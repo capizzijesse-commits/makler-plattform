@@ -239,9 +239,29 @@ export async function PUT(
         ? "rent"
         : "sale";
 
+    const askingPrice =
+      optionalInteger(
+        body.askingPrice
+      );
+
     const commissionRate =
       optionalFloat(
         body.commissionRate
+      );
+
+    const financingEquity =
+      optionalInteger(
+        body.financingEquity
+      );
+
+    const financingHardEquity =
+      optionalInteger(
+        body.financingHardEquity
+      );
+
+    const financingAnnualGrossIncome =
+      optionalInteger(
+        body.financingAnnualGrossIncome
       );
 
     if (
@@ -266,14 +286,58 @@ export async function PUT(
       );
 
     if (
+      marketingType === "rent" &&
       depositMonths !== null &&
-      depositMonths > 24
+      depositMonths > 3
     ) {
       return NextResponse.json(
         {
           success: false,
           error:
-            "Bitte eine Kaution zwischen 0 und 24 Monatsmieten eingeben.",
+            "Bei Wohnraummieten sind maximal 3 Monatszinse als Sicherheit vorgesehen.",
+          code:
+            "RENTAL_DEPOSIT_LIMIT",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (
+      marketingType === "sale" &&
+      askingPrice !== null &&
+      financingEquity !== null &&
+      financingEquity > askingPrice
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Das Eigenkapital darf den Kaufpreis nicht übersteigen.",
+          code:
+            "FINANCING_EQUITY_EXCEEDS_PRICE",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (
+      marketingType === "sale" &&
+      financingEquity !== null &&
+      financingHardEquity !== null &&
+      financingHardEquity >
+        financingEquity
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Die Eigenmittel ausserhalb der 2. Säule dürfen das gesamte Eigenkapital nicht übersteigen.",
+          code:
+            "FINANCING_HARD_EQUITY_EXCEEDS_TOTAL",
         },
         {
           status: 400,
@@ -290,10 +354,7 @@ export async function PUT(
           listingId: id,
           marketingType,
 
-          askingPrice:
-            optionalInteger(
-              body.askingPrice
-            ),
+          askingPrice,
 
           minimumPrice:
             optionalInteger(
@@ -301,6 +362,10 @@ export async function PUT(
             ),
 
           commissionRate,
+
+          financingEquity,
+          financingHardEquity,
+          financingAnnualGrossIncome,
 
           netRentMonthly:
             optionalInteger(
@@ -327,10 +392,7 @@ export async function PUT(
         update: {
           marketingType,
 
-          askingPrice:
-            optionalInteger(
-              body.askingPrice
-            ),
+          askingPrice,
 
           minimumPrice:
             optionalInteger(
@@ -338,6 +400,10 @@ export async function PUT(
             ),
 
           commissionRate,
+
+          financingEquity,
+          financingHardEquity,
+          financingAnnualGrossIncome,
 
           netRentMonthly:
             optionalInteger(

@@ -20,6 +20,9 @@ type FinanceRecord = {
   askingPrice: number | null;
   minimumPrice: number | null;
   commissionRate: number | null;
+  financingEquity: number | null;
+  financingHardEquity: number | null;
+  financingAnnualGrossIncome: number | null;
   netRentMonthly: number | null;
   additionalCostsMonthly: number | null;
   heatingCostsMonthly: number | null;
@@ -40,6 +43,9 @@ type FinanceForm = {
   askingPrice: string;
   minimumPrice: string;
   commissionRate: string;
+  financingEquity: string;
+  financingHardEquity: string;
+  financingAnnualGrossIncome: string;
   netRentMonthly: string;
   additionalCostsMonthly: string;
   heatingCostsMonthly: string;
@@ -52,6 +58,9 @@ const EMPTY_FORM: FinanceForm = {
   askingPrice: "",
   minimumPrice: "",
   commissionRate: "",
+  financingEquity: "",
+  financingHardEquity: "",
+  financingAnnualGrossIncome: "",
   netRentMonthly: "",
   additionalCostsMonthly: "",
   heatingCostsMonthly: "",
@@ -76,7 +85,7 @@ const COPY = {
     netRent: "Nettomiete pro Monat in CHF",
     additionalCosts: "Nebenkosten pro Monat in CHF",
     heatingCosts: "Heizkosten pro Monat in CHF",
-    depositMonths: "Kaution in Monatsmieten",
+    depositMonths: "Kaution in Monatsmieten (max. 3)",
     notes: "Interne Notizen",
     notesPlaceholder:
       "Zum Beispiel Verhandlungsspielraum, Eigentümervorgaben oder besondere Konditionen.",
@@ -96,6 +105,8 @@ const COPY = {
     saveError: "Die Finanzdaten konnten nicht gespeichert werden.",
     priceError:
       "Die Preisuntergrenze darf nicht höher als der Angebotspreis sein.",
+    depositError:
+      "Bei Wohnraummieten sind maximal 3 Monatsmieten als Kaution vorgesehen.",
   },
   it: {
     eyebrow: "INSERAT-AI MARKETING HUB",
@@ -113,7 +124,7 @@ const COPY = {
     netRent: "Affitto netto mensile in CHF",
     additionalCosts: "Spese accessorie mensili in CHF",
     heatingCosts: "Spese di riscaldamento mensili in CHF",
-    depositMonths: "Deposito in mensilità",
+    depositMonths: "Deposito in mensilità (max. 3)",
     notes: "Note interne",
     notesPlaceholder:
       "Per esempio margine di trattativa, richieste del proprietario o condizioni particolari.",
@@ -133,6 +144,8 @@ const COPY = {
     saveError: "Impossibile salvare i dati finanziari.",
     priceError:
       "Il prezzo minimo non può superare il prezzo richiesto.",
+    depositError:
+      "Per le locazioni residenziali la garanzia è limitata a un massimo di 3 mensilità.",
   },
   fr: {
     eyebrow: "INSERAT-AI MARKETING HUB",
@@ -150,7 +163,7 @@ const COPY = {
     netRent: "Loyer net mensuel en CHF",
     additionalCosts: "Charges mensuelles en CHF",
     heatingCosts: "Frais de chauffage mensuels en CHF",
-    depositMonths: "Garantie en mois de loyer",
+    depositMonths: "Garantie en mois de loyer (max. 3)",
     notes: "Notes internes",
     notesPlaceholder:
       "Par exemple marge de négociation, exigences du propriétaire ou conditions particulières.",
@@ -170,6 +183,8 @@ const COPY = {
     saveError: "Impossible d’enregistrer les données financières.",
     priceError:
       "Le seuil interne ne peut pas être supérieur au prix demandé.",
+    depositError:
+      "Pour les logements, la garantie est limitée à 3 mois de loyer au maximum.",
   },
   en: {
     eyebrow: "INSERAT-AI MARKETING HUB",
@@ -187,7 +202,7 @@ const COPY = {
     netRent: "Monthly net rent in CHF",
     additionalCosts: "Monthly additional costs in CHF",
     heatingCosts: "Monthly heating costs in CHF",
-    depositMonths: "Deposit in monthly rents",
+    depositMonths: "Deposit in monthly rents (max. 3)",
     notes: "Internal notes",
     notesPlaceholder:
       "For example negotiation range, owner requirements or special conditions.",
@@ -207,6 +222,178 @@ const COPY = {
     saveError: "The financial data could not be saved.",
     priceError:
       "The minimum price cannot be higher than the asking price.",
+    depositError:
+      "For residential rentals, the security deposit is limited to a maximum of 3 monthly rents.",
+  },
+} as const;
+
+const FINANCING_COPY = {
+  de: {
+    eyebrow: "FINANZIERUNGS-CHECK SCHWEIZ",
+    title: "Käufer-Finanzierung simulieren",
+    description:
+      "Unverbindliche Orientierung zur Eigenkapitalquote, Belehnung und Tragbarkeit.",
+    equity: "Eigenkapital in CHF",
+    hardEquity:
+      "Davon nicht aus der 2. Säule in CHF",
+    income:
+      "Brutto-Haushaltseinkommen pro Jahr in CHF",
+    mortgage: "Benötigte Hypothek",
+    equityRatio: "Eigenkapitalquote",
+    hardEquityRatio:
+      "Eigenmittel ausserhalb 2. Säule",
+    loanToValue: "Belehnung",
+    interest: "Kalkulatorische Zinsen / Jahr",
+    amortization: "Amortisation / Jahr",
+    maintenance:
+      "Unterhalt & Nebenkosten / Jahr",
+    annualCost:
+      "Rechnerische Wohnkosten / Jahr",
+    monthlyCost:
+      "Rechnerische Wohnkosten / Monat",
+    affordability: "Tragbarkeit",
+    status: "Orientierung",
+    statusOk:
+      "Im üblichen Orientierungsrahmen",
+    statusAffordability:
+      "Tragbarkeit über dem Orientierungswert",
+    statusEquity:
+      "Eigenkapital-Anforderungen prüfen",
+    statusIncomplete:
+      "Angaben für Berechnung ergänzen",
+    assumptions:
+      "Berechnung mit 5 % kalkulatorischem Zins, 1 % Unterhalt/Nebenkosten, 20 % Eigenkapital, mindestens 10 % Eigenmitteln ausserhalb der 2. Säule und Amortisation auf rund zwei Drittel innert 15 Jahren.",
+    disclaimer:
+      "Unverbindliche Orientierung, keine Finanzierungszusage und keine individuelle Kreditberatung. Banken können andere Belehnungswerte, Kostenansätze und Tragbarkeitsregeln anwenden.",
+    equityError:
+      "Das Eigenkapital darf den Kaufpreis nicht übersteigen.",
+    hardEquityError:
+      "Die Eigenmittel ausserhalb der 2. Säule dürfen das gesamte Eigenkapital nicht übersteigen.",
+  },
+
+  it: {
+    eyebrow: "CHECK FINANZIAMENTO SVIZZERA",
+    title: "Simulare il finanziamento dell'acquirente",
+    description:
+      "Indicazione non vincolante su capitale proprio, anticipo e sostenibilità.",
+    equity: "Capitale proprio in CHF",
+    hardEquity:
+      "Di cui non proveniente dal 2° pilastro in CHF",
+    income:
+      "Reddito lordo annuo dell'economia domestica in CHF",
+    mortgage: "Ipoteca necessaria",
+    equityRatio: "Quota di capitale proprio",
+    hardEquityRatio:
+      "Fondi propri fuori dal 2° pilastro",
+    loanToValue: "Anticipo",
+    interest: "Interessi calcolatori / anno",
+    amortization: "Ammortamento / anno",
+    maintenance:
+      "Manutenzione e costi accessori / anno",
+    annualCost: "Costi abitativi calcolati / anno",
+    monthlyCost:
+      "Costi abitativi calcolati / mese",
+    affordability: "Sostenibilità",
+    status: "Orientamento",
+    statusOk:
+      "Nel consueto quadro orientativo",
+    statusAffordability:
+      "Sostenibilità oltre il valore orientativo",
+    statusEquity:
+      "Verificare i requisiti di capitale proprio",
+    statusIncomplete:
+      "Completare i dati per il calcolo",
+    assumptions:
+      "Calcolo orientativo con interesse del 5 %, costi di manutenzione dell'1 %, capitale proprio del 20 %, almeno il 10 % fuori dal 2° pilastro e ammortamento fino a circa due terzi entro 15 anni.",
+    disclaimer:
+      "Indicazione non vincolante, non costituisce una promessa di finanziamento né una consulenza creditizia individuale. Gli istituti possono applicare criteri diversi.",
+    equityError:
+      "Il capitale proprio non può superare il prezzo d'acquisto.",
+    hardEquityError:
+      "I fondi propri fuori dal 2° pilastro non possono superare il capitale proprio totale.",
+  },
+
+  fr: {
+    eyebrow: "CHECK FINANCEMENT SUISSE",
+    title: "Simuler le financement de l'acheteur",
+    description:
+      "Orientation sans engagement concernant fonds propres, quotité et capacité financière.",
+    equity: "Fonds propres en CHF",
+    hardEquity:
+      "Dont hors 2e pilier en CHF",
+    income:
+      "Revenu brut annuel du ménage en CHF",
+    mortgage: "Hypothèque nécessaire",
+    equityRatio: "Quote-part de fonds propres",
+    hardEquityRatio:
+      "Fonds propres hors 2e pilier",
+    loanToValue: "Taux d'avance",
+    interest: "Intérêts théoriques / an",
+    amortization: "Amortissement / an",
+    maintenance:
+      "Entretien et frais accessoires / an",
+    annualCost: "Charges théoriques / an",
+    monthlyCost: "Charges théoriques / mois",
+    affordability: "Capacité financière",
+    status: "Orientation",
+    statusOk:
+      "Dans le cadre indicatif usuel",
+    statusAffordability:
+      "Capacité au-dessus de la valeur indicative",
+    statusEquity:
+      "Vérifier les exigences de fonds propres",
+    statusIncomplete:
+      "Compléter les données pour le calcul",
+    assumptions:
+      "Calcul indicatif avec un taux théorique de 5 %, 1 % de frais d'entretien, 20 % de fonds propres, au moins 10 % hors 2e pilier et amortissement jusqu'à environ deux tiers en 15 ans.",
+    disclaimer:
+      "Orientation sans engagement, sans promesse de financement ni conseil de crédit individuel. Les établissements peuvent appliquer d'autres critères.",
+    equityError:
+      "Les fonds propres ne peuvent pas dépasser le prix d'achat.",
+    hardEquityError:
+      "Les fonds propres hors 2e pilier ne peuvent pas dépasser le total des fonds propres.",
+  },
+
+  en: {
+    eyebrow: "SWISS FINANCING CHECK",
+    title: "Simulate buyer financing",
+    description:
+      "Non-binding orientation for equity, loan-to-value and affordability.",
+    equity: "Equity in CHF",
+    hardEquity:
+      "Of which not from pillar 2 in CHF",
+    income:
+      "Annual gross household income in CHF",
+    mortgage: "Required mortgage",
+    equityRatio: "Equity ratio",
+    hardEquityRatio:
+      "Equity outside pillar 2",
+    loanToValue: "Loan-to-value",
+    interest: "Imputed interest / year",
+    amortization: "Amortization / year",
+    maintenance:
+      "Maintenance & ancillary costs / year",
+    annualCost: "Calculated housing costs / year",
+    monthlyCost:
+      "Calculated housing costs / month",
+    affordability: "Affordability",
+    status: "Orientation",
+    statusOk:
+      "Within the usual indicative range",
+    statusAffordability:
+      "Affordability above the indicative level",
+    statusEquity:
+      "Review equity requirements",
+    statusIncomplete:
+      "Complete the inputs for calculation",
+    assumptions:
+      "Indicative calculation using 5% imputed interest, 1% maintenance costs, 20% equity, at least 10% outside pillar 2 and amortization to roughly two thirds within 15 years.",
+    disclaimer:
+      "Non-binding orientation only. This is not a financing commitment or individual credit advice. Lenders may apply different valuation and affordability criteria.",
+    equityError:
+      "Equity cannot exceed the purchase price.",
+    hardEquityError:
+      "Equity outside pillar 2 cannot exceed total equity.",
   },
 } as const;
 
@@ -253,6 +440,9 @@ export default function FinancePage() {
   const listingId = Array.isArray(rawId) ? rawId[0] : rawId;
   const localeKey = locale.toLowerCase().slice(0, 2) as LocaleKey;
   const text = COPY[localeKey] ?? COPY.de;
+  const financeText =
+    FINANCING_COPY[localeKey] ??
+    FINANCING_COPY.de;
 
   const [listing, setListing] =
     useState<ListingSummary | null>(null);
@@ -316,6 +506,18 @@ export default function FinancePage() {
             finance?.commissionRate != null
               ? String(finance.commissionRate)
               : "",
+          financingEquity:
+            finance?.financingEquity != null
+              ? String(finance.financingEquity)
+              : "",
+          financingHardEquity:
+            finance?.financingHardEquity != null
+              ? String(finance.financingHardEquity)
+              : "",
+          financingAnnualGrossIncome:
+            finance?.financingAnnualGrossIncome != null
+              ? String(finance.financingAnnualGrossIncome)
+              : "",
           netRentMonthly:
             finance?.netRentMonthly != null
               ? String(finance.netRentMonthly)
@@ -365,6 +567,111 @@ export default function FinancePage() {
   const additionalCosts = parseNumber(form.additionalCostsMonthly);
   const heatingCosts = parseNumber(form.heatingCostsMonthly);
   const depositMonths = parseNumber(form.depositMonths);
+
+  const financingEquity =
+    parseNumber(
+      form.financingEquity
+    );
+
+  const financingHardEquity =
+    parseNumber(
+      form.financingHardEquity
+    );
+
+  const financingAnnualGrossIncome =
+    parseNumber(
+      form.financingAnnualGrossIncome
+    );
+
+  const financingResult = useMemo(() => {
+    const price = askingPrice;
+    const equity = financingEquity;
+    const hardEquity =
+      financingHardEquity;
+    const income =
+      financingAnnualGrossIncome;
+
+    if (
+      price === null ||
+      price <= 0 ||
+      equity === null ||
+      hardEquity === null ||
+      income === null ||
+      income <= 0
+    ) {
+      return null;
+    }
+
+    const mortgage =
+      Math.max(
+        0,
+        price - equity
+      );
+
+    const equityRatio =
+      (equity / price) * 100;
+
+    const hardEquityRatio =
+      (hardEquity / price) * 100;
+
+    const loanToValue =
+      (mortgage / price) * 100;
+
+    const annualInterest =
+      mortgage * 0.05;
+
+    const annualMaintenance =
+      price * 0.01;
+
+    const targetMortgage =
+      price * (2 / 3);
+
+    const annualAmortization =
+      Math.max(
+        0,
+        mortgage -
+          targetMortgage
+      ) / 15;
+
+    const annualCost =
+      annualInterest +
+      annualMaintenance +
+      annualAmortization;
+
+    const monthlyCost =
+      annualCost / 12;
+
+    const affordability =
+      (annualCost / income) *
+      100;
+
+    const equityOk =
+      equityRatio >= 20 &&
+      hardEquityRatio >= 10;
+
+    const affordabilityOk =
+      affordability <= 33;
+
+    return {
+      mortgage,
+      equityRatio,
+      hardEquityRatio,
+      loanToValue,
+      annualInterest,
+      annualMaintenance,
+      annualAmortization,
+      annualCost,
+      monthlyCost,
+      affordability,
+      equityOk,
+      affordabilityOk,
+    };
+  }, [
+    askingPrice,
+    financingEquity,
+    financingHardEquity,
+    financingAnnualGrossIncome,
+  ]);
 
   const estimatedCommission = useMemo(() => {
     if (askingPrice === null || commissionRate === null) return null;
@@ -417,6 +724,40 @@ export default function FinancePage() {
       minimumPrice > askingPrice
     ) {
       setError(text.priceError);
+      return;
+    }
+
+    if (
+      form.marketingType === "rent" &&
+      depositMonths !== null &&
+      depositMonths > 3
+    ) {
+      setError(text.depositError);
+      return;
+    }
+
+    if (
+      form.marketingType === "sale" &&
+      askingPrice !== null &&
+      financingEquity !== null &&
+      financingEquity > askingPrice
+    ) {
+      setError(
+        financeText.equityError
+      );
+      return;
+    }
+
+    if (
+      form.marketingType === "sale" &&
+      financingEquity !== null &&
+      financingHardEquity !== null &&
+      financingHardEquity >
+        financingEquity
+    ) {
+      setError(
+        financeText.hardEquityError
+      );
       return;
     }
 
@@ -693,14 +1034,215 @@ export default function FinancePage() {
               )}
             </div>
 
+
+          </aside>
+
+            {form.marketingType === "sale" ? (
+              <section
+                data-section="FINANCING-CHECK-V1"
+                className="mt-8 rounded-[28px] border border-amber-300/20 bg-gradient-to-br from-slate-950/90 via-[#0a1428] to-[#101c36] p-6 shadow-2xl shadow-black/20 sm:p-8 lg:col-span-2 lg:p-10"
+              >
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">
+                  {financeText.eyebrow}
+                </p>
+
+                <h3 className="mt-2 text-xl font-black">
+                  {financeText.title}
+                </h3>
+
+                <p className="mt-2 text-sm leading-6 text-slate-400">
+                  {financeText.description}
+                </p>
+
+                <div className="mt-7 grid gap-4 md:grid-cols-3">
+                  <Field
+                    label={financeText.equity}
+                    value={form.financingEquity}
+                    onChange={(value) =>
+                      updateField(
+                        "financingEquity",
+                        value
+                      )
+                    }
+                    placeholder="200000"
+                    className={inputClass}
+                  />
+
+                  <Field
+                    label={financeText.hardEquity}
+                    value={
+                      form.financingHardEquity
+                    }
+                    onChange={(value) =>
+                      updateField(
+                        "financingHardEquity",
+                        value
+                      )
+                    }
+                    placeholder="100000"
+                    className={inputClass}
+                  />
+
+                  <Field
+                    label={financeText.income}
+                    value={
+                      form.financingAnnualGrossIncome
+                    }
+                    onChange={(value) =>
+                      updateField(
+                        "financingAnnualGrossIncome",
+                        value
+                      )
+                    }
+                    placeholder="180000"
+                    className={inputClass}
+                  />
+                </div>
+
+                <div className="mt-8 rounded-[24px] border border-amber-300/20 bg-amber-300/[0.045] p-5 sm:p-6">
+                  {financingResult ? (
+                    <>
+                      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+                        <Summary
+                          label={financeText.mortgage}
+                          value={formatMoney(
+                            financingResult.mortgage,
+                            localeKey,
+                            text.unset
+                          )}
+                        />
+
+                        <Summary
+                          label={financeText.loanToValue}
+                          value={
+                            financingResult.loanToValue.toFixed(
+                              1
+                            ) + " %"
+                          }
+                        />
+
+                        <Summary
+                          label={financeText.equityRatio}
+                          value={
+                            financingResult.equityRatio.toFixed(
+                              1
+                            ) + " %"
+                          }
+                        />
+
+                        <Summary
+                          label={
+                            financeText.hardEquityRatio
+                          }
+                          value={
+                            financingResult.hardEquityRatio.toFixed(
+                              1
+                            ) + " %"
+                          }
+                        />
+
+                        <Summary
+                          label={financeText.interest}
+                          value={formatMoney(
+                            financingResult.annualInterest,
+                            localeKey,
+                            text.unset
+                          )}
+                        />
+
+                        <Summary
+                          label={financeText.amortization}
+                          value={formatMoney(
+                            financingResult.annualAmortization,
+                            localeKey,
+                            text.unset
+                          )}
+                        />
+
+                        <Summary
+                          label={financeText.maintenance}
+                          value={formatMoney(
+                            financingResult.annualMaintenance,
+                            localeKey,
+                            text.unset
+                          )}
+                        />
+
+                        <Summary
+                          label={financeText.annualCost}
+                          value={formatMoney(
+                            financingResult.annualCost,
+                            localeKey,
+                            text.unset
+                          )}
+                        />
+
+                        <Summary
+                          label={financeText.monthlyCost}
+                          value={formatMoney(
+                            financingResult.monthlyCost,
+                            localeKey,
+                            text.unset
+                          )}
+                        />
+
+                        <Summary
+                          label={financeText.affordability}
+                          value={
+                            financingResult.affordability.toFixed(
+                              1
+                            ) + " %"
+                          }
+                        />
+                      </div>
+
+                      <div
+                        className={
+                          "mt-5 rounded-xl border p-4 " +
+                          (!financingResult.equityOk
+                            ? "border-amber-400/30 bg-amber-400/[0.08]"
+                            : financingResult.affordabilityOk
+                              ? "border-emerald-400/30 bg-emerald-400/[0.08]"
+                              : "border-orange-400/30 bg-orange-400/[0.08]")
+                        }
+                      >
+                        <p className="text-xs font-black uppercase tracking-[0.15em] text-slate-400">
+                          {financeText.status}
+                        </p>
+
+                        <p className="mt-2 font-black">
+                          {!financingResult.equityOk
+                            ? financeText.statusEquity
+                            : financingResult.affordabilityOk
+                              ? financeText.statusOk
+                              : financeText.statusAffordability}
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-sm font-bold text-slate-300">
+                      {financeText.statusIncomplete}
+                    </p>
+                  )}
+                </div>
+
+                <p className="mt-5 text-xs leading-5 text-slate-400">
+                  {financeText.assumptions}
+                </p>
+
+                <p className="mt-3 text-xs leading-5 text-slate-500">
+                  {financeText.disclaimer}
+                </p>
+              </section>
+            ) : null}
+
             <button
               type="submit"
               disabled={saving}
-              className="mt-8 inline-flex min-h-14 w-full items-center justify-center rounded-xl bg-gradient-to-r from-amber-300 to-amber-500 px-6 font-black text-slate-950 disabled:opacity-60"
+              className="mt-2 inline-flex min-h-14 w-full items-center justify-center rounded-xl lg:col-span-2 bg-gradient-to-r from-amber-300 to-amber-500 px-6 font-black text-slate-950 disabled:opacity-60"
             >
               {saving ? text.saving : text.save}
             </button>
-          </aside>
         </form>
       </div>
     </main>
