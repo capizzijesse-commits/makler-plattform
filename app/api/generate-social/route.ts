@@ -315,124 +315,572 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const prompt = `
-Du bist ein professioneller Social-Media-Texter für Schweizer Immobilienmakler.
 
-Erstelle GENAU 12 hochwertige Social-Media-Texte für die Vermarktung einer Immobilie.
+    /*
+     * =======================================================
+     * INSERAT-AI SOCIAL SPEED + QUALITY V1
+     *
+     * Statt einem riesigen Request mit 12 langen Posts
+     * werden vier unabhängige Plattformen parallel erzeugt.
+     * =======================================================
+     */
 
-Es sollen exakt erstellt werden:
-- 3 Varianten für Instagram
-- 3 Varianten für Facebook
-- 3 Varianten für LinkedIn
-- 3 Varianten für X / Twitter
+    const generationStartedAt =
+      Date.now();
 
-Verwende AUSSCHLIESSLICH diese Angaben:
-- Ort: ${location}
-- Objektart: ${propertyType}
-- Zimmer: ${rooms}
-- Wohnfläche: ${livingArea} m²
-- Preis: CHF ${price || "-"}
-- Highlights: ${highlights || "keine"}
-- Stil: ${styleText}
-- Bildanalyse: ${imageAnalysis || "keine"}
-Bildanalyse:
-${imageAnalysis || "Keine Bildanalyse vorhanden"}
-
-Verwende nur Merkmale, die in der Bildanalyse tatsächlich genannt werden.
-Erfinde keine zusätzlichen Eigenschaften.
-Nutze passende Bildmerkmale in den Beiträgen für Instagram, Facebook, LinkedIn und X.
-Qualitätsanforderungen:
-- Schreibe hochwertig, verkaufsstark, professionell und natürlich.
-- Die Texte dürfen nicht zu kurz sein.
-- Keine leeren Floskeln.
-- Keine erfundenen Fakten.
-- Keine falschen Versprechen.
-- Verwende passende Emojis sparsam.
-- Jeder Text braucht am Ende passende Hashtags.
-- Verwende 5 bis 9 Hashtags pro Variante.
-- Hashtags sollen zum Schweizer Immobilienmarkt, zum Standort und zur Objektart passen.
-- Schreibe auf Deutsch.
-- Jede Variante muss anders formuliert sein.
-- Gib NUR gültiges JSON zurück, ohne Markdown und ohne Erklärung.
-- X / Twitter darf kompakt sein, soll aber nicht zu kurz wirken. Schreibe X-Posts mit 220 bis maximal 280 Zeichen, mit klarem Nutzen, Call-to-Action und 2 bis 4 Hashtags.
-Textlängen:
-- Instagram: 700 bis 1'000 Zeichen
-- Facebook: 800 bis 1'200 Zeichen
-- LinkedIn: 900 bis 1'400 Zeichen
-- X / Twitter: 220 bis maximal 280 Zeichen
-
-Format:
-{
-  "variants": [
-    { "title": "Instagram Variante 1", "text": "Text" },
-    { "title": "Instagram Variante 2", "text": "Text" },
-    { "title": "Instagram Variante 3", "text": "Text" },
-    { "title": "Facebook Variante 1", "text": "Text" },
-    { "title": "Facebook Variante 2", "text": "Text" },
-    { "title": "Facebook Variante 3", "text": "Text" },
-    { "title": "LinkedIn Variante 1", "text": "Text" },
-    { "title": "LinkedIn Variante 2", "text": "Text" },
-    { "title": "LinkedIn Variante 3", "text": "Text" },
-    { "title": "X Variante 1", "text": "Text" },
-    { "title": "X Variante 2", "text": "Text" },
-    { "title": "X Variante 3", "text": "Text" }
-  ]
-}
-`;
-
-    const openAiResponse = await fetch(
-      "https://api.openai.com/v1/chat/completions",
+    const platformConfigs = [
       {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          temperature: 0.85,
-          messages: [
+        platform:
+          "Instagram",
+
+        lengthRule:
+          "420 bis 650 Zeichen inklusive Hashtags",
+
+        hashtagRule:
+          "4 bis 6 gezielte Hashtags",
+
+        styleRule:
+          "Visuell und emotional, aber seriös. Starker erster Satz, kurze Absätze, maximal 2 passende Emojis. Fokus auf Wohngefühl und konkrete Objektmerkmale.",
+      },
+
+      {
+        platform:
+          "Facebook",
+
+        lengthRule:
+          "500 bis 750 Zeichen inklusive Hashtags",
+
+        hashtagRule:
+          "2 bis 4 gezielte Hashtags",
+
+        styleRule:
+          "Nahbar, informativ und lokal verständlich. Mehr Kontext als Instagram, klare Eckdaten und natürlicher Besichtigungs-CTA.",
+      },
+
+      {
+        platform:
+          "LinkedIn",
+
+        lengthRule:
+          "550 bis 800 Zeichen inklusive Hashtags",
+
+        hashtagRule:
+          "2 bis 4 professionelle Hashtags",
+
+        styleRule:
+          "Professionell, präzise und hochwertig. Keine Instagram-Sprache. Fokus auf Objektpositionierung, relevante Merkmale und sachlich überzeugende Vermarktung.",
+      },
+
+      {
+        platform:
+          "X",
+
+        lengthRule:
+          "180 bis maximal 270 Zeichen inklusive Hashtags",
+
+        hashtagRule:
+          "1 bis 2 relevante Hashtags",
+
+        styleRule:
+          "Sehr kompakt. Ein klarer Hook, 1 bis 2 starke belegte Eckdaten und ein kurzer CTA. Keine Füllsätze.",
+      },
+    ] as const;
+
+
+    function fallbackForPlatform(
+      platform: string
+    ) {
+      return fallbackPosts(
+        fallbackData
+      )
+        .filter(
+          (variant) =>
+            variant.title.startsWith(
+              platform +
+                " Variante"
+            )
+        )
+        .slice(
+          0,
+          3
+        );
+    }
+
+
+    async function generatePlatform(
+      config:
+        (typeof platformConfigs)[number]
+    ) {
+      const platformStartedAt =
+        Date.now();
+
+      /*
+       * Gemeinsame Faktenbasis.
+       * Keine weiteren Informationen
+       * dürfen erfunden werden.
+       */
+      const facts = [
+        "Ort: " +
+          location,
+
+        "Objektart: " +
+          propertyType,
+
+        "Zimmer: " +
+          rooms,
+
+        "Wohnfläche: " +
+          livingArea +
+          " m²",
+
+        "Preis: " +
+          (
+            price
+              ? "CHF " +
+                price
+              : "nicht angegeben"
+          ),
+
+        "Highlights: " +
+          (
+            highlights ||
+            "keine zusätzlichen Highlights angegeben"
+          ),
+
+        "Stil: " +
+          styleText,
+
+        "Verfügbare Bildinformationen: " +
+          (
+            imageAnalysis ||
+            "keine konkrete Bildanalyse vorhanden"
+          ),
+      ].join("\n");
+
+
+      const platformPrompt = [
+        "Erstelle GENAU 3 unterschiedliche Social-Media-Posts für " +
+          config.platform +
+          ".",
+
+        "",
+
+        "OBJEKTDATEN:",
+        facts,
+
+        "",
+
+        "PLATTFORM:",
+        config.styleRule,
+
+        "",
+
+        "LÄNGE:",
+        config.lengthRule,
+
+        "",
+
+        "HASHTAGS:",
+        config.hashtagRule,
+
+        "",
+
+        "DIE DREI VARIANTEN MÜSSEN KLAR UNTERSCHIEDLICH SEIN:",
+
+        "Variante 1: Einstieg über das stärkste konkrete Objektmerkmal.",
+
+        "Variante 2: Einstieg über Nutzung oder Wohngefühl, aber nur auf Basis belegter Fakten.",
+
+        "Variante 3: Moderner, direkter Vermarktungswinkel mit konkretem Call-to-Action.",
+
+        "",
+
+        "VERBINDLICHE QUALITÄTSREGELN:",
+
+        "- Verwende ausschliesslich die angegebenen Fakten.",
+
+        "- Keine erfundenen Eigenschaften, Distanzen, Schulen, Aussicht, Garten, Balkon, Materialien oder Lagevorteile.",
+
+        "- Bildinformationen dürfen nur verwendet werden, wenn sie oben konkret genannt sind.",
+
+        "- Erwähne niemals die Begriffe Bildanalyse, AI oder künstliche Intelligenz im Post.",
+
+        "- Vermeide leere Maklerfloskeln.",
+
+        "- Verbotene Formulierungen sind insbesondere: Traumhaus, Wohntraum, lässt keine Wünsche offen, alles was Sie brauchen, einzigartiges Juwel, wunderschön, perfekte Lage, Oase.",
+
+        "- Verwende konkrete Objektmerkmale statt Superlativen.",
+
+        "- Keine künstliche Dringlichkeit wie nur heute oder letzte Chance.",
+
+        "- Preis nur erwähnen, wenn tatsächlich ein Preis angegeben wurde.",
+
+        "- Schweizer Standarddeutsch verwenden und kein ß.",
+
+        "- CTA natürlich formulieren, zum Beispiel: Mehr erfahren, Unterlagen anfordern oder Besichtigung anfragen.",
+
+        "- Die drei Varianten dürfen weder denselben Einstieg noch denselben CTA kopieren.",
+
+        "- Hashtags nicht als generische Hashtag-Wand schreiben.",
+
+        "- Jeder Text muss direkt veröffentlichbar wirken.",
+
+        "",
+
+        "Gib ausschliesslich das geforderte JSON zurück.",
+      ].join("\n");
+
+
+      try {
+        const openAiResponse =
+          await fetch(
+            "https://api.openai.com/v1/chat/completions",
             {
-              role: "system",
-              content:
-                "Du schreibst hochwertige, seriöse und verkaufsstarke Social-Media-Texte für Schweizer Immobilienmakler.",
-            },
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-        }),
+              method:
+                "POST",
+
+              headers: {
+                Authorization:
+                  "Bearer " +
+                  apiKey,
+
+                "Content-Type":
+                  "application/json",
+              },
+
+              body:
+                JSON.stringify({
+                  model:
+                    "gpt-4o-mini",
+
+                  temperature:
+                    0.55,
+
+                  response_format: {
+                    type:
+                      "json_schema",
+
+                    json_schema: {
+                      name:
+                        "social_variants",
+
+                      strict:
+                        true,
+
+                      schema: {
+                        type:
+                          "object",
+
+                        properties: {
+                          variants: {
+                            type:
+                              "array",
+
+                            items: {
+                              type:
+                                "object",
+
+                              properties: {
+                                title: {
+                                  type:
+                                    "string",
+                                },
+
+                                text: {
+                                  type:
+                                    "string",
+                                },
+                              },
+
+                              required: [
+                                "title",
+                                "text",
+                              ],
+
+                              additionalProperties:
+                                false,
+                            },
+                          },
+                        },
+
+                        required: [
+                          "variants",
+                        ],
+
+                        additionalProperties:
+                          false,
+                      },
+                    },
+                  },
+
+                  messages: [
+                    {
+                      role:
+                        "system",
+
+                      content:
+                        "Du bist der Social-Media-Redaktor von Inserat-AI für den Schweizer Immobilienmarkt. Schreibe faktenbasiert, professionell, plattformspezifisch und ohne austauschbare Maklerfloskeln.",
+                    },
+
+                    {
+                      role:
+                        "user",
+
+                      content:
+                        platformPrompt,
+                    },
+                  ],
+                }),
+            }
+          );
+
+
+        if (
+          !openAiResponse.ok
+        ) {
+          throw new Error(
+            "OPENAI_SOCIAL_" +
+              config.platform.toUpperCase() +
+              "_" +
+              openAiResponse.status
+          );
+        }
+
+
+        const openAiData =
+          await openAiResponse.json();
+
+        const content =
+          openAiData
+            ?.choices?.[0]
+            ?.message
+            ?.content;
+
+
+        if (
+          typeof content !==
+          "string"
+        ) {
+          throw new Error(
+            "OPENAI_SOCIAL_EMPTY_" +
+              config.platform.toUpperCase()
+          );
+        }
+
+
+        const parsed =
+          extractJson(
+            content
+          );
+
+        const normalized =
+          normalizeVariants(
+            parsed?.variants
+          )
+            .slice(
+              0,
+              3
+            )
+            .map(
+              (
+                variant,
+                index
+              ) => ({
+                /*
+                 * Titel kontrollieren wir selbst.
+                 * Dadurch bleibt die UI stabil.
+                 */
+                title:
+                  config.platform +
+                  " Variante " +
+                  (
+                    index +
+                    1
+                  ),
+
+                text:
+                  variant.text.trim(),
+              })
+            )
+            .filter(
+              (variant) =>
+                variant.text.length >
+                0
+            );
+
+
+        if (
+          normalized.length !==
+          3
+        ) {
+          throw new Error(
+            "OPENAI_SOCIAL_VARIANT_COUNT_" +
+              config.platform.toUpperCase()
+          );
+        }
+
+
+        return {
+          platform:
+            config.platform,
+
+          variants:
+            normalized,
+
+          fallback:
+            false,
+
+          durationMs:
+            Date.now() -
+            platformStartedAt,
+        };
+      }
+      catch (error) {
+        console.error(
+          "[generate-social:" +
+            config.platform +
+            "]",
+          error
+        );
+
+        return {
+          platform:
+            config.platform,
+
+          variants:
+            fallbackForPlatform(
+              config.platform
+            ),
+
+          fallback:
+            true,
+
+          durationMs:
+            Date.now() -
+            platformStartedAt,
+        };
+      }
+    }
+
+
+    /*
+     * Alle vier Plattformen starten gleichzeitig.
+     */
+    const platformResults =
+      await Promise.all(
+        platformConfigs.map(
+          (
+            config
+          ) =>
+            generatePlatform(
+              config
+            )
+        )
+      );
+
+
+    const variants =
+      platformResults.flatMap(
+        (
+          result
+        ) =>
+          result.variants
+      );
+
+
+    /*
+     * Sicherheitsnetz:
+     * Die bestehende UI erwartet 12 Varianten.
+     */
+    if (
+      variants.length !==
+      12
+    ) {
+      console.error(
+        "[generate-social] Ungültige Gesamtzahl:",
+        variants.length
+      );
+
+      return NextResponse.json({
+        variants:
+          fallbackPosts(
+            fallbackData
+          ),
+
+        generationMs:
+          Date.now() -
+          generationStartedAt,
+
+        fallback:
+          true,
+      });
+    }
+
+
+    const fallbackPlatforms =
+      platformResults
+        .filter(
+          (
+            result
+          ) =>
+            result.fallback
+        )
+        .map(
+          (
+            result
+          ) =>
+            result.platform
+        );
+
+
+    const generationMs =
+      Date.now() -
+      generationStartedAt;
+
+
+    console.info(
+      "[generate-social]",
+      {
+        generationMs,
+
+        platforms:
+          platformResults.map(
+            (
+              result
+            ) => ({
+              platform:
+                result.platform,
+
+              durationMs:
+                result.durationMs,
+
+              fallback:
+                result.fallback,
+            })
+          ),
       }
     );
 
-    if (!openAiResponse.ok) {
-      return NextResponse.json({
-        variants: fallbackPosts(fallbackData),
+
+    const response =
+      NextResponse.json({
+        variants,
+
+        generationMs,
+
+        fallbackPlatforms,
       });
-    }
 
-    const openAiData = await openAiResponse.json();
-    const content = openAiData?.choices?.[0]?.message?.content;
 
-    if (typeof content !== "string") {
-      return NextResponse.json({
-        variants: fallbackPosts(fallbackData),
-      });
-    }
+    response.headers.set(
+      "Server-Timing",
+      "social;dur=" +
+        generationMs
+    );
 
-    const parsed = extractJson(content);
-    const variants = normalizeVariants(parsed?.variants);
 
-    if (variants.length < 12) {
-      return NextResponse.json({
-        variants: fallbackPosts(fallbackData),
-      });
-    }
+    return response;
 
-    return NextResponse.json({
-      variants,
-    });
   } catch (error) {
     console.error("generate-social error:", error);
 
