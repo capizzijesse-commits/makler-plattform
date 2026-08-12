@@ -181,7 +181,98 @@ export default function GoogleAnalytics() {
     hasValidMeasurementId,
     pathname,
   ]);
+useEffect(() => {
+  if (
+    !enabled ||
+    !hasValidMeasurementId
+  ) {
+    return;
+  }
 
+  function handleRegisterClick(
+    event: MouseEvent
+  ) {
+    const target =
+      event.target instanceof Element
+        ? event.target
+        : null;
+
+    if (!target) {
+      return;
+    }
+
+    const link =
+      target.closest<HTMLAnchorElement>(
+        'a[href]'
+      );
+
+    if (!link) {
+      return;
+    }
+
+    let url: URL;
+
+    try {
+      url = new URL(
+        link.href,
+        window.location.origin
+      );
+    } catch {
+      return;
+    }
+
+    if (
+      url.origin !==
+        window.location.origin ||
+      url.pathname !== "/register"
+    ) {
+      return;
+    }
+
+    const plan =
+      url.searchParams.get("plan");
+
+    const requestedPlan =
+      plan === "founder" ||
+      plan === "single-object"
+        ? plan
+        : "none";
+
+    trackAnalyticsEvent(
+      "register_cta_click",
+      {
+        cta_page:
+          window.location.pathname,
+        requested_plan:
+          requestedPlan,
+        cta_text:
+          link.textContent
+            ?.trim()
+            .replace(/\s+/g, " ")
+            .slice(0, 80) ||
+          "unknown",
+        transport_type: "beacon",
+      }
+    );
+  }
+
+  document.addEventListener(
+    "click",
+    handleRegisterClick,
+    true
+  );
+
+  return () => {
+    document.removeEventListener(
+      "click",
+      handleRegisterClick,
+      true
+    );
+  };
+}, [
+  enabled,
+  hasValidMeasurementId,
+]);
   if (
     !enabled ||
     !hasValidMeasurementId

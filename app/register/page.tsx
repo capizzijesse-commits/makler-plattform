@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useRef,
   useState,
   type FormEvent,
 } from "react";
@@ -62,21 +63,50 @@ export default function RegisterPage() {
 
   const [dialogMessage, setDialogMessage] =
     useState("");
+    const registerFormStartedRef =
+  useRef(false);
 
-  useEffect(() => {
-    const plan = new URLSearchParams(
-      window.location.search
-    ).get("plan");
+function handleRegisterFormStart() {
+  if (registerFormStartedRef.current) {
+    return;
+  }
 
-    if (
-      plan === "founder" ||
-      plan === "single-object"
-    ) {
-      setRequestedPlan(plan);
-    } else {
-      setRequestedPlan("");
+  registerFormStartedRef.current = true;
+
+  trackAnalyticsEvent(
+    "register_form_start",
+    {
+      page_path:
+        window.location.pathname,
+      requested_plan:
+        requestedPlan || "none",
     }
-  }, []);
+  );
+}
+
+ useEffect(() => {
+  const plan = new URLSearchParams(
+    window.location.search
+  ).get("plan");
+
+  const normalizedPlan: RequestedPlan =
+    plan === "founder" ||
+    plan === "single-object"
+      ? plan
+      : "";
+
+  setRequestedPlan(normalizedPlan);
+
+  trackAnalyticsEvent(
+    "register_page_view",
+    {
+      page_path:
+        window.location.pathname,
+      requested_plan:
+        normalizedPlan || "none",
+    }
+  );
+}, []);
 
   useEffect(() => {
     if (!dialogMessage) {
@@ -297,14 +327,23 @@ export default function RegisterPage() {
     event: FormEvent
   ) {
     event.preventDefault();
-
+let registerErrorTracked = false;
     const validationError =
       validateForm();
 
-    if (validationError) {
-      setDialogMessage(validationError);
-      return;
+ if (validationError) {
+  trackAnalyticsEvent(
+    "register_error",
+    {
+      error_type: "validation",
+      requested_plan:
+        requestedPlan || "none",
     }
+  );
+
+  setDialogMessage(validationError);
+  return;
+}
 
     setLoading(true);
 
@@ -344,13 +383,27 @@ export default function RegisterPage() {
       }
 
       if (!response.ok) {
-        throw new Error(
-          getErrorMessage(
-            data.errorCode,
-            data.error || data.message
-          )
-        );
-      }
+  trackAnalyticsEvent(
+    "register_error",
+    {
+      error_type: "api",
+      error_code:
+        data.errorCode ||
+        "UNKNOWN",
+      requested_plan:
+        requestedPlan || "none",
+    }
+  );
+
+  registerErrorTracked = true;
+
+  throw new Error(
+    getErrorMessage(
+      data.errorCode,
+      data.error || data.message
+    )
+  );
+}
 
       trackAnalyticsEvent("sign_up", { method: "email" });
 
@@ -371,7 +424,18 @@ export default function RegisterPage() {
           loginParameters.toString()
       );
     } catch (error) {
-      setDialogMessage(
+  if (!registerErrorTracked) {
+    trackAnalyticsEvent(
+      "register_error",
+      {
+        error_type: "network_or_unexpected",
+        requested_plan:
+          requestedPlan || "none",
+      }
+    );
+  }
+
+  setDialogMessage(
         error instanceof Error
           ? error.message
           : t("errors.processingFailed")
@@ -454,8 +518,11 @@ export default function RegisterPage() {
                     {stat.label}
                   </p>
                 </div>
+
               )
+
             )}
+
           </div>
         </section>
 
@@ -476,10 +543,11 @@ export default function RegisterPage() {
             </div>
 
             <form
-              onSubmit={handleRegister}
-              noValidate
-              className="space-y-5"
-            >
+  onSubmit={handleRegister}
+  onFocus={handleRegisterFormStart}
+  noValidate
+  className="space-y-5"
+>
               <div>
                 <label
                   htmlFor="register-name"

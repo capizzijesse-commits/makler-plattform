@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-
+import { trackAnalyticsEvent } from "@/lib/analytics";
 type CheckoutError =
   | "existing"
   | "generic"
@@ -143,15 +143,27 @@ export default function PricingSection() {
         | null;
 
       if (
-        response.status === 401 ||
-        data?.loginRequired
-      ) {
-        window.location.assign(
-          "/register?plan=founder"
-        );
+  response.status === 401 ||
+  data?.loginRequired
+) {
+  trackAnalyticsEvent(
+    "register_cta_click",
+    {
+      cta_page:
+        window.location.pathname,
+      requested_plan: "founder",
+      cta_text:
+        t("plans.founder.button"),
+      transport_type: "beacon",
+    }
+  );
 
-        return;
-      }
+  window.location.assign(
+    "/register?plan=founder"
+  );
+
+  return;
+}
 
       if (
         !response.ok ||
