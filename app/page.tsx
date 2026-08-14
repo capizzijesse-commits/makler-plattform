@@ -13,7 +13,6 @@ export default function HomePage() {
         <div className="landingHeroInner">
           <div className="landingHeroContent">
             <div className="landingBadge">
-              <span>BETA</span>
               {t("hero.badge")}
             </div>
 

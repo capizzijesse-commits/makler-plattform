@@ -98,10 +98,10 @@
     "benefits": {
       "speedTitle": "Creato in pochi secondi",
       "speedText": "Titolo, descrizione e punti di forza",
-      "visibilityTitle": "Maggiore visibilità",
-      "visibilityText": "Ottimizzato per i portali immobiliari",
-      "inquiriesTitle": "Più richieste",
-      "inquiriesText": "Persone interessate qualificate"
+      "visibilityTitle": "Pronto per i portali",
+      "visibilityText": "Testi chiari per la commercializzazione immobiliare",
+      "inquiriesTitle": "Comunicazione coerente",
+      "inquiriesText": "Annuncio, dossier e social media in un unico flusso di lavoro"
     },
     "demo": {
       "label": "Inserat-AI spiegato in 60 secondi",
@@ -118,7 +118,7 @@
     "trust": {
       "title": "Vantaggi",
       "swissProfessionals": "Sviluppato per i professionisti immobiliari svizzeri",
-      "dataProtection": "Conforme alla LPD",
+      "dataProtection": "Protezione dei dati svizzera al centro",
       "swissMarket": "Mercato svizzero",
       "portalSocial": "Testi per portali e social media",
       "noCreditCard": "Nessuna carta di credito"
@@ -307,7 +307,7 @@
     "badge": "Registrazione gratuita",
     "hero": {
       "title": "Inizia con Inserat-AI e crea annunci migliori.",
-      "description": "Crea gratuitamente il tuo account e scopri Inserat-AI senza impegno. Genera in pochi secondi titoli, descrizioni, punti di forza e contenuti professionali per i portali immobiliari."
+      "description": "Crea gratuitamente il tuo accesso senza carta di credito e scopri Inserat-AI senza impegno. Genera il tuo primo annuncio immobiliare professionale in pochi secondi."
     },
     "plans": {
       "demo": {
@@ -315,7 +315,7 @@
         "title": "Crea un account",
         "description": "Inizia gratuitamente e genera subito il tuo primo annuncio.",
         "submit": "Inizia gratuitamente",
-        "note": "La registrazione è gratuita. I costi sorgono solo quando selezioni un’offerta o attivi un singolo immobile.",
+        "note": "La registrazione e la demo sono gratuite. Per la demo non è richiesta alcuna carta di credito. I costi sorgono solo quando selezioni un’offerta o attivi un singolo immobile.",
         "statGeneration": "generazione gratuita",
         "statInstant": "Subito",
         "statDashboard": "accesso alla dashboard",

@@ -98,10 +98,10 @@
     "benefits": {
       "speedTitle": "Created in seconds",
       "speedText": "Title, description and highlights",
-      "visibilityTitle": "More visibility",
-      "visibilityText": "Optimised for property portals",
-      "inquiriesTitle": "More enquiries",
-      "inquiriesText": "Qualified prospective clients"
+      "visibilityTitle": "Ready for property portals",
+      "visibilityText": "Clear copy for property marketing",
+      "inquiriesTitle": "Consistent communication",
+      "inquiriesText": "Listing, brochure and social media in one workflow"
     },
     "demo": {
       "label": "Inserat-AI explained in 60 seconds",
@@ -118,7 +118,7 @@
     "trust": {
       "title": "Benefits",
       "swissProfessionals": "Developed for Swiss real estate professionals",
-      "dataProtection": "Compliant with Swiss data protection law",
+      "dataProtection": "Swiss data protection in focus",
       "swissMarket": "Swiss market",
       "portalSocial": "Property portals and social media",
       "noCreditCard": "No credit card"
@@ -307,7 +307,7 @@
     "badge": "Free registration",
     "hero": {
       "title": "Start with Inserat-AI and create better listings.",
-      "description": "Create your free account and discover Inserat-AI with no obligation. Generate professional titles, descriptions, highlights and property portal content in seconds."
+      "description": "Create your free access without a credit card and explore Inserat-AI with no obligation. Generate your first professional property listing in seconds."
     },
     "plans": {
       "demo": {
@@ -315,7 +315,7 @@
         "title": "Create an account",
         "description": "Start for free and generate your first listing immediately.",
         "submit": "Start for free",
-        "note": "Registration is free. Charges only arise when you choose a plan or unlock a single property.",
+        "note": "Registration and the demo are free. No credit card is required for the demo. Charges only arise when you choose a plan or unlock a single property.",
         "statGeneration": "free generation",
         "statInstant": "Instant",
         "statDashboard": "dashboard access",

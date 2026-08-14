@@ -98,10 +98,10 @@
     "benefits": {
       "speedTitle": "Créée en quelques secondes",
       "speedText": "Titre, description et points forts",
-      "visibilityTitle": "Plus de visibilité",
-      "visibilityText": "Optimisée pour les portails immobiliers",
-      "inquiriesTitle": "Plus de demandes",
-      "inquiriesText": "Des personnes intéressées qualifiées"
+      "visibilityTitle": "Prêt pour les portails",
+      "visibilityText": "Des textes clairs pour la commercialisation immobilière",
+      "inquiriesTitle": "Communication cohérente",
+      "inquiriesText": "Annonce, dossier et réseaux sociaux dans un même flux de travail"
     },
     "demo": {
       "label": "Inserat-AI expliqué en 60 secondes",
@@ -118,7 +118,7 @@
     "trust": {
       "title": "Avantages",
       "swissProfessionals": "Conçu pour les professionnels de l’immobilier en Suisse",
-      "dataProtection": "Conforme à la LPD",
+      "dataProtection": "Protection des données suisse au centre",
       "swissMarket": "Marché suisse",
       "portalSocial": "Portails et réseaux sociaux",
       "noCreditCard": "Aucune carte de crédit"
@@ -307,7 +307,7 @@
     "badge": "Inscription gratuite",
     "hero": {
       "title": "Commencez avec Inserat-AI et créez de meilleures annonces.",
-      "description": "Créez gratuitement votre compte et découvrez Inserat-AI sans engagement. Générez en quelques secondes des titres, descriptions, points forts et contenus professionnels pour les portails immobiliers."
+      "description": "Créez gratuitement votre accès sans carte de crédit et découvrez Inserat-AI sans engagement. Générez votre première annonce immobilière professionnelle en quelques secondes."
     },
     "plans": {
       "demo": {
@@ -315,7 +315,7 @@
         "title": "Créer un compte",
         "description": "Commencez gratuitement et générez immédiatement votre première annonce.",
         "submit": "Commencer gratuitement",
-        "note": "L’inscription est gratuite. Des frais ne sont facturés que lorsque vous choisissez une offre ou débloquez un bien unique.",
+        "note": "L’inscription et la démo sont gratuites. Aucune carte de crédit n’est requise pour la démo. Des frais ne sont facturés que lorsque vous choisissez une offre ou débloquez un bien unique.",
         "statGeneration": "génération gratuite",
         "statInstant": "Immédiatement",
         "statDashboard": "utiliser le tableau de bord",

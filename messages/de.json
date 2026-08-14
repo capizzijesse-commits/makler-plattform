@@ -87,7 +87,7 @@
   },
   "HomePage": {
     "hero": {
-      "badge": "Die smarte Lösung für Immobilienprofis in der Schweiz 🇨🇭",
+      "badge": "Die smarte Lösung für Immobilienprofis in der Schweiz",
       "headlineLine1": "Aus wenigen Angaben",
       "headlineLine2": "wird ein Inserat,",
       "headlineLine3": "das überzeugt.",
@@ -98,10 +98,10 @@
     "benefits": {
       "speedTitle": "In Sekunden erstellt",
       "speedText": "Titel, Beschreibung und Highlights",
-      "visibilityTitle": "Mehr Sichtbarkeit",
-      "visibilityText": "Optimiert für Immobilienportale",
-      "inquiriesTitle": "Mehr Anfragen",
-      "inquiriesText": "Qualifizierte Interessenten"
+      "visibilityTitle": "Für Portale vorbereitet",
+      "visibilityText": "Klare Texte für die Immobilienvermarktung",
+      "inquiriesTitle": "Einheitlicher Auftritt",
+      "inquiriesText": "Inserat, Exposé und Social Media aus einem Workflow"
     },
     "demo": {
       "label": "Inserat-AI in 60 Sekunden erklärt",
@@ -118,7 +118,7 @@
     "trust": {
       "title": "Vorteile",
       "swissProfessionals": "Entwickelt für Schweizer Immobilienprofis",
-      "dataProtection": "DSG-konform",
+      "dataProtection": "Schweizer Datenschutz im Fokus",
       "swissMarket": "Schweizer Markt",
       "portalSocial": "Portaltexte & Social Media",
       "noCreditCard": "Keine Kreditkarte"
@@ -307,7 +307,7 @@
     "badge": "Kostenlos registrieren",
     "hero": {
       "title": "Starte mit Inserat-AI und erstelle bessere Inserate.",
-      "description": "Erstelle deinen kostenlosen Zugang und lerne Inserat-AI unverbindlich kennen. Generiere professionelle Titel, Beschreibungen, Highlights und Inhalte für Immobilienportale in wenigen Sekunden."
+      "description": "Erstelle deinen kostenlosen Zugang ohne Kreditkarte und lerne Inserat-AI unverbindlich kennen. Generiere dein erstes professionelles Immobilieninserat in wenigen Sekunden."
     },
     "plans": {
       "demo": {
@@ -315,7 +315,7 @@
         "title": "Account erstellen",
         "description": "Kostenlos starten und direkt dein erstes Inserat generieren.",
         "submit": "Kostenlos starten",
-        "note": "Die Registrierung ist kostenlos. Kosten entstehen erst, wenn du ein Angebot auswählst oder eine einzelne Immobilie freischaltest.",
+        "note": "Die Registrierung und die Demo sind kostenlos. Für die Demo ist keine Kreditkarte erforderlich. Kosten entstehen erst, wenn du ein Angebot auswählst oder eine einzelne Immobilie freischaltest.",
         "statGeneration": "kostenlose Generierung",
         "statInstant": "Sofort",
         "statDashboard": "Dashboard nutzen",
