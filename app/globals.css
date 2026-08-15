@@ -7035,3 +7035,740 @@ svg {
     font-size: 28px !important;
   }
 }
+
+/* =========================================================
+   INSERAT-AI - DASHBOARD MOBILE-FIRST V1
+   Generator als echter Mobile-Arbeitsablauf
+   ========================================================= */
+
+@media screen and (max-width: 430px) {
+
+  /* =======================================================
+     SEITE
+     ======================================================= */
+
+  .dashboardPage.page {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    min-height: 100dvh !important;
+
+    padding:
+      18px
+      12px
+      calc(
+        40px +
+        env(safe-area-inset-bottom)
+      ) !important;
+
+    overflow: visible !important;
+
+    box-sizing: border-box !important;
+  }
+
+  .dashboardPage .shell {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    margin: 0 auto !important;
+  }
+
+
+  /* =======================================================
+     HERO
+     ======================================================= */
+
+  .dashboardPage .hero {
+    margin-bottom: 18px !important;
+
+    text-align: left !important;
+  }
+
+  .dashboardPage .hero h1 {
+    margin-bottom: 8px !important;
+
+    font-size: 29px !important;
+    line-height: 1.08 !important;
+
+    font-weight: 500 !important;
+
+    letter-spacing: -0.035em !important;
+  }
+
+  .dashboardPage .hero p {
+    margin: 0 !important;
+
+    max-width: 100% !important;
+
+    font-size: 14px !important;
+    line-height: 1.55 !important;
+  }
+
+
+  /* =======================================================
+     HAUPTLAYOUT
+     ======================================================= */
+
+  .dashboardPage .grid {
+    display: grid !important;
+
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+
+    gap: 18px !important;
+
+    width: 100% !important;
+
+    align-items: start !important;
+  }
+
+
+  /* =======================================================
+     EINGABEKARTE
+     Keine interne Desktop-Scrollbar mehr
+     ======================================================= */
+
+  .dashboardPage .leftCard {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    min-height: 0 !important;
+    height: auto !important;
+
+    padding:
+      18px
+      14px !important;
+
+    border-radius: 22px !important;
+
+    overflow: visible !important;
+
+    box-sizing: border-box !important;
+  }
+
+  .dashboardPage .leftCardScroll {
+    width: 100% !important;
+
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+
+    overflow: visible !important;
+
+    padding-right: 0 !important;
+
+    scrollbar-width: none !important;
+  }
+
+  .dashboardPage
+    .leftCardScroll::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .dashboardPage .leftCard h2 {
+    margin-bottom: 7px !important;
+
+    font-size: 22px !important;
+    line-height: 1.15 !important;
+
+    font-weight: 600 !important;
+  }
+
+  .dashboardPage .sectionText {
+    margin-bottom: 18px !important;
+
+    font-size: 14px !important;
+    line-height: 1.55 !important;
+  }
+
+
+  /* =======================================================
+     FORMULAR
+     ======================================================= */
+
+  .dashboardPage .formGrid {
+    display: grid !important;
+
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+
+    gap: 14px !important;
+  }
+
+  .dashboardPage .formGrid > * {
+    min-width: 0 !important;
+
+    grid-column:
+      1 / -1 !important;
+  }
+
+  .dashboardPage
+    input:not([type="range"]),
+  .dashboardPage textarea,
+  .dashboardPage select,
+  .dashboardPage .input {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    min-height: 52px !important;
+
+    padding:
+      13px
+      14px !important;
+
+    border-radius: 14px !important;
+
+    font-size: 16px !important;
+    line-height: 1.25 !important;
+
+    box-sizing: border-box !important;
+  }
+
+  .dashboardPage .amberRange {
+    width: 100% !important;
+
+    min-height: 28px !important;
+    height: 28px !important;
+
+    padding: 0 !important;
+  }
+
+
+  /* =======================================================
+     OBJEKT-VORLAGE
+     Desktop Input + Button werden mobil gestapelt
+     ======================================================= */
+
+  .dashboardPage
+    .formGrid
+    > div:first-child {
+    padding: 14px !important;
+
+    border-radius: 16px !important;
+  }
+
+  .dashboardPage
+    .formGrid
+    > div:first-child
+    > div:nth-child(2) {
+    display: grid !important;
+
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+
+    gap: 10px !important;
+  }
+
+  .dashboardPage
+    .formGrid
+    > div:first-child
+    > div:nth-child(2)
+    > button {
+    width: 100% !important;
+
+    min-height: 48px !important;
+
+    white-space: normal !important;
+  }
+
+
+  /* =======================================================
+     UPLOAD + FOTOANALYSE
+     ======================================================= */
+
+  .dashboardPage .uploadBox {
+    width: 100% !important;
+
+    min-height: 58px !important;
+
+    padding:
+      14px
+      15px !important;
+
+    border-radius: 16px !important;
+
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+
+    box-sizing: border-box !important;
+
+    touch-action: manipulation;
+  }
+
+  .dashboardPage
+    button[data-analysis-button="true"] {
+    min-height: 52px !important;
+
+    padding:
+      12px
+      14px !important;
+
+    border-radius: 14px !important;
+
+    font-size: 14px !important;
+    line-height: 1.3 !important;
+
+    touch-action: manipulation;
+  }
+
+  .dashboardPage img {
+    max-width: 100% !important;
+  }
+
+
+  /* =======================================================
+     HAUPTAKTIONEN
+     ======================================================= */
+
+  .dashboardPage .actions {
+    margin-top: 18px !important;
+
+    gap: 12px !important;
+  }
+
+  .dashboardPage .mainActions {
+    display: grid !important;
+
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+
+    gap: 10px !important;
+  }
+
+  .dashboardPage
+    .mainActions
+    > button {
+    width: 100% !important;
+
+    min-height: 54px !important;
+
+    padding:
+      12px
+      14px !important;
+
+    border-radius: 15px !important;
+
+    font-size: 15px !important;
+    line-height: 1.25 !important;
+
+    touch-action: manipulation;
+  }
+
+  .dashboardPage .secondaryActions {
+    display: grid !important;
+
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      ) !important;
+
+    gap: 9px !important;
+  }
+
+  .dashboardPage
+    .secondaryActions
+    > * {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .dashboardPage
+    .secondaryActions
+    button {
+    min-height: 46px !important;
+
+    padding:
+      10px
+      9px !important;
+
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+
+    white-space: normal !important;
+
+    touch-action: manipulation;
+  }
+
+
+  /* =======================================================
+     KLEINE STATS
+     ======================================================= */
+
+  .dashboardPage .miniStats {
+    display: grid !important;
+
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      ) !important;
+
+    gap: 7px !important;
+
+    margin-top: 12px !important;
+  }
+
+  .dashboardPage
+    .miniStats
+    > div {
+    min-width: 0 !important;
+
+    padding: 10px 8px !important;
+
+    border-radius: 12px !important;
+  }
+
+
+  /* =======================================================
+     ERGEBNIS-KARTE
+     ======================================================= */
+
+  .dashboardPage .rightCard {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    min-height: 0 !important;
+    height: auto !important;
+
+    padding:
+      15px
+      14px !important;
+
+    border-radius: 22px !important;
+
+    gap: 12px !important;
+
+    overflow: visible !important;
+
+    box-sizing: border-box !important;
+  }
+
+
+  /* =======================================================
+     TOP-STATS
+     ======================================================= */
+
+  .dashboardPage .topStats {
+    display: grid !important;
+
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      ) !important;
+
+    gap: 7px !important;
+  }
+
+  .dashboardPage .topStat {
+    min-width: 0 !important;
+
+    padding:
+      10px
+      7px !important;
+
+    border-radius: 12px !important;
+  }
+
+  .dashboardPage .topStatValue {
+    margin-bottom: 5px !important;
+
+    font-size: 18px !important;
+    line-height: 1.05 !important;
+  }
+
+  .dashboardPage .topStatLabel {
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+  }
+
+
+  /* =======================================================
+     VARIANTEN
+     ======================================================= */
+
+  .dashboardPage .outputShell {
+    min-height: 0 !important;
+
+    gap: 12px !important;
+  }
+
+  .dashboardPage .outputTop {
+    display: grid !important;
+
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+
+    gap: 10px !important;
+  }
+
+  .dashboardPage .outputState {
+    display: none !important;
+  }
+
+  .dashboardPage .variantTabs {
+    width: 100% !important;
+
+    display: grid !important;
+
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      ) !important;
+
+    gap: 7px !important;
+  }
+
+  .dashboardPage .variantButton {
+    min-width: 0 !important;
+    min-height: 46px !important;
+
+    padding:
+      10px
+      6px !important;
+
+    border:
+      1px solid
+      rgba(148, 163, 184, 0.28)
+      !important;
+
+    border-radius: 12px !important;
+
+    background:
+      rgba(255, 255, 255, 0.76)
+      !important;
+
+    color: #475569 !important;
+
+    font-size: 13px !important;
+    line-height: 1.15 !important;
+
+    font-weight: 600 !important;
+
+    white-space: normal !important;
+
+    touch-action: manipulation;
+  }
+
+  .dashboardPage .variantButton.active {
+    border-color:
+      rgba(245, 158, 11, 0.72)
+      !important;
+
+    background:
+      linear-gradient(
+        135deg,
+        #fbbf24,
+        #f59e0b
+      )
+      !important;
+
+    color: #111827 !important;
+
+    font-weight: 800 !important;
+
+    box-shadow:
+      0 8px 18px
+      rgba(245, 158, 11, 0.22)
+      !important;
+  }
+
+
+  /* =======================================================
+     AUSGABETEXT
+     Keine interne Scrollbox mehr
+     ======================================================= */
+
+  .dashboardPage .outputCard {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+
+    overflow: visible !important;
+
+    padding: 16px !important;
+
+    border-radius: 16px !important;
+  }
+
+  .dashboardPage
+    .outputCard::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .dashboardPage .emptyState {
+    min-height: 160px !important;
+
+    padding:
+      20px
+      8px !important;
+  }
+
+  .dashboardPage .emptyTitle {
+    font-size: 19px !important;
+    line-height: 1.2 !important;
+  }
+
+  .dashboardPage .outputTitle {
+    margin-bottom: 12px !important;
+
+    font-size: 24px !important;
+    line-height: 1.18 !important;
+
+    font-weight: 600 !important;
+
+    overflow-wrap: anywhere !important;
+  }
+
+  .dashboardPage .outputText {
+    font-size: 16px !important;
+    line-height: 1.65 !important;
+
+    overflow-wrap: anywhere !important;
+  }
+
+  .dashboardPage .socialBlock {
+    max-width: 100% !important;
+
+    overflow-wrap: anywhere !important;
+  }
+
+
+  /* =======================================================
+     TASTATUR / FOKUS
+     ======================================================= */
+
+  .dashboardPage
+    input:not([type="range"]):focus,
+  .dashboardPage textarea:focus,
+  .dashboardPage select:focus {
+    scroll-margin-top: 90px;
+    scroll-margin-bottom: 42dvh;
+  }
+
+  body:has(
+    .dashboardPage input:focus
+  )
+    .supportDock,
+  body:has(
+    .dashboardPage textarea:focus
+  )
+    .supportDock,
+  body:has(
+    .dashboardPage input:focus
+  )
+    .guide-launcher,
+  body:has(
+    .dashboardPage textarea:focus
+  )
+    .guide-launcher {
+    display: none !important;
+  }
+
+
+  /* =======================================================
+     MOBILE WORKSPACE SUPPORT
+     Im Generator nur der AI Guide als kompakte Aktion.
+     Feedback und Kontakt bleiben auf anderen Seiten erhalten.
+     ======================================================= */
+
+  body:has(.dashboardPage)
+    .supportDock {
+    right: 12px !important;
+    bottom:
+      calc(
+        12px +
+        env(safe-area-inset-bottom)
+      ) !important;
+
+    width: 48px !important;
+    max-width: 48px !important;
+
+    display: block !important;
+
+    padding: 4px !important;
+
+    border-radius: 999px !important;
+  }
+
+  body:has(.dashboardPage)
+    .supportDock
+    .supportFeedback,
+  body:has(.dashboardPage)
+    .supportDock
+    .supportContact {
+    display: none !important;
+  }
+
+  body:has(.dashboardPage)
+    .supportDock
+    .supportGuide {
+    width: 40px !important;
+    min-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+
+    display: grid !important;
+    place-items: center !important;
+
+    padding: 0 !important;
+
+    border-radius: 999px !important;
+  }
+
+  body:has(.dashboardPage)
+    .supportDock
+    .supportGuide
+    .supportText {
+    display: none !important;
+  }
+
+  body:has(.dashboardPage)
+    .supportDock
+    .supportGuide
+    .supportIcon {
+    width: 20px !important;
+    height: 20px !important;
+
+    margin: 0 !important;
+  }
+
+  body:has(.dashboardPage)
+    .supportDock
+    .supportGuide
+    .supportIcon
+    svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+}
+
+
+/* =========================================================
+   SEHR KLEINE SMARTPHONES
+   ========================================================= */
+
+@media screen and (max-width: 360px) {
+
+  .dashboardPage.page {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .dashboardPage .leftCard,
+  .dashboardPage .rightCard {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .dashboardPage .hero h1 {
+    font-size: 27px !important;
+  }
+
+  .dashboardPage .secondaryActions {
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+  }
+}

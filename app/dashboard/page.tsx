@@ -1743,7 +1743,7 @@ localStorage.removeItem("inseratAiImageAnalysis");
 
 return (
 <main
-  className="page"
+  className="page dashboardPage"
   style={{
     background:
       "radial-gradient(circle at 18% 12%, rgba(37, 99, 235, 0.45), transparent 28%), radial-gradient(circle at 88% 82%, rgba(249, 115, 22, 0.75), transparent 34%), linear-gradient(135deg, #020617 0%, #0f172a 35%, #312e81 65%, #7c2d12 100%)",
