@@ -2441,6 +2441,7 @@ return (
 
   {imageAnalysisMessage && (
     <div
+      className="dashboardImageAnalysisMessage"
       role="status"
       aria-live="polite"
       style={{
@@ -2459,13 +2460,15 @@ return (
   )}
 </div>
 {imagePreviews.length > 0 && (
-  <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+  <div className="dashboardImageGrid mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
     {imagePreviews.map((preview, index) => {
+      const analysisResult =
+        imageAnalyses[index];
 
       return (
         <div
           key={`${preview}-${index}`}
-          className="overflow-hidden rounded-2xl border border-white/10 bg-white/5"
+          className="dashboardImageCard overflow-hidden rounded-2xl border border-white/10 bg-white/5"
         >
           <div className="relative">
             <button
@@ -2473,7 +2476,7 @@ return (
               onClick={() => removeImage(index)}
               disabled={analyzingImage}
               aria-label={t("images.remove", { index: index + 1 })}
-              className="absolute right-2 top-2 z-10 rounded-full bg-slate-950/80 px-2 py-1 text-xs font-black text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="dashboardImageRemove absolute right-2 top-2 z-10 rounded-full bg-slate-950/80 px-2 py-1 text-xs font-black text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               ✕
             </button>
@@ -2481,11 +2484,11 @@ return (
             <img
               src={preview}
               alt={t("images.defaultName", { index: index + 1 })}
-              className="h-44 w-full object-cover"
+              className="dashboardImagePreview h-44 w-full object-cover"
             />
           </div>
 
-          <div className="border-t border-white/10 p-3">
+          <div className="dashboardImageMeta border-t border-white/10 p-3">
             <div className="text-xs font-black uppercase tracking-wide text-amber-300">
               {t("images.imageLabel", { index: index + 1 })}
             </div>
@@ -2496,8 +2499,46 @@ return (
                   index: index + 1,
                 })}
             </div>
-
           </div>
+
+          {analysisResult?.status === "done" &&
+            analysisResult.analysis.trim() && (
+              <div className="dashboardImageAnalysisItem dashboardImageAnalysisItemDone">
+                <div className="dashboardImageAnalysisItemTitle">
+                  {t("imageAnalysis.resultHeading", {
+                    index: index + 1,
+                    fileName:
+                      selectedImages[index]?.name ||
+                      t("images.defaultName", {
+                        index: index + 1,
+                      }),
+                  })}
+                </div>
+
+                <div className="dashboardImageAnalysisItemText">
+                  {analysisResult.analysis
+                    .replace(/\\r\\n/g, "\n")
+                    .replace(/\\n/g, "\n")}
+                </div>
+              </div>
+            )}
+
+          {analysisResult?.status === "error" && (
+            <div
+              className="dashboardImageAnalysisItem dashboardImageAnalysisItemError"
+              role="alert"
+            >
+              <div className="dashboardImageAnalysisItemTitle">
+                {t("images.imageLabel", {
+                  index: index + 1,
+                })}
+              </div>
+
+              <div className="dashboardImageAnalysisItemText">
+                {analysisResult.error}
+              </div>
+            </div>
+          )}
         </div>
       );
     })}
@@ -2508,6 +2549,7 @@ return (
 
   {imageAnalysis && (
     <div
+      className="dashboardImageAnalysisSummary"
       style={{
         marginTop: "12px",
         background: "rgba(255,255,255,0.04)",
