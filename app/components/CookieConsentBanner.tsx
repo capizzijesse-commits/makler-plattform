@@ -184,10 +184,19 @@ export default function CookieConsentBanner() {
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-3 left-3 z-[9998] rounded-full border border-amber-300/30 bg-[#071127]/95 px-3 py-2 text-xs font-medium text-amber-100 shadow-lg backdrop-blur transition hover:border-amber-300/60 hover:bg-[#0b1733]"
+          className="cookieSettingsButton fixed bottom-3 left-3 z-[9998] rounded-full border border-amber-300/30 bg-[#071127]/95 px-3 py-2 text-xs font-medium text-amber-100 shadow-lg backdrop-blur transition hover:border-amber-300/60 hover:bg-[#0b1733]"
           aria-label={copy.settings}
         >
-          {copy.settings}
+          <span className="cookieSettingsDesktopText">
+            {copy.settings}
+          </span>
+
+          <span
+            className="cookieSettingsMobileIcon"
+            aria-hidden="true"
+          >
+            {"\u2699"}
+          </span>
         </button>
       ) : null}
 

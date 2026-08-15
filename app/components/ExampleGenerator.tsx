@@ -82,12 +82,12 @@ export default function ExampleGenerator() {
   }
 
   return (
-    <section className="relative overflow-hidden bg-slate-950 px-6 py-28">
+    <section className="landingExampleDemo relative overflow-hidden bg-slate-950 px-4 py-16 sm:px-6 md:py-28">
       <div className="absolute left-1/2 top-0 h-[500px] w-[900px] -translate-x-1/2 rounded-full bg-amber-400/10 blur-3xl" />
       <div className="absolute bottom-0 right-0 h-[420px] w-[420px] rounded-full bg-blue-500/10 blur-3xl" />
 
-      <div className="relative mx-auto max-w-7xl">
-        <div className="mb-14 max-w-3xl">
+      <div className="landingExampleContainer relative mx-auto max-w-7xl">
+        <div className="landingExampleIntro mb-14 max-w-3xl">
           <span className="inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-5 py-2 text-sm font-bold uppercase tracking-wide text-amber-300">
             {t("intro.eyebrow")}
           </span>
@@ -101,8 +101,8 @@ export default function ExampleGenerator() {
           </p>
         </div>
 
-        <div className="grid gap-6 rounded-[2rem] border border-white/10 bg-white/[0.06] p-4 shadow-2xl backdrop-blur md:p-6 lg:grid-cols-[0.95fr_1.05fr]">
-          <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/70 p-6 md:p-8">
+        <div className="landingExampleWorkspace grid gap-6 rounded-[2rem] border border-white/10 bg-white/[0.06] p-4 shadow-2xl backdrop-blur md:p-6 lg:grid-cols-[0.95fr_1.05fr]">
+          <div className="landingExampleInputPanel rounded-[1.5rem] border border-white/10 bg-slate-950/70 p-6 md:p-8">
             <div className="mb-8 flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-bold uppercase tracking-wide text-amber-300">
@@ -282,7 +282,7 @@ export default function ExampleGenerator() {
             </div>
           </div>
 
-          <div className="rounded-[1.5rem] border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-6 md:p-8">
+          <div className="landingExampleResultPanel rounded-[1.5rem] border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-6 md:p-8">
             <div className="mb-8 flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-bold uppercase tracking-wide text-amber-300">

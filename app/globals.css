@@ -1,4 +1,4 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -1346,7 +1346,7 @@ input:focus::placeholder {
 }
 
 .landingMiniCard li::before {
-  content: "âœ“";
+  content: "\2713";
   color: #fbbf24;
   font-weight: 900;
   margin-right: 8px;
@@ -1812,7 +1812,7 @@ input:focus::placeholder {
 }
 
 .landingMiniCard li::before {
-  content: "âœ“";
+  content: "\2713";
   color: #fbbf24;
   font-weight: 950;
   margin-right: 8px;
@@ -5285,5 +5285,1227 @@ svg {
 
   .landingHeadline {
     font-size: 35px !important;
+  }
+}
+/* =========================================================
+   INSERAT-AI – PUBLIC LANDING MOBILE V4
+   Optimierung Startseite / Header für ca. 390 px
+   ========================================================= */
+
+@media screen and (max-width: 430px) {
+
+  /* -------------------------------------------------------
+     ÖFFENTLICHER HEADER
+     ------------------------------------------------------- */
+
+  .appPublicNavbar {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+  }
+
+  .appPublicNavbar
+    > .appCentralNavbarInner {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    min-height: 62px !important;
+
+    padding:
+      8px
+      max(10px, env(safe-area-inset-right))
+      8px
+      max(10px, env(safe-area-inset-left)) !important;
+
+    gap: 7px !important;
+  }
+
+  .appPublicNavbar .siteBrand {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+    gap: 5px !important;
+  }
+
+  .appPublicNavbar .siteBrandIcon {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    flex-basis: 32px !important;
+  }
+
+  .appPublicNavbar .siteBrandText {
+    display: block !important;
+
+    min-width: 0 !important;
+
+    font-size: 15px !important;
+    line-height: 1 !important;
+
+    white-space: nowrap !important;
+  }
+
+  .appPublicNavbar .siteNavActions {
+    min-width: 0 !important;
+    gap: 5px !important;
+  }
+
+  .appPublicNavbar
+    .appHeaderLanguage button {
+    min-width: 44px !important;
+    max-width: 48px !important;
+    min-height: 42px !important;
+
+    padding-inline: 6px !important;
+
+    border-radius: 11px !important;
+
+    font-size: 11px !important;
+  }
+
+  .appPublicNavbar .publicMobileCta {
+    min-width: 116px !important;
+    max-width: 124px !important;
+    min-height: 42px !important;
+
+    padding-inline: 8px !important;
+
+    border-radius: 12px !important;
+
+    gap: 4px !important;
+
+    font-size: 10px !important;
+    line-height: 1.05 !important;
+  }
+
+
+  /* -------------------------------------------------------
+     HERO
+     ------------------------------------------------------- */
+
+  .landingHero {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    padding: 22px 0 46px !important;
+
+    overflow-x: clip !important;
+  }
+
+  .landingHeroInner {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    padding:
+      0
+      max(15px, env(safe-area-inset-right))
+      0
+      max(15px, env(safe-area-inset-left)) !important;
+
+    gap: 30px !important;
+  }
+
+  .landingHeroContent,
+  .landingVideoArea {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+
+  /* -------------------------------------------------------
+     HERO BADGE
+     ------------------------------------------------------- */
+
+  .landingBadge {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    min-height: auto !important;
+
+    margin-bottom: 22px !important;
+
+    padding: 10px 13px !important;
+
+    border-radius: 16px !important;
+
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+  }
+
+
+  /* -------------------------------------------------------
+     HEADLINE
+     ------------------------------------------------------- */
+
+  .landingHeadline {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    font-size: clamp(
+      34px,
+      9.4vw,
+      38px
+    ) !important;
+
+    line-height: 1.07 !important;
+
+    letter-spacing: -0.04em !important;
+  }
+
+
+  /* -------------------------------------------------------
+     SUBLINE
+     ------------------------------------------------------- */
+
+  .landingSubline {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    margin-top: 20px !important;
+
+    font-size: 15px !important;
+    line-height: 1.6 !important;
+  }
+
+
+  /* -------------------------------------------------------
+     CTA
+     ------------------------------------------------------- */
+
+  .landingHeroActions {
+    width: 100% !important;
+
+    margin-top: 24px !important;
+
+    gap: 14px !important;
+  }
+
+  .landingPrimaryButton {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    min-height: 52px !important;
+
+    padding-inline: 16px !important;
+
+    border-radius: 14px !important;
+
+    font-size: 15px !important;
+  }
+
+  .landingCheck {
+    width: 100% !important;
+
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+  }
+
+
+  /* -------------------------------------------------------
+     BENEFITS
+     ------------------------------------------------------- */
+
+  .landingBenefits {
+    width: 100% !important;
+
+    margin-top: 28px !important;
+
+    gap: 10px !important;
+  }
+
+  .landingBenefit {
+    width: 100% !important;
+    min-width: 0 !important;
+
+    padding: 14px !important;
+
+    border-radius: 15px !important;
+  }
+
+  .landingBenefitIcon {
+    flex: 0 0 auto !important;
+  }
+
+  .landingBenefit strong {
+    font-size: 14px !important;
+  }
+
+  .landingBenefit p {
+    margin-top: 3px !important;
+
+    font-size: 12.5px !important;
+    line-height: 1.5 !important;
+  }
+
+
+  /* -------------------------------------------------------
+     VIDEO
+     ------------------------------------------------------- */
+
+  .landingVideoArea {
+    overflow: visible !important;
+  }
+
+  .landingVideoCard {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    padding: 9px !important;
+
+    border-radius: 17px !important;
+
+    overflow: hidden !important;
+  }
+
+  .landingVideo {
+    display: block !important;
+
+    width: 100% !important;
+    max-width: 100% !important;
+
+    height: auto !important;
+
+    border-radius: 12px !important;
+  }
+
+  .landingVideoLabel {
+    max-width: 100% !important;
+
+    font-size: 11px !important;
+  }
+
+
+  /* -------------------------------------------------------
+     FLOATING CARDS
+     ------------------------------------------------------- */
+
+  .landingFloatingCards {
+    position: static !important;
+
+    width: 100% !important;
+    max-width: 100% !important;
+
+    margin-top: 12px !important;
+
+    transform: none !important;
+
+    gap: 9px !important;
+  }
+
+  .landingMiniCard {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    position: static !important;
+
+    transform: none !important;
+  }
+
+
+  /* -------------------------------------------------------
+     TRUST BAR
+     ------------------------------------------------------- */
+
+  .landingTrustBar {
+    width: calc(100% - 30px) !important;
+
+    margin-top: 30px !important;
+
+    padding: 19px 15px !important;
+
+    border-radius: 17px !important;
+  }
+
+  .landingTrustTitle {
+    width: 100% !important;
+
+    text-align: left !important;
+  }
+
+  .landingTrustItems {
+    width: 100% !important;
+    min-width: 0 !important;
+
+    display: flex !important;
+    flex-wrap: wrap !important;
+
+    gap: 8px 12px !important;
+  }
+
+  .landingTrustItems span,
+  .landingTrustItems strong {
+    min-width: 0 !important;
+
+    white-space: normal !important;
+
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+  }
+}
+
+
+/* Sehr kleine Geräte */
+
+@media screen and (max-width: 360px) {
+
+  .appPublicNavbar .siteBrandText {
+    display: none !important;
+  }
+
+  .appPublicNavbar .publicMobileCta {
+    min-width: 118px !important;
+    max-width: 118px !important;
+  }
+
+  .landingHeadline {
+    font-size: 33px !important;
+  }
+}
+
+/* =========================================================
+   INSERAT-AI – MOBILE COOKIE SETTINGS V1
+   Kompakter Datenschutz-Zugriff auf kleinen Displays
+   ========================================================= */
+
+.cookieSettingsMobileIcon {
+  display: none;
+}
+
+@media screen and (max-width: 430px) {
+  .cookieSettingsButton {
+    left: max(
+      10px,
+      env(safe-area-inset-left)
+    ) !important;
+
+    bottom: max(
+      10px,
+      env(safe-area-inset-bottom)
+    ) !important;
+
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    min-height: 42px !important;
+
+    padding: 0 !important;
+
+    display: inline-grid !important;
+    place-items: center !important;
+
+    border-radius: 999px !important;
+
+    font-size: 0 !important;
+  }
+
+  .cookieSettingsDesktopText {
+    display: none !important;
+  }
+
+  .cookieSettingsMobileIcon {
+    display: inline-block !important;
+
+    font-size: 17px !important;
+    line-height: 1 !important;
+
+    color: #fde68a !important;
+  }
+}
+
+/* =========================================================
+   INSERAT-AI – PUBLIC LANDING MOBILE V4.1
+   Trust + Future-Bereich bei ca. 390 px
+   ========================================================= */
+
+@media screen and (max-width: 430px) {
+
+  /* Vorteile / Trust */
+
+  .landingTrustBar {
+    padding: 20px 17px !important;
+  }
+
+  .landingTrustTitle {
+    margin-bottom: 14px !important;
+    font-size: 18px !important;
+    line-height: 1.2 !important;
+    text-align: left !important;
+  }
+
+  .landingTrustItems {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: start !important;
+    justify-items: start !important;
+    gap: 8px !important;
+    text-align: left !important;
+  }
+
+  .landingTrustItems span,
+  .landingTrustItems strong {
+    width: 100% !important;
+    font-size: 13px !important;
+    line-height: 1.45 !important;
+    text-align: left !important;
+  }
+
+
+  /* Future */
+
+  .landingFutureSection {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    margin-top: 56px !important;
+
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .landingFutureCard {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    padding: 24px 20px !important;
+
+    border-radius: 24px !important;
+  }
+
+  .landingFutureHeadline {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    font-size: 28px !important;
+    line-height: 1.12 !important;
+    letter-spacing: -0.035em !important;
+
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    hyphens: none !important;
+  }
+
+  .landingFutureHeadline + p {
+    margin-top: 20px !important;
+    font-size: 15px !important;
+    line-height: 1.65 !important;
+  }
+}
+
+/* =========================================================
+   INSERAT-AI – PUBLIC LANDING MOBILE V4.2
+   Marketing Hub bei ca. 390 px
+   ========================================================= */
+
+@media screen and (max-width: 430px) {
+
+  .landingMarketingHubSection {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    margin-top: 56px !important;
+
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .landingMarketingHubCard {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    padding: 24px 20px !important;
+
+    border-radius: 24px !important;
+  }
+
+  .landingMarketingHubHeadline {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    font-size: clamp(
+      25px,
+      7vw,
+      28px
+    ) !important;
+
+    line-height: 1.12 !important;
+    letter-spacing: -0.035em !important;
+
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    hyphens: none !important;
+  }
+}
+
+/* =========================================================
+   INSERAT-AI - PUBLIC MOBILE-FIRST V5
+   Mobile ist die Hauptansicht.
+   App-artige Einspaltenstruktur fuer kleine Displays.
+   ========================================================= */
+
+@media screen and (max-width: 430px) {
+
+  :root {
+    --ia-mobile-gutter: 16px;
+    --ia-mobile-card-radius: 22px;
+    --ia-mobile-touch: 50px;
+  }
+
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+
+  /* =======================================================
+     PUBLIC HEADER
+     ======================================================= */
+
+  .appPublicNavbar {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .appPublicNavbar > .appCentralNavbarInner {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 60px !important;
+
+    padding:
+      8px
+      max(12px, env(safe-area-inset-right))
+      8px
+      max(12px, env(safe-area-inset-left)) !important;
+
+    gap: 6px !important;
+  }
+
+  .appPublicNavbar .siteBrand {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+  }
+
+  .appPublicNavbar .siteBrandIcon {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+  }
+
+  .appPublicNavbar .siteBrandText {
+    font-size: 15px !important;
+  }
+
+  .appPublicNavbar .siteNavActions {
+    gap: 6px !important;
+  }
+
+  .appPublicNavbar .appHeaderLanguage button {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+
+  .appPublicNavbar .publicMobileCta {
+    min-width: 118px !important;
+    max-width: 126px !important;
+    min-height: 44px !important;
+
+    border-radius: 13px !important;
+
+    font-size: 10.5px !important;
+  }
+
+
+  /* =======================================================
+     HERO
+     ======================================================= */
+
+  .landingHero {
+    width: 100% !important;
+
+    padding:
+      18px
+      0
+      38px !important;
+  }
+
+  .landingHeroInner {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    padding-left:
+      var(--ia-mobile-gutter) !important;
+
+    padding-right:
+      var(--ia-mobile-gutter) !important;
+
+    gap: 28px !important;
+  }
+
+  .landingHeroContent,
+  .landingVideoArea {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .landingBadge {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    margin-bottom: 18px !important;
+
+    min-height: auto !important;
+
+    padding: 10px 12px !important;
+
+    border-radius: 15px !important;
+
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+  }
+
+  .landingHeadline {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    font-size:
+      clamp(
+        32px,
+        9vw,
+        36px
+      ) !important;
+
+    line-height: 1.06 !important;
+    letter-spacing: -0.04em !important;
+
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    hyphens: none !important;
+  }
+
+  .landingSubline {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    margin-top: 18px !important;
+
+    font-size: 15px !important;
+    line-height: 1.6 !important;
+  }
+
+  .landingHeroActions {
+    width: 100% !important;
+
+    margin-top: 22px !important;
+
+    gap: 12px !important;
+  }
+
+  .landingPrimaryButton {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    min-height:
+      var(--ia-mobile-touch) !important;
+
+    padding-inline: 16px !important;
+
+    border-radius: 14px !important;
+
+    font-size: 15px !important;
+  }
+
+  .landingCheck {
+    width: 100% !important;
+
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+  }
+
+
+  /* =======================================================
+     HERO BENEFITS
+     ======================================================= */
+
+  .landingBenefits {
+    width: 100% !important;
+
+    margin-top: 26px !important;
+
+    gap: 10px !important;
+  }
+
+  .landingBenefit {
+    width: 100% !important;
+    min-width: 0 !important;
+
+    padding: 14px !important;
+
+    border-radius: 16px !important;
+  }
+
+  .landingBenefit strong {
+    font-size: 14px !important;
+  }
+
+  .landingBenefit p {
+    margin-top: 3px !important;
+
+    font-size: 12.5px !important;
+    line-height: 1.5 !important;
+  }
+
+
+  /* =======================================================
+     VIDEO / HERO OUTPUT
+     ======================================================= */
+
+  .landingVideoArea {
+    overflow: visible !important;
+  }
+
+  .landingVideoCard {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    padding: 9px !important;
+
+    border-radius:
+      var(--ia-mobile-card-radius) !important;
+
+    overflow: hidden !important;
+  }
+
+  .landingVideo {
+    display: block !important;
+
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+
+    border-radius: 14px !important;
+  }
+
+  .landingFloatingCards {
+    position: static !important;
+
+    width: 100% !important;
+    max-width: 100% !important;
+
+    margin-top: 12px !important;
+
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+
+    gap: 10px !important;
+
+    transform: none !important;
+  }
+
+  .landingMiniCard {
+    position: static !important;
+
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    padding: 15px !important;
+
+    border-radius: 17px !important;
+
+    transform: none !important;
+  }
+
+
+  /* =======================================================
+     TRUST / VORTEILE
+     ======================================================= */
+
+  .landingTrustBar {
+    width:
+      calc(
+        100% - 32px
+      ) !important;
+
+    margin:
+      28px
+      auto
+      0 !important;
+
+    padding: 20px 17px !important;
+
+    border-radius:
+      var(--ia-mobile-card-radius) !important;
+  }
+
+  .landingTrustTitle {
+    width: 100% !important;
+
+    margin-bottom: 14px !important;
+
+    font-size: 18px !important;
+    line-height: 1.2 !important;
+
+    text-align: left !important;
+  }
+
+  .landingTrustItems {
+    width: 100% !important;
+    min-width: 0 !important;
+
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+
+    gap: 8px !important;
+
+    text-align: left !important;
+  }
+
+  .landingTrustItems span,
+  .landingTrustItems strong {
+    width: 100% !important;
+    min-width: 0 !important;
+
+    white-space: normal !important;
+
+    font-size: 13px !important;
+    line-height: 1.45 !important;
+
+    text-align: left !important;
+  }
+
+
+  /* =======================================================
+     LIVE DEMO
+     ======================================================= */
+
+  .landingExampleDemo {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    padding:
+      48px
+      var(--ia-mobile-gutter) !important;
+  }
+
+  .landingExampleContainer {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .landingExampleIntro {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    margin-bottom: 28px !important;
+  }
+
+  .landingExampleIntro span {
+    font-size: 11px !important;
+  }
+
+  .landingExampleIntro h2 {
+    margin-top: 18px !important;
+
+    font-size: 30px !important;
+    line-height: 1.12 !important;
+
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    hyphens: none !important;
+  }
+
+  .landingExampleIntro p {
+    margin-top: 16px !important;
+
+    font-size: 15px !important;
+    line-height: 1.65 !important;
+  }
+
+  .landingExampleWorkspace {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    padding: 10px !important;
+
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+
+    gap: 12px !important;
+
+    border-radius: 24px !important;
+  }
+
+  .landingExampleInputPanel,
+  .landingExampleResultPanel {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    padding: 16px !important;
+
+    border-radius: 20px !important;
+  }
+
+  .landingExampleDemo input {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    min-height: 52px !important;
+
+    padding:
+      12px
+      14px !important;
+
+    border-radius: 14px !important;
+
+    font-size: 16px !important;
+  }
+
+  .landingExampleDemo button,
+  .landingExampleDemo a {
+    min-height:
+      var(--ia-mobile-touch) !important;
+
+    touch-action: manipulation;
+  }
+
+  .landingExampleResultPanel h4 {
+    font-size: 25px !important;
+    line-height: 1.18 !important;
+
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    hyphens: none !important;
+  }
+
+
+  /* =======================================================
+     FUTURE
+     ======================================================= */
+
+  .landingFutureSection {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    margin-top: 48px !important;
+
+    padding-left:
+      var(--ia-mobile-gutter) !important;
+
+    padding-right:
+      var(--ia-mobile-gutter) !important;
+  }
+
+  .landingFutureCard {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    padding: 22px 18px !important;
+
+    border-radius:
+      var(--ia-mobile-card-radius) !important;
+  }
+
+  .landingFutureHeadline {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    font-size: 28px !important;
+    line-height: 1.12 !important;
+    letter-spacing: -0.035em !important;
+
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    hyphens: none !important;
+  }
+
+  .landingFutureHeadline + p {
+    margin-top: 20px !important;
+
+    font-size: 15px !important;
+    line-height: 1.65 !important;
+  }
+
+
+  /* =======================================================
+     MARKETING HUB
+     ======================================================= */
+
+  .landingMarketingHubSection {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    margin-top: 48px !important;
+
+    padding-left:
+      var(--ia-mobile-gutter) !important;
+
+    padding-right:
+      var(--ia-mobile-gutter) !important;
+  }
+
+  .landingMarketingHubCard {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    padding: 22px 18px !important;
+
+    border-radius:
+      var(--ia-mobile-card-radius) !important;
+  }
+
+  .landingMarketingHubHeadline {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    font-size:
+      clamp(
+        25px,
+        7vw,
+        28px
+      ) !important;
+
+    line-height: 1.12 !important;
+    letter-spacing: -0.035em !important;
+
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    hyphens: none !important;
+  }
+
+  .landingMarketingHubCard
+    > .relative
+    > p {
+    font-size: 15px !important;
+    line-height: 1.65 !important;
+  }
+
+  .landingMarketingHubGrid {
+    margin-top: 28px !important;
+
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+
+    gap: 12px !important;
+  }
+
+  .landingMarketingHubFeature {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    padding: 18px !important;
+
+    border-radius: 18px !important;
+  }
+
+  .landingMarketingHubFeature h3 {
+    margin-top: 12px !important;
+
+    font-size: 20px !important;
+    line-height: 1.2 !important;
+  }
+
+  .landingMarketingHubFeature p {
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+  }
+
+  .landingMarketingHubActions {
+    width: 100% !important;
+
+    margin-top: 28px !important;
+
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+
+    gap: 12px !important;
+  }
+
+  .landingMarketingHubActions a {
+    width: 100% !important;
+
+    min-height:
+      var(--ia-mobile-touch) !important;
+
+    padding-inline: 16px !important;
+
+    border-radius: 14px !important;
+  }
+
+  .landingMarketingHubActions > span {
+    width: 100% !important;
+
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+  }
+
+
+  /* =======================================================
+     COOKIE SETTINGS
+     ======================================================= */
+
+  .cookieSettingsButton {
+    width: 42px !important;
+    height: 42px !important;
+
+    min-width: 42px !important;
+    min-height: 42px !important;
+
+    left:
+      max(
+        10px,
+        env(safe-area-inset-left)
+      ) !important;
+
+    bottom:
+      max(
+        10px,
+        env(safe-area-inset-bottom)
+      ) !important;
+
+    padding: 0 !important;
+
+    display: inline-grid !important;
+    place-items: center !important;
+
+    border-radius: 999px !important;
+  }
+
+  .cookieSettingsDesktopText {
+    display: none !important;
+  }
+
+  .cookieSettingsMobileIcon {
+    display: inline-block !important;
+
+    font-size: 17px !important;
   }
 }

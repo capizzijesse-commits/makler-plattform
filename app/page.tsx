@@ -186,8 +186,8 @@ export default function HomePage() {
 
       <ExampleGenerator />
 
-      <section className="relative mx-auto mt-24 max-w-6xl px-6">
-        <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.07] p-8 shadow-2xl backdrop-blur md:p-12">
+      <section className="landingFutureSection relative mx-auto mt-14 max-w-6xl px-4 sm:px-6 md:mt-24">
+        <div className="landingFutureCard overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.07] p-8 shadow-2xl backdrop-blur md:p-12">
           <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-amber-400/20 blur-3xl" />
           <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl" />
 
@@ -196,7 +196,7 @@ export default function HomePage() {
               {t("future.eyebrow")}
             </p>
 
-            <h2 className="mt-5 max-w-4xl text-4xl font-light leading-tight tracking-tight text-white md:text-6xl">
+            <h2 className="landingFutureHeadline mt-5 max-w-4xl text-4xl font-light leading-tight tracking-tight text-white md:text-6xl">
               {t("future.headline")}
             </h2>
 
@@ -214,9 +214,9 @@ export default function HomePage() {
 
       <section
         id="marketing-hub"
-        className="relative mx-auto mt-24 max-w-6xl px-6"
+        className="landingMarketingHubSection relative mx-auto mt-24 max-w-6xl px-6"
       >
-        <div className="relative overflow-hidden rounded-[2rem] border border-amber-300/20 bg-gradient-to-br from-slate-950 via-[#08142d] to-[#0a2752] p-8 shadow-2xl shadow-black/30 md:p-12">
+        <div className="landingMarketingHubCard relative overflow-hidden rounded-[2rem] border border-amber-300/20 bg-gradient-to-br from-slate-950 via-[#08142d] to-[#0a2752] p-8 shadow-2xl shadow-black/30 md:p-12">
           <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-amber-400/15 blur-3xl" />
           <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
 
@@ -225,7 +225,7 @@ export default function HomePage() {
               {t("marketingHub.eyebrow")}
             </p>
 
-            <h2 className="mt-5 max-w-4xl text-4xl font-black leading-tight tracking-[-0.045em] text-white md:text-6xl">
+            <h2 className="landingMarketingHubHeadline mt-5 max-w-4xl text-4xl font-black leading-tight tracking-[-0.045em] text-white md:text-6xl">
               {t("marketingHub.title")}
             </h2>
 
@@ -233,8 +233,8 @@ export default function HomePage() {
               {t("marketingHub.description")}
             </p>
 
-            <div className="mt-10 grid gap-5 md:grid-cols-3">
-              <article className="rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-6 backdrop-blur">
+            <div className="landingMarketingHubGrid mt-10 grid gap-5 md:grid-cols-3">
+              <article className="landingMarketingHubFeature rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-6 backdrop-blur">
                 <span className="text-sm font-black tracking-[0.18em] text-amber-300">
                   01
                 </span>
@@ -246,7 +246,7 @@ export default function HomePage() {
                 </p>
               </article>
 
-              <article className="rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-6 backdrop-blur">
+              <article className="landingMarketingHubFeature rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-6 backdrop-blur">
                 <span className="text-sm font-black tracking-[0.18em] text-amber-300">
                   02
                 </span>
@@ -258,7 +258,7 @@ export default function HomePage() {
                 </p>
               </article>
 
-              <article className="rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-6 backdrop-blur">
+              <article className="landingMarketingHubFeature rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-6 backdrop-blur">
                 <span className="text-sm font-black tracking-[0.18em] text-amber-300">
                   03
                 </span>
@@ -271,7 +271,7 @@ export default function HomePage() {
               </article>
             </div>
 
-            <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+            <div className="landingMarketingHubActions mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
               <a
                 href="/register"
                 className="inline-flex min-h-14 items-center justify-center rounded-xl bg-gradient-to-r from-amber-300 to-amber-500 px-7 font-black text-slate-950 shadow-lg shadow-amber-500/20 transition hover:-translate-y-0.5"
