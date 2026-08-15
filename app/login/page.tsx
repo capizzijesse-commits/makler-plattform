@@ -282,7 +282,7 @@ export default function LoginPage() {
         padding: "40px 20px",
       }}
     >
-      <div
+      <div className="loginCard"
         style={{
           width: "100%",
           maxWidth: "460px",

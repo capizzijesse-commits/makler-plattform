@@ -6525,3 +6525,513 @@ svg {
     font-weight: 500 !important;
   }
 }
+
+/* =========================================================
+   INSERAT-AI - AUTH MOBILE-FIRST V1
+   Login + Registrierung als echte Mobile-App-Screens
+   ========================================================= */
+
+@media screen and (max-width: 430px) {
+
+  /* =======================================================
+     LOGIN
+     ======================================================= */
+
+  .loginPage {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    min-height:
+      calc(100dvh - 60px) !important;
+
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+
+    padding:
+      20px
+      14px
+      calc(
+        34px +
+        env(safe-area-inset-bottom)
+      ) !important;
+
+    box-sizing: border-box !important;
+
+    overflow: visible !important;
+  }
+
+  .loginCard {
+    width: 100% !important;
+    max-width: 430px !important;
+
+    margin: 0 auto !important;
+
+    padding:
+      22px
+      18px !important;
+
+    border-radius: 22px !important;
+
+    box-sizing: border-box !important;
+  }
+
+  .loginCard > div:first-child {
+    margin-bottom: 24px !important;
+  }
+
+  .loginCard > div:first-child h1 {
+    margin-bottom: 10px !important;
+
+    font-size: 30px !important;
+    line-height: 1.08 !important;
+
+    font-weight: 500 !important;
+
+    letter-spacing: -0.035em !important;
+  }
+
+  .loginCard > div:first-child p {
+    font-size: 15px !important;
+    line-height: 1.55 !important;
+  }
+
+  .loginCard form label {
+    margin-bottom: 7px !important;
+
+    font-size: 14px !important;
+    line-height: 1.3 !important;
+
+    font-weight: 600 !important;
+  }
+
+  .loginInput {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    min-height: 52px !important;
+
+    padding:
+      13px
+      14px !important;
+
+    border-radius: 14px !important;
+
+    font-size: 16px !important;
+    line-height: 1.25 !important;
+
+    box-sizing: border-box !important;
+
+    scroll-margin-top: 90px !important;
+    scroll-margin-bottom: 45dvh !important;
+  }
+
+  #login-password {
+    padding-right: 52px !important;
+  }
+
+  #login-password + button {
+    right: 4px !important;
+
+    width: 44px !important;
+    height: 44px !important;
+
+    min-width: 44px !important;
+    min-height: 44px !important;
+
+    padding: 0 !important;
+
+    display: grid !important;
+    place-items: center !important;
+
+    touch-action: manipulation;
+  }
+
+  .loginSubmit {
+    width: 100% !important;
+
+    min-height: 52px !important;
+
+    margin-top: 20px !important;
+
+    padding:
+      12px
+      16px !important;
+
+    border-radius: 14px !important;
+
+    font-size: 16px !important;
+    line-height: 1.2 !important;
+
+    font-weight: 700 !important;
+
+    touch-action: manipulation;
+  }
+
+  .loginCard > p {
+    margin-top: 20px !important;
+
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+  }
+
+  .loginCard > div:last-child {
+    margin-top: 22px !important;
+
+    padding: 14px !important;
+
+    border-radius: 16px !important;
+
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+  }
+
+  .loginPage:focus-within {
+    padding-bottom:
+      calc(
+        55dvh +
+        env(safe-area-inset-bottom)
+      ) !important;
+  }
+
+
+  /* =======================================================
+     REGISTRIERUNG
+     ======================================================= */
+
+  .registerPage {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    min-height: 100dvh !important;
+
+    padding:
+      18px
+      14px
+      calc(
+        36px +
+        env(safe-area-inset-bottom)
+      ) !important;
+
+    overflow: visible !important;
+
+    box-sizing: border-box !important;
+  }
+
+  .registerLayout {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    min-height: 0 !important;
+
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+
+    align-items: start !important;
+
+    gap: 24px !important;
+  }
+
+  .registerLayout > section:first-child {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .registerLayout
+    > section:first-child
+    > a {
+    min-height: 44px !important;
+
+    padding:
+      9px
+      14px !important;
+
+    font-size: 13px !important;
+
+    touch-action: manipulation;
+  }
+
+  .registerLayout
+    > section:first-child
+    > div {
+    margin-left: 0 !important;
+    margin-top: 16px !important;
+
+    padding:
+      7px
+      11px !important;
+
+    font-size: 10px !important;
+    line-height: 1.2 !important;
+  }
+
+  .registerLayout
+    > section:first-child
+    > h1 {
+    margin-top: 20px !important;
+
+    max-width: 100% !important;
+
+    font-size: 30px !important;
+    line-height: 1.08 !important;
+
+    font-weight: 300 !important;
+
+    letter-spacing: -0.035em !important;
+
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    hyphens: none !important;
+  }
+
+  .registerLayout
+    > section:first-child
+    > p {
+    margin-top: 14px !important;
+
+    max-width: 100% !important;
+
+    font-size: 15px !important;
+    line-height: 1.55 !important;
+  }
+
+
+  /* -------------------------------------------------------
+     FORMULAR-KARTE
+     ------------------------------------------------------- */
+
+  .registerCardShell {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    padding: 8px !important;
+
+    border-radius: 24px !important;
+  }
+
+  .registerCard {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    padding:
+      20px
+      16px !important;
+
+    border-radius: 19px !important;
+  }
+
+  .registerCard > div:first-child {
+    margin-bottom: 22px !important;
+
+    text-align: left !important;
+  }
+
+  .registerCard
+    > div:first-child
+    > p:first-child {
+    font-size: 11px !important;
+    line-height: 1.3 !important;
+  }
+
+  .registerCard
+    > div:first-child
+    > h2 {
+    margin-top: 8px !important;
+
+    font-size: 24px !important;
+    line-height: 1.15 !important;
+
+    font-weight: 500 !important;
+  }
+
+  .registerCard
+    > div:first-child
+    > p:last-child {
+    margin-top: 9px !important;
+
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+  }
+
+
+  /* -------------------------------------------------------
+     FORMULAR
+     ------------------------------------------------------- */
+
+  .registerForm
+    > :not([hidden])
+    ~ :not([hidden]) {
+    margin-top: 16px !important;
+  }
+
+  .registerForm label {
+    margin-bottom: 7px !important;
+
+    font-size: 14px !important;
+    line-height: 1.3 !important;
+
+    font-weight: 600 !important;
+  }
+
+  .registerInput {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    min-height: 52px !important;
+
+    padding:
+      13px
+      14px !important;
+
+    border-radius: 14px !important;
+
+    font-size: 16px !important;
+    line-height: 1.25 !important;
+
+    box-sizing: border-box !important;
+
+    scroll-margin-top: 90px;
+    scroll-margin-bottom: 45dvh;
+  }
+
+  #register-password {
+    padding-right: 52px !important;
+  }
+
+  #register-password + button {
+    right: 4px !important;
+
+    width: 44px !important;
+    height: 44px !important;
+
+    min-width: 44px !important;
+    min-height: 44px !important;
+
+    padding: 0 !important;
+
+    display: grid !important;
+    place-items: center !important;
+
+    touch-action: manipulation;
+  }
+
+  .registerSubmit {
+    width: 100% !important;
+
+    min-height: 52px !important;
+
+    padding:
+      12px
+      16px !important;
+
+    border-radius: 14px !important;
+
+    font-size: 16px !important;
+    line-height: 1.2 !important;
+
+    font-weight: 700 !important;
+
+    transform: none !important;
+
+    touch-action: manipulation;
+  }
+
+  .registerCard > p {
+    margin-top: 20px !important;
+
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+  }
+
+  .registerCard > div:last-child {
+    margin-top: 22px !important;
+
+    padding: 14px !important;
+
+    border-radius: 16px !important;
+
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+  }
+
+
+  /* -------------------------------------------------------
+     FEHLER-DIALOG
+     ------------------------------------------------------- */
+
+  .registerPage
+    [role="alertdialog"] {
+    max-width:
+      calc(100vw - 28px) !important;
+
+    padding: 20px !important;
+
+    border-radius: 20px !important;
+  }
+
+  .registerPage
+    [role="alertdialog"]
+    button {
+    min-height: 50px !important;
+
+    border-radius: 14px !important;
+
+    touch-action: manipulation;
+  }
+
+
+  /* -------------------------------------------------------
+     KEYBOARD / FOKUS
+     ------------------------------------------------------- */
+
+  .registerPage:focus-within {
+    padding-bottom:
+      calc(
+        48dvh +
+        env(safe-area-inset-bottom)
+      ) !important;
+  }
+
+  body:has(.registerPage input:focus)
+    .supportDock,
+  body:has(.registerPage input:focus)
+    .guide-launcher {
+    display: none !important;
+  }
+}
+
+
+/* =========================================================
+   SEHR KLEINE SMARTPHONES
+   ========================================================= */
+
+@media screen and (max-width: 360px) {
+
+  .loginPage,
+  .registerPage {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .loginCard {
+    padding:
+      20px
+      15px !important;
+  }
+
+  .registerCard {
+    padding:
+      18px
+      14px !important;
+  }
+
+  .loginCard > div:first-child h1,
+  .registerLayout
+    > section:first-child
+    > h1 {
+    font-size: 28px !important;
+  }
+}

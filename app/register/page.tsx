@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   useEffect,
@@ -451,7 +451,7 @@ let registerErrorTracked = false;
     : "/login";
 
   return (
-    <main className="relative isolate min-h-screen overflow-hidden px-6 py-20 text-white">
+    <main className="registerPage relative isolate min-h-screen overflow-hidden px-6 py-20 text-white">
       <video
         className="absolute inset-0 -z-30 h-full w-full object-cover"
         autoPlay
@@ -461,13 +461,13 @@ let registerErrorTracked = false;
         preload="metadata"
       >
         <source
-          src="/zurich-skyline-loop-mobile.mp4"
+          src="/zürich-skyline-loop.mp4"
           media="(max-width: 768px)"
           type="video/mp4"
         />
 
         <source
-          src="/zurich-skyline-loop1.mp4"
+          src="/zürich-skyline-loop.mp4"
           type="video/mp4"
         />
       </video>
@@ -476,7 +476,7 @@ let registerErrorTracked = false;
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-slate-950/75 via-slate-950/35 to-transparent" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-t from-slate-950/60 via-transparent to-slate-950/20" />
 
-      <div className="relative z-10 mx-auto grid min-h-[calc(100vh-10rem)] max-w-7xl items-center gap-12 lg:grid-cols-[1fr_0.9fr]">
+      <div className="registerLayout relative z-10 mx-auto grid min-h-[calc(100vh-10rem)] max-w-7xl items-center gap-12 lg:grid-cols-[1fr_0.9fr]">
         <section>
           <Link
             href="/"
@@ -526,8 +526,8 @@ let registerErrorTracked = false;
           </div>
         </section>
 
-        <section className="rounded-[2rem] border border-white/15 bg-white/[0.06] p-4 shadow-2xl backdrop-blur-xl">
-          <div className="rounded-[1.5rem] border border-white/15 bg-slate-950/65 p-7 shadow-2xl backdrop-blur-xl md:p-9">
+        <section className="registerCardShell rounded-[2rem] border border-white/15 bg-white/[0.06] p-4 shadow-2xl backdrop-blur-xl">
+          <div className="registerCard rounded-[1.5rem] border border-white/15 bg-slate-950/65 p-7 shadow-2xl backdrop-blur-xl md:p-9">
             <div className="mb-8 text-center">
               <p className="text-sm font-bold uppercase tracking-wide text-amber-300">
                 {planContent.eyebrow}
@@ -546,7 +546,7 @@ let registerErrorTracked = false;
   onSubmit={handleRegister}
   onFocus={handleRegisterFormStart}
   noValidate
-  className="space-y-5"
+  className="registerForm space-y-5"
 >
               <div>
                 <label
@@ -567,7 +567,7 @@ let registerErrorTracked = false;
                     "form.namePlaceholder"
                   )}
                   autoComplete="name"
-                  className="w-full rounded-2xl border border-white/10 bg-white/10 px-5 py-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.14]"
+                  className="registerInput w-full rounded-2xl border border-white/10 bg-white/10 px-5 py-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.14]"
                 />
               </div>
 
@@ -589,7 +589,7 @@ let registerErrorTracked = false;
                   placeholder="name@firma.ch"
                   autoComplete="email"
                   inputMode="email"
-                  className="w-full rounded-2xl border border-white/10 bg-white/10 px-5 py-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.14]"
+                  className="registerInput w-full rounded-2xl border border-white/10 bg-white/10 px-5 py-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.14]"
                 />
               </div>
 
@@ -607,7 +607,7 @@ let registerErrorTracked = false;
                   }}
                 >
                   <input
-                    id="register-password"
+                    className="registerInput" id="register-password"
                     type={
                       showPassword
                         ? "text"
@@ -669,9 +669,39 @@ let registerErrorTracked = false;
                       fontSize: "18px",
                     }}
                   >
-                    {showPassword
-                      ? "\u{1F648}"
-                      : "\u{1F441}\uFE0F"}
+                    {showPassword ? (
+                      <svg
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M3 3l18 18" />
+                        <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+                        <path d="M9.9 4.2A10.5 10.5 0 0 1 12 4c5 0 9 4 10 8a11.8 11.8 0 0 1-2 4.2" />
+                        <path d="M6.6 6.6A11.3 11.3 0 0 0 2 12c1 4 5 8 10 8a10.5 10.5 0 0 0 5.4-1.5" />
+                      </svg>
+                    ) : (
+                      <svg
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8S2 12 2 12Z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
                   </button>
                 </div>
               </div>
@@ -679,7 +709,7 @@ let registerErrorTracked = false;
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-8 py-4 text-base font-bold text-slate-950 shadow-[0_0_35px_rgba(245,158,11,0.25)] transition hover:scale-[1.01] hover:from-amber-200 hover:to-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
+                className="registerSubmit w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-8 py-4 text-base font-bold text-slate-950 shadow-[0_0_35px_rgba(245,158,11,0.25)] transition hover:scale-[1.01] hover:from-amber-200 hover:to-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading
                   ? t("form.loading")
