@@ -901,6 +901,430 @@ export default function PricingSection() {
           }
         }
 
+
+        /* =================================================
+           INSERAT-AI - PRICING MOBILE-FIRST V1
+           Mobile Kauf-/Abo-Erlebnis
+           ================================================= */
+
+        @media (max-width: 430px) {
+
+          .pricingSection {
+            width: 100%;
+            padding:
+              46px
+              14px
+              58px;
+            scroll-margin-top: 70px;
+          }
+
+          .pricingShell {
+            width: 100%;
+            max-width: 100%;
+          }
+
+
+          /* -----------------------------------------------
+             HEADER
+             ----------------------------------------------- */
+
+          .pricingHeader {
+            width: 100%;
+            max-width: 100%;
+            margin:
+              0
+              0
+              26px;
+            text-align: left;
+          }
+
+          .pricingEyebrow {
+            padding:
+              7px
+              11px;
+            font-size: 10px;
+            line-height: 1.2;
+          }
+
+          .pricingHeader h2 {
+            margin-top: 17px;
+            font-size: 30px;
+            line-height: 1.08;
+            letter-spacing: -0.035em;
+          }
+
+          .pricingHeader p {
+            margin-top: 13px;
+            font-size: 15px;
+            line-height: 1.6;
+          }
+
+
+          /* -----------------------------------------------
+             EINZELIMMOBILIE
+             ----------------------------------------------- */
+
+          .singleObjectCard {
+            width: 100%;
+            max-width: 100%;
+
+            display: grid;
+            grid-template-columns:
+              minmax(0, 1fr);
+
+            gap: 14px;
+
+            margin-bottom: 18px;
+
+            padding: 14px;
+
+            border-radius: 24px;
+          }
+
+          .singleObjectMain {
+            min-width: 0;
+
+            padding:
+              5px
+              4px
+              2px;
+          }
+
+          .singleObjectBadge {
+            font-size: 10px;
+            line-height: 1.2;
+          }
+
+          .singleObjectCard h3 {
+            margin-top: 17px;
+
+            font-size: 26px;
+            line-height: 1.12;
+            letter-spacing: -0.025em;
+          }
+
+          .singleObjectDescription {
+            margin-top: 12px;
+
+            font-size: 14px;
+            line-height: 1.6;
+          }
+
+          .singleObjectFeatures {
+            margin-top: 19px;
+
+            display: grid;
+            grid-template-columns:
+              minmax(0, 1fr);
+
+            gap: 9px;
+          }
+
+          .singleObjectFeature {
+            min-width: 0;
+
+            align-items: flex-start;
+
+            font-size: 13px;
+            line-height: 1.45;
+          }
+
+          .singleObjectFeature > span:first-child {
+            flex: 0 0 auto;
+          }
+
+
+          /* -----------------------------------------------
+             9.90 PREISBOX
+             ----------------------------------------------- */
+
+          .singleObjectPriceBox {
+            width: 100%;
+            max-width: 100%;
+
+            padding: 18px;
+
+            border-radius: 18px;
+          }
+
+          .singleObjectPriceLabel {
+            font-size: 10px;
+            line-height: 1.2;
+          }
+
+          .singleObjectPrice {
+            margin-top: 8px;
+          }
+
+          .singleObjectPrice span {
+            font-size: 15px;
+          }
+
+          .singleObjectPrice strong {
+            font-size: 42px;
+            line-height: 1;
+            letter-spacing: -0.04em;
+          }
+
+          .singleObjectPriceBox p {
+            margin-top: 7px;
+
+            font-size: 12px;
+          }
+
+          .singleObjectButton {
+            width: 100%;
+
+            min-height: 52px;
+
+            margin-top: 17px;
+
+            padding:
+              12px
+              16px;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 14px;
+
+            font-size: 14px;
+            line-height: 1.2;
+
+            touch-action: manipulation;
+          }
+
+          .singleObjectPriceBox small {
+            display: block;
+
+            margin-top: 11px;
+
+            font-size: 10.5px;
+            line-height: 1.45;
+          }
+
+
+          /* -----------------------------------------------
+             PLÄNE = MOBILE FEED
+             ----------------------------------------------- */
+
+          .plansGrid {
+            width: 100%;
+
+            display: grid;
+            grid-template-columns:
+              minmax(0, 1fr);
+
+            gap: 14px;
+          }
+
+          .planCard,
+          .planCardHighlighted {
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            min-height: 0;
+
+            padding:
+              20px
+              18px;
+
+            border-radius: 22px;
+
+            transform: none;
+          }
+
+          .planCardHighlighted {
+            transform: none;
+
+            box-shadow:
+              0 20px 50px
+              rgba(245, 158, 11, 0.13);
+          }
+
+          .planTop {
+            min-width: 0;
+          }
+
+          .planLabel {
+            font-size: 10px;
+            line-height: 1.2;
+          }
+
+          .planCard h3 {
+            margin-top: 15px;
+
+            font-size: 24px;
+            line-height: 1.15;
+          }
+
+          .planPrice {
+            margin-top: 12px;
+
+            font-size: 34px;
+            line-height: 1;
+            letter-spacing: -0.035em;
+          }
+
+          .planCadence {
+            margin-top: 7px;
+
+            font-size: 12px;
+            line-height: 1.4;
+          }
+
+          .planDescription {
+            min-height: 0;
+
+            margin-top: 14px;
+
+            font-size: 14px;
+            line-height: 1.6;
+          }
+
+
+          /* -----------------------------------------------
+             FEATURES
+             ----------------------------------------------- */
+
+          .planFeatures {
+            margin-top: 19px;
+
+            display: grid;
+
+            gap: 9px;
+          }
+
+          .planFeatures li {
+            min-width: 0;
+
+            align-items: flex-start;
+
+            font-size: 13px;
+            line-height: 1.48;
+          }
+
+          .planFeatures li > span:first-child {
+            flex: 0 0 auto;
+          }
+
+
+          /* -----------------------------------------------
+             PLAN CTA
+             ----------------------------------------------- */
+
+          .planButton {
+            width: 100%;
+
+            min-height: 52px;
+
+            margin-top: 21px;
+
+            padding:
+              12px
+              16px;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 14px;
+
+            font-size: 14px;
+            line-height: 1.2;
+
+            touch-action: manipulation;
+          }
+
+          .planButtonHighlighted {
+            min-height: 54px;
+          }
+
+
+          /* -----------------------------------------------
+             AGENCY
+             ----------------------------------------------- */
+
+          .agencyTeaser {
+            width: 100%;
+
+            margin-top: 16px;
+
+            padding: 18px;
+
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+
+            gap: 14px;
+
+            border-radius: 20px;
+          }
+
+          .agencyLabel {
+            font-size: 9px;
+          }
+
+          .agencyTeaser strong {
+            margin-top: 6px;
+
+            font-size: 21px;
+          }
+
+          .agencyTeaser p {
+            margin-top: 6px;
+
+            font-size: 13px;
+            line-height: 1.5;
+          }
+
+          .agencyStatus {
+            width: 100%;
+
+            text-align: left;
+          }
+
+          .agencyStatus span {
+            font-size: 14px;
+          }
+
+          .agencyStatus strong {
+            display: block;
+
+            margin-top: 5px;
+
+            font-size: 12px;
+          }
+        }
+
+
+        /* Sehr kleine Geräte */
+
+        @media (max-width: 360px) {
+
+          .pricingSection {
+            padding-left: 12px;
+            padding-right: 12px;
+          }
+
+          .pricingHeader h2 {
+            font-size: 28px;
+          }
+
+          .singleObjectCard h3 {
+            font-size: 24px;
+          }
+
+          .singleObjectPrice strong {
+            font-size: 39px;
+          }
+
+          .planPrice {
+            font-size: 32px;
+          }
+        }
+
       `}</style>
     </section>
   );

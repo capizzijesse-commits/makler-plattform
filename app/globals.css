@@ -6509,3 +6509,19 @@ svg {
     font-size: 17px !important;
   }
 }
+
+/* =========================================================
+   INSERAT-AI - MARKETING HUB MOBILE WEIGHT FIX
+   Ruhigere Typografie auf Smartphones
+   ========================================================= */
+
+@media screen and (max-width: 430px) {
+
+  .landingMarketingHubHeadline {
+    font-weight: 300 !important;
+  }
+
+  .landingMarketingHubFeature h3 {
+    font-weight: 500 !important;
+  }
+}
