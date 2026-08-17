@@ -9306,3 +9306,429 @@ svg {
       minmax(0, 1fr) !important;
   }
 }
+
+/* =========================================================
+   INSERAT-AI - SOCIAL MEDIA MOBILE-FIRST V1
+   Social Studio als kompakter Mobile-Workspace
+   ========================================================= */
+
+@media screen and (max-width: 430px) {
+
+  /* =======================================================
+     SEITE
+     ======================================================= */
+
+  .socialMediaPage {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    padding:
+      22px
+      12px
+      calc(
+        48px +
+        env(safe-area-inset-bottom)
+      ) !important;
+
+    overflow-x: hidden !important;
+
+    box-sizing: border-box !important;
+  }
+
+  .socialMediaPage > div {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+
+  /* =======================================================
+     HEADER
+     ======================================================= */
+
+  .socialMediaPage
+    > div
+    > div:first-child {
+    display: grid !important;
+
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+
+    gap: 14px !important;
+
+    margin-bottom: 20px !important;
+  }
+
+  .socialMediaPage
+    > div
+    > div:first-child
+    h1 {
+    margin-top: 8px !important;
+
+    font-size: 30px !important;
+    line-height: 1.08 !important;
+
+    font-weight: 600 !important;
+
+    letter-spacing: -0.035em !important;
+  }
+
+  .socialMediaPage
+    > div
+    > div:first-child
+    h1
+    + p {
+    margin-top: 10px !important;
+
+    font-size: 14px !important;
+    line-height: 1.55 !important;
+  }
+
+  .socialMediaPage
+    > div
+    > div:first-child
+    > a {
+    width: 100% !important;
+
+    min-height: 48px !important;
+
+    padding:
+      10px
+      14px !important;
+
+    box-sizing: border-box !important;
+  }
+
+
+  /* =======================================================
+     DESKTOP-GRIDS MOBIL NIE STRECKEN
+     Das behebt den riesigen freien Bereich rechts/unten.
+     ======================================================= */
+
+  .socialMediaPage
+    [class*="lg:grid-cols"],
+  .socialMediaPage
+    [class*="md:grid-cols"] {
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+
+    align-items: start !important;
+  }
+
+  .socialMediaPage
+    [class*="lg:grid-cols"]
+    > *,
+  .socialMediaPage
+    [class*="md:grid-cols"]
+    > * {
+    align-self: start !important;
+
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+
+  /* =======================================================
+     KARTEN
+     Keine Desktop-Mindesthöhen auf Mobile
+     ======================================================= */
+
+  .socialMediaPage section,
+  .socialMediaPage article {
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  .socialMediaPage
+    [class*="rounded-[2rem]"],
+  .socialMediaPage
+    [class*="rounded-[1.5rem]"],
+  .socialMediaPage
+    [class*="rounded-[28px]"],
+  .socialMediaPage
+    [class*="rounded-[26px]"] {
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+
+  /* =======================================================
+     FORMULARE
+     ======================================================= */
+
+  .socialMediaPage input,
+  .socialMediaPage select,
+  .socialMediaPage textarea {
+    width: 100% !important;
+
+    min-height: 50px !important;
+
+    border-radius: 14px !important;
+
+    font-size: 16px !important;
+
+    box-sizing: border-box !important;
+  }
+
+  .socialMediaPage textarea {
+    min-height: 108px !important;
+
+    line-height: 1.5 !important;
+  }
+
+  .socialMediaPage label {
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+  }
+
+
+  /* =======================================================
+     BUTTONS / LINKS
+     ======================================================= */
+
+  .socialMediaPage button {
+    min-height: 48px;
+
+    touch-action: manipulation;
+  }
+
+  .socialMediaPage
+    button[class*="w-full"] {
+    width: 100% !important;
+  }
+
+
+  /* =======================================================
+     BILDER
+     ======================================================= */
+
+  .socialMediaPage img {
+    max-width: 100% !important;
+  }
+
+  .socialMediaPage
+    [class*="grid-cols-2"],
+  .socialMediaPage
+    [class*="grid-cols-3"],
+  .socialMediaPage
+    [class*="grid-cols-4"] {
+    gap: 10px !important;
+  }
+
+
+  /* =======================================================
+     AUSGABE
+     Wichtigster Fix:
+     nur Inhalts-Höhe, nie auf Eingabehöhe strecken.
+     ======================================================= */
+
+  .socialMediaPage
+    div:has(> p:first-child + h2) {
+    min-height: 0 !important;
+  }
+
+  .socialMediaPage
+    h2 {
+    overflow-wrap: anywhere !important;
+  }
+
+  .socialMediaPage
+    h2[class*="text-3xl"],
+  .socialMediaPage
+    h2[class*="text-4xl"] {
+    font-size: 26px !important;
+    line-height: 1.12 !important;
+
+    font-weight: 600 !important;
+  }
+
+  .socialMediaPage
+    [class*="min-h-["] {
+    min-height: 0 !important;
+  }
+
+
+  /* =======================================================
+     POST-KARTEN
+     ======================================================= */
+
+  .socialMediaPage
+    article {
+    padding: 15px !important;
+
+    border-radius: 16px !important;
+  }
+
+  .socialMediaPage
+    article
+    h3 {
+    font-size: 19px !important;
+    line-height: 1.25 !important;
+
+    font-weight: 600 !important;
+  }
+
+  .socialMediaPage
+    article
+    p {
+    font-size: 14px !important;
+    line-height: 1.58 !important;
+
+    overflow-wrap: anywhere !important;
+  }
+
+
+  /* =======================================================
+     SUPPORT DOCK
+     Mobil nur AI Guide
+     ======================================================= */
+
+  body:has(.socialMediaPage)
+    .supportDock {
+    right: 12px !important;
+
+    bottom:
+      calc(
+        12px +
+        env(safe-area-inset-bottom)
+      ) !important;
+
+    width: 48px !important;
+    max-width: 48px !important;
+
+    display: block !important;
+
+    padding: 4px !important;
+
+    border-radius: 999px !important;
+  }
+
+  body:has(.socialMediaPage)
+    .supportDock
+    .supportFeedback,
+  body:has(.socialMediaPage)
+    .supportDock
+    .supportContact {
+    display: none !important;
+  }
+
+  body:has(.socialMediaPage)
+    .supportDock
+    .supportGuide {
+    width: 40px !important;
+    min-width: 40px !important;
+
+    height: 40px !important;
+    min-height: 40px !important;
+
+    display: grid !important;
+
+    place-items: center !important;
+
+    padding: 0 !important;
+
+    border-radius: 999px !important;
+  }
+
+  body:has(.socialMediaPage)
+    .supportDock
+    .supportGuide
+    .supportText {
+    display: none !important;
+  }
+
+  body:has(.socialMediaPage)
+    .supportDock
+    .supportGuide
+    .supportIcon {
+    width: 20px !important;
+    height: 20px !important;
+
+    margin: 0 !important;
+  }
+
+  body:has(.socialMediaPage)
+    .supportDock
+    .supportGuide
+    .supportIcon
+    svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+}
+
+
+/* =========================================================
+   SEHR KLEINE SMARTPHONES
+   ========================================================= */
+
+@media screen and (max-width: 360px) {
+
+  .socialMediaPage {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .socialMediaPage
+    > div
+    > div:first-child
+    h1 {
+    font-size: 27px !important;
+  }
+}
+
+/* =========================================================
+   INSERAT-AI - SOCIAL MEDIA VARIANT TABS MOBILE V1
+   Drei Varianten als kompaktes Segment-Control
+   ========================================================= */
+
+@media screen and (max-width: 430px) {
+
+  .socialMediaPage
+    div:has(> button + button + button) {
+    display: grid !important;
+
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      ) !important;
+
+    gap: 7px !important;
+
+    width: 100% !important;
+
+    margin-bottom: 14px !important;
+  }
+
+  .socialMediaPage
+    div:has(> button + button + button)
+    > button {
+    width: 100% !important;
+    min-width: 0 !important;
+
+    min-height: 46px !important;
+
+    padding:
+      9px
+      5px !important;
+
+    border-radius: 12px !important;
+
+    font-size: 12px !important;
+    line-height: 1.15 !important;
+
+    white-space: normal !important;
+  }
+}
+
+@media screen and (max-width: 360px) {
+
+  .socialMediaPage
+    div:has(> button + button + button)
+    > button {
+    font-size: 11px !important;
+
+    padding-left: 3px !important;
+    padding-right: 3px !important;
+  }
+}
