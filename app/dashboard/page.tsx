@@ -857,6 +857,7 @@ async function uploadListingImages(listingId: string) {
           fileName: file.name,
           mimeType: file.type,
           sizeBytes: file.size,
+          position: index,
           analysis:
             imageAnalyses[index]?.status ===
               "done" &&

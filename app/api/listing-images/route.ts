@@ -72,10 +72,11 @@ export async function POST(request: NextRequest) {
     const body = (await request
       .json()
       .catch(() => null)) as {
-      listingId?: unknown;
-      storageKey?: unknown;
-      fileName?: unknown;
-      analysis?: unknown;
+     listingId?: unknown;
+storageKey?: unknown;
+fileName?: unknown;
+position?: unknown;
+analysis?: unknown;
 
       /*
        * Diese alten Browserwerte werden absichtlich nicht mehr
@@ -101,7 +102,12 @@ export async function POST(request: NextRequest) {
         body?.analysis,
         20_000
       );
-
+const requestedPosition =
+  typeof body?.position === "number" &&
+  Number.isInteger(body.position) &&
+  body.position >= 0
+    ? body.position
+    : null;
     if (
       !listingId ||
       !storageKey ||
@@ -405,36 +411,39 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
+const imagePosition =
+  requestedPosition !== null &&
+  requestedPosition < maxImageCount
+    ? requestedPosition
+    : storedImageCount;
     const image = await prisma.listingImage.create({
-      data: {
-        listingId: listing.id,
+  data: {
+    listingId: listing.id,
 
-        /*
-         * Ausschliesslich bestätigte Vercel-Werte speichern.
-         */
-        url: blob.url,
-        storageKey: blob.pathname,
-        fileName: optionalText(
-          body?.fileName,
-          255
-        ),
-        mimeType: detectedMimeType,
-        sizeBytes: imageBytes.byteLength,
-        position: storedImageCount,
-        isPrimary: storedImageCount === 0,
-        analysis:
-          cachedAnalysis,
-        analysisStatus:
-          cachedAnalysis
-            ? "analyzed"
-            : "not_analyzed",
-        analyzedAt:
-          cachedAnalysis
-            ? new Date()
-            : null,
-      },
-    });
+    url: blob.url,
+    storageKey: blob.pathname,
+    fileName: optionalText(
+      body?.fileName,
+      255
+    ),
+    mimeType: detectedMimeType,
+    sizeBytes: imageBytes.byteLength,
+   position: imagePosition,
+isPrimary:
+  imagePosition === 0 &&
+  storedImageCount === 0,
+
+   analysis: cachedAnalysis,
+analysisStatus:
+  cachedAnalysis
+    ? "analyzed"
+    : "not_analyzed",
+analyzedAt:
+  cachedAnalysis
+    ? new Date()
+    : null,
+  },
+});
 
     return NextResponse.json(
       {

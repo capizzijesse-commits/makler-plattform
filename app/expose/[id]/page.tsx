@@ -29,6 +29,7 @@ type Listing = {
   createdAt?: string;
   updatedAt?: string;
   images?: ListingImage[];
+  hasCoreAccess?: boolean;
 };
 
 type ContactDetails = {
@@ -472,6 +473,12 @@ export default function ExposePreviewPage() {
           );
         }
 
+        if (data.listing.hasCoreAccess !== true) {
+          throw new Error(
+            "Dieses Exposé ist für das Objekt erst nach der Freischaltung verfügbar."
+          );
+        }
+
         setListing(data.listing);
       } catch (loadError) {
         if (
@@ -522,11 +529,6 @@ export default function ExposePreviewPage() {
   );
 
   function goBack() {
-    if (window.history.length > 1) {
-      router.back();
-      return;
-    }
-
     router.push("/cockpit");
   }
 

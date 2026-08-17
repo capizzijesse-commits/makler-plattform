@@ -28,6 +28,9 @@ const STORAGE_KEY =
 const CONSENT_EVENT =
   "inserat-ai-analytics-consent";
 
+const PRICING_VIEW_SESSION_KEY =
+  "inserat_ai_ga4_pricing_view_v1";
+
 export default function GoogleAnalytics() {
   const pathname = usePathname();
 
@@ -181,6 +184,99 @@ export default function GoogleAnalytics() {
     hasValidMeasurementId,
     pathname,
   ]);
+useEffect(() => {
+  if (
+    !enabled ||
+    !hasValidMeasurementId ||
+    pathname !== "/"
+  ) {
+    return;
+  }
+
+  let alreadyTracked = false;
+
+  try {
+    alreadyTracked =
+      window.sessionStorage.getItem(
+        PRICING_VIEW_SESSION_KEY
+      ) === "sent";
+  } catch {
+    alreadyTracked = false;
+  }
+
+  if (alreadyTracked) {
+    return;
+  }
+
+  const pricingSection =
+    document.querySelector<HTMLElement>(
+      ".pricingSection"
+    );
+
+  if (!pricingSection) {
+    return;
+  }
+
+  const observer =
+    new IntersectionObserver(
+      (entries) => {
+        const isVisible =
+          entries.some(
+            (entry) =>
+              entry.isIntersecting &&
+              entry.intersectionRatio >= 0.25
+          );
+
+        if (!isVisible) {
+          return;
+        }
+
+        const sent =
+          trackAnalyticsEvent(
+            "pricing_view",
+            {
+              page_path:
+                window.location.pathname,
+              page_location:
+                window.location.href,
+              section:
+                "pricing",
+              transport_type:
+                "beacon",
+            }
+          );
+
+        if (!sent) {
+          return;
+        }
+
+        try {
+          window.sessionStorage.setItem(
+            PRICING_VIEW_SESSION_KEY,
+            "sent"
+          );
+        } catch {
+          // Analytics darf die App niemals blockieren.
+        }
+
+        observer.disconnect();
+      },
+      {
+        threshold: [0.25],
+      }
+    );
+
+  observer.observe(pricingSection);
+
+  return () => {
+    observer.disconnect();
+  };
+}, [
+  enabled,
+  hasValidMeasurementId,
+  pathname,
+]);
+
 useEffect(() => {
   if (
     !enabled ||

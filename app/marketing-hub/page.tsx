@@ -436,7 +436,7 @@ export default function MarketingHubPage() {
           title: text.cards.tour[0],
           description: text.cards.tour[1],
           status: text.pro,
-          href: "/dashboard/tour-guide",
+          href: `/dashboard/tour-guide?listingId=${encodeURIComponent(selectedListing.id)}`,
           enabled: true,
         },
         {
@@ -675,7 +675,11 @@ export default function MarketingHubPage() {
                       {card.description}
                     </p>
                     <div className="mt-6 font-black text-amber-300">
-                      {card.enabled ? `${text.open} →` : text.development}
+                      {!card.enabled
+                    ? text.development
+                    : selectedListing.hasCoreAccess === false
+                      ? text.lockedTitle
+                      : `${text.open} →`}
                     </div>
                   </>
                 );
