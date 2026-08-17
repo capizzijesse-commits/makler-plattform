@@ -3202,15 +3202,15 @@ export default function HomeStagingPage() {
                   </div>
                 </div>
 
-                <div className="optionGrid">
+                <div className="optionGrid styleOptionGrid">
                   {STYLES.map((option) => (
                     <button
                       key={option.value}
                       type="button"
                       className={
                         style === option.value
-                          ? "optionCard optionCardActive"
-                          : "optionCard"
+                          ? "optionCard optionCardActive styleOptionCard"
+                          : "optionCard styleOptionCard"
                       }
                       onClick={() =>
                         chooseStyle(option.value)
