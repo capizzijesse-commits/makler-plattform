@@ -10008,3 +10008,92 @@ svg {
     min-height: 88px;
   }
 }
+
+/* =========================================================
+   INSERAT-AI - FINANCE MOBILE-FIRST V1
+   Eingaben + Touchkomfort + Support-Dock Abstand
+   ========================================================= */
+
+@media (max-width: 640px) {
+
+  .financeMobilePage {
+    padding-bottom: 158px !important;
+    overflow-x: hidden;
+  }
+
+  /* Eingabefelder müssen sich auf Mobile wie echte
+     App-Controls anfühlen und nicht wie Desktop-Inputs. */
+  .financeMobilePage input {
+    width: 100%;
+    min-height: 48px;
+
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+
+    border-radius: 13px !important;
+
+    font-size: 16px !important;
+    line-height: 1.2;
+
+    box-sizing: border-box;
+
+    transition:
+      border-color 160ms ease,
+      background 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .financeMobilePage input:focus {
+    box-shadow:
+      0 0 0 3px rgba(251, 191, 36, 0.08);
+  }
+
+  /* Interne Notizen */
+  .financeMobilePage textarea {
+    width: 100%;
+    min-height: 132px;
+
+    padding: 14px !important;
+
+    border-radius: 14px !important;
+
+    font-size: 16px !important;
+    line-height: 1.5;
+
+    box-sizing: border-box;
+  }
+
+  /* Labels etwas klarer von den Inputs trennen */
+  .financeMobilePage label > span {
+    line-height: 1.4;
+  }
+
+  /* Käufer-Finanzierung:
+     Ergebnisse bleiben auf Mobile ruhig untereinander. */
+  .financeMobilePage
+    [data-section="FINANCING-CHECK-V1"] {
+    padding: 20px !important;
+    border-radius: 24px !important;
+  }
+
+  .financeMobilePage
+    [data-section="FINANCING-CHECK-V1"]
+    input {
+    min-height: 48px;
+  }
+
+  /* Submit darf beim Seitenende nicht hinter dem
+     AI-Guide / Feedback / WhatsApp Dock verschwinden. */
+  .financeMobilePage form > button[type="submit"] {
+    min-height: 56px;
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 340px) {
+
+  .financeMobilePage
+    [data-section="FINANCING-CHECK-V1"] {
+    padding: 17px !important;
+  }
+}

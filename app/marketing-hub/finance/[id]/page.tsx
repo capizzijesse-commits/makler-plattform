@@ -816,7 +816,7 @@ export default function FinancePage() {
     "min-h-13 rounded-xl border border-white/10 bg-slate-950/55 px-4 text-white outline-none focus:border-amber-300";
 
   return (
-    <main className="min-h-screen bg-[#050a1d] px-4 pb-24 pt-10 text-white sm:px-6 lg:px-8">
+    <main className="financeMobilePage min-h-screen bg-[#050a1d] px-4 pb-24 pt-10 text-white sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-6xl">
         <Link
           href="/marketing-hub"
