@@ -452,6 +452,13 @@ export default function FinancePage() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
+  // FINANCE-SAVE-POPUP-V1
+  const [financePopup, setFinancePopup] =
+    useState<{
+      tone: "success" | "warning" | "error";
+      message: string;
+    } | null>(null);
+
   useEffect(() => {
     if (!listingId) {
       setError(text.loadError);
@@ -707,6 +714,7 @@ export default function FinancePage() {
       ...current,
       [field]: value,
     }));
+    setError("");
     setMessage("");
   }
 
@@ -723,7 +731,12 @@ export default function FinancePage() {
       minimumPrice !== null &&
       minimumPrice > askingPrice
     ) {
-      setError(text.priceError);
+      setError("");
+      setMessage("");
+      setFinancePopup({
+        tone: "warning",
+        message: text.priceError,
+      });
       return;
     }
 
@@ -732,7 +745,12 @@ export default function FinancePage() {
       depositMonths !== null &&
       depositMonths > 3
     ) {
-      setError(text.depositError);
+      setError("");
+      setMessage("");
+      setFinancePopup({
+        tone: "warning",
+        message: text.depositError,
+      });
       return;
     }
 
@@ -742,9 +760,12 @@ export default function FinancePage() {
       financingEquity !== null &&
       financingEquity > askingPrice
     ) {
-      setError(
-        financeText.equityError
-      );
+      setError("");
+      setMessage("");
+      setFinancePopup({
+        tone: "warning",
+        message: financeText.equityError,
+      });
       return;
     }
 
@@ -755,9 +776,12 @@ export default function FinancePage() {
       financingHardEquity >
         financingEquity
     ) {
-      setError(
-        financeText.hardEquityError
-      );
+      setError("");
+      setMessage("");
+      setFinancePopup({
+        tone: "warning",
+        message: financeText.hardEquityError,
+      });
       return;
     }
 
@@ -789,13 +813,25 @@ export default function FinancePage() {
         throw new Error(data.error || text.saveError);
       }
 
-      setMessage(data.message || text.saved);
+      setError("");
+      setMessage("");
+      setFinancePopup({
+        tone: "success",
+        message: data.message || text.saved,
+      });
     } catch (saveError) {
-      setError(
+      const saveMessage =
         saveError instanceof Error
           ? saveError.message
-          : text.saveError
-      );
+          : text.saveError;
+
+      setError("");
+      setMessage("");
+
+      setFinancePopup({
+        tone: "error",
+        message: saveMessage,
+      });
     } finally {
       setSaving(false);
     }
@@ -817,6 +853,97 @@ export default function FinancePage() {
 
   return (
     <main className="financeMobilePage min-h-screen bg-[#050a1d] px-4 pb-24 pt-10 text-white sm:px-6 lg:px-8">
+
+      {financePopup ? (
+        <div
+          className="fixed inset-0 z-[2147483647] grid place-items-center bg-slate-950/75 px-5 backdrop-blur-md"
+          onClick={() => setFinancePopup(null)}
+        >
+          <section
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="finance-popup-title"
+            aria-describedby="finance-popup-message"
+            onClick={(event) =>
+              event.stopPropagation()
+            }
+            className={`w-full max-w-sm overflow-hidden rounded-[1.6rem] border bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 text-white shadow-[0_30px_100px_rgba(0,0,0,0.7)] ${
+              financePopup.tone === "success"
+                ? "border-emerald-400/40"
+                : financePopup.tone === "error"
+                  ? "border-rose-400/40"
+                  : "border-amber-400/40"
+            }`}
+          >
+            <div className="flex items-start gap-4">
+              <div
+                className={`grid h-12 w-12 flex-none place-items-center rounded-2xl border text-xl font-black ${
+                  financePopup.tone === "success"
+                    ? "border-emerald-400/35 bg-emerald-400/10 text-emerald-300"
+                    : financePopup.tone === "error"
+                      ? "border-rose-400/35 bg-rose-400/10 text-rose-300"
+                      : "border-amber-400/35 bg-amber-400/10 text-amber-300"
+                }`}
+              >
+                {financePopup.tone === "success"
+                  ? "✓"
+                  : "!"}
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">
+                  Inserat-AI
+                </p>
+
+                <h2
+                  id="finance-popup-title"
+                  className="mt-2 text-xl font-black text-white"
+                >
+                  {financePopup.tone === "success"
+                    ? localeKey === "it"
+                      ? "Dati finanziari salvati"
+                      : localeKey === "fr"
+                        ? "Données financières enregistrées"
+                        : localeKey === "en"
+                          ? "Financial data saved"
+                          : "Finanzdaten gespeichert"
+                    : localeKey === "it"
+                      ? "Controlla i dati"
+                      : localeKey === "fr"
+                        ? "Vérifier les données"
+                        : localeKey === "en"
+                          ? "Check your entries"
+                          : "Eingaben prüfen"}
+                </h2>
+
+                <p
+                  id="finance-popup-message"
+                  className="mt-3 text-sm leading-6 text-slate-300"
+                >
+                  {financePopup.message}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              autoFocus
+              onClick={() =>
+                setFinancePopup(null)
+              }
+              className={`mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-xl px-5 font-black text-slate-950 ${
+                financePopup.tone === "success"
+                  ? "bg-emerald-300"
+                  : financePopup.tone === "error"
+                    ? "bg-rose-300"
+                    : "bg-amber-300"
+              }`}
+            >
+              OK
+            </button>
+          </section>
+        </div>
+      ) : null}
       <div className="mx-auto w-full max-w-6xl">
         <Link
           href="/marketing-hub"

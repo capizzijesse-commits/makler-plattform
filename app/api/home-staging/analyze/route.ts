@@ -653,9 +653,7 @@ export async function POST(
     const capabilities =
       getPlanCapabilities(user.plan);
 
-    if (
-      !capabilities.canUseHomeStaging
-    ) {
+    if (!capabilities.canUseHomeStaging) {
       return NextResponse.json(
         {
           success: false,

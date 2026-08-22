@@ -2081,6 +2081,16 @@ export default function HomeStagingPage() {
           customInstructions:
             workflow
               .customInstructions,
+          roomAnalysis:
+            workflow.roomAnalysis,
+          transformationBrief:
+            workflow.transformationBrief,
+          lockedArchitecture:
+            workflow.roomAnalysis
+              ?.lockedArchitecture ?? [],
+          visibleFacts:
+            workflow.roomAnalysis
+              ?.visibleFacts ?? [],
           outputSize,
           mode:
             workflow
@@ -2746,7 +2756,12 @@ export default function HomeStagingPage() {
                         generating ||
                         saving ||
                         uploadingImages ||
-                        isArchived
+                        isArchived ||
+                        (
+                          stagingImages.length > 0 &&
+                          batchPreviewItems.length ===
+                            stagingImages.length
+                        )
                       }
                     >
                       {batchAnalyzing
@@ -2759,10 +2774,13 @@ export default function HomeStagingPage() {
                           } von ${
                             batchAnalysisProgress.total
                           } wird analysiert …`
-                        : analyzedImageCount ===
-                          stagingImages.length
-                        ? "Fehlende Bilder verarbeiten"
-                        : "Alle Bilder verarbeiten"}
+                        : stagingImages.length > 0 &&
+                          batchPreviewItems.length ===
+                            stagingImages.length
+                        ? "Alle Bilder verarbeitet"
+                        : analyzedImageCount > 0
+                          ? "Fehlende Bilder verarbeiten"
+                          : "Alle Bilder verarbeiten"}
                     </button>
                   </div>
 

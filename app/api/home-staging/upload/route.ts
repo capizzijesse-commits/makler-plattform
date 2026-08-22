@@ -58,7 +58,7 @@ export async function POST(
     const capabilities =
       getPlanCapabilities(user.plan);
 
-    if (!capabilities.canUseHomeStaging) {
+if (!capabilities.canUseHomeStaging) {
       return NextResponse.json(
         {
           success: false,
@@ -139,7 +139,10 @@ export async function POST(
 
         if (
           aiModel !== "gpt-image-2" ||
-          promptVersion !== "home-staging-v2-variants"
+          (
+            promptVersion !== "home-staging-v2-variants" &&
+            promptVersion !== "home-staging-v3-architecture-lock"
+          )
         ) {
           throw new Error(
             "Ungültige AI-Generierungsdaten."

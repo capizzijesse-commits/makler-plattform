@@ -11,7 +11,7 @@ export const runtime = "nodejs";
 export const maxDuration = 180;
 
 const AI_MODEL = "gpt-image-2";
-const PROMPT_VERSION = "home-staging-v2-variants";
+const PROMPT_VERSION = "home-staging-v3-architecture-lock";
 const MAX_SOURCE_IMAGE_SIZE = 10 * 1024 * 1024;
 
 const PREVIEW_SOURCE_EDGE = 1024;
@@ -167,6 +167,10 @@ type GenerateHomeStagingBody = {
   roomType?: unknown;
   style?: unknown;
   customInstructions?: unknown;
+  roomAnalysis?: unknown;
+  transformationBrief?: unknown;
+  lockedArchitecture?: unknown;
+  visibleFacts?: unknown;
   outputSize?: unknown;
   mode?: unknown;
   variationIndex?: unknown;
@@ -193,6 +197,44 @@ type OpenAIImageEditResponse = {
 
 function requiredText(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function safeTextArray(
+  value: unknown,
+  maxItems = 8,
+  maxLength = 180
+): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .filter(
+      (item): item is string =>
+        typeof item === "string"
+    )
+    .map((item) =>
+      item
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, maxLength)
+    )
+    .filter(Boolean)
+    .slice(0, maxItems);
+}
+
+function safeRecord(
+  value: unknown
+): Record<string, unknown> | null {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    Array.isArray(value)
+  ) {
+    return null;
+  }
+
+  return value as Record<string, unknown>;
 }
 
 function isRoomType(value: string): value is RoomType {
@@ -225,7 +267,9 @@ function extensionForMimeType(mimeType: string): string {
 function createStagingPrompt(
   roomType: RoomType,
   style: StagingStyle,
-  customInstructions: string
+  customInstructions: string,
+  lockedArchitecture: string[],
+  visibleFacts: string[]
 ): string {
   const room = ROOM_TYPES[roomType];
   const designStyle = STYLES[style];
@@ -243,6 +287,29 @@ function createStagingPrompt(
     "- Do not invent balconies, fireplaces, additional rooms, openings or structural features.",
     "- Preserve permanent surfaces, materials and the visible condition of the property.",
     "- Keep existing fixed installations unchanged.",
+    "",
+    "PROPERTY-SPECIFIC ARCHITECTURE LOCK:",
+    "The supplied photograph is the immutable architectural base image.",
+    "Do not redesign, reinterpret, reconstruct or beautify the architectural shell.",
+    "Keep all architectural edges and fixed-element positions aligned with the source photograph.",
+    "If a furnishing instruction conflicts with the source architecture, preservation always wins.",
+    ...(
+      lockedArchitecture.length > 0
+        ? lockedArchitecture.map(
+            (rule) =>
+              `- MUST PRESERVE EXACTLY: ${rule}`
+          )
+        : [
+            "- No additional property-specific architecture constraints were supplied.",
+          ]
+    ),
+    ...visibleFacts.map(
+      (fact) =>
+        `- SOURCE IMAGE FACT: ${fact}`
+    ),
+    "",
+    "The property-specific facts above are immutable constraints, not creative suggestions.",
+    "Never reinterpret these facts as permission to remodel or reconstruct the room.",
     "",
     "Add only plausible movable furniture, lighting, textiles, plants and restrained decoration.",
     "Use realistic furniture dimensions and natural placement with clear walking space.",
@@ -275,7 +342,7 @@ export async function POST(
     const capabilities =
       getPlanCapabilities(user.plan);
 
-    if (!capabilities.canUseHomeStaging) {
+if (!capabilities.canUseHomeStaging) {
       return NextResponse.json(
         {
           success: false,
@@ -310,6 +377,58 @@ export async function POST(
     const customInstructions = requiredText(
       body?.customInstructions
     );
+
+    const roomAnalysis =
+      safeRecord(body?.roomAnalysis);
+
+    const transformationBrief =
+      safeRecord(body?.transformationBrief);
+
+    const directLockedArchitecture =
+      safeTextArray(
+        body?.lockedArchitecture
+      );
+
+    const roomLockedArchitecture =
+      safeTextArray(
+        roomAnalysis?.lockedArchitecture
+      );
+
+    const briefLockedArchitecture =
+      safeTextArray(
+        transformationBrief
+          ?.protectedArchitecture
+      );
+
+    const lockedArchitecture =
+      directLockedArchitecture.length > 0
+        ? directLockedArchitecture
+        : roomLockedArchitecture.length > 0
+          ? roomLockedArchitecture
+          : briefLockedArchitecture;
+
+    const directVisibleFacts =
+      safeTextArray(
+        body?.visibleFacts
+      );
+
+    const roomVisibleFacts =
+      safeTextArray(
+        roomAnalysis?.visibleFacts
+      );
+
+    const briefVisibleFacts =
+      safeTextArray(
+        transformationBrief?.visibleFacts
+      );
+
+    const visibleFacts =
+      directVisibleFacts.length > 0
+        ? directVisibleFacts
+        : roomVisibleFacts.length > 0
+          ? roomVisibleFacts
+          : briefVisibleFacts;
+
     const outputSize = requiredText(
       body?.outputSize
     );
@@ -606,7 +725,9 @@ export async function POST(
 ${createStagingPrompt(
   roomType,
   style,
-  customInstructions
+  customInstructions,
+  lockedArchitecture,
+  visibleFacts
 )}
 
 IMPORTANT VARIATION REQUIREMENT:
@@ -627,10 +748,24 @@ from a previous generation.
 The selected interior style must be unmistakably visible.
 
 ABSOLUTE ARCHITECTURAL PRESERVATION:
-Keep the original camera position, perspective,
-room dimensions, ceiling height, walls, floor,
-windows, doors, radiators, built-in elements,
-openings and natural light direction unchanged.
+Keep the original camera position, camera height,
+lens perspective, crop, vanishing points,
+room dimensions, ceiling height, wall geometry,
+floor boundaries, windows, doors, radiators,
+built-in elements, openings and natural light
+direction unchanged.
+
+Do not widen, lengthen, shorten, raise or lower
+the room.
+
+Do not move the camera and do not create a new
+viewpoint.
+
+Do not change the position, size or shape of any
+window, door, wall edge, ceiling edge or opening.
+
+The result must remain recognisably the exact
+same photographed property.
 
 Only add or replace movable furniture,
 textiles, lighting and decoration.

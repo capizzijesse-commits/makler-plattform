@@ -93,6 +93,21 @@ export async function GET(
   },
   include: {
     images: {
+      include: {
+        homeStagingImages: {
+          orderBy: {
+            createdAt: "desc",
+          },
+          select: {
+            id: true,
+            url: true,
+            sourceImageId: true,
+            roomType: true,
+            style: true,
+            createdAt: true,
+          },
+        },
+      },
       orderBy: [
         {
           isPrimary: "desc",

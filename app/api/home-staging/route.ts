@@ -9,7 +9,11 @@ export const runtime = "nodejs";
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 const AI_MODEL = "gpt-image-2";
-const PROMPT_VERSION = "home-staging-v2-variants";
+
+const PROMPT_VERSIONS = new Set([
+  "home-staging-v2-variants",
+  "home-staging-v3-architecture-lock",
+]);
 
 const ROOM_TYPES = new Set([
   "livingRoom",
@@ -94,7 +98,7 @@ export async function POST(
     const capabilities =
       getPlanCapabilities(user.plan);
 
-    if (!capabilities.canUseHomeStaging) {
+if (!capabilities.canUseHomeStaging) {
       return NextResponse.json(
         {
           success: false,
@@ -176,7 +180,7 @@ export async function POST(
 
     if (
       aiModel !== AI_MODEL ||
-      promptVersion !== PROMPT_VERSION
+      !PROMPT_VERSIONS.has(promptVersion)
     ) {
       return NextResponse.json(
         {

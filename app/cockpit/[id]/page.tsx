@@ -17,6 +17,16 @@ type Variant = {
   linkedinPost?: string;
   facebookPost?: string;
 };
+// HOME-STAGING COCKPIT TYPES V4
+type HomeStagingImage = {
+  id: string;
+  url: string;
+  sourceImageId: string;
+  roomType: string;
+  style: string;
+  createdAt: string;
+};
+
 type ListingImage = {
   id: string;
   url: string;
@@ -26,6 +36,7 @@ type ListingImage = {
   sizeBytes: number | null;
   position: number;
   isPrimary: boolean;
+  homeStagingImages?: HomeStagingImage[];
   
 };
 
@@ -827,6 +838,89 @@ function showNextImage() {
     </div>
   )}
   </section>
+{/* HOME-STAGING COCKPIT GALLERY V4 */}
+{listing.images.some(
+  (image) =>
+    (image.homeStagingImages?.length ?? 0) > 0
+) && (
+  <section className="homeStagingGalleryCard">
+    <div className="homeStagingGalleryHeading">
+      <div>
+        <small>
+          VIRTUELLES HOME STAGING
+        </small>
+
+        <h2>
+          AI-Visualisierungen
+        </h2>
+
+        <p>
+          Gespeicherte AI-Versionen dieses Objekts.
+          Die Originalbilder bleiben unverändert erhalten.
+        </p>
+      </div>
+
+      <span className="homeStagingGalleryCount">
+        {listing.images.reduce(
+          (total, image) =>
+            total +
+            (image.homeStagingImages?.length ?? 0),
+          0
+        )}
+      </span>
+    </div>
+
+    <div className="homeStagingGalleryGrid">
+      {listing.images
+        .flatMap(
+          (image, sourceIndex) =>
+            (
+              image.homeStagingImages ?? []
+            ).map(
+              (stagingImage) => ({
+                stagingImage,
+                sourceIndex,
+              })
+            )
+        )
+        .map(
+          ({
+            stagingImage,
+            sourceIndex,
+          }) => (
+            <article
+              key={stagingImage.id}
+              className="homeStagingGalleryItem"
+            >
+              <div className="homeStagingGalleryImageWrap">
+                <img
+                  src={stagingImage.url}
+                  alt={`AI-Visualisierung zu Bild ${
+                    sourceIndex + 1
+                  }`}
+                />
+
+                <span className="homeStagingGalleryBadge">
+                  AI-VISUALISIERT
+                </span>
+              </div>
+
+              <div className="homeStagingGalleryMeta">
+                <strong>
+                  Home-Staging-Version
+                </strong>
+
+                <span>
+                  Ausgangsbild {sourceIndex + 1}
+                </span>
+              </div>
+            </article>
+          )
+        )}
+    </div>
+  </section>
+)}
+
 <section className="objectInsightBar">
   <div className="objectInsightItem">
     <span className="objectInsightIcon">👁</span>
@@ -2569,7 +2663,150 @@ function PageStyles() {
     font-size: 17px;
   }
 }
-  .objectInsightBar {
+  /* HOME-STAGING COCKPIT CSS V4 */
+
+.homeStagingGalleryCard {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid rgba(34, 211, 238, 0.28);
+  border-radius: 24px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(8, 47, 73, 0.34),
+      rgba(15, 23, 42, 0.98)
+    );
+  box-shadow:
+    0 18px 44px rgba(2, 6, 23, 0.3);
+}
+
+.homeStagingGalleryHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.homeStagingGalleryHeading small {
+  display: block;
+  margin-bottom: 6px;
+  color: #22d3ee;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+}
+
+.homeStagingGalleryHeading h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 22px;
+}
+
+.homeStagingGalleryHeading p {
+  margin: 8px 0 0;
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.homeStagingGalleryCount {
+  display: grid;
+  min-width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid rgba(34, 211, 238, 0.42);
+  border-radius: 999px;
+  background: rgba(34, 211, 238, 0.1);
+  color: #67e8f9;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.homeStagingGalleryGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.homeStagingGalleryItem {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 18px;
+  background: rgba(2, 6, 23, 0.52);
+}
+
+.homeStagingGalleryImageWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #020617;
+}
+
+.homeStagingGalleryImageWrap img {
+  display: block;
+  width: 100%;
+  max-height: 520px;
+  object-fit: contain;
+}
+
+.homeStagingGalleryBadge {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(2, 6, 23, 0.84);
+  color: #67e8f9;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: 0.06em;
+}
+
+.homeStagingGalleryMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+}
+
+.homeStagingGalleryMeta strong {
+  color: #ffffff;
+  font-size: 13px;
+}
+
+.homeStagingGalleryMeta span {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+@media (max-width: 700px) {
+  .homeStagingGalleryCard {
+    padding: 15px;
+    border-radius: 20px;
+  }
+
+  .homeStagingGalleryHeading h2 {
+    font-size: 20px;
+  }
+
+  .homeStagingGalleryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .homeStagingGalleryMeta {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+.objectInsightBar {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   overflow: hidden;
