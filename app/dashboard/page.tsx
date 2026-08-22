@@ -561,6 +561,7 @@ async function analyzeImage() {
   }
 }
 
+const [projectName, setProjectName] = useState("");
 const [location, setLocation] = useState("");
 const [propertyType, setPropertyType] = useState("");
 const [rooms, setRooms] = useState("");
@@ -685,6 +686,7 @@ useEffect(() => {
   try {
     const data = JSON.parse(savedForm);
 
+    setProjectName(data.projectName || "");
     setLocation(data.location || "");
     setPropertyType(data.propertyType || "");
     setRooms(data.rooms || "");
@@ -704,6 +706,7 @@ useEffect(() => {
   if (!formLoaded) return;
 
   const formData = {
+  projectName,
   location,
   postalCode,
   propertyType,
@@ -717,6 +720,7 @@ useEffect(() => {
   localStorage.setItem(getFormStorageKey(), JSON.stringify(formData));
 }, [
   formLoaded,
+  projectName,
 location,
 postalCode,
 propertyType,
@@ -929,6 +933,19 @@ if (!userEmail) {
   return null;
 }
 
+if (projectName.trim().length < 3) {
+  notify(
+    locale === "it"
+      ? "Assegna prima un nome al progetto (minimo 3 caratteri)."
+      : locale === "fr"
+        ? "Donnez d'abord un nom au projet (au moins 3 caractères)."
+        : locale === "en"
+          ? "Please give the project a name first (at least 3 characters)."
+          : "Bitte gib dem Projekt zuerst einen Namen (mindestens 3 Zeichen).",
+    "warning"
+  );
+  return null;
+}
 if (!location.trim() || !propertyType.trim()) {
   notify(t("validation.locationAndType"), "warning");
   return null;
@@ -945,6 +962,7 @@ if (!location.trim() || !propertyType.trim()) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        projectName: projectName.trim(),
         location,
         postalCode,
         propertyType,
@@ -1251,6 +1269,7 @@ const saveListingAndOpenCockpit = async () => {
 };
 
 const loadObjectTemplate = (template: ObjectTemplate) => {
+  setProjectName("");
   setLocation(template.location);
   setPostalCode(template.postalCode || "");
   setPropertyType(template.propertyType);
@@ -1316,6 +1335,7 @@ const deleteObjectTemplate = (templateId: string) => {
   });
 };
 const clearForm = () => {
+  setProjectName("");
   setLocation("");
   setPropertyType("");
   setRooms("");
@@ -2597,6 +2617,203 @@ return (
   </div>
 )}
 
+
+<div
+  className="projectNameGate"
+  style={{
+    width: "100%",
+    margin: "18px 0 16px",
+    padding: "16px",
+    border: "1px solid rgba(251,191,36,0.48)",
+    borderRadius: "16px",
+    background:
+      "linear-gradient(135deg, rgba(251,191,36,0.08), rgba(15,23,42,0.62))",
+    boxShadow:
+      "0 14px 34px rgba(2,6,23,0.20)",
+  }}
+>
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "12px",
+      marginBottom: "11px",
+    }}
+  >
+    <div>
+      <div
+        style={{
+          color: "#fbbf24",
+          fontSize: "11px",
+          fontWeight: 900,
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+        }}
+      >
+        {locale === "it"
+          ? "Progetto"
+          : locale === "fr"
+            ? "Projet"
+            : locale === "en"
+              ? "Project"
+              : "Projekt"}
+      </div>
+
+      <div
+        style={{
+          color: "#ffffff",
+          marginTop: "3px",
+          fontSize: "16px",
+          fontWeight: 900,
+        }}
+      >
+        {locale === "it"
+          ? "Assegna un nome al progetto"
+          : locale === "fr"
+            ? "Nommer le projet"
+            : locale === "en"
+              ? "Name this project"
+              : "Projekt benennen"}
+      </div>
+    </div>
+
+    <span
+      style={{
+        flex: "none",
+        border:
+          projectName.trim().length >= 3
+            ? "1px solid rgba(34,197,94,0.42)"
+            : "1px solid rgba(251,191,36,0.42)",
+        borderRadius: "999px",
+        padding: "6px 9px",
+        background:
+          projectName.trim().length >= 3
+            ? "rgba(34,197,94,0.10)"
+            : "rgba(251,191,36,0.08)",
+        color:
+          projectName.trim().length >= 3
+            ? "#86efac"
+            : "#fbbf24",
+        fontSize: "10px",
+        fontWeight: 900,
+      }}
+    >
+      {projectName.trim().length >= 3
+        ? "✓"
+        : locale === "it"
+          ? "Obbligatorio"
+          : locale === "fr"
+            ? "Obligatoire"
+            : locale === "en"
+              ? "Required"
+              : "Pflicht"}
+    </span>
+  </div>
+
+  <div
+    style={{
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "10px",
+      alignItems: "stretch",
+    }}
+  >
+    <input
+      value={projectName}
+      maxLength={120}
+      className="input"
+      aria-required="true"
+      placeholder={
+        locale === "it"
+          ? "es. Appartamento 4.5 locali a Winterthur"
+          : locale === "fr"
+            ? "p. ex. Appartement 4.5 pièces à Winterthur"
+            : locale === "en"
+              ? "e.g. 4.5-room apartment in Winterthur"
+              : "z. B. 4.5 Zimmer Wohnung in Winterthur"
+      }
+      onChange={(event) =>
+        setProjectName(event.target.value)
+      }
+      style={{
+        flex: "1 1 260px",
+        minWidth: 0,
+      }}
+    />
+
+    <button
+      type="button"
+      disabled={
+        !location.trim() &&
+        !propertyType.trim() &&
+        !rooms.trim()
+      }
+      onClick={() => {
+        const connector =
+          locale === "fr"
+            ? "à"
+            : locale === "it"
+              ? "a"
+              : "in";
+
+        const suggestion = [
+          rooms.trim()
+            ? `${rooms.trim()} ${t("fields.rooms")}`
+            : "",
+          propertyType.trim(),
+          location.trim()
+            ? `${connector} ${location.trim()}`
+            : "",
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+        if (suggestion) {
+          setProjectName(suggestion);
+        }
+      }}
+      style={{
+        flex: "0 0 auto",
+        minHeight: "46px",
+        padding: "0 14px",
+        border:
+          "1px solid rgba(251,191,36,0.48)",
+        borderRadius: "12px",
+        background:
+          "rgba(251,191,36,0.10)",
+        color: "#fbbf24",
+        fontWeight: 900,
+        cursor: "pointer",
+      }}
+    >
+      {locale === "it"
+        ? "Usa suggerimento"
+        : locale === "fr"
+          ? "Utiliser la suggestion"
+          : locale === "en"
+            ? "Use suggestion"
+            : "Vorschlag übernehmen"}
+    </button>
+  </div>
+
+  <div
+    style={{
+      marginTop: "9px",
+      color: "rgba(226,232,240,0.58)",
+      fontSize: "11px",
+      lineHeight: 1.45,
+    }}
+  >
+    {locale === "it"
+      ? "Questo nome apparirà in «I miei progetti»."
+      : locale === "fr"
+        ? "Ce nom apparaîtra dans «Mes projets»."
+        : locale === "en"
+          ? "This name will appear under “My projects”."
+          : "Dieser Name erscheint später unter «Meine Projekte»."}
+  </div>
+</div>
 <div className="actions">
   <div className="mainActions">
     <button
@@ -2618,6 +2835,7 @@ return (
   onClick={saveListingAndOpenCockpit}
   disabled={
     savingListing ||
+    projectName.trim().length < 3 ||
     !location.trim() ||
     !propertyType.trim()
   }

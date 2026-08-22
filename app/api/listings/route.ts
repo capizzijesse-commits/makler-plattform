@@ -147,6 +147,32 @@ export async function POST(request: NextRequest) {
         ? body.propertyType.trim()
         : "";
 
+    const projectName =
+      typeof body.projectName === "string"
+        ? body.projectName.trim()
+        : "";
+
+    if (projectName.length < 3) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Bitte gib dem Projekt einen Namen mit mindestens 3 Zeichen.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (projectName.length > 120) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Der Projektname darf maximal 120 Zeichen enthalten.",
+        },
+        { status: 400 }
+      );
+    }
     if (!location || !propertyType) {
       return NextResponse.json(
         {
@@ -172,6 +198,7 @@ export async function POST(request: NextRequest) {
         unlockStatus: usesSingleObjectPayment
           ? "locked"
           : "included",
+        projectName,
         location,
         postalCode: optionalText(body.postalCode),
         propertyType,

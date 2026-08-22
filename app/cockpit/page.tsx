@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { type ChangeEvent, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 type ListingImage = {
   id: string;
@@ -124,6 +124,7 @@ export default function CockpitPage() {
 
   const [userName, setUserName] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [companyLogoPreview, setCompanyLogoPreview] = useState("");
   const [currentDate, setCurrentDate] = useState("");
 
   const [listings, setListings] = useState<Listing[]>([]);
@@ -343,6 +344,10 @@ useEffect(() => {
           ? data.user.company.trim()
           : "";
 
+      const accountLogoUrl =
+        typeof data?.user?.companyLogoUrl === "string"
+          ? data.user.companyLogoUrl.trim()
+          : "";
       if (accountName) {
         setUserName(accountName);
 
@@ -353,6 +358,22 @@ useEffect(() => {
       }
 
       setCompanyName(accountCompany);
+
+
+      setCompanyLogoPreview(
+        (current) => {
+          if (
+            current &&
+            current.startsWith("blob:")
+          ) {
+            URL.revokeObjectURL(
+              current
+            );
+          }
+
+          return accountLogoUrl;
+        }
+      );
 
       localStorage.setItem(
         "companyName",
@@ -501,7 +522,154 @@ useEffect(() => {
     );
   }
 
-  return (
+    async function handleCompanyLogoChange(
+    event: ChangeEvent<HTMLInputElement>
+  ) {
+    const input =
+      event.currentTarget;
+
+    const file =
+      input.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+
+    const allowedTypes =
+      new Set([
+        "image/png",
+        "image/jpeg",
+        "image/webp",
+      ]);
+
+
+    if (
+      !allowedTypes.has(file.type) ||
+      file.size <= 0 ||
+      file.size > 2 * 1024 * 1024
+    ) {
+      input.value = "";
+
+      console.warn(
+        "FIRMENLOGO: Nur PNG, JPG oder WebP bis 2 MB."
+      );
+
+      return;
+    }
+
+
+    input.disabled = true;
+
+    const previousLogo =
+      companyLogoPreview;
+
+    const localPreview =
+      URL.createObjectURL(file);
+
+
+    setCompanyLogoPreview(
+      localPreview
+    );
+
+
+    try {
+      const formData =
+        new FormData();
+
+      formData.append(
+        "file",
+        file
+      );
+
+
+      const response =
+        await fetch(
+          "/api/account/logo",
+          {
+            method: "POST",
+            credentials: "include",
+            body: formData,
+          }
+        );
+
+
+      const data =
+        (await response
+          .json()
+          .catch(() => null)) as
+          | {
+              success?: boolean;
+              logoUrl?: unknown;
+              error?: unknown;
+            }
+          | null;
+
+
+      const savedLogoUrl =
+        typeof data?.logoUrl === "string"
+          ? data.logoUrl.trim()
+          : "";
+
+
+      if (
+        !response.ok ||
+        data?.success !== true ||
+        !savedLogoUrl
+      ) {
+        throw new Error(
+          typeof data?.error === "string"
+            ? data.error
+            : "Firmenlogo konnte nicht gespeichert werden."
+        );
+      }
+
+
+      setCompanyLogoPreview(
+        savedLogoUrl
+      );
+
+
+      if (
+        previousLogo &&
+        previousLogo.startsWith("blob:")
+      ) {
+        URL.revokeObjectURL(
+          previousLogo
+        );
+      }
+
+
+      URL.revokeObjectURL(
+        localPreview
+      );
+
+    } catch (error) {
+
+      URL.revokeObjectURL(
+        localPreview
+      );
+
+
+      setCompanyLogoPreview(
+        previousLogo
+      );
+
+
+      console.error(
+        "FIRMENLOGO UPLOAD FEHLER:",
+        error
+      );
+
+    } finally {
+
+      input.disabled = false;
+      input.value = "";
+
+    }
+  }
+
+return (
     <main className="cockpitPage">
       <div className="pageGlow pageGlowOne" />
       <div className="pageGlow pageGlowTwo" />
@@ -549,14 +717,6 @@ justifySelf: "start",
   </strong>
 </div>
 
-          <div className="topbarActions">
-            <div className="userBadge">
-              {(companyName || userName)
-                .charAt(0)
-                .toUpperCase()}
-            </div>
-          </div>
-
           <div className="cockpitTopbarBrandRow">
 
             <div className="cockpitTopbarIntegratedHero">
@@ -573,7 +733,7 @@ justifySelf: "start",
 
 
             <div
-              className="cockpitCompanyLogoSlot"
+              className={`cockpitCompanyLogoSlot ${companyLogoPreview ? "hasLogo" : ""}`}
               aria-label={
                 locale === "it"
                   ? "Logo aziendale"
@@ -584,9 +744,61 @@ justifySelf: "start",
                       : "Firmenlogo"
               }
             >
-              <div className="cockpitCompanyLogoIcon">
-                ◇
-              </div>
+              {companyLogoPreview && (
+                <div
+                  className="cockpitCompanyLogoBackdrop"
+                  style={{
+                    backgroundImage:
+                      `url("${companyLogoPreview}")`,
+                  }}
+                  aria-hidden="true"
+                />
+              )}
+
+              <label
+                htmlFor="cockpit-company-logo-input"
+                className="cockpitCompanyLogoPicker"
+                title={
+                  locale === "it"
+                    ? "Seleziona logo"
+                    : locale === "fr"
+                      ? "Choisir le logo"
+                      : locale === "en"
+                        ? "Choose logo"
+                        : "Logo auswählen"
+                }
+              >
+                {companyLogoPreview ? (
+                  <img
+                    src={companyLogoPreview}
+                    alt={
+                      locale === "it"
+                        ? "Anteprima logo aziendale"
+                        : locale === "fr"
+                          ? "Aperçu du logo"
+                          : locale === "en"
+                            ? "Company logo preview"
+                            : "Firmenlogo Vorschau"
+                    }
+                    className="cockpitCompanyLogoPreview"
+                  />
+                ) : (
+                  <span
+                    className="cockpitCompanyLogoIcon"
+                    aria-hidden="true"
+                  >
+                    +
+                  </span>
+                )}
+
+                <input
+                  id="cockpit-company-logo-input"
+                  className="cockpitCompanyLogoInput"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={handleCompanyLogoChange}
+                />
+              </label>
 
               <div className="cockpitCompanyLogoText">
                 <strong>
@@ -8088,6 +8300,932 @@ justifySelf: "start",
 
     background-repeat:
       no-repeat !important;
+  }
+
+}
+
+`}</style>
+<style jsx global>{`
+/* =========================================================
+   INSERAT-AI COMPANY LOGO PICKER V22
+   Klickbares Symbol öffnet lokale Dateien
+   ========================================================= */
+
+.cockpitCompanyLogoPicker {
+  position: relative !important;
+
+  display: grid !important;
+
+  width: 54px !important;
+  height: 54px !important;
+
+  flex: none !important;
+
+  place-items: center !important;
+
+  overflow: hidden !important;
+
+  border:
+    1px solid rgba(251,191,36,0.42) !important;
+
+  border-radius:
+    15px !important;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(251,191,36,0.12),
+      rgba(255,255,255,0.035)
+    ) !important;
+
+  cursor: pointer !important;
+
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease !important;
+}
+
+
+.cockpitCompanyLogoPicker:hover {
+  transform:
+    translateY(-2px) scale(1.03) !important;
+
+  border-color:
+    rgba(251,191,36,0.82) !important;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(251,191,36,0.20),
+      rgba(255,255,255,0.055)
+    ) !important;
+
+  box-shadow:
+    0 10px 25px rgba(245,158,11,0.16) !important;
+}
+
+
+/* Plus / Upload Symbol */
+
+.cockpitCompanyLogoPicker
+.cockpitCompanyLogoIcon {
+  display: grid !important;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  place-items: center !important;
+
+  border: 0 !important;
+
+  border-radius: 0 !important;
+
+  background: transparent !important;
+
+  color:
+    #fbbf24 !important;
+
+  font-size:
+    27px !important;
+
+  font-weight:
+    400 !important;
+
+  line-height:
+    1 !important;
+}
+
+
+/* echter File Input unsichtbar */
+
+.cockpitCompanyLogoInput {
+  position: absolute !important;
+
+  width: 1px !important;
+  height: 1px !important;
+
+  opacity: 0 !important;
+
+  pointer-events: none !important;
+}
+
+
+/* ausgewähltes Logo */
+
+.cockpitCompanyLogoPreview {
+  display: block !important;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  object-fit: contain !important;
+
+  padding: 6px !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* ganzer Firmenlogo-Bereich wirkt interaktiv */
+
+.cockpitCompanyLogoSlot {
+  align-items: center !important;
+}
+
+
+/* Mobile */
+
+@media (max-width: 700px) {
+
+  .cockpitCompanyLogoPicker {
+    width: 46px !important;
+    height: 46px !important;
+
+    border-radius:
+      13px !important;
+  }
+
+}
+
+`}</style>
+<style jsx global>{`
+/* =========================================================
+   INSERAT-AI COMPANY LOGO FULL BLOCK V23
+   Logo deckt bei Auswahl den ganzen Block
+   ========================================================= */
+
+
+/* Standard */
+.cockpitCompanyLogoSlot {
+  position: relative !important;
+
+  overflow: hidden !important;
+}
+
+
+/* =========================================================
+   WENN LOGO VORHANDEN: GANZER BLOCK = LOGO
+   ========================================================= */
+
+.cockpitCompanyLogoSlot.hasLogo {
+  position: relative !important;
+
+  padding: 0 !important;
+
+  overflow: hidden !important;
+}
+
+
+.cockpitCompanyLogoSlot.hasLogo .cockpitCompanyLogoPicker {
+  position: absolute !important;
+
+  inset: 0 !important;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  display: block !important;
+
+  border: 0 !important;
+
+  border-radius: inherit !important;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(8,18,48,0.20),
+      rgba(14,20,54,0.10)
+    ) !important;
+
+  box-shadow: none !important;
+}
+
+
+/* Das eigentliche Logo füllt die komplette Karte */
+.cockpitCompanyLogoSlot.hasLogo .cockpitCompanyLogoPreview {
+  display: block !important;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  object-fit: contain !important;
+
+  padding: 18px 22px !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* Text ausblenden, damit das Logo wirklich die ganze Karte dominiert */
+.cockpitCompanyLogoSlot.hasLogo strong,
+.cockpitCompanyLogoSlot.hasLogo span,
+.cockpitCompanyLogoSlot.hasLogo p,
+.cockpitCompanyLogoSlot.hasLogo .cockpitCompanyLogoText {
+  display: none !important;
+}
+
+
+/* sanfter Hover */
+.cockpitCompanyLogoSlot.hasLogo .cockpitCompanyLogoPicker:hover {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(251,191,36,0.06),
+      rgba(255,255,255,0.02)
+    ) !important;
+}
+
+
+/* Optionaler Hinweis beim Hover */
+.cockpitCompanyLogoSlot.hasLogo .cockpitCompanyLogoPicker::after {
+  content: "Logo ändern" !important;
+
+  position: absolute !important;
+
+  right: 14px !important;
+  bottom: 12px !important;
+
+  padding: 6px 10px !important;
+
+  border: 1px solid rgba(251,191,36,0.35) !important;
+  border-radius: 999px !important;
+
+  background: rgba(7,18,45,0.74) !important;
+
+  color: #fbbf24 !important;
+
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+
+  opacity: 0 !important;
+
+  transform: translateY(4px) !important;
+
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease !important;
+
+  pointer-events: none !important;
+}
+
+.cockpitCompanyLogoSlot.hasLogo:hover .cockpitCompanyLogoPicker::after {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+
+/* Wenn noch KEIN Logo da ist, bleibt der kleine Picker wie bisher */
+.cockpitCompanyLogoSlot:not(.hasLogo) .cockpitCompanyLogoPicker {
+  position: relative !important;
+}
+
+
+/* Mobile */
+@media (max-width: 700px) {
+
+  .cockpitCompanyLogoSlot.hasLogo .cockpitCompanyLogoPreview {
+    padding: 14px 16px !important;
+  }
+
+  .cockpitCompanyLogoSlot.hasLogo .cockpitCompanyLogoPicker::after {
+    font-size: 10px !important;
+    right: 10px !important;
+    bottom: 10px !important;
+  }
+
+}
+
+`}</style>
+<style jsx global>{`
+/* =========================================================
+   INSERAT-AI COMPANY LOGO FULL BLOCK V24
+   Logo deckt den ganzen Firmenlogo-Block
+   ========================================================= */
+
+.cockpitCompanyLogoSlot {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+
+/* =========================================================
+   WENN LOGO VORHANDEN
+   ========================================================= */
+
+.cockpitCompanyLogoSlot.hasLogo {
+  padding: 0 !important;
+  overflow: hidden !important;
+  border-radius: 24px !important;
+}
+
+
+/* ganzer Block klickbar */
+.cockpitCompanyLogoSlot.hasLogo .cockpitCompanyLogoPicker {
+  position: absolute !important;
+  inset: 0 !important;
+
+  display: block !important;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  border: 0 !important;
+  border-radius: inherit !important;
+
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+
+/* Logo füllt wirklich den kompletten Block */
+.cockpitCompanyLogoSlot.hasLogo .cockpitCompanyLogoPreview {
+  position: absolute !important;
+  inset: 0 !important;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  display: block !important;
+
+  object-fit: cover !important;
+  object-position: center center !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  border-radius: inherit !important;
+
+  background: #081736 !important;
+}
+
+
+/* eventuelle Wrapper ebenfalls vollflächig */
+.cockpitCompanyLogoSlot.hasLogo .cockpitCompanyLogoImageWrap,
+.cockpitCompanyLogoSlot.hasLogo .cockpitCompanyLogoPreviewWrap {
+  position: absolute !important;
+  inset: 0 !important;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+
+/* Text + kleines Symbol ausblenden */
+.cockpitCompanyLogoSlot.hasLogo strong,
+.cockpitCompanyLogoSlot.hasLogo span,
+.cockpitCompanyLogoSlot.hasLogo p,
+.cockpitCompanyLogoSlot.hasLogo .cockpitCompanyLogoText,
+.cockpitCompanyLogoSlot.hasLogo .cockpitCompanyLogoIcon {
+  display: none !important;
+}
+
+
+/* leichter dunkler Overlay für Premium-Look */
+.cockpitCompanyLogoSlot.hasLogo::after {
+  content: "" !important;
+
+  position: absolute !important;
+  inset: 0 !important;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(6,16,44,0.10),
+      rgba(10,18,48,0.22)
+    ) !important;
+
+  pointer-events: none !important;
+}
+
+
+/* kleiner Hinweis beim Hover */
+.cockpitCompanyLogoSlot.hasLogo::before {
+  content: "Logo ändern" !important;
+
+  position: absolute !important;
+  right: 14px !important;
+  bottom: 12px !important;
+
+  z-index: 3 !important;
+
+  padding: 6px 10px !important;
+
+  border: 1px solid rgba(251,191,36,0.35) !important;
+  border-radius: 999px !important;
+
+  background: rgba(7,18,45,0.72) !important;
+
+  color: #fbbf24 !important;
+
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+
+  opacity: 0 !important;
+  transform: translateY(4px) !important;
+
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease !important;
+
+  pointer-events: none !important;
+}
+
+.cockpitCompanyLogoSlot.hasLogo:hover::before {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+
+/* wenn noch KEIN Logo da ist -> normales Verhalten behalten */
+.cockpitCompanyLogoSlot:not(.hasLogo) .cockpitCompanyLogoPicker {
+  position: relative !important;
+}
+
+
+/* mobile */
+@media (max-width: 700px) {
+
+  .cockpitCompanyLogoSlot.hasLogo {
+    border-radius: 18px !important;
+  }
+
+  .cockpitCompanyLogoSlot.hasLogo::before {
+    right: 10px !important;
+    bottom: 10px !important;
+    font-size: 10px !important;
+  }
+
+}
+
+`}</style>
+<style jsx global>{`
+/* =========================================================
+   INSERAT-AI COMPANY LOGO CENTER V27
+   Firmenlogo rechts im gesamten Header zentriert
+   ========================================================= */
+
+@media (min-width: 701px) {
+
+  /*
+   * BrandRow bleibt für Inserat-AI zuständig,
+   * dient aber nicht mehr als Bezugspunkt des Logo-Blocks.
+   */
+  .cockpitTopbarBrandRow {
+    position: static !important;
+  }
+
+
+  /*
+   * Firmenlogo exakt mittig auf der rechten Seite
+   * des kompletten Skyline-Headers.
+   */
+  .cockpitCompanyLogoSlot {
+    position: absolute !important;
+
+    top: 50% !important;
+    right: 32px !important;
+
+    width: 250px !important;
+
+    margin: 0 !important;
+
+    transform:
+      translateY(-50%) !important;
+
+    z-index: 6 !important;
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE BLEIBT IM NORMALEN FLOW
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+  .cockpitTopbarBrandRow {
+    position: relative !important;
+  }
+
+  .cockpitCompanyLogoSlot {
+    position: relative !important;
+
+    top: auto !important;
+    right: auto !important;
+
+    width: 100% !important;
+
+    margin: 0 !important;
+
+    transform: none !important;
+  }
+
+}
+
+`}</style>
+<style jsx global>{`
+/* =========================================================
+   INSERAT-AI COMPANY LOGO PREMIUM V28
+   Vollflächiges Branding ohne Abschneiden
+   ========================================================= */
+
+@media (min-width: 701px) {
+
+  .cockpitCompanyLogoSlot.hasLogo {
+    width: 280px !important;
+
+    min-height: 128px !important;
+    height: 128px !important;
+
+    padding: 0 !important;
+
+    overflow: hidden !important;
+
+    border:
+      1px solid rgba(251,191,36,0.34) !important;
+
+    border-radius:
+      22px !important;
+
+    background:
+      #06122d !important;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.06),
+      0 18px 40px rgba(0,0,0,0.24) !important;
+  }
+
+}
+
+
+/* =========================================================
+   WEICHER VOLLFLÄCHIGER HINTERGRUND
+   ========================================================= */
+
+.cockpitCompanyLogoBackdrop {
+  position: absolute !important;
+
+  inset: -16px !important;
+
+  z-index: 0 !important;
+
+  background-size:
+    cover !important;
+
+  background-position:
+    center center !important;
+
+  background-repeat:
+    no-repeat !important;
+
+  filter:
+    blur(18px)
+    brightness(0.42)
+    saturate(1.25) !important;
+
+  opacity:
+    0.82 !important;
+
+  transform:
+    scale(1.14) !important;
+
+  pointer-events:
+    none !important;
+}
+
+
+/* dunkle Premium-Ebene */
+
+.cockpitCompanyLogoSlot.hasLogo::after {
+  content: "" !important;
+
+  position: absolute !important;
+
+  inset: 0 !important;
+
+  z-index: 1 !important;
+
+  display: block !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(5,14,38,0.24),
+      rgba(8,15,42,0.46)
+    ) !important;
+
+  pointer-events:
+    none !important;
+}
+
+
+/* =========================================================
+   ALTE AMBER-LINIE / LOGO-ÄNDERN TEXTE ENTFERNEN
+   ========================================================= */
+
+.cockpitCompanyLogoSlot.hasLogo::before {
+  content: none !important;
+  display: none !important;
+}
+
+
+.cockpitCompanyLogoSlot.hasLogo
+.cockpitCompanyLogoPicker::after {
+  content: none !important;
+  display: none !important;
+}
+
+
+/* =========================================================
+   GANZER BLOCK BLEIBT KLICKBAR
+   ========================================================= */
+
+.cockpitCompanyLogoSlot.hasLogo
+.cockpitCompanyLogoPicker {
+  position: absolute !important;
+
+  inset: 0 !important;
+
+  z-index: 3 !important;
+
+  display: block !important;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+
+  border-radius:
+    inherit !important;
+
+  background:
+    transparent !important;
+
+  box-shadow:
+    none !important;
+
+  cursor:
+    pointer !important;
+
+  transform:
+    none !important;
+}
+
+
+/* =========================================================
+   EIGENTLICHES LOGO
+   ========================================================= */
+
+.cockpitCompanyLogoSlot.hasLogo
+.cockpitCompanyLogoPreview {
+  position: absolute !important;
+
+  inset: 0 !important;
+
+  z-index: 3 !important;
+
+  display: block !important;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  box-sizing:
+    border-box !important;
+
+  padding:
+    10px 18px !important;
+
+  margin:
+    0 !important;
+
+  object-fit:
+    contain !important;
+
+  object-position:
+    center center !important;
+
+  border-radius:
+    inherit !important;
+
+  background:
+    transparent !important;
+
+  filter:
+    drop-shadow(
+      0 8px 18px rgba(0,0,0,0.28)
+    ) !important;
+}
+
+
+/* Text komplett weg */
+
+.cockpitCompanyLogoSlot.hasLogo
+.cockpitCompanyLogoText,
+.cockpitCompanyLogoSlot.hasLogo
+.cockpitCompanyLogoIcon {
+  display: none !important;
+}
+
+
+/* dezenter Hover statt Schrift */
+
+.cockpitCompanyLogoSlot.hasLogo:hover {
+  border-color:
+    rgba(251,191,36,0.62) !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 20px 44px rgba(0,0,0,0.26),
+    0 0 0 1px rgba(251,191,36,0.05) !important;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+  .cockpitCompanyLogoSlot.hasLogo {
+    width: 100% !important;
+
+    min-height: 100px !important;
+    height: 100px !important;
+
+    border-radius:
+      18px !important;
+  }
+
+
+  .cockpitCompanyLogoSlot.hasLogo
+  .cockpitCompanyLogoPreview {
+    padding:
+      8px 14px !important;
+  }
+
+}
+
+`}</style>
+<style jsx global>{`
+/* =========================================================
+   INSERAT-AI COMPANY LOGO CENTER V29
+   Logo-Block exakt mittig in der rechten Header-Hälfte
+   ========================================================= */
+
+@media (min-width: 701px) {
+
+  .cockpitCompanyLogoSlot {
+    position: absolute !important;
+
+    top: 50% !important;
+    left: 75% !important;
+    right: auto !important;
+
+    width: 280px !important;
+
+    margin: 0 !important;
+
+    transform:
+      translate(-50%, -50%) !important;
+
+    z-index: 6 !important;
+  }
+
+
+  .cockpitCompanyLogoSlot.hasLogo {
+    top: 50% !important;
+    left: 75% !important;
+    right: auto !important;
+
+    transform:
+      translate(-50%, -50%) !important;
+  }
+
+}
+
+
+/* Mobile bleibt normal im Layout */
+
+@media (max-width: 700px) {
+
+  .cockpitCompanyLogoSlot,
+  .cockpitCompanyLogoSlot.hasLogo {
+    position: relative !important;
+
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+
+    width: 100% !important;
+
+    transform: none !important;
+  }
+
+}
+
+`}</style>
+<style jsx global>{`
+/* =========================================================
+   INSERAT-AI COMPANY LOGO POSITION V30
+   Alte Rechtsposition + etwas weiter nach oben
+   ========================================================= */
+
+@media (min-width: 701px) {
+
+  .cockpitCompanyLogoSlot,
+  .cockpitCompanyLogoSlot.hasLogo {
+
+    position:
+      absolute !important;
+
+    /* wieder wie vorher rechts */
+    left:
+      auto !important;
+
+    right:
+      32px !important;
+
+    /* nur vertikal weiter nach oben */
+    top:
+      42% !important;
+
+    margin:
+      0 !important;
+
+    transform:
+      translateY(-50%) !important;
+
+    z-index:
+      6 !important;
+  }
+
+}
+
+
+/* Mobile bleibt unverändert */
+
+@media (max-width: 700px) {
+
+  .cockpitCompanyLogoSlot,
+  .cockpitCompanyLogoSlot.hasLogo {
+
+    position:
+      relative !important;
+
+    top:
+      auto !important;
+
+    left:
+      auto !important;
+
+    right:
+      auto !important;
+
+    width:
+      100% !important;
+
+    transform:
+      none !important;
+  }
+
+}
+
+`}</style>
+<style jsx global>{`
+/* =========================================================
+   INSERAT-AI COMPANY LOGO HIGHER V31
+   Firmenlogo weiter nach oben
+   ========================================================= */
+
+@media (min-width: 701px) {
+
+  .cockpitCompanyLogoSlot,
+  .cockpitCompanyLogoSlot.hasLogo {
+
+    position: absolute !important;
+    right: 32px !important;
+    left: auto !important;
+
+    /* vorher 42%, jetzt deutlich höher */
+    top: 34% !important;
+
+    margin: 0 !important;
+    transform: translateY(-50%) !important;
+    z-index: 6 !important;
   }
 
 }

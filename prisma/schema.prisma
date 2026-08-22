@@ -14,6 +14,8 @@ model User {
   email               String  @unique
   company             String?
   phone               String?
+  companyLogoUrl      String?
+  companyLogoPathname String?
   password            String
   role                String  @default("user")
   plan                String  @default("free")
@@ -51,6 +53,7 @@ model Listing {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  projectName  String?
   location     String
   postalCode   String?
   propertyType String

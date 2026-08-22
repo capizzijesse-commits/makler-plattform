@@ -30,7 +30,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({
+        const accountLogo =
+      await prisma.user.findUnique({
+        where: {
+          id: user.id,
+        },
+        select: {
+          companyLogoUrl: true,
+        },
+      });
+return NextResponse.json({
       success: true,
       user: {
         id: user.id,
@@ -38,6 +47,8 @@ export async function GET(request: NextRequest) {
         email: user.email,
         company: user.company,
         phone: user.phone,
+
+        companyLogoUrl: accountLogo?.companyLogoUrl ?? null,
         plan: user.plan,
       },
     });
@@ -131,6 +142,8 @@ export async function PATCH(request: NextRequest) {
         email: true,
         company: true,
         phone: true,
+
+        companyLogoUrl: true,
         plan: true,
       },
     });
