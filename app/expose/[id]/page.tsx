@@ -2622,6 +2622,104 @@ function ExposeStyles() {
         }
       }
 
+      /* =====================================================
+         INSERAT-AI - EXPOSE DESKTOP PREVIEW V2
+         Web-Vorschau groesser + Abschlussseite klarer
+         PDF / Print bleibt separat
+         ===================================================== */
+
+      @media screen {
+
+        /* Die dekorative Radar-/Pin-Grafik liefert in der
+           Browser-Vorschau keinen zusätzlichen Mehrwert. */
+        .final-sheet .location-visual {
+          display: none;
+        }
+
+        /* Lage wird zu einem kompakten Informationsblock. */
+        .final-sheet .location-panel {
+          min-height: 0;
+        }
+
+        .final-sheet .location-panel > p {
+          margin-top: 4mm;
+          font-size: 9px;
+          line-height: 1.6;
+        }
+      }
+
+      @media screen and (min-width: 851px) {
+
+        /* Abschlussseite nicht mehr 50/50 zusammendrücken. */
+        .final-sheet .final-dashboard {
+          grid-template-columns: 1fr;
+          gap: 6mm;
+        }
+
+        .final-sheet .feature-panel {
+          min-height: 0;
+          padding: 8mm;
+        }
+
+        .final-sheet .location-panel {
+          padding: 6mm 8mm;
+        }
+
+        /* Highlights über die ganze Breite. */
+        .final-sheet .feature-chip-grid {
+          grid-template-columns:
+            repeat(
+              3,
+              minmax(0, 1fr)
+            );
+
+          gap: 4mm;
+          margin-top: 7mm;
+        }
+
+        .final-sheet .feature-chip {
+          min-height: 22mm;
+          padding: 4mm;
+
+          grid-template-columns:
+            10mm
+            minmax(0, 1fr);
+
+          gap: 3mm;
+        }
+
+        .final-sheet .feature-chip__check {
+          width: 10mm;
+          height: 10mm;
+
+          font-size: 8px;
+        }
+
+        .final-sheet .feature-chip p {
+          font-size: 9px;
+          line-height: 1.45;
+        }
+
+        .final-sheet .panel-heading h3 {
+          font-size: 18px;
+        }
+      }
+
+      /* Auf grossen Desktop-Bildschirmen wird die komplette
+         A4-Vorschau proportional groesser dargestellt.
+         Das gilt NICHT beim Drucken. */
+      @media screen and (min-width: 1180px) {
+
+        .preview-canvas {
+          gap: 42px;
+          padding-top: 32px;
+          padding-bottom: 72px;
+        }
+
+        .preview-canvas .sheet {
+          zoom: 1.28;
+        }
+      }
       @page {
         size: A4;
         margin: 0;
