@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import PrivacyModeButton from "../../components/PrivacyModeButton";
 import LanguageSwitcher from "@/app/components/LanguageSwitcher";
@@ -191,6 +191,16 @@ export default function Navbar() {
   const [sessionStatus, setSessionStatus] =
     useState<SessionStatus>("loading");
 
+  // GLOBAL_NAVBAR_AUTO_HIDE_V1
+  const [navbarVisible, setNavbarVisible] =
+    useState(true);
+
+  const lastScrollYRef =
+    useRef(0);
+
+  const navbarScrollTickingRef =
+    useRef(false);
+
  const isLoggedInArea =
   pathname?.startsWith("/dashboard") ||
   pathname?.startsWith("/cockpit") ||
@@ -220,7 +230,79 @@ export default function Navbar() {
 
   useEffect(() => {
     setMenuOpen(false);
+    setNavbarVisible(true);
   }, [pathname]);
+
+  useEffect(() => {
+    if (menuOpen) {
+      setNavbarVisible(true);
+      return;
+    }
+
+    const SHOW_TOP = 16;
+    const HIDE_AFTER = 90;
+    const DIRECTION_DELTA = 4;
+
+    lastScrollYRef.current =
+      Math.max(window.scrollY, 0);
+
+    const handleScroll = () => {
+      if (navbarScrollTickingRef.current) {
+        return;
+      }
+
+      navbarScrollTickingRef.current = true;
+
+      window.requestAnimationFrame(() => {
+        const currentY =
+          Math.max(window.scrollY, 0);
+
+        const previousY =
+          lastScrollYRef.current;
+
+        if (currentY <= SHOW_TOP) {
+          setNavbarVisible(true);
+        }
+        else if (
+          currentY > HIDE_AFTER &&
+          currentY >
+            previousY + DIRECTION_DELTA
+        ) {
+          setNavbarVisible(false);
+        }
+        else if (
+          currentY <
+            previousY - DIRECTION_DELTA
+        ) {
+          setNavbarVisible(true);
+        }
+
+        lastScrollYRef.current =
+          currentY;
+
+        navbarScrollTickingRef.current =
+          false;
+      });
+    };
+
+    window.addEventListener(
+      "scroll",
+      handleScroll,
+      {
+        passive: true,
+      }
+    );
+
+    return () => {
+      window.removeEventListener(
+        "scroll",
+        handleScroll
+      );
+
+      navbarScrollTickingRef.current =
+        false;
+    };
+  }, [menuOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -378,7 +460,11 @@ export default function Navbar() {
           isLoggedInArea
             ? "appLoggedInNavbar"
             : "appPublicNavbar"
-        } ${moduleClass}`}
+        } ${moduleClass} ${
+          navbarVisible || menuOpen
+            ? "appNavbarVisible"
+            : "appNavbarHidden"
+        }`}
       >
         <div className="siteNavbarInner appCentralNavbarInner">
           <Link
