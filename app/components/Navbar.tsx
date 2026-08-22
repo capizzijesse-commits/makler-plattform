@@ -81,6 +81,16 @@ export default function Navbar() {
   const pathname = usePathname();
   const t = useTranslations("Navbar");
 
+  // INSERAT_AI_HOME_STAGING_NAVBAR_V2
+  const homeStagingListingMatch =
+    pathname?.match(
+      /^\/cockpit\/([^/]+)/
+    );
+
+  const homeStagingHref =
+    homeStagingListingMatch?.[1]
+      ? `/cockpit/${homeStagingListingMatch[1]}/home-staging`
+      : "/cockpit";
   const menuItems: MenuItem[] = [
     {
       label: t("items.dashboard.label"),
@@ -103,6 +113,13 @@ export default function Navbar() {
   href: "/marketing-hub",
   accent: "gold",
 },
+    {
+      label: t("items.valuations.label"),
+      description: t("items.valuations.description"),
+      icon: "\u{1F4CA}",
+      href: "/bewertungen",
+      accent: "gold",
+    },
     {
       label: t("items.about.label"),
       description: t("items.about.description"),
@@ -129,6 +146,14 @@ export default function Navbar() {
       description: t("items.tour.description"),
       icon: "\u{1F3AC}",
       href: "/dashboard/tour-guide",
+      accent: "cyan",
+      proOnly: true,
+    },
+    {
+      label: t("items.homeStaging.label"),
+      description: t("items.homeStaging.description"),
+      icon: "\u{1F6CB}\uFE0F",
+      href: homeStagingHref,
       accent: "cyan",
       proOnly: true,
     },
@@ -170,6 +195,7 @@ export default function Navbar() {
   pathname?.startsWith("/dashboard") ||
   pathname?.startsWith("/cockpit") ||
   pathname?.startsWith("/marketing-hub") ||
+  pathname?.startsWith("/bewertungen") ||
   pathname?.startsWith("/expose") ||
   pathname?.startsWith("/konto");
 

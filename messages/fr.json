@@ -55,6 +55,10 @@
         "label": "Marketing Hub",
         "description": "Planifier et piloter la commercialisation depuis un seul endroit"
       },
+      "valuations": {
+        "label": "Évaluations",
+        "description": "Gérer les évaluations immobilières enregistrées"
+      },
       "account": {
         "label": "Mon compte",
         "description": "Gérer les coordonnées pour les dossiers de vente"
@@ -66,6 +70,10 @@
       "tour": {
         "label": "Visite vidéo 3D",
         "description": "Créer des visites virtuelles"
+      },
+      "homeStaging": {
+        "label": "Home Staging virtuel",
+        "description": "Aménager et repenser virtuellement les pièces"
       },
       "publishing": {
         "label": "Centre de publication",
@@ -831,8 +839,8 @@
       "website": "Site web"
     },
     "country": "Suisse",
-   "product": "Inserat-AI est un produit de Capizzi Inserat AI Winterthur.",
-"productNotice": "Inserat-AI est un produit de Capizzi Inserat AI Winterthur."
+    "product": "Inserat-AI est un produit de Capizzi Inserat AI Winterthur.",
+    "productNotice": "Inserat-AI est un produit de Capizzi Inserat AI Winterthur."
   },
   "CockpitOverview": {
     "navigation": {
@@ -967,6 +975,130 @@
       "thumbnailsUp": "Faire défiler les aperçus vers le haut",
       "thumbnailsDown": "Faire défiler les aperçus vers le bas",
       "showImage": "Afficher l’image {index}"
+    }
+  },
+  "Valuations": {
+    "overview": {
+      "eyebrow": "ÉVALUATION IMMOBILIÈRE",
+      "title": "Mes évaluations",
+      "description": "Vos évaluations immobilières enregistrées, les caractéristiques des biens et les résultats de valeur de marché en un seul endroit.",
+      "total": "Total",
+      "completed": "Évaluées",
+      "open": "Ouvertes",
+      "emptyTitle": "Aucune évaluation",
+      "emptyText": "Dès que vous démarrez une évaluation immobilière, le dossier apparaît automatiquement ici.",
+      "firstValuation": "Démarrer la première évaluation",
+      "loadErrorTitle": "Les évaluations n’ont pas pu être chargées."
+    },
+    "status": {
+      "completed": "Évaluée",
+      "draft": "Évaluation préparée"
+    },
+    "actions": {
+      "open": "Ouvrir l’évaluation",
+      "back": "Mes évaluations",
+      "new": "Nouvelle évaluation",
+      "login": "Se connecter",
+      "revalue": "Réévaluer",
+      "revaluing": "Calcul de la valeur de marché …"
+    },
+    "auth": {
+      "eyebrow": "ESPACE PERSONNEL",
+      "title": "Veuillez d’abord vous connecter",
+      "overviewText": "Les évaluations enregistrées sont associées à votre compte Inserat-AI.",
+      "detailText": "Cette évaluation est associée à un compte Inserat-AI."
+    },
+    "fields": {
+      "propertyType": "Type de bien",
+      "livingArea": "Surface habitable",
+      "landArea": "Terrain",
+      "rooms": "Pièces",
+      "buildingYear": "Année de construction",
+      "renovationYear": "Dernière rénovation",
+      "condition": "État",
+      "standard": "Niveau de finition",
+      "floor": "Étage",
+      "lift": "Ascenseur",
+      "parking": "Stationnement",
+      "outdoorArea": "Espace extérieur",
+      "view": "Vue / situation"
+    },
+    "propertyTypes": {
+      "apartment": "Appartement en propriété",
+      "house": "Maison individuelle",
+      "rowHouse": "Maison mitoyenne",
+      "semiDetached": "Maison jumelée"
+    },
+    "conditions": {
+      "new": "Neuf / comme neuf",
+      "veryGood": "Très bon état",
+      "good": "Bon état",
+      "average": "État moyen",
+      "renovation": "À rénover"
+    },
+    "standards": {
+      "simple": "Simple",
+      "standard": "Standard",
+      "high": "Supérieur",
+      "luxury": "Luxe"
+    },
+    "parking": {
+      "none": "Aucune place de parc",
+      "outdoor": "Place extérieure",
+      "garage": "Garage",
+      "underground": "Parking souterrain",
+      "multiple": "Plusieurs places de parc"
+    },
+    "outdoor": {
+      "none": "Aucun espace extérieur",
+      "balcony": "Balcon",
+      "terrace": "Terrasse",
+      "garden": "Jardin",
+      "multiple": "Plusieurs espaces extérieurs"
+    },
+    "view": {
+      "normal": "Situation résidentielle normale",
+      "quiet": "Particulièrement calme",
+      "open": "Vue dégagée",
+      "mountain": "Vue sur les montagnes",
+      "lake": "Vue sur le lac / l’eau",
+      "premium": "Situation premium exceptionnelle"
+    },
+    "values": {
+      "yes": "Oui",
+      "no": "Non",
+      "notRelevant": "Non pertinent",
+      "notSpecified": "Non indiqué"
+    },
+    "detail": {
+      "eyebrow": "ÉVALUATION IMMOBILIÈRE",
+      "featuresTitle": "Caractéristiques du bien",
+      "unavailableTitle": "Évaluation indisponible",
+      "unavailableText": "L’évaluation n’a pas pu être chargée."
+    },
+    "pending": {
+      "eyebrow": "DONNÉES DE MARCHÉ",
+      "title": "Évaluation préparée",
+      "overviewText": "Le dossier d’évaluation a été enregistré en toute sécurité. Une valeur en CHF ne sera affichée qu’après une évaluation AVM réussie.",
+      "detailText": "Les données du bien ont été enregistrées en toute sécurité. Une valeur de marché en CHF ne sera affichée qu’après la connexion réussie d’un fournisseur AVM suisse vérifié.",
+      "notice": "Inserat-AI n’affiche volontairement aucune valeur CHF estimée sans source de données de marché vérifiée."
+    },
+    "market": {
+      "eyebrow": "VALEUR DE MARCHÉ",
+      "range": "Fourchette de valeur",
+      "pricePerSqm": "CHF / m²",
+      "confidence": "Qualité des données"
+    },
+    "confidence": {
+      "good": "Élevée",
+      "medium": "Moyenne",
+      "poor": "Limitée",
+      "unknown": "–"
+    },
+    "revalue": {
+      "success": "Le bien a été réévalué avec succès.",
+      "providerNotConfigured": "La connexion aux données de marché suisses est préparée mais pas encore activée.",
+      "error": "La réévaluation n’a pas pu être effectuée pour le moment."
     }
   }
 }

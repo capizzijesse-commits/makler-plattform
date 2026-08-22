@@ -55,6 +55,10 @@
         "label": "Marketing Hub",
         "description": "Plan and manage property marketing in one place"
       },
+      "valuations": {
+        "label": "Valuations",
+        "description": "Manage saved property valuations"
+      },
       "account": {
         "label": "My account",
         "description": "Manage contact details for property brochures"
@@ -66,6 +70,10 @@
       "tour": {
         "label": "3D video tour",
         "description": "Create virtual viewings"
+      },
+      "homeStaging": {
+        "label": "Virtual Home Staging",
+        "description": "Furnish and redesign rooms virtually"
       },
       "publishing": {
         "label": "Publishing center",
@@ -470,7 +478,7 @@
     }
   },
   "Footer": {
-   "product": "Inserat-AI is a product of Capizzi Inserat AI Winterthur.",
+    "product": "Inserat-AI is a product of Capizzi Inserat AI Winterthur.",
     "copyright": "© {year} Inserat-AI",
     "links": {
       "legalNotice": "Legal notice",
@@ -831,8 +839,8 @@
       "website": "Website"
     },
     "country": "Switzerland",
-   "product": "Inserat-AI is a product of Capizzi Inserat AI Winterthur.",
-"productNotice": "Inserat-AI is a product of Capizzi Inserat AI Winterthur."
+    "product": "Inserat-AI is a product of Capizzi Inserat AI Winterthur.",
+    "productNotice": "Inserat-AI is a product of Capizzi Inserat AI Winterthur."
   },
   "CockpitOverview": {
     "navigation": {
@@ -967,6 +975,130 @@
       "thumbnailsUp": "Move thumbnails up",
       "thumbnailsDown": "Move thumbnails down",
       "showImage": "Show property image {index}"
+    }
+  },
+  "Valuations": {
+    "overview": {
+      "eyebrow": "PROPERTY VALUATION",
+      "title": "My valuations",
+      "description": "Your saved property valuations, property details and market value results in one place.",
+      "total": "Total",
+      "completed": "Valued",
+      "open": "Open",
+      "emptyTitle": "No valuations yet",
+      "emptyText": "Once you start a property valuation, the case will automatically appear here.",
+      "firstValuation": "Start first valuation",
+      "loadErrorTitle": "Valuations could not be loaded."
+    },
+    "status": {
+      "completed": "Valued",
+      "draft": "Valuation prepared"
+    },
+    "actions": {
+      "open": "Open valuation",
+      "back": "My valuations",
+      "new": "New valuation",
+      "login": "Go to login",
+      "revalue": "Revalue property",
+      "revaluing": "Determining market value …"
+    },
+    "auth": {
+      "eyebrow": "PERSONAL AREA",
+      "title": "Please log in first",
+      "overviewText": "Saved valuations are linked to your Inserat-AI account.",
+      "detailText": "This valuation is linked to an Inserat-AI account."
+    },
+    "fields": {
+      "propertyType": "Property type",
+      "livingArea": "Living area",
+      "landArea": "Land area",
+      "rooms": "Rooms",
+      "buildingYear": "Year built",
+      "renovationYear": "Last renovation",
+      "condition": "Condition",
+      "standard": "Fit-out standard",
+      "floor": "Floor",
+      "lift": "Lift",
+      "parking": "Parking",
+      "outdoorArea": "Outdoor area",
+      "view": "View / location"
+    },
+    "propertyTypes": {
+      "apartment": "Condominium",
+      "house": "Detached house",
+      "rowHouse": "Terraced house",
+      "semiDetached": "Semi-detached house"
+    },
+    "conditions": {
+      "new": "New / like new",
+      "veryGood": "Very good condition",
+      "good": "Good condition",
+      "average": "Average condition",
+      "renovation": "In need of renovation"
+    },
+    "standards": {
+      "simple": "Basic",
+      "standard": "Standard",
+      "high": "High-end",
+      "luxury": "Luxury"
+    },
+    "parking": {
+      "none": "No parking",
+      "outdoor": "Outdoor parking space",
+      "garage": "Garage",
+      "underground": "Underground parking",
+      "multiple": "Multiple parking spaces"
+    },
+    "outdoor": {
+      "none": "No outdoor area",
+      "balcony": "Balcony",
+      "terrace": "Terrace",
+      "garden": "Garden",
+      "multiple": "Multiple outdoor areas"
+    },
+    "view": {
+      "normal": "Normal residential location",
+      "quiet": "Particularly quiet",
+      "open": "Open view",
+      "mountain": "Mountain view",
+      "lake": "Lake / water view",
+      "premium": "Exceptional premium location"
+    },
+    "values": {
+      "yes": "Yes",
+      "no": "No",
+      "notRelevant": "Not relevant",
+      "notSpecified": "Not specified"
+    },
+    "detail": {
+      "eyebrow": "PROPERTY VALUATION",
+      "featuresTitle": "Recorded property details",
+      "unavailableTitle": "Valuation unavailable",
+      "unavailableText": "The valuation could not be loaded."
+    },
+    "pending": {
+      "eyebrow": "MARKET DATA",
+      "title": "Valuation prepared",
+      "overviewText": "The valuation case has been securely saved. A CHF value will only be displayed after a successful AVM valuation.",
+      "detailText": "The property data has been securely saved. A CHF market value will only be displayed after a verified Swiss AVM provider has been successfully connected.",
+      "notice": "Inserat-AI deliberately does not display an estimated CHF value without a verified market data source."
+    },
+    "market": {
+      "eyebrow": "MARKET VALUE",
+      "range": "Market value range",
+      "pricePerSqm": "CHF / m²",
+      "confidence": "Data quality"
+    },
+    "confidence": {
+      "good": "High",
+      "medium": "Medium",
+      "poor": "Limited",
+      "unknown": "–"
+    },
+    "revalue": {
+      "success": "The property has been successfully revalued.",
+      "providerNotConfigured": "The Swiss market data connection is prepared but not yet activated.",
+      "error": "The property could not be revalued at this time."
     }
   }
 }

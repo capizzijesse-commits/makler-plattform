@@ -771,23 +771,6 @@ export default function ExposePreviewPage() {
                 </div>
               ))}
 
-              {galleryImages.length < 4 &&
-                Array.from({ length: 4 - galleryImages.length }).map(
-                  (_, index) => (
-                    <div
-                      className="gallery-thumb gallery-thumb--empty"
-                      key={`placeholder-${index}`}
-                    >
-                      <ImagePlaceholder label="Weitere Aufnahme" />
-                      <span>
-                        {String(galleryImages.length + index + 2).padStart(
-                          2,
-                          "0"
-                        )}
-                      </span>
-                    </div>
-                  )
-                )}
             </div>
           </div>
 
@@ -2773,6 +2756,122 @@ function ExposeStyles() {
           min-height: 116mm !important;
         }
       }
+
+      /* =====================================================
+         INSERAT-AI EXPOSE ADAPTIVE REAL IMAGE GALLERY V3
+         Nur echte Bilder + dynamisches Galerie-Layout
+         ===================================================== */
+
+      /* Kein Nebenbild vorhanden */
+      .gallery-side:not(:has(> .gallery-thumb)) {
+        display: none;
+      }
+
+      .gallery-dashboard:not(
+        :has(.gallery-side > .gallery-thumb)
+      ) {
+        grid-template-columns: 1fr;
+      }
+
+
+      /* 1 echtes Nebenbild */
+      .gallery-side:has(
+        > .gallery-thumb:only-child
+      ) {
+        grid-template-rows: 1fr;
+      }
+
+
+      /* 2 echte Nebenbilder */
+      .gallery-side:has(
+        > .gallery-thumb:nth-child(2):last-child
+      ) {
+        grid-template-rows:
+          repeat(2, minmax(0, 1fr));
+      }
+
+
+      /* 3 echte Nebenbilder */
+      .gallery-side:has(
+        > .gallery-thumb:nth-child(3):last-child
+      ) {
+        grid-template-rows:
+          repeat(3, minmax(0, 1fr));
+      }
+
+
+      /* MOBILE */
+      @media (max-width: 850px) {
+
+        .gallery-side:has(
+          > .gallery-thumb:only-child
+        ) {
+          grid-template-columns: 1fr;
+        }
+
+        .gallery-side:has(
+          > .gallery-thumb:only-child
+        )
+        > .gallery-thumb {
+          height: 52vw;
+          min-height: 190px;
+        }
+
+        .gallery-side:has(
+          > .gallery-thumb:nth-child(3):last-child
+        )
+        > .gallery-thumb:last-child {
+          grid-column: 1 / -1;
+        }
+
+      }
+
+
+      /* PDF / DRUCK */
+      @media print {
+
+        .gallery-dashboard:not(
+          :has(.gallery-side > .gallery-thumb)
+        ) {
+          grid-template-columns:
+            1fr !important;
+        }
+
+        .gallery-side:not(
+          :has(> .gallery-thumb)
+        ) {
+          display: none !important;
+        }
+
+        .gallery-side:has(
+          > .gallery-thumb:only-child
+        ) {
+          grid-template-rows:
+            1fr !important;
+        }
+
+        .gallery-side:has(
+          > .gallery-thumb:nth-child(2):last-child
+        ) {
+          grid-template-rows:
+            repeat(
+              2,
+              minmax(0, 1fr)
+            ) !important;
+        }
+
+        .gallery-side:has(
+          > .gallery-thumb:nth-child(3):last-child
+        ) {
+          grid-template-rows:
+            repeat(
+              3,
+              minmax(0, 1fr)
+            ) !important;
+        }
+
+      }
+
     `}</style>
   );
 }

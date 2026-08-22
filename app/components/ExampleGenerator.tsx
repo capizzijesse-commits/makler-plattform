@@ -299,7 +299,7 @@ export default function ExampleGenerator() {
               </span>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+            <div className="landingExampleResultCard rounded-3xl border border-white/10 bg-white/[0.04] p-6">
               <p className="text-sm uppercase tracking-wide text-slate-400">
                 {t("output.titleLabel")}
               </p>

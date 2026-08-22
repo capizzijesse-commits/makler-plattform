@@ -10097,3 +10097,325 @@ svg {
     padding: 17px !important;
   }
 }
+
+/* =========================================================
+   INSERAT-AI - EXAMPLE RESULT MOBILE WIDTH V1
+   Mehr nutzbare Textbreite im öffentlichen Demo-Ergebnis
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+  .landingExampleResultPanel {
+    padding: 12px !important;
+  }
+
+  .landingExampleResultCard {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    padding: 14px !important;
+
+    border-radius: 18px !important;
+  }
+
+  .landingExampleResultPanel > div:first-child {
+    margin-bottom: 18px !important;
+  }
+
+  .landingExampleResultPanel h4 {
+    font-size: 23px !important;
+    line-height: 1.22 !important;
+  }
+}
+
+/* =========================================================
+   INSERAT-AI DETAIL SUPPORT DOCK RESTORE V1
+   Objekt-Detailseite: AI Guide + Feedback + WhatsApp
+   ========================================================= */
+
+@media (max-width: 640px) {
+
+  body:has(.detailPage)
+  .supportDock {
+    right: 10px !important;
+
+    bottom:
+      calc(
+        10px +
+        env(safe-area-inset-bottom)
+      ) !important;
+
+    display: flex !important;
+
+    width: auto !important;
+    max-width: calc(100vw - 20px) !important;
+
+    gap: 6px !important;
+    padding: 5px !important;
+
+    border-radius: 999px !important;
+  }
+
+
+  body:has(.detailPage)
+  .supportDock
+  .supportAction {
+    width: 48px !important;
+    min-width: 48px !important;
+
+    height: 48px !important;
+    min-height: 48px !important;
+
+    flex: 0 0 48px !important;
+
+    justify-content: center !important;
+
+    gap: 0 !important;
+
+    padding: 0 !important;
+
+    border-radius: 999px !important;
+  }
+
+
+  /* AI Guide bleibt etwas breiter */
+
+  body:has(.detailPage)
+  .supportDock
+  .supportGuide {
+    display: flex !important;
+
+    width: auto !important;
+    min-width: 116px !important;
+
+    height: 48px !important;
+    min-height: 48px !important;
+
+    flex-basis: auto !important;
+
+    gap: 8px !important;
+
+    padding:
+      0 13px 0 8px !important;
+  }
+
+
+  /* Feedback + WhatsApp wieder sichtbar */
+
+  body:has(.detailPage)
+  .supportDock
+  .supportFeedback,
+
+  body:has(.detailPage)
+  .supportDock
+  .supportContact {
+    display: flex !important;
+  }
+
+
+  /* Texte wie im normalen Mobile-Dock */
+
+  body:has(.detailPage)
+  .supportDock
+  .supportFeedback
+  .supportText,
+
+  body:has(.detailPage)
+  .supportDock
+  .supportContact
+  .supportText {
+    display: none !important;
+  }
+
+
+  body:has(.detailPage)
+  .supportDock
+  .supportGuide
+  .supportText {
+    display: grid !important;
+  }
+
+
+  body:has(.detailPage)
+  .supportDock
+  .supportGuide
+  .supportText
+  strong {
+    font-size: 11px !important;
+  }
+
+
+  body:has(.detailPage)
+  .supportDock
+  .supportGuide
+  .supportText
+  small {
+    display: none !important;
+  }
+
+
+  /* Icons wieder normale Mobile-Grösse */
+
+  body:has(.detailPage)
+  .supportDock
+  .supportIcon {
+    width: 32px !important;
+    height: 32px !important;
+
+    flex: 0 0 32px !important;
+
+    border-radius: 50% !important;
+  }
+
+
+  body:has(.detailPage)
+  .supportDock
+  .supportIcon
+  svg {
+    width: 19px !important;
+    height: 19px !important;
+  }
+
+}
+
+/* =========================================================
+   INSERAT-AI SOCIAL MEDIA SUPPORT DOCK RESTORE V1
+   Social Media: AI Guide + Feedback + WhatsApp
+   ========================================================= */
+
+@media (max-width: 640px) {
+
+  body:has(.socialMediaPage)
+  .supportDock {
+    right: 10px !important;
+
+    bottom:
+      calc(
+        10px +
+        env(safe-area-inset-bottom)
+      ) !important;
+
+    display: flex !important;
+
+    width: auto !important;
+    max-width: calc(100vw - 20px) !important;
+
+    gap: 6px !important;
+    padding: 5px !important;
+
+    border-radius: 999px !important;
+  }
+
+
+  body:has(.socialMediaPage)
+  .supportDock
+  .supportAction {
+    width: 48px !important;
+    min-width: 48px !important;
+
+    height: 48px !important;
+    min-height: 48px !important;
+
+    flex: 0 0 48px !important;
+
+    justify-content: center !important;
+
+    gap: 0 !important;
+    padding: 0 !important;
+
+    border-radius: 999px !important;
+  }
+
+
+  body:has(.socialMediaPage)
+  .supportDock
+  .supportGuide {
+    display: flex !important;
+
+    width: auto !important;
+    min-width: 116px !important;
+
+    height: 48px !important;
+    min-height: 48px !important;
+
+    flex-basis: auto !important;
+
+    gap: 8px !important;
+
+    padding:
+      0 13px 0 8px !important;
+  }
+
+
+  body:has(.socialMediaPage)
+  .supportDock
+  .supportFeedback,
+
+  body:has(.socialMediaPage)
+  .supportDock
+  .supportContact {
+    display: flex !important;
+  }
+
+
+  body:has(.socialMediaPage)
+  .supportDock
+  .supportFeedback
+  .supportText,
+
+  body:has(.socialMediaPage)
+  .supportDock
+  .supportContact
+  .supportText {
+    display: none !important;
+  }
+
+
+  body:has(.socialMediaPage)
+  .supportDock
+  .supportGuide
+  .supportText {
+    display: grid !important;
+  }
+
+
+  body:has(.socialMediaPage)
+  .supportDock
+  .supportGuide
+  .supportText
+  strong {
+    font-size: 11px !important;
+  }
+
+
+  body:has(.socialMediaPage)
+  .supportDock
+  .supportGuide
+  .supportText
+  small {
+    display: none !important;
+  }
+
+
+  body:has(.socialMediaPage)
+  .supportDock
+  .supportIcon {
+    width: 32px !important;
+    height: 32px !important;
+
+    flex: 0 0 32px !important;
+
+    border-radius: 50% !important;
+  }
+
+
+  body:has(.socialMediaPage)
+  .supportDock
+  .supportIcon
+  svg {
+    width: 19px !important;
+    height: 19px !important;
+  }
+
+}
