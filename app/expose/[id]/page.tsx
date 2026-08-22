@@ -2717,7 +2717,7 @@ function ExposeStyles() {
         }
 
         .preview-canvas .sheet {
-          zoom: 1.65;
+          zoom: 1.28;
         }
       }
       @page {
