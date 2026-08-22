@@ -1426,65 +1426,7 @@ const formatSavedTime = (count: number) => {
   });
 };
 
-  async function confirmAndGenerateText() {
-    if (loading) {
-      return;
-    }
-
-    const summary = [
-      location.trim() || "–",
-      propertyType.trim() || "–",
-      rooms.trim()
-        ? `${rooms.trim()} ${t("fields.rooms")}`
-        : `– ${t("fields.rooms")}`,
-      livingArea.trim()
-        ? `${livingArea.trim()} m²`
-        : "– m²",
-    ].join(" · ");
-
-    const confirmed = await confirmAction({
-      title:
-        locale === "it"
-          ? "Generare ora l'annuncio?"
-          : locale === "fr"
-            ? "Générer l'annonce maintenant ?"
-            : locale === "en"
-              ? "Generate the listing now?"
-              : "Inserat jetzt generieren?",
-      message:
-        locale === "it"
-          ? `Inserat-AI creerà ora 3 varianti per: ${summary}`
-          : locale === "fr"
-            ? `Inserat-AI va maintenant créer 3 variantes pour : ${summary}`
-            : locale === "en"
-              ? `Inserat-AI will now create 3 variants for: ${summary}`
-              : `Inserat-AI erstellt jetzt 3 Varianten für: ${summary}`,
-      confirmLabel:
-        locale === "it"
-          ? "Genera 3 varianti"
-          : locale === "fr"
-            ? "Générer 3 variantes"
-            : locale === "en"
-              ? "Generate 3 variants"
-              : "Jetzt 3 Varianten generieren",
-      cancelLabel:
-        locale === "it"
-          ? "Indietro"
-          : locale === "fr"
-            ? "Retour"
-            : locale === "en"
-              ? "Back"
-              : "Zurück",
-      tone: "warning",
-    });
-
-    if (!confirmed) {
-      return;
-    }
-
-    await generateText();
-  }
-  async function generateText() {
+async function generateText() {
 try {
       setLoading(true);
 
@@ -2875,7 +2817,7 @@ return (
 <div className="actions">
   <div className="mainActions">
     <button
-      onClick={confirmAndGenerateText}
+      onClick={generateText}
       disabled={loading}
       className="btn btn-primary"
       style={{
