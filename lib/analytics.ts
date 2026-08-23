@@ -13,10 +13,25 @@ const CONSENT_STORAGE_KEY =
 
 const QUEUE_STORAGE_KEY =
   "inserat_ai_ga4_queue_v1";
+export function isAnalyticsAllowedHost(): boolean {
+  if (typeof window === "undefined") {
+    return false;
+  }
 
+  const hostname =
+    window.location.hostname
+      .trim()
+      .toLowerCase();
+
+  return (
+    hostname === "inserat-ai.ch" ||
+    hostname === "www.inserat-ai.ch"
+  );
+}
 function hasAnalyticsConsent(): boolean {
   if (
-    typeof window === "undefined"
+    typeof window === "undefined" ||
+    !isAnalyticsAllowedHost()
   ) {
     return false;
   }

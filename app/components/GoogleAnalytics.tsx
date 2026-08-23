@@ -9,6 +9,7 @@ import {
 import {usePathname} from "next/navigation";
 import {
   flushAnalyticsQueue,
+  isAnalyticsAllowedHost,
   trackAnalyticsEvent,
 } from "@/lib/analytics";
 
@@ -50,62 +51,65 @@ export default function GoogleAnalytics() {
       measurementId
     );
 
-  useEffect(() => {
-    setEnabled(
+useEffect(() => {
+  setEnabled(
+    isAnalyticsAllowedHost() &&
       window.localStorage.getItem(
         STORAGE_KEY
       ) === "accepted"
-    );
+  );
 
-    function handleConsent(
-      event: Event
-    ) {
-      const choice =
-        (
-          event as CustomEvent<ConsentChoice>
-        ).detail;
+  function handleConsent(
+    event: Event
+  ) {
+    const choice =
+      (
+        event as CustomEvent<ConsentChoice>
+      ).detail;
 
-      setEnabled(
+    setEnabled(
+      isAnalyticsAllowedHost() &&
         choice === "accepted"
-      );
-    }
+    );
+  }
 
-    function handleStorage(
-      event: StorageEvent
+  function handleStorage(
+    event: StorageEvent
+  ) {
+    if (
+      event.key !== STORAGE_KEY
     ) {
-      if (
-        event.key !== STORAGE_KEY
-      ) {
-        return;
-      }
-
-      setEnabled(
-        event.newValue === "accepted"
-      );
+      return;
     }
 
-    window.addEventListener(
+    setEnabled(
+      isAnalyticsAllowedHost() &&
+        event.newValue === "accepted"
+    );
+  }
+
+  window.addEventListener(
+    CONSENT_EVENT,
+    handleConsent
+  );
+
+  window.addEventListener(
+    "storage",
+    handleStorage
+  );
+
+  return () => {
+    window.removeEventListener(
       CONSENT_EVENT,
       handleConsent
     );
 
-    window.addEventListener(
+    window.removeEventListener(
       "storage",
       handleStorage
     );
-
-    return () => {
-      window.removeEventListener(
-        CONSENT_EVENT,
-        handleConsent
-      );
-
-      window.removeEventListener(
-        "storage",
-        handleStorage
-      );
-    };
-  }, []);
+  };
+}, []);
 
   useEffect(() => {
     if (

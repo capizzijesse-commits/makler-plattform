@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { trackAnalyticsEvent } from "@/lib/analytics";
 
@@ -37,7 +37,7 @@ type ListingImage = {
   position: number;
   isPrimary: boolean;
   homeStagingImages?: HomeStagingImage[];
-  
+
 };
 
 
@@ -338,12 +338,15 @@ export default function CockpitListingPage() {
           const data = (await response
             .json()
             .catch(() => null)) as
-            | {
-                success?: boolean;
-                unlockStatus?: string;
-                paymentProcessing?: boolean;
-                error?: string;
-              }
+           | {
+    success?: boolean;
+    unlockStatus?: string;
+    livemode?: boolean;
+    verifiedSessionId?: string;
+    paymentProcessing?: boolean;
+    error?: string;
+  }
+
             | null;
 
           if (
@@ -359,10 +362,12 @@ export default function CockpitListingPage() {
                 purchaseEventKey
               );
 
-            if (
-              purchaseEventState !== "sent" &&
-              purchaseEventState !== "pending"
-            ) {
+           if (
+  data.livemode === true &&
+  data.verifiedSessionId === sessionId &&
+  purchaseEventState !== "sent" &&
+  purchaseEventState !== "pending"
+) {
               sessionStorage.setItem(
                 purchaseEventKey,
                 "pending"
@@ -969,7 +974,7 @@ function showNextImage() {
                   </strong>
                 </div>
 
-                
+
 
                 <div className="fact">
                   <span>Stil</span>

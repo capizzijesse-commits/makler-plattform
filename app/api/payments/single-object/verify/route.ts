@@ -124,16 +124,7 @@ export async function POST(
       );
     }
 
-    if (
-      listing.unlockStatus === "paid" &&
-      listing.paidAt
-    ) {
-      return NextResponse.json({
-        success: true,
-        alreadyUnlocked: true,
-        unlockStatus: "paid",
-      });
-    }
+
 
     if (
       listing.paymentModel !==
@@ -199,7 +190,18 @@ export async function POST(
         { status: 409 }
       );
     }
-
+if (
+  listing.unlockStatus === "paid" &&
+  listing.paidAt
+) {
+  return NextResponse.json({
+    success: true,
+    alreadyUnlocked: true,
+    unlockStatus: "paid",
+    livemode: session.livemode,
+    verifiedSessionId: session.id,
+  });
+}
     const paymentIntentId =
       getPaymentIntentId(session);
 
@@ -244,10 +246,12 @@ export async function POST(
         latest.paidAt
       ) {
         return NextResponse.json({
-          success: true,
-          alreadyUnlocked: true,
-          unlockStatus: "paid",
-        });
+  success: true,
+  alreadyUnlocked: true,
+  unlockStatus: "paid",
+  livemode: session.livemode,
+  verifiedSessionId: session.id,
+});
       }
 
       return NextResponse.json(
@@ -260,11 +264,13 @@ export async function POST(
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      alreadyUnlocked: false,
-      unlockStatus: "paid",
-    });
+   return NextResponse.json({
+  success: true,
+  alreadyUnlocked: false,
+  unlockStatus: "paid",
+  livemode: session.livemode,
+  verifiedSessionId: session.id,
+});
   } catch (error) {
     console.error(
       "STRIPE PAYMENT VERIFY ERROR:",
