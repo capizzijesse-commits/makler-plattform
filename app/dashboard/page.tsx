@@ -1026,13 +1026,27 @@ async function uploadListingImages(listingId: string) {
     async (
       file: File,
       index: number
-    ) => {
+    ): Promise<{
+      url: string;
+      pathname: string;
+    }> => {
       let lastError:
         unknown = null;
 
+      if (
+        file.size >
+        4_000_000
+      ) {
+        throw new Error(
+          `Bild ${
+            index + 1
+          } ist nach der Optimierung noch zu gross.`
+        );
+      }
+
       for (
         let attempt = 1;
-        attempt <= 3;
+        attempt <= 2;
         attempt += 1
       ) {
         const controller =
@@ -1047,47 +1061,85 @@ async function uploadListingImages(listingId: string) {
           );
 
         try {
-          const safeFileName =
-            file.name
-              .normalize("NFKD")
-              .replace(
-                /[^a-zA-Z0-9._-]+/g,
-                "-"
-              )
-              .replace(
-                /-+/g,
-                "-"
-              )
-              .replace(
-                /^-|-$/g,
-                ""
-              );
+          const formData =
+            new FormData();
 
-          const blob =
-            await upload(
-              `listing-images/${listingId}/${
-                safeFileName ||
-                `objektfoto-${index + 1}`
-              }`,
-              file,
+          formData.append(
+            "listingId",
+            listingId
+          );
+
+          formData.append(
+            "file",
+            file,
+            file.name
+          );
+
+          const response =
+            await fetch(
+              "/api/listing-images/server-upload",
               {
-                access:
-                  "public",
-                handleUploadUrl:
-                  "/api/listing-images/upload",
-                clientPayload:
-                  JSON.stringify({
-                    listingId,
-                  }),
-                contentType:
-                  file.type ||
-                  "image/jpeg",
-                abortSignal:
+                method:
+                  "POST",
+                credentials:
+                  "include",
+                signal:
                   controller.signal,
+                body:
+                  formData,
               }
             );
 
-          return blob;
+          const data =
+            (await response
+              .json()
+              .catch(
+                () => ({})
+              )) as {
+              success?: boolean;
+              error?: string;
+              blob?: {
+                url?: string;
+                pathname?: string;
+              };
+            };
+
+          if (
+            !response.ok ||
+            data.success !== true ||
+            typeof data.blob
+              ?.url !==
+              "string" ||
+            typeof data.blob
+              ?.pathname !==
+              "string"
+          ) {
+            throw new Error(
+              data.error ||
+                `Bild ${
+                  index + 1
+                } konnte nicht hochgeladen werden.`
+            );
+          }
+
+          console.info(
+            "[Inserat-AI Server Upload]",
+            {
+              image:
+                index + 1,
+              attempt,
+              sizeBytes:
+                file.size,
+            }
+          );
+
+          return {
+            url:
+              data.blob.url,
+            pathname:
+              data.blob
+                .pathname,
+          };
         } catch (error) {
           lastError =
             error;
@@ -1095,15 +1147,15 @@ async function uploadListingImages(listingId: string) {
           console.warn(
             `Bild ${
               index + 1
-            }: Upload-Versuch ${attempt} fehlgeschlagen.`,
+            }: Server-Upload-Versuch ${attempt} fehlgeschlagen.`,
             error
           );
 
           if (
-            attempt < 3
+            attempt < 2
           ) {
             await wait(
-              1000 * attempt
+              1000
             );
           }
         } finally {
@@ -1124,7 +1176,6 @@ async function uploadListingImages(listingId: string) {
             )
       );
     };
-
   const registerImage =
     async (
       blob: {
