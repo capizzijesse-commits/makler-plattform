@@ -81,6 +81,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const t = useTranslations("Navbar");
 
+
   // INSERAT_AI_HOME_STAGING_NAVBAR_V2
   const homeStagingListingMatch =
     pathname?.match(
@@ -584,6 +585,13 @@ export default function Navbar() {
                 <span className="appPlanBadge">
                   {planLabel}
                 </span>
+
+                <Link
+                  href="/dashboard"
+                  className="appHeaderDashboardMobile inline-flex min-h-10 items-center justify-center rounded-xl border border-amber-300/40 bg-amber-300/10 px-3 text-xs font-black text-amber-200 no-underline md:hidden"
+                >
+                  {t("dashboardShort")}
+                </Link>
 
                 <button
                   type="button"

@@ -1,4 +1,4 @@
-﻿import {
+import {
   handleUpload,
   type HandleUploadBody,
 } from "@vercel/blob/client";
@@ -160,13 +160,6 @@ export async function POST(
             userId: user.id,
           }),
         };
-      },
-
-      onUploadCompleted: async ({ blob }) => {
-        console.info(
-          "Objektbild erfolgreich zu Blob hochgeladen:",
-          blob.pathname
-        );
       },
     });
 

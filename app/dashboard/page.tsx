@@ -822,103 +822,515 @@ const saveObjectTemplate = () => {
   setTemplateName("");
 };
 async function uploadListingImages(listingId: string) {
-  const uploadOneImage = async (
-    file: File,
-    index: number
-  ) => {
-    const safeFileName = file.name
-      .normalize("NFKD")
-      .replace(/[^a-zA-Z0-9._-]+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
-
-    const blob = await upload(
-      `listing-images/${listingId}/${
-        safeFileName || "objektfoto"
-      }`,
-      file,
+  const prepareImageForUpload = async (
+    file: File
+  ): Promise<File> => {
+    console.info(
+      "[Inserat-AI Mobile Datei]",
       {
-        access: "public",
-        handleUploadUrl: "/api/listing-images/upload",
-        clientPayload: JSON.stringify({
-          listingId,
-        }),
+        name: file.name,
+        type: file.type,
+        sizeBytes: file.size,
+        sizeMB:
+          Math.round(
+            (file.size / 1024 / 1024) *
+              100
+          ) / 100,
       }
     );
 
-    const imageResponse = await fetch(
-      "/api/listing-images",
-      {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          listingId,
-          url: blob.url,
-          storageKey: blob.pathname,
-          fileName: file.name,
-          mimeType: file.type,
-          sizeBytes: file.size,
-          position: index,
-          analysis:
-            imageAnalyses[index]?.status ===
-              "done" &&
-            imageAnalyses[
-              index
-            ].analysis.trim()
-              ? JSON.stringify({
-                  version:
-                    "listing-image-analysis-cache-v1",
-                  listingText:
-                    imageAnalyses[
-                      index
-                    ].analysis.trim(),
-                  homeStaging: null,
-                })
-              : null,
-        }),
-      }
-    );
+    const supportedTypes = new Set([
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+    ]);
 
-    const imageData = (await imageResponse
-      .json()
-      .catch(() => ({}))) as {
-      error?: string;
-    };
-
-    if (!imageResponse.ok) {
+    if (!supportedTypes.has(file.type)) {
       throw new Error(
-        localizedApiError(
-          imageData.error,
-          t("images.saveError", {
-            fileName: file.name,
-          })
-        )
+        `Das Bildformat ${
+          file.type || file.name
+        } wird noch nicht unterstützt.`
       );
     }
-  };
 
-  const uploadStartedAt = performance.now();
+    /*
+     * Kleine Dateien brauchen keine zusätzliche
+     * Browser-Komprimierung.
+     */
+    if (
+      file.size <=
+      2.5 * 1024 * 1024
+    ) {
+      return file;
+    }
 
-  await Promise.all(
-    selectedImages.map(
-      (file, index) =>
-        uploadOneImage(
+    if (
+      typeof createImageBitmap !==
+      "function"
+    ) {
+      console.warn(
+        "createImageBitmap ist auf diesem Browser nicht verfügbar."
+      );
+
+      return file;
+    }
+
+    let bitmap: ImageBitmap | null =
+      null;
+
+    try {
+      /*
+       * Wichtig für Mobilgeräte:
+       * Das Bild wird bereits während des Decodierens
+       * verkleinert. Dadurch muss ein 40/50-MP-Foto
+       * nicht zuerst vollständig im Browser-Speicher
+       * aufgebaut werden.
+       */
+      bitmap =
+        await createImageBitmap(
           file,
-          index
-        )
-    )
-  );
+          {
+            resizeWidth: 1920,
+            resizeQuality: "high",
+          }
+        );
+
+      if (
+        bitmap.width <= 0 ||
+        bitmap.height <= 0
+      ) {
+        throw new Error(
+          "Das Bild besitzt keine gültigen Abmessungen."
+        );
+      }
+
+      const canvas =
+        document.createElement(
+          "canvas"
+        );
+
+      canvas.width =
+        bitmap.width;
+
+      canvas.height =
+        bitmap.height;
+
+      const context =
+        canvas.getContext("2d");
+
+      if (!context) {
+        throw new Error(
+          "Das Bild konnte nicht verarbeitet werden."
+        );
+      }
+
+      context.drawImage(
+        bitmap,
+        0,
+        0
+      );
+
+      const outputType =
+        file.type === "image/png"
+          ? "image/png"
+          : "image/jpeg";
+
+      const optimizedBlob =
+        await new Promise<Blob | null>(
+          (resolve) => {
+            canvas.toBlob(
+              resolve,
+              outputType,
+              outputType === "image/png"
+                ? undefined
+                : 0.84
+            );
+          }
+        );
+
+      if (
+        !optimizedBlob ||
+        optimizedBlob.size <= 0
+      ) {
+        throw new Error(
+          "Die mobile Bildoptimierung lieferte keine Datei."
+        );
+      }
+
+      const extension =
+        outputType === "image/png"
+          ? "png"
+          : "jpg";
+
+      const baseName =
+        file.name
+          .replace(
+            /\.[^.]+$/,
+            ""
+          )
+          .trim() ||
+        "objektfoto";
+
+      const optimizedFile =
+        new File(
+          [optimizedBlob],
+          `${baseName}.${extension}`,
+          {
+            type: outputType,
+            lastModified:
+              file.lastModified,
+          }
+        );
+
+      console.info(
+        "[Inserat-AI Mobile Optimierung]",
+        {
+          originalBytes:
+            file.size,
+          optimizedBytes:
+            optimizedFile.size,
+          width:
+            bitmap.width,
+          height:
+            bitmap.height,
+          type:
+            optimizedFile.type,
+        }
+      );
+
+      return optimizedFile;
+    } catch (error) {
+      console.error(
+        "MOBILE BILDOPTIMIERUNG FEHLGESCHLAGEN:",
+        error
+      );
+
+      throw error;
+    } finally {
+      bitmap?.close();
+    }
+  };
+  const wait = (
+    milliseconds: number
+  ) =>
+    new Promise<void>(
+      (resolve) => {
+        window.setTimeout(
+          resolve,
+          milliseconds
+        );
+      }
+    );
+
+  const uploadBlobWithRetry =
+    async (
+      file: File,
+      index: number
+    ) => {
+      let lastError:
+        unknown = null;
+
+      for (
+        let attempt = 1;
+        attempt <= 3;
+        attempt += 1
+      ) {
+        const controller =
+          new AbortController();
+
+        const timeoutId =
+          window.setTimeout(
+            () => {
+              controller.abort();
+            },
+            60_000
+          );
+
+        try {
+          const safeFileName =
+            file.name
+              .normalize("NFKD")
+              .replace(
+                /[^a-zA-Z0-9._-]+/g,
+                "-"
+              )
+              .replace(
+                /-+/g,
+                "-"
+              )
+              .replace(
+                /^-|-$/g,
+                ""
+              );
+
+          const blob =
+            await upload(
+              `listing-images/${listingId}/${
+                safeFileName ||
+                `objektfoto-${index + 1}`
+              }`,
+              file,
+              {
+                access:
+                  "public",
+                handleUploadUrl:
+                  "/api/listing-images/upload",
+                clientPayload:
+                  JSON.stringify({
+                    listingId,
+                  }),
+                contentType:
+                  file.type ||
+                  "image/jpeg",
+                abortSignal:
+                  controller.signal,
+              }
+            );
+
+          return blob;
+        } catch (error) {
+          lastError =
+            error;
+
+          console.warn(
+            `Bild ${
+              index + 1
+            }: Upload-Versuch ${attempt} fehlgeschlagen.`,
+            error
+          );
+
+          if (
+            attempt < 3
+          ) {
+            await wait(
+              1000 * attempt
+            );
+          }
+        } finally {
+          window.clearTimeout(
+            timeoutId
+          );
+        }
+      }
+
+      throw (
+        lastError instanceof
+        Error
+          ? lastError
+          : new Error(
+              `Bild ${
+                index + 1
+              } konnte nicht hochgeladen werden.`
+            )
+      );
+    };
+
+  const registerImage =
+    async (
+      blob: {
+        url: string;
+        pathname: string;
+      },
+      file: File,
+      index: number
+    ) => {
+      let lastError:
+        unknown = null;
+
+      for (
+        let attempt = 1;
+        attempt <= 2;
+        attempt += 1
+      ) {
+        const controller =
+          new AbortController();
+
+        const timeoutId =
+          window.setTimeout(
+            () => {
+              controller.abort();
+            },
+            30_000
+          );
+
+        try {
+          const imageResponse =
+            await fetch(
+              "/api/listing-images",
+              {
+                method:
+                  "POST",
+                credentials:
+                  "include",
+                signal:
+                  controller.signal,
+                headers: {
+                  "Content-Type":
+                    "application/json",
+                },
+                body:
+                  JSON.stringify({
+                    listingId,
+                    url:
+                      blob.url,
+                    storageKey:
+                      blob.pathname,
+                    fileName:
+                      file.name,
+                    mimeType:
+                      file.type,
+                    sizeBytes:
+                      file.size,
+                    position:
+                      index,
+                    analysis:
+                      imageAnalyses[
+                        index
+                      ]?.status ===
+                          "done" &&
+                      imageAnalyses[
+                        index
+                      ].analysis.trim()
+                        ? JSON.stringify(
+                            {
+                              version:
+                                "listing-image-analysis-cache-v1",
+                              listingText:
+                                imageAnalyses[
+                                  index
+                                ].analysis.trim(),
+                              homeStaging:
+                                null,
+                            }
+                          )
+                        : null,
+                  }),
+              }
+            );
+
+          const imageData =
+            (await imageResponse
+              .json()
+              .catch(
+                () => ({})
+              )) as {
+              error?: string;
+            };
+
+          if (
+            !imageResponse.ok
+          ) {
+            throw new Error(
+              localizedApiError(
+                imageData.error,
+                t(
+                  "images.saveError",
+                  {
+                    fileName:
+                      file.name,
+                  }
+                )
+              )
+            );
+          }
+
+          return;
+        } catch (error) {
+          lastError =
+            error;
+
+          if (
+            attempt < 2
+          ) {
+            await wait(
+              1000
+            );
+          }
+        } finally {
+          window.clearTimeout(
+            timeoutId
+          );
+        }
+      }
+
+      throw (
+        lastError instanceof
+        Error
+          ? lastError
+          : new Error(
+              `Bild ${
+                index + 1
+              } konnte nicht gespeichert werden.`
+            )
+      );
+    };
+
+  const uploadStartedAt =
+    performance.now();
+
+  for (
+    let index = 0;
+    index <
+    selectedImages.length;
+    index += 1
+  ) {
+    const originalFile =
+      selectedImages[index];
+
+    if (!originalFile) {
+      continue;
+    }
+
+    setSaveProgress(
+      `Bild ${
+        index + 1
+      } von ${
+        selectedImages.length
+      } wird gespeichert …`
+    );
+
+    const uploadFile =
+      await prepareImageForUpload(
+        originalFile
+      );
+
+    console.info(
+      "[Inserat-AI Mobile Upload]",
+      {
+        image:
+          index + 1,
+        originalBytes:
+          originalFile.size,
+        uploadBytes:
+          uploadFile.size,
+        mimeType:
+          uploadFile.type,
+      }
+    );
+
+    const blob =
+      await uploadBlobWithRetry(
+        uploadFile,
+        index
+      );
+
+    await registerImage(
+      blob,
+      uploadFile,
+      index
+    );
+  }
 
   console.info(
-    "[Inserat-AI Speed] Bilder parallel gespeichert",
+    "[Inserat-AI Speed] Bilder mobil stabil gespeichert",
     {
-      imageCount: selectedImages.length,
-      uploadMs: Math.round(
-        performance.now() - uploadStartedAt
-      ),
+      imageCount:
+        selectedImages.length,
+      uploadMs:
+        Math.round(
+          performance.now() -
+            uploadStartedAt
+        ),
     }
   );
 }
@@ -1036,7 +1448,12 @@ if (uploadImages && selectedImages.length > 0) {
       })}`
     );
 
-    return null;
+    /*
+     * Das Objekt selbst wurde bereits erfolgreich gespeichert.
+     * Ein einzelner Bildfehler darf deshalb die Navigation
+     * ins Cockpit nicht mehr verhindern.
+     */
+    return listingId;
   }
 } else {
   setSaveProgress(
