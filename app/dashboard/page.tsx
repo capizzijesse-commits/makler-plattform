@@ -3383,22 +3383,7 @@ return (
 
 
   <section className="rightCard">
-  <div className="topStats">
-    <div className="topStat">
-  <div className="topStatValue">{dailyCount}</div>
-  <div className="topStatLabel">{t("stats.listingsToday")}</div>
-</div>
 
-    <div className="topStat">
-  <div className="topStatValue">{formatSavedTime(dailyCount)}</div>
-  <div className="topStatLabel">{t("stats.timeSaved")}</div>
-</div>
-
-    <div className="topStat">
-      <div className="topStatValue">{t("stats.demoValue")}</div>
-      <div className="topStatLabel">{t("stats.freeGeneration")}</div>
-    </div>
-  </div>
   <div className="outputShell">
     <div className="outputTop">
       <div>
