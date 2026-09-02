@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import GoogleSignInButton from "@/app/components/GoogleSignInButton";
 
 
 type MessageType = "success" | "error" | "info";
@@ -31,6 +32,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] =
     useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   
 
   const [message, setMessage] = useState("");
@@ -86,6 +88,209 @@ export default function LoginPage() {
       setMessageType("error");
     }
   }, [t]);
+
+
+  async function handleGoogleCredential(
+    credential: string
+  ) {
+    const requestedPlan =
+      new URLSearchParams(
+        window.location.search
+      ).get("plan") === "founder"
+        ? "founder"
+        : "";
+
+    if (!credential) {
+      setMessage(
+        "Google-Anmeldung konnte nicht gestartet werden."
+      );
+      setMessageType("error");
+      return;
+    }
+
+    try {
+      setGoogleLoading(true);
+      setMessage("");
+
+      const response = await fetch(
+        "/api/auth/google",
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            credential,
+          }),
+        }
+      );
+
+      const responseText =
+        await response.text();
+
+      let data: LoginResponse = {};
+
+      try {
+        data = responseText
+          ? JSON.parse(responseText)
+          : {};
+      } catch {
+        setMessage(
+          t("messages.invalidResponse")
+        );
+        setMessageType("error");
+        return;
+      }
+
+      if (!response.ok) {
+        setMessage(
+          data.error ||
+            "Google-Anmeldung fehlgeschlagen."
+        );
+        setMessageType("error");
+        return;
+      }
+
+      if (!data.user?.email) {
+        setMessage(
+          t("messages.userLoadError")
+        );
+        setMessageType("error");
+        return;
+      }
+
+      const loginExpiresAt =
+        Date.now() +
+        30 * 24 * 60 * 60 * 1000;
+
+      localStorage.setItem(
+        "userName",
+        data.user.name || "Makler"
+      );
+
+      localStorage.setItem(
+        "userEmail",
+        data.user.email
+      );
+
+      localStorage.setItem(
+        "userRole",
+        data.user.role || "user"
+      );
+
+      localStorage.setItem(
+        "userPlan",
+        data.user.plan || "free"
+      );
+
+      localStorage.setItem(
+        "isLoggedIn",
+        "true"
+      );
+
+      localStorage.setItem(
+        "loginExpiresAt",
+        String(loginExpiresAt)
+      );
+
+      if (requestedPlan === "founder") {
+        setMessage(
+          t(
+            "messages.founderCheckoutOpening"
+          )
+        );
+
+        setMessageType("info");
+
+        const checkoutResponse =
+          await fetch(
+            "/api/payments/subscription/checkout",
+            {
+              method: "POST",
+              credentials: "include",
+              cache: "no-store",
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+              body: JSON.stringify({
+                plan: "founder",
+              }),
+            }
+          );
+
+        const checkoutData =
+          (await checkoutResponse
+            .json()
+            .catch(() => null)) as
+            | {
+                success?: boolean;
+                url?: string;
+                error?: string;
+                alreadySubscribed?: boolean;
+              }
+            | null;
+
+        if (
+          checkoutData?.alreadySubscribed
+        ) {
+          setMessage(
+            t(
+              "messages.planAlreadyActive"
+            )
+          );
+
+          setMessageType("success");
+
+          window.setTimeout(() => {
+            router.replace(
+              "/dashboard"
+            );
+          }, 900);
+
+          return;
+        }
+
+        if (
+          !checkoutResponse.ok ||
+          !checkoutData?.success ||
+          !checkoutData.url
+        ) {
+          throw new Error(
+            checkoutData?.error ||
+              t(
+                "messages.founderCheckoutError"
+              )
+          );
+        }
+
+        window.location.assign(
+          checkoutData.url
+        );
+
+        return;
+      }
+
+      router.push("/dashboard");
+    } catch (error) {
+      console.error(
+        "GOOGLE LOGIN PAGE ERROR:",
+        error
+      );
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : t("messages.genericError")
+      );
+
+      setMessageType("error");
+    } finally {
+      setGoogleLoading(false);
+    }
+  }
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -340,6 +545,33 @@ export default function LoginPage() {
             {message}
           </div>
         )}
+
+        <div
+          style={{
+            marginBottom: "18px",
+          }}
+        >
+          <GoogleSignInButton
+            onCredential={
+              handleGoogleCredential
+            }
+            disabled={
+              loading ||
+              googleLoading
+            }
+          />
+        </div>
+
+        <div
+          aria-hidden="true"
+          style={{
+            height: "1px",
+            width: "100%",
+            background:
+              "rgba(255,255,255,0.14)",
+            marginBottom: "22px",
+          }}
+        />
 
         <form onSubmit={handleLogin}>
           <label

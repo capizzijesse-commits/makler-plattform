@@ -9,6 +9,7 @@ import {
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { trackAnalyticsEvent } from "@/lib/analytics";
+import GoogleSignInButton from "@/app/components/GoogleSignInButton";
 import {
   useLocale,
   useTranslations,
@@ -29,6 +30,20 @@ type RegisterResponse = {
   message?: string;
   error?: string;
   errorCode?: string;
+};
+
+type GoogleRegisterResponse = {
+  success?: boolean;
+  error?: string;
+  code?: string;
+  user?: {
+    id?: string;
+    name?: string;
+    email?: string;
+    role?: string;
+    plan?: string;
+    emailVerified?: boolean;
+  };
 };
 
 const EMAIL_PATTERN =
@@ -57,6 +72,11 @@ export default function RegisterPage() {
 
   const [loading, setLoading] =
     useState(false);
+
+  const [
+    googleLoading,
+    setGoogleLoading,
+  ] = useState(false);
 
   const [showPassword, setShowPassword] =
     useState(false);
@@ -323,7 +343,209 @@ function handleRegisterFormStart() {
     return null;
   }
 
-  async function handleRegister(
+
+  async function handleGoogleRegister(
+    credential: string
+  ) {
+    if (!credential) {
+      setDialogMessage(
+        t("errors.processingFailed")
+      );
+      return;
+    }
+
+    try {
+      setGoogleLoading(true);
+      setDialogMessage("");
+
+      const response = await fetch(
+        "/api/auth/google",
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            credential,
+          }),
+        }
+      );
+
+      const responseText =
+        await response.text();
+
+      let data:
+        GoogleRegisterResponse = {};
+
+      try {
+        data = responseText
+          ? JSON.parse(responseText)
+          : {};
+      } catch {
+        data = {};
+      }
+
+      if (
+        !response.ok ||
+        !data.user?.email
+      ) {
+        trackAnalyticsEvent(
+          "register_error",
+          {
+            error_type:
+              "google_auth",
+            error_code:
+              data.code ||
+              "GOOGLE_AUTH_FAILED",
+            requested_plan:
+              requestedPlan ||
+              "none",
+          }
+        );
+
+        throw new Error(
+          data.error ||
+            t(
+              "errors.processingFailed"
+            )
+        );
+      }
+
+      const loginExpiresAt =
+        Date.now() +
+        30 * 24 * 60 * 60 * 1000;
+
+      localStorage.setItem(
+        "userName",
+        data.user.name ||
+          "Makler"
+      );
+
+      localStorage.setItem(
+        "userEmail",
+        data.user.email
+      );
+
+      localStorage.setItem(
+        "userRole",
+        data.user.role ||
+          "user"
+      );
+
+      localStorage.setItem(
+        "userPlan",
+        data.user.plan ||
+          "free"
+      );
+
+      localStorage.setItem(
+        "isLoggedIn",
+        "true"
+      );
+
+      localStorage.setItem(
+        "loginExpiresAt",
+        String(loginExpiresAt)
+      );
+
+      trackAnalyticsEvent(
+        "sign_up",
+        {
+          method: "google",
+          requested_plan:
+            requestedPlan ||
+            "none",
+        }
+      );
+
+      if (
+        requestedPlan ===
+        "founder"
+      ) {
+        const checkoutResponse =
+          await fetch(
+            "/api/payments/subscription/checkout",
+            {
+              method: "POST",
+              credentials:
+                "include",
+              cache: "no-store",
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+              body:
+                JSON.stringify({
+                  plan:
+                    "founder",
+                }),
+            }
+          );
+
+        const checkoutData =
+          (await checkoutResponse
+            .json()
+            .catch(() => null)) as
+            | {
+                success?: boolean;
+                url?: string;
+                error?: string;
+                alreadySubscribed?: boolean;
+              }
+            | null;
+
+        if (
+          checkoutData
+            ?.alreadySubscribed
+        ) {
+          router.replace(
+            "/dashboard"
+          );
+          return;
+        }
+
+        if (
+          !checkoutResponse.ok ||
+          !checkoutData?.success ||
+          !checkoutData.url
+        ) {
+          throw new Error(
+            checkoutData?.error ||
+              t(
+                "errors.processingFailed"
+              )
+          );
+        }
+
+        window.location.assign(
+          checkoutData.url
+        );
+
+        return;
+      }
+
+      router.push("/dashboard");
+    } catch (error) {
+      console.error(
+        "GOOGLE REGISTER ERROR:",
+        error
+      );
+
+      setDialogMessage(
+        error instanceof Error
+          ? error.message
+          : t(
+              "errors.processingFailed"
+            )
+      );
+    } finally {
+      setGoogleLoading(false);
+    }
+  }
+
+async function handleRegister(
     event: FormEvent
   ) {
     event.preventDefault();
@@ -542,7 +764,25 @@ let registerErrorTracked = false;
               </p>
             </div>
 
-            <form
+
+            <div className="mb-5">
+              <GoogleSignInButton
+                onCredential={
+                  handleGoogleRegister
+                }
+                disabled={
+                  loading ||
+                  googleLoading
+                }
+              />
+            </div>
+
+            <div
+              aria-hidden="true"
+              className="mb-6 h-px w-full bg-white/10"
+            />
+
+<form
   onSubmit={handleRegister}
   onFocus={handleRegisterFormStart}
   noValidate
@@ -708,7 +948,7 @@ let registerErrorTracked = false;
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || googleLoading}
                 className="registerSubmit w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-8 py-4 text-base font-bold text-slate-950 shadow-[0_0_35px_rgba(245,158,11,0.25)] transition hover:scale-[1.01] hover:from-amber-200 hover:to-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading

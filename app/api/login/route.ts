@@ -111,6 +111,16 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!user.password) {
+      return NextResponse.json(
+        {
+          success: false,
+          code: "INVALID_CREDENTIALS",
+          error: INVALID_LOGIN_MESSAGE,
+        },
+        { status: 401 }
+      );
+    }
     const passwordIsValid = await verifyPassword(
       password,
       user.password

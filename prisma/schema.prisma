@@ -12,11 +12,12 @@ model User {
   id                  String  @id @default(cuid())
   name                String
   email               String  @unique
+  googleSub           String? @unique
   company             String?
   phone               String?
   companyLogoUrl      String?
   companyLogoPathname String?
-  password            String
+  password            String?
   role                String  @default("user")
   plan                String  @default("free")
   freeGenerationsUsed Int     @default(0)
