@@ -158,6 +158,15 @@ export default function CookieConsentBanner() {
 
   function acceptAnalytics() {
     window.localStorage.setItem(STORAGE_KEY, "accepted");
+
+    window.dispatchEvent(
+      new CustomEvent<ConsentChoice>(
+        ANALYTICS_CONSENT_EVENT,
+        {
+          detail: "accepted",
+        }
+      )
+    );
     allowClarity();
     setHasChoice(true);
     setIsOpen(false);
@@ -167,6 +176,15 @@ export default function CookieConsentBanner() {
     const previousChoice = window.localStorage.getItem(STORAGE_KEY);
 
     window.localStorage.setItem(STORAGE_KEY, "rejected");
+
+    window.dispatchEvent(
+      new CustomEvent<ConsentChoice>(
+        ANALYTICS_CONSENT_EVENT,
+        {
+          detail: "rejected",
+        }
+      )
+    );
     denyClarity();
     setHasChoice(true);
     setIsOpen(false);
