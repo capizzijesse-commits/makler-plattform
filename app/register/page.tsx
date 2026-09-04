@@ -9,6 +9,7 @@ import {
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { trackAnalyticsEvent } from "@/lib/analytics";
+import { getInseratAiMarketFromHostname } from "@/lib/inserat-ai-market";
 import GoogleSignInButton from "@/app/components/GoogleSignInButton";
 import {
   useLocale,
@@ -60,6 +61,33 @@ export default function RegisterPage() {
     ? (detectedLocale as AppLocale)
     : "de";
 
+  const [isGermany, setIsGermany] =
+    useState(false);
+
+  const founderPrice =
+    isGermany
+      ? locale === "en"
+        ? "€19.90"
+        : "19,90 €"
+      : "CHF 19.90";
+
+  const singleObjectPrice =
+    isGermany
+      ? locale === "en"
+        ? "€9.90"
+        : "9,90 €"
+      : "CHF 9.90";
+
+  function localizePlanCurrency(value: string): string {
+    if (!isGermany) {
+      return value;
+    }
+
+    return value
+      .replace(/CHF\s*19[.,]90/g, founderPrice)
+      .replace(/CHF\s*9[.,]90/g, singleObjectPrice);
+  }
+
   const [
     requestedPlan,
     setRequestedPlan,
@@ -105,6 +133,12 @@ function handleRegisterFormStart() {
 }
 
  useEffect(() => {
+  setIsGermany(
+    getInseratAiMarketFromHostname(
+      window.location.hostname
+    ) === "DE"
+  );
+
   const plan = new URLSearchParams(
     window.location.search
   ).get("plan");
@@ -168,11 +202,15 @@ function handleRegisterFormStart() {
           title:
             t("plans.founder.title"),
           description:
-            t("plans.founder.description"),
+            localizePlanCurrency(
+              t("plans.founder.description")
+            ),
           submit:
             t("plans.founder.submit"),
           note:
-            t("plans.founder.note"),
+            localizePlanCurrency(
+              t("plans.founder.note")
+            ),
 
           stats: [
             {
@@ -182,7 +220,7 @@ function handleRegisterFormStart() {
                 t("plans.founder.statTrialLabel"),
             },
             {
-              value: "CHF 19.90",
+              value: founderPrice,
               label:
                 t("plans.founder.statAfterTrial"),
             },
@@ -200,17 +238,21 @@ function handleRegisterFormStart() {
             title:
               t("plans.singleObject.title"),
             description:
-              t(
-                "plans.singleObject.description"
+              localizePlanCurrency(
+                t(
+                  "plans.singleObject.description"
+                )
               ),
             submit:
               t("plans.singleObject.submit"),
             note:
-              t("plans.singleObject.note"),
+              localizePlanCurrency(
+                t("plans.singleObject.note")
+              ),
 
             stats: [
               {
-                value: "CHF 9.90",
+                value: singleObjectPrice,
                 label:
                   t(
                     "plans.singleObject.statPrice"
@@ -826,7 +868,7 @@ let registerErrorTracked = false;
                   onChange={(event) =>
                     setEmail(event.target.value)
                   }
-                  placeholder="name@firma.ch"
+                  placeholder="name@unternehmen.com"
                   autoComplete="email"
                   inputMode="email"
                   className="registerInput w-full rounded-2xl border border-white/10 bg-white/10 px-5 py-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.14]"
