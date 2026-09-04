@@ -8,7 +8,7 @@ import {
 } from "react";
 
 
-type InseratAiMarket =
+type SelectableMarket =
   | "CH"
   | "DE";
 
@@ -26,19 +26,19 @@ const markets = [
   {
     code: "CH" as const,
     name: "Inserat-AI Schweiz",
-    domain: "inserat-ai.ch",
+    domain: "www.inserat-ai.ch",
     enabled: true,
   },
   {
     code: "DE" as const,
     name: "Inserat-AI Deutschland",
-    domain: "inserat-ai.de",
+    domain: "www.inserat-ai.de",
     enabled: true,
   },
   {
     code: "AT" as const,
     name: "Inserat-AI Österreich",
-    domain: "inserat-ai.at",
+    domain: "www.inserat-ai.at",
     enabled: false,
   },
 ];
@@ -54,12 +54,15 @@ function detectDomainMarket():
     return null;
   }
 
+
   const hostname =
     window.location.hostname
       .toLowerCase();
 
+
   if (
-    hostname === "inserat-ai.de" ||
+    hostname ===
+      "inserat-ai.de" ||
     hostname.endsWith(
       ".inserat-ai.de"
     )
@@ -67,8 +70,10 @@ function detectDomainMarket():
     return "DE";
   }
 
+
   if (
-    hostname === "inserat-ai.ch" ||
+    hostname ===
+      "inserat-ai.ch" ||
     hostname.endsWith(
       ".inserat-ai.ch"
     )
@@ -76,8 +81,10 @@ function detectDomainMarket():
     return "CH";
   }
 
+
   if (
-    hostname === "inserat-ai.at" ||
+    hostname ===
+      "inserat-ai.at" ||
     hostname.endsWith(
       ".inserat-ai.at"
     )
@@ -85,164 +92,22 @@ function detectDomainMarket():
     return "AT";
   }
 
+
   return null;
 }
 
 
-function isInseratAiDomain(
-  hostname: string
-) {
-  return (
-    hostname === "inserat-ai.ch" ||
-    hostname.endsWith(
-      ".inserat-ai.ch"
-    ) ||
-    hostname === "inserat-ai.de" ||
-    hostname.endsWith(
-      ".inserat-ai.de"
-    ) ||
-    hostname === "inserat-ai.at" ||
-    hostname.endsWith(
-      ".inserat-ai.at"
-    )
-  );
-}
-
-
-function MarketFlag({
-  code,
-}: {
-  code: MarketCode;
-}) {
-
-  if (code === "CH") {
-    return (
-      <span
-        aria-hidden="true"
-        style={{
-          position: "relative",
-          display: "inline-block",
-          width: "28px",
-          height: "19px",
-          flex: "0 0 28px",
-          overflow: "hidden",
-          borderRadius: "4px",
-          background: "#e21b2d",
-          boxShadow:
-            "0 3px 10px rgba(0,0,0,.24)",
-        }}
-      >
-        <span
-          style={{
-            position: "absolute",
-            left: "11px",
-            top: "4px",
-            width: "6px",
-            height: "11px",
-            background: "#ffffff",
-          }}
-        />
-
-        <span
-          style={{
-            position: "absolute",
-            left: "8px",
-            top: "7px",
-            width: "12px",
-            height: "5px",
-            background: "#ffffff",
-          }}
-        />
-      </span>
-    );
-  }
-
-
-  if (code === "DE") {
-    return (
-      <span
-        aria-hidden="true"
-        style={{
-          display: "inline-grid",
-          width: "28px",
-          height: "19px",
-          flex: "0 0 28px",
-          overflow: "hidden",
-          borderRadius: "4px",
-          gridTemplateRows:
-            "repeat(3, 1fr)",
-          boxShadow:
-            "0 3px 10px rgba(0,0,0,.24)",
-        }}
-      >
-        <span
-          style={{
-            background: "#111111",
-          }}
-        />
-
-        <span
-          style={{
-            background: "#dd0000",
-          }}
-        />
-
-        <span
-          style={{
-            background: "#ffce00",
-          }}
-        />
-      </span>
-    );
-  }
-
-
-  return (
-    <span
-      aria-hidden="true"
-      style={{
-        display: "inline-grid",
-        width: "28px",
-        height: "19px",
-        flex: "0 0 28px",
-        overflow: "hidden",
-        borderRadius: "4px",
-        gridTemplateRows:
-          "repeat(3, 1fr)",
-        boxShadow:
-          "0 3px 10px rgba(0,0,0,.24)",
-      }}
-    >
-      <span
-        style={{
-          background: "#ed2939",
-        }}
-      />
-
-      <span
-        style={{
-          background: "#ffffff",
-        }}
-      />
-
-      <span
-        style={{
-          background: "#ed2939",
-        }}
-      />
-    </span>
-  );
-}
-
-
 /*
- * GLOBAL_INSERAT_AI_MARKET_SWITCHER_V6
+ * COUNTRY_DOMAIN_MARKET_SWITCHER_V8
  *
- * Der aktive Markt ist Teil der Marke:
+ * Der Landesname bleibt ohne Flagge
+ * und ohne Dropdown-Pfeil.
  *
- * Inserat-AI Schweiz
- * Inserat-AI Deutschland
- * Inserat-AI Österreich
+ * Der Name ist auf localhost sowie
+ * auf den echten Landesdomains anklickbar.
+ *
+ * Ein Marktwechsel auf einer Landesdomain
+ * führt zur entsprechenden Webadresse.
  */
 export default function MarketSwitcher() {
 
@@ -250,15 +115,26 @@ export default function MarketSwitcher() {
     market,
     setMarket,
   ] =
-    useState<InseratAiMarket>(
+    useState<SelectableMarket>(
       "CH"
     );
+
+
+  const [
+    domainMarket,
+    setDomainMarket,
+  ] =
+    useState<MarketCode | null>(
+      null
+    );
+
 
   const [
     open,
     setOpen,
   ] =
     useState(false);
+
 
   const rootRef =
     useRef<HTMLDivElement>(
@@ -272,21 +148,26 @@ export default function MarketSwitcher() {
       detectDomainMarket();
 
 
-    /*
-     * Landesdomain gewinnt immer.
-     */
+    setDomainMarket(
+      detected
+    );
+
+
     if (
       detected === "CH" ||
       detected === "DE"
     ) {
+
       localStorage.setItem(
         STORAGE_KEY,
         detected
       );
 
+
       setMarket(
         detected
       );
+
 
       return;
     }
@@ -315,6 +196,7 @@ export default function MarketSwitcher() {
     function closeOutside(
       event: MouseEvent
     ) {
+
       if (
         rootRef.current &&
         !rootRef.current.contains(
@@ -323,6 +205,7 @@ export default function MarketSwitcher() {
       ) {
         setOpen(false);
       }
+
     }
 
 
@@ -333,27 +216,36 @@ export default function MarketSwitcher() {
 
 
     return () => {
+
       document.removeEventListener(
         "mousedown",
         closeOutside
       );
+
     };
 
   }, []);
 
 
+  const displayMarket =
+    domainMarket ??
+    market;
+
+
   const current =
     markets.find(
       item =>
-        item.code === market
+        item.code ===
+        displayMarket
     ) ??
     markets[0];
 
 
   const orderedMarkets =
     useMemo(
-      () =>
-        [
+      () => {
+
+        return [
           ...markets,
         ].sort(
           (
@@ -367,15 +259,19 @@ export default function MarketSwitcher() {
               return -1;
             }
 
+
             if (
               b.code === market
             ) {
               return 1;
             }
 
+
             return 0;
           }
-        ),
+        );
+
+      },
       [
         market,
       ]
@@ -384,14 +280,15 @@ export default function MarketSwitcher() {
 
   function selectMarket(
     nextMarket:
-      InseratAiMarket
+      SelectableMarket
   ) {
 
     setOpen(false);
 
 
     if (
-      nextMarket === market
+      nextMarket ===
+      market
     ) {
       return;
     }
@@ -416,20 +313,8 @@ export default function MarketSwitcher() {
     );
 
 
-    const hostname =
-      window.location.hostname
-        .toLowerCase();
-
-
-    /*
-     * Auf den echten Landesdomains
-     * später direkt zur entsprechenden
-     * Domain wechseln.
-     */
     if (
-      isInseratAiDomain(
-        hostname
-      )
+      domainMarket
     ) {
 
       const destination =
@@ -440,97 +325,102 @@ export default function MarketSwitcher() {
         );
 
 
-      if (destination) {
+      if (
+        destination
+      ) {
 
         const url =
           new URL(
             window.location.href
           );
 
+        url.protocol =
+          "https:";
+
         url.hostname =
           destination.domain;
 
-        window.location.href =
-          url.toString();
+        url.port =
+          "";
+
+        window.location.assign(
+          url.toString()
+        );
 
         return;
       }
+
     }
 
 
-    /*
-     * localhost
-     */
     window.location.reload();
   }
 
+
+  /*
+   * Anklickbarer Marktname ohne
+   * Flagge und ohne Pfeil.
+   */
 
   return (
     <div
       ref={rootRef}
       style={{
-        position: "relative",
-        minWidth: 0,
-        zIndex: 350,
+        position:
+          "relative",
+        minWidth:
+          0,
+        zIndex:
+          350,
       }}
     >
       <button
         type="button"
+        aria-haspopup="menu"
+        aria-label={`Land wechseln. Aktuell ${current.name}`}
         aria-expanded={open}
         onClick={() =>
           setOpen(
-            value => !value
+            value =>
+              !value
           )
         }
         style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "9px",
-          maxWidth: "330px",
-          padding: "6px 4px",
-          border: 0,
-          background: "transparent",
-          color: "#ffffff",
-          cursor: "pointer",
-          textAlign: "left",
+          display:
+            "inline-flex",
+          alignItems:
+            "center",
+          gap:
+            "8px",
+          padding:
+            "6px 4px",
+          border:
+            0,
+          background:
+            "transparent",
+          color:
+            "#ffffff",
+          cursor:
+            "pointer",
+          textAlign:
+            "left",
         }}
       >
-        <MarketFlag
-          code={current.code}
-        />
-
-
         <span
           style={{
-            overflow: "hidden",
-            textOverflow:
-              "ellipsis",
-            whiteSpace: "nowrap",
-            fontSize: "21px",
-            lineHeight: 1,
-            fontWeight: 900,
+            fontSize:
+              "21px",
+            lineHeight:
+              1,
+            fontWeight:
+              900,
             letterSpacing:
               "-0.025em",
+            whiteSpace:
+              "nowrap",
           }}
         >
           {current.name}
-        </span>
-
-
-        <span
-          aria-hidden="true"
-          style={{
-            marginLeft: "2px",
-            color: "#f5bd21",
-            fontSize: "10px",
-            transform: open
-              ? "rotate(180deg)"
-              : "rotate(0deg)",
-            transition:
-              "transform 150ms ease",
-          }}
-        >
-          ▼
         </span>
       </button>
 
@@ -538,21 +428,24 @@ export default function MarketSwitcher() {
       {open && (
         <div
           style={{
-            position: "absolute",
+            position:
+              "absolute",
             top:
               "calc(100% + 10px)",
-            left: 0,
-            width: "285px",
-            padding: "7px",
+            left:
+              0,
+            width:
+              "255px",
+            padding:
+              "7px",
             border:
               "1px solid rgba(255,255,255,.09)",
-            borderRadius: "15px",
+            borderRadius:
+              "15px",
             background:
               "linear-gradient(155deg, rgba(8,17,39,.995), rgba(4,10,27,.995))",
             boxShadow:
-              "0 22px 55px rgba(0,0,0,.44), inset 0 1px 0 rgba(255,255,255,.04)",
-            boxSizing:
-              "border-box",
+              "0 22px 55px rgba(0,0,0,.44)",
           }}
         >
           {orderedMarkets.map(
@@ -561,6 +454,7 @@ export default function MarketSwitcher() {
               const active =
                 item.code ===
                 market;
+
 
               const disabled =
                 !item.enabled;
@@ -574,10 +468,8 @@ export default function MarketSwitcher() {
                   onClick={() => {
 
                     if (
-                      item.code ===
-                        "CH" ||
-                      item.code ===
-                        "DE"
+                      item.code === "CH" ||
+                      item.code === "DE"
                     ) {
                       selectMarket(
                         item.code
@@ -586,44 +478,50 @@ export default function MarketSwitcher() {
 
                   }}
                   style={{
-                    width: "100%",
-                    minHeight: "48px",
-                    display: "grid",
+                    width:
+                      "100%",
+                    minHeight:
+                      "44px",
+                    display:
+                      "grid",
                     gridTemplateColumns:
-                      "32px minmax(0,1fr) auto",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "7px 9px",
-                    border: active
-                      ? "1px solid rgba(245,189,33,.52)"
-                      : "1px solid transparent",
-                    borderRadius: "11px",
-                    background: active
-                      ? "rgba(245,189,33,.07)"
-                      : "transparent",
-                    color: "#ffffff",
-                    cursor: disabled
-                      ? "not-allowed"
-                      : "pointer",
-                    opacity: disabled
-                      ? 0.42
-                      : 1,
-                    textAlign: "left",
+                      "1fr auto",
+                    alignItems:
+                      "center",
+                    gap:
+                      "10px",
+                    padding:
+                      "8px 10px",
+                    border:
+                      active
+                        ? "1px solid rgba(245,189,33,.52)"
+                        : "1px solid transparent",
+                    borderRadius:
+                      "11px",
+                    background:
+                      active
+                        ? "rgba(245,189,33,.07)"
+                        : "transparent",
+                    color:
+                      "#ffffff",
+                    cursor:
+                      disabled
+                        ? "not-allowed"
+                        : "pointer",
+                    opacity:
+                      disabled
+                        ? 0.42
+                        : 1,
+                    textAlign:
+                      "left",
                   }}
                 >
-                  <MarketFlag
-                    code={item.code}
-                  />
-
-
                   <span
                     style={{
-                      overflow: "hidden",
-                      textOverflow:
-                        "ellipsis",
-                      whiteSpace: "nowrap",
-                      fontSize: "12px",
-                      fontWeight: 850,
+                      fontSize:
+                        "12px",
+                      fontWeight:
+                        850,
                     }}
                   >
                     {item.name}
@@ -633,9 +531,10 @@ export default function MarketSwitcher() {
                   {active ? (
                     <span
                       style={{
-                        color: "#f5bd21",
-                        fontSize: "14px",
-                        fontWeight: 950,
+                        color:
+                          "#f5bd21",
+                        fontWeight:
+                          950,
                       }}
                     >
                       ✓
@@ -645,8 +544,10 @@ export default function MarketSwitcher() {
                       style={{
                         color:
                           "rgba(255,255,255,.40)",
-                        fontSize: "8px",
-                        fontWeight: 900,
+                        fontSize:
+                          "8px",
+                        fontWeight:
+                          900,
                       }}
                     >
                       BALD
@@ -654,6 +555,7 @@ export default function MarketSwitcher() {
                   ) : null}
                 </button>
               );
+
             }
           )}
         </div>
