@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import PrivacyModeButton from "../../components/PrivacyModeButton";
+import MarketSwitcher from "../../components/MarketSwitcher";
 import LanguageSwitcher from "@/app/components/LanguageSwitcher";
 
 type SessionResponse = {
@@ -468,28 +469,37 @@ export default function Navbar() {
         }`}
       >
         <div className="siteNavbarInner appCentralNavbarInner">
-          <Link
-            href={
-              isLoggedInArea || isAuthenticated
-                ? "/dashboard"
-                : "/"
-            }
-            className="siteBrand"
+          <div
+            className="siteBrandMarketShell"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              minWidth: 0,
+              flex: "0 1 auto",
+            }}
           >
-            <span
-              className="siteBrandIcon"
-              aria-hidden="true"
+  <Link
+              href={
+                isLoggedInArea || isAuthenticated
+                  ? "/dashboard"
+                  : "/"
+              }
+              className="siteBrand"
             >
-              <span className="siteBrandRoof" />
-              <span className="siteBrandLine siteBrandLineOne" />
-              <span className="siteBrandLine siteBrandLineTwo" />
-              <span className="siteBrandLine siteBrandLineThree" />
-            </span>
+              <span
+                className="siteBrandIcon"
+                aria-hidden="true"
+              >
+                <span className="siteBrandRoof" />
+                <span className="siteBrandLine siteBrandLineOne" />
+                <span className="siteBrandLine siteBrandLineTwo" />
+                <span className="siteBrandLine siteBrandLineThree" />
+              </span>
+            </Link>
 
-            <span className="siteBrandText">
-              Inserat-AI
-            </span>
-          </Link>
+            <MarketSwitcher />
+          </div>
 
          <nav className="siteNavActions">
 <span
@@ -518,7 +528,7 @@ export default function Navbar() {
 </Link>
 
 <span className="appHeaderLanguage">
-  <LanguageSwitcher />
+            <LanguageSwitcher />
 </span>
 
   {isLoggedInArea ? (
@@ -705,6 +715,7 @@ export default function Navbar() {
                 </span>
 
                 <h2>{t("workspaces")}</h2>
+
               </div>
 
               <button

@@ -36,9 +36,24 @@ const SUPPORTED_LOCALES = [
 type SupportedLocale =
   (typeof SUPPORTED_LOCALES)[number];
 
+/*
+ * INSERAT_AI_MARKET_CH_DE_V1
+ *
+ * Sprache und Markt sind getrennt.
+ * "de" kann Schweiz oder Deutschland bedeuten.
+ */
+const SUPPORTED_MARKETS = [
+  "CH",
+  "DE",
+] as const;
+
+type SupportedMarket =
+  (typeof SUPPORTED_MARKETS)[number];
+
 type GenerateBody = {
   listingId?: unknown;
   locale?: unknown;
+  market?: unknown;
   location?: unknown;
   rooms?: unknown;
   livingArea?: unknown;
@@ -88,6 +103,8 @@ type PromptBundle = {
   system: string;
   user: string;
   facts: ListingFacts;
+  market: SupportedMarket;
+  targetLanguage: string;
 };
 
 type LanguageConfig = {
@@ -183,6 +200,19 @@ function normalizeLocale(
   )
     ? (normalized as SupportedLocale)
     : "de";
+}
+
+function normalizeMarket(
+  value: unknown
+): SupportedMarket {
+  const normalized =
+    typeof value === "string"
+      ? value.trim().toUpperCase()
+      : "";
+
+  return normalized === "DE"
+    ? "DE"
+    : "CH";
 }
 
 function toPromptValue(
@@ -359,6 +389,44 @@ function buildGenerationPrompt(
   const config =
     LANGUAGE_CONFIG[locale];
 
+  const market =
+    locale === "de"
+      ? normalizeMarket(
+          body.market
+        )
+      : "CH";
+
+  const isGermany =
+    locale === "de" &&
+    market === "DE";
+
+  const effectiveTargetLanguage =
+    isGermany
+      ? "Deutsches Hochdeutsch für den Immobilienmarkt in Deutschland"
+      : config.targetLanguage;
+
+  const effectiveLanguageRules =
+    isGermany
+      ? [
+          "Verwende die in Deutschland übliche deutsche Standardsprache und Rechtschreibung.",
+          "Verwende ß dort, wo es nach deutscher Rechtschreibung korrekt ist. Ersetze ß nicht pauschal durch ss.",
+          "Verwende natürliche und professionelle Terminologie des deutschen Immobilienmarkts.",
+          "Begriffe wie Aufzug, Stellplatz, Tiefgaragenstellplatz, Außenstellplatz oder Einbauküche dürfen nur verwendet werden, wenn die entsprechende Tatsache durch die Objektdaten belegt ist.",
+          "Ersetze konkrete eingegebene Objektmerkmale nicht blind durch andere Begriffe und erfinde keine zusätzlichen Eigenschaften.",
+          "Behalte Eigennamen, Ortsnamen, Zahlen, Flächen und ausdrücklich angegebene Sachverhalte unverändert bei.",
+        ]
+      : config.languageRules;
+
+  const marketName =
+    isGermany
+      ? "Germany"
+      : "Switzerland";
+
+  const marketAdjective =
+    isGermany
+      ? "German"
+      : "Swiss";
+
   const facts: ListingFacts = {
     location: toPromptValue(
       body.location,
@@ -403,7 +471,7 @@ function buildGenerationPrompt(
       facts
     );
   const system = `
-You are the senior real estate editorial engine of Inserat-AI for the Swiss market.
+You are the senior real estate editorial engine of Inserat-AI for the ${marketAdjective} market.
 
 Your task is not to produce generic AI advertising copy.
 Your task is to produce accurate, distinctive and professionally structured real estate descriptions.
@@ -439,10 +507,10 @@ OUTPUT:
 
   const user = `
 TARGET LANGUAGE:
-${config.targetLanguage}
+${effectiveTargetLanguage}
 
 LANGUAGE RULES:
-${config.languageRules
+${effectiveLanguageRules
   .map((rule) => `- ${rule}`)
   .join("\n")}
 
@@ -459,7 +527,7 @@ Before returning JSON, silently audit every title and every sentence against thi
 Rewrite any sentence that violates it.
 Never mention the firewall in the output.
 TASK:
-Create exactly 3 complete and genuinely distinct real estate listing variants for professional real estate agents in Switzerland.
+Create exactly 3 complete and genuinely distinct real estate listing variants for professional real estate agents in ${marketName}.
 
 The style profile influences tone and sentence rhythm only.
 It must never be treated as proof of a property characteristic.
@@ -618,6 +686,9 @@ OUTPUT FORMAT:
     system,
     user,
     facts,
+    market,
+    targetLanguage:
+      effectiveTargetLanguage,
   };
 }
 
@@ -1353,7 +1424,7 @@ Return only valid JSON.
           role: "user",
           content: `
 TARGET LANGUAGE:
-${LANGUAGE_CONFIG[locale].targetLanguage}
+${prompt.targetLanguage}
 
 VARIANTS TO REWRITE:
 ${failingNumbers.join(", ")}
@@ -2704,6 +2775,13 @@ export async function POST(
     const locale =
       normalizeLocale(body.locale);
 
+    const market =
+      locale === "de"
+        ? normalizeMarket(
+            body.market
+          )
+        : "CH";
+
     const listingId =
       typeof body.listingId === "string"
         ? body.listingId.trim()
@@ -2774,6 +2852,7 @@ export async function POST(
       string,
       unknown
     > = {
+      market,
       location:
         prompt.facts.location,
       propertyType:
@@ -2808,6 +2887,7 @@ export async function POST(
           userId:
             user.id,
           locale,
+          market,
           model:
             LISTING_GENERATION_MODEL,
           prompt,
@@ -2822,6 +2902,7 @@ export async function POST(
         listingId:
           listingId || null,
         locale,
+        market,
       }
     );
 
@@ -3170,7 +3251,8 @@ export async function POST(
     // SELECTIVE_PUBLISHABLE_FALLBACK
     if (
       !selectedQuality.passed &&
-      locale === "de"
+      locale === "de" &&
+      market === "CH"
     ) {
       const publishableFallbackVariants =
         buildPublishableFallbackVariants(
@@ -3324,7 +3406,8 @@ export async function POST(
 
     if (
       postFallbackHasWordCountIssues &&
-      locale === "de"
+      locale === "de" &&
+      market === "CH"
     ) {
       const completedAfterFallback =
         completeShortVariantsLocally(
@@ -3400,6 +3483,7 @@ export async function POST(
           listingId:
             listingId || null,
           locale,
+        market,
           scores:
             selectedQuality.scores,
           issues:
@@ -3453,6 +3537,7 @@ export async function POST(
       variants:
         selectedVariants,
       locale,
+      market,
       ultraSpeed: {
         active: true,
         cacheHit:

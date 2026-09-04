@@ -1821,8 +1821,45 @@ const clearForm = () => {
   setPostalCode("");
   setShowExtraHighlights(false);
 };
+/*
+ * INSERAT_AI_MARKET_SWITCH_V1
+ */
+const [market, setMarket] =
+  useState<"CH" | "DE">("CH");
+
+useEffect(() => {
+  const savedMarket =
+    localStorage.getItem(
+      "inseratAiMarket"
+    );
+
+  if (
+    savedMarket === "CH" ||
+    savedMarket === "DE"
+  ) {
+    setMarket(
+      savedMarket
+    );
+  }
+}, []);
+
+useEffect(() => {
+  localStorage.setItem(
+    "inseratAiMarket",
+    market
+  );
+}, [market]);
+
 const allLocationSuggestions: string[] = Array.from(
-  new Set([...locationSuggestions, ...SWISS_LOCATIONS])
+  new Set([
+    ...locationSuggestions,
+    ...(
+      locale === "de" &&
+      market === "DE"
+        ? []
+        : SWISS_LOCATIONS
+    ),
+  ])
 );
 
 const filteredLocationSuggestions: string[] =
@@ -1837,7 +1874,12 @@ const filteredLocationSuggestions: string[] =
     : [];
 const filteredPostalLocationSuggestions =
   location.trim().length > 0 || postalCode.trim().length > 0
-    ? SWISS_POSTAL_LOCATIONS.filter((item) => {
+    ? (
+      locale === "de" &&
+      market === "DE"
+        ? []
+        : SWISS_POSTAL_LOCATIONS
+    ).filter((item) => {
         const searchValue = `${item.zip} ${item.name} ${item.canton}`.toLowerCase();
         const locationValue = location.toLowerCase().trim();
         const postalValue = postalCode.toLowerCase().trim();
@@ -1905,6 +1947,10 @@ try {
         },
         body: JSON.stringify({
   locale,
+  market:
+    locale === "de"
+      ? market
+      : "CH",
   location,
   rooms,
   livingArea,
@@ -2820,7 +2866,12 @@ return (
   <div style={{ position: "relative" }}>
     <input
   value={location}
-  placeholder="Winterthur"
+  placeholder={
+    locale === "de" &&
+    market === "DE"
+      ? "Berlin"
+      : "Winterthur"
+  }
   className="input bg-transparent text-white placeholder-gray-400/60"
   onChange={(e) => {
     const value = e.target.value;
@@ -3367,7 +3418,12 @@ return (
   <div className="miniStats">
     <MiniStat
       title={t("stats.market")}
-      value={t("stats.switzerland")}
+      value={
+        locale === "de" &&
+        market === "DE"
+          ? "Deutschland"
+          : t("stats.switzerland")
+      }
     />
     <MiniStat
       title={t("stats.output")}

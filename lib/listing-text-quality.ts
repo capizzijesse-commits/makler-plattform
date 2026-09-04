@@ -1244,8 +1244,6 @@ export function normalizeSwissTypography(
   }
 
   return trimmed
-    .replace(/ß/g, "ss")
-    .replace(/ẞ/g, "SS")
     .replace(
       /(\d)\s*-\s*Zimmer\b/gi,
       "$1-Zimmer"
@@ -1268,6 +1266,18 @@ export function evaluateListingQuality(
 
   const factCorpus =
     getFactCorpus(facts);
+
+  /*
+   * INSERAT_AI_MARKET_QUALITY_CH_DE_V1
+   */
+  const listingMarket =
+    String(
+      facts.market ?? "CH"
+    )
+      .trim()
+      .toUpperCase() === "DE"
+      ? "DE"
+      : "CH";
 
   if (variants.length !== 3) {
     issues.push({
@@ -1482,6 +1492,7 @@ export function evaluateListingQuality(
 
       if (
         locale === "de" &&
+        listingMarket === "CH" &&
         /[ßẞ]/.test(
           `${title} ${text}`
         )

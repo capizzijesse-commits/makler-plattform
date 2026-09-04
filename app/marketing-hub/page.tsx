@@ -406,11 +406,7 @@ export default function MarketingHubPage() {
       };
     }
 
-    return {
-      description: text.recommendations.expose,
-      label: text.actions.expose,
-      href: `/expose/${selectedListing.id}`,
-    };
+    return null;
   }, [selectedListing, text.actions, text.recommendations]);
 
   const cards = selectedListing
@@ -425,14 +421,6 @@ export default function MarketingHubPage() {
         },
         {
           number: "02",
-          title: text.cards.expose[0],
-          description: text.cards.expose[1],
-          status: text.ready,
-          href: `/expose/${selectedListing.id}`,
-          enabled: true,
-        },
-        {
-          number: "03",
           title: text.cards.tour[0],
           description: text.cards.tour[1],
           status: text.pro,
@@ -440,7 +428,7 @@ export default function MarketingHubPage() {
           enabled: true,
         },
         {
-          number: "04",
+          number: "03",
           title: text.cards.finance[0],
           description: text.cards.finance[1],
           status: text.available,
@@ -448,7 +436,7 @@ export default function MarketingHubPage() {
           enabled: true,
         },
         {
-          number: "05",
+          number: "04",
           title: text.cards.campaigns[0],
           description: text.cards.campaigns[1],
           status: text.development,
@@ -456,7 +444,7 @@ export default function MarketingHubPage() {
           enabled: false,
         },
         {
-          number: "06",
+          number: "05",
           title: text.cards.publishing[0],
           description: text.cards.publishing[1],
           status: text.development,
@@ -464,7 +452,7 @@ export default function MarketingHubPage() {
           enabled: false,
         },
         {
-          number: "07",
+          number: "06",
           title: text.cards.reviews[0],
           description: text.cards.reviews[1],
           status: text.development,
