@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { trackAnalyticsEvent } from "@/lib/analytics";
+import type { InseratAiMarket } from "@/lib/inserat-ai-market";
 type CheckoutError =
   | "existing"
   | "generic"
@@ -21,8 +22,23 @@ type Plan = {
   features: string[];
 };
 
-export default function PricingSection() {
+type PricingSectionProps = {
+  market: InseratAiMarket;
+};
+
+export default function PricingSection({
+  market,
+}: PricingSectionProps) {
   const t = useTranslations("Pricing");
+  const isGermany = market === "DE";
+
+  const singleObjectDescription = isGermany
+    ? "Ein hochwertiger Arbeitsbereich für genau eine Immobilie. Einmal 9,90 € bezahlen und nur dieses konkrete Objekt mit bis zu 5 Objektbildern freischalten – ohne Abonnement."
+    : t("singleObject.description");
+
+  const singleObjectNote = isGermany
+    ? "Einmalzahlung in EUR. Der EUR-Checkout wird vor dem Deutschland-Start freigeschaltet."
+    : t("singleObject.note");
 
   const [checkoutLoading, setCheckoutLoading] =
     useState(false);
@@ -35,7 +51,7 @@ export default function PricingSection() {
       id: "demo",
       name: "Demo",
       label: t("plans.demo.label"),
-      price: "0 CHF",
+      price: isGermany ? "0 €" : "0 CHF",
       cadence: t("plans.demo.cadence"),
       text: t("plans.demo.description"),
       button: t("plans.demo.button"),
@@ -52,16 +68,28 @@ export default function PricingSection() {
       id: "founder",
       name: "Founder",
       label: t("plans.founder.label"),
-      price: t("plans.founder.price"),
-      cadence: t("plans.founder.cadence"),
-      text: t("plans.founder.description"),
-      button: t("plans.founder.button"),
+      price: isGermany
+        ? "30 Tage kostenlos"
+        : t("plans.founder.price"),
+      cadence: isGermany
+        ? "danach 19,90 € / Monat"
+        : t("plans.founder.cadence"),
+      text: isGermany
+        ? "30 Tage kostenlos testen. Die ersten 50 Founder-Kunden sichern sich 19,90 € pro Monat dauerhaft, solange das Abonnement ohne Unterbrechung aktiv bleibt."
+        : t("plans.founder.description"),
+      button: isGermany
+        ? "Für Deutschland vormerken"
+        : t("plans.founder.button"),
       href: "#",
       highlighted: true,
       features: [
         t("plans.founder.features.trial"),
-        t("plans.founder.features.founderGuarantee"),
-        t("plans.founder.features.regularPrice"),
+        isGermany
+          ? "Founder-Preisgarantie: 19,90 € pro Monat dauerhaft bei ununterbrochen aktivem Abonnement"
+          : t("plans.founder.features.founderGuarantee"),
+        isGermany
+          ? "Limitiert auf die ersten 50 Founder-Kunden"
+          : t("plans.founder.features.regularPrice"),
         t("plans.founder.features.projects"),
         t("plans.founder.features.variants"),
         t("plans.founder.features.images"),
@@ -76,7 +104,7 @@ export default function PricingSection() {
       id: "pro",
       name: "Pro",
       label: t("plans.pro.label"),
-      price: "79.90 CHF",
+      price: isGermany ? "79,90 €" : "79.90 CHF",
       cadence: t("plans.pro.cadence"),
       text: t("plans.pro.description"),
       button: t("plans.pro.button"),
@@ -107,6 +135,23 @@ export default function PricingSection() {
   ];
 
   async function startFounderCheckout() {
+    if (isGermany) {
+      trackAnalyticsEvent(
+        "register_cta_click",
+        {
+          cta_page: window.location.pathname,
+          requested_plan: "founder",
+          cta_text: "Für Deutschland vormerken",
+          transport_type: "beacon",
+        }
+      );
+
+      window.location.assign(
+        "/register?plan=founder"
+      );
+      return;
+    }
+
     if (checkoutLoading) {
       return;
     }
@@ -242,7 +287,7 @@ export default function PricingSection() {
             <h3>{t("singleObject.name")}</h3>
 
             <p className="singleObjectDescription">
-              {t("singleObject.description")}
+              {singleObjectDescription}
             </p>
 
             <div className="singleObjectFeatures">
@@ -266,8 +311,8 @@ export default function PricingSection() {
             </span>
 
             <div className="singleObjectPrice">
-              <span>CHF</span>
-              <strong>9.90</strong>
+              <span>{isGermany ? "€" : "CHF"}</span>
+              <strong>{isGermany ? "9,90" : "9.90"}</strong>
             </div>
 
             <p>
@@ -278,14 +323,16 @@ export default function PricingSection() {
               href="/register?plan=single-object"
               className="singleObjectButton"
             >
-              {t("singleObject.button")}
+              {isGermany
+                ? "Jetzt in Deutschland starten"
+                : t("singleObject.button")}
               <span aria-hidden="true">
                 {"\u2192"}
               </span>
             </a>
 
             <small>
-              {t("singleObject.note")}
+              {singleObjectNote}
             </small>
           </div>
         </article>
@@ -448,7 +495,10 @@ export default function PricingSection() {
           </div>
 
           <div className="agencyStatus">
-            <span>149.90 CHF / {t("agency.month")}</span>
+            <span>
+              {isGermany ? "149,90 €" : "149.90 CHF"} /{" "}
+              {t("agency.month")}
+            </span>
             <strong>{t("agency.status")}</strong>
           </div>
         </div>
