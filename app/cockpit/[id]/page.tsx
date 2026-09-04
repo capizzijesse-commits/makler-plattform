@@ -344,6 +344,8 @@ export default function CockpitListingPage() {
     livemode?: boolean;
     verifiedSessionId?: string;
     paymentProcessing?: boolean;
+    currency?: string | null;
+    amountTotalCents?: number;
     error?: string;
   }
 
@@ -380,9 +382,12 @@ export default function CockpitListingPage() {
                     transaction_id:
                       sessionId,
                     currency:
-                      "CHF",
+                      data.currency ?? "CHF",
                     value:
-                      9.9,
+                      typeof data.amountTotalCents ===
+                        "number"
+                        ? data.amountTotalCents / 100
+                        : 9.9,
                     checkout_type:
                       "single_object",
                     listing_id:
@@ -396,7 +401,10 @@ export default function CockpitListingPage() {
                         item_name:
                           "Inserat-AI Einzelobjekt",
                         price:
-                          9.9,
+                          typeof data.amountTotalCents ===
+                            "number"
+                            ? data.amountTotalCents / 100
+                            : 9.9,
                         quantity:
                           1,
                       },

@@ -37,7 +37,7 @@ export default function PricingSection({
     : t("singleObject.description");
 
   const singleObjectNote = isGermany
-    ? "Einmalzahlung in EUR. Der EUR-Checkout wird vor dem Deutschland-Start freigeschaltet."
+    ? "Einmalzahlung in EUR. Kein Abonnement."
     : t("singleObject.note");
 
   const [checkoutLoading, setCheckoutLoading] =
@@ -78,7 +78,7 @@ export default function PricingSection({
         ? "30 Tage kostenlos testen. Die ersten 50 Founder-Kunden sichern sich 19,90 € pro Monat dauerhaft, solange das Abonnement ohne Unterbrechung aktiv bleibt."
         : t("plans.founder.description"),
       button: isGermany
-        ? "Für Deutschland vormerken"
+        ? "30 Tage kostenlos starten"
         : t("plans.founder.button"),
       href: "#",
       highlighted: true,
@@ -96,7 +96,6 @@ export default function PricingSection({
         t("plans.founder.features.analysis"),
         t("plans.founder.features.social"),
         t("plans.founder.features.marketingHub"),
-        t("plans.founder.features.expose"),
         t("plans.founder.features.storage"),
       ],
     },
@@ -129,28 +128,11 @@ export default function PricingSection({
     t("singleObject.features.images"),
     t("singleObject.features.social"),
     t("singleObject.features.marketingHub"),
-    t("singleObject.features.expose"),
     t("singleObject.features.storage"),
     t("singleObject.features.noMonthlyCosts"),
   ];
 
   async function startFounderCheckout() {
-    if (isGermany) {
-      trackAnalyticsEvent(
-        "register_cta_click",
-        {
-          cta_page: window.location.pathname,
-          requested_plan: "founder",
-          cta_text: "Für Deutschland vormerken",
-          transport_type: "beacon",
-        }
-      );
-
-      window.location.assign(
-        "/register?plan=founder"
-      );
-      return;
-    }
 
     if (checkoutLoading) {
       return;
@@ -324,7 +306,7 @@ export default function PricingSection({
               className="singleObjectButton"
             >
               {isGermany
-                ? "Jetzt in Deutschland starten"
+                ? "Einzelimmobilie starten"
                 : t("singleObject.button")}
               <span aria-hidden="true">
                 {"\u2192"}

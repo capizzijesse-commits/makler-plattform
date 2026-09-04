@@ -4,6 +4,11 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { getAppUrl } from "@/lib/app-url";
+import {
+  getInseratAiCurrencyFromHeaders,
+  isInseratAiCurrency,
+  type InseratAiCurrency,
+} from "@/lib/inserat-ai-market";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/session";
 import { getStripe } from "@/lib/stripe";
@@ -26,10 +31,12 @@ type CheckoutClaim = {
   value: string;
   createdAtMs: number;
   priceCents: number;
+  currency: InseratAiCurrency;
 };
 
 function createCheckoutClaim(
-  priceCents: number
+  priceCents: number,
+  currency: InseratAiCurrency
 ): CheckoutClaim {
   const createdAtMs = Date.now();
 
@@ -38,9 +45,11 @@ function createCheckoutClaim(
       `${CHECKOUT_CLAIM_PREFIX}` +
       `${createdAtMs}:` +
       `${priceCents}:` +
+      `${currency}:` +
       randomUUID(),
     createdAtMs,
     priceCents,
+    currency,
   };
 }
 
@@ -53,19 +62,29 @@ function readCheckoutClaim(
 
   const parts = value.split(":");
 
-  if (parts.length !== 4) {
+  if (parts.length !== 4 && parts.length !== 5) {
     return null;
   }
 
   const createdAtMs = Number(parts[1]);
   const priceCents = Number(parts[2]);
-  const attemptId = parts[3];
+
+  /*
+   * Alte Reservierungen stammen aus der Zeit, in der
+   * Inserat-AI nur CHF kannte. Sie bleiben lesbar.
+   */
+  const currencyValue =
+    parts.length === 5 ? parts[3] : "chf";
+
+  const attemptId =
+    parts.length === 5 ? parts[4] : parts[3];
 
   if (
     !Number.isSafeInteger(createdAtMs) ||
     createdAtMs <= 0 ||
     !Number.isInteger(priceCents) ||
     priceCents <= 0 ||
+    !isInseratAiCurrency(currencyValue) ||
     !attemptId ||
     attemptId.length > 64
   ) {
@@ -76,6 +95,7 @@ function readCheckoutClaim(
     value,
     createdAtMs,
     priceCents,
+    currency: currencyValue,
   };
 }
 
@@ -120,6 +140,7 @@ function validateStripeSession(
     listingId: string;
     userId: string;
     priceCents: number;
+    currency: InseratAiCurrency;
   }
 ): void {
   const metadataAmount = Number(
@@ -156,7 +177,7 @@ function validateStripeSession(
 
   if (
     session.metadata?.expectedCurrency
-      ?.toLowerCase() !== "chf"
+      ?.toLowerCase() !== expected.currency
   ) {
     throw new Error(
       "Die erwartete Stripe-Währung ist ungültig."
@@ -172,7 +193,10 @@ function validateStripeSession(
     );
   }
 
-  if (session.currency?.toLowerCase() !== "chf") {
+  if (
+    session.currency?.toLowerCase() !==
+    expected.currency
+  ) {
     throw new Error(
       "Die Stripe-Währung ist ungültig."
     );
@@ -319,6 +343,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const expectedCurrency =
+      getInseratAiCurrencyFromHeaders(
+        request.headers
+      );
+
     const stripe = getStripe();
     let claim: CheckoutClaim | null = null;
 
@@ -357,7 +386,8 @@ export async function POST(request: NextRequest) {
         }
 
         if (
-          storedClaim.priceCents !== priceCents
+          storedClaim.priceCents !== priceCents ||
+          storedClaim.currency !== expectedCurrency
         ) {
           if (isStaleClaim(storedClaim)) {
             await prisma.listing.updateMany({
@@ -380,9 +410,14 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             {
               success: false,
-              priceChanged: true,
+              priceChanged:
+                storedClaim.priceCents !== priceCents,
+              currencyChanged:
+                storedClaim.currency !== expectedCurrency,
               error:
-                "Der Preis wurde geändert. Bitte starten Sie den Zahlungsvorgang erneut.",
+                storedClaim.currency !== expectedCurrency
+                  ? "Die Zahlungswährung hat sich geändert. Bitte starten Sie den Zahlungsvorgang erneut."
+                  : "Der Preis wurde geändert. Bitte starten Sie den Zahlungsvorgang erneut.",
             },
             { status: 409 }
           );
@@ -470,6 +505,7 @@ export async function POST(request: NextRequest) {
               listingId: listing.id,
               userId: user.id,
               priceCents,
+              currency: expectedCurrency,
             }
           );
 
@@ -574,7 +610,10 @@ export async function POST(request: NextRequest) {
      */
     if (!claim) {
       const newClaim =
-        createCheckoutClaim(priceCents);
+        createCheckoutClaim(
+          priceCents,
+          expectedCurrency
+        );
 
       const claimed =
         await prisma.listing.updateMany({
@@ -637,7 +676,7 @@ export async function POST(request: NextRequest) {
               {
                 quantity: 1,
                 price_data: {
-                  currency: "chf",
+                  currency: expectedCurrency,
                   unit_amount:
                     claim.priceCents,
                   product_data: {
@@ -657,7 +696,7 @@ export async function POST(request: NextRequest) {
                 "single_object",
               expectedAmountCents:
                 String(claim.priceCents),
-              expectedCurrency: "chf",
+              expectedCurrency,
             },
 
             payment_intent_data: {
@@ -700,7 +739,10 @@ export async function POST(request: NextRequest) {
        */
       if (isStaleClaim(claim)) {
         const replacement =
-          createCheckoutClaim(priceCents);
+          createCheckoutClaim(
+            priceCents,
+            expectedCurrency
+          );
 
         await prisma.listing.updateMany({
           where: {
@@ -727,6 +769,7 @@ export async function POST(request: NextRequest) {
         listingId: listing.id,
         userId: user.id,
         priceCents: claim.priceCents,
+        currency: expectedCurrency,
       });
     } catch (error) {
       if (session.status === "open") {

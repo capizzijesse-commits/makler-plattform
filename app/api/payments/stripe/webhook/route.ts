@@ -4,6 +4,10 @@ import { Prisma } from "@prisma/client";
 import type Stripe from "stripe";
 import { NextResponse } from "next/server";
 
+import {
+  isInseratAiCurrency,
+  type InseratAiCurrency,
+} from "@/lib/inserat-ai-market";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 import {
@@ -23,6 +27,7 @@ type CheckoutMetadata = {
   listingId: string;
   userId: string;
   expectedAmountCents: number;
+  expectedCurrency: InseratAiCurrency;
 };
 
 class PayloadTooLargeError extends Error {
@@ -193,7 +198,7 @@ function readCheckoutMetadata(
     );
   }
 
-  if (expectedCurrency !== "chf") {
+  if (!isInseratAiCurrency(expectedCurrency)) {
     throw new Error(
       "Ungültige erwartete Stripe-Währung."
     );
@@ -212,6 +217,7 @@ function readCheckoutMetadata(
     listingId,
     userId,
     expectedAmountCents,
+    expectedCurrency,
   };
 }
 
@@ -250,7 +256,7 @@ function validateCheckoutSession(
 
   if (
     session.currency?.toLowerCase() !==
-    "chf"
+    metadata.expectedCurrency
   ) {
     throw new Error(
       "Die Stripe-Währung ist ungültig."

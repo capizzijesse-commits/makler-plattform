@@ -2,6 +2,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+import { isInseratAiCurrency } from "@/lib/inserat-ai-market";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/session";
 import { getStripe } from "@/lib/stripe";
@@ -156,6 +157,11 @@ export async function POST(
     const expectedLiveMode =
       getExpectedStripeLiveMode();
 
+    const expectedCurrency =
+      session.metadata?.expectedCurrency
+        ?.trim()
+        .toLowerCase() ?? "";
+
     const isValid =
       session.mode === "payment" &&
       session.status === "complete" &&
@@ -167,13 +173,12 @@ export async function POST(
       session.metadata?.userId === user.id &&
       session.metadata?.paymentModel ===
         "single_object" &&
-      session.metadata?.expectedCurrency
-        ?.toLowerCase() === "chf" &&
+      isInseratAiCurrency(expectedCurrency) &&
       Number.isInteger(metadataAmount) &&
       metadataAmount ===
         listing.singleObjectPriceCents &&
       session.currency?.toLowerCase() ===
-        "chf" &&
+        expectedCurrency &&
       session.amount_total ===
         listing.singleObjectPriceCents &&
       session.livemode === expectedLiveMode;
@@ -190,18 +195,23 @@ export async function POST(
         { status: 409 }
       );
     }
-if (
-  listing.unlockStatus === "paid" &&
-  listing.paidAt
-) {
-  return NextResponse.json({
-    success: true,
-    alreadyUnlocked: true,
-    unlockStatus: "paid",
-    livemode: session.livemode,
-    verifiedSessionId: session.id,
-  });
-}
+    if (
+      listing.unlockStatus === "paid" &&
+      listing.paidAt
+    ) {
+      return NextResponse.json({
+        success: true,
+        alreadyUnlocked: true,
+        unlockStatus: "paid",
+        livemode: session.livemode,
+        verifiedSessionId: session.id,
+        currency:
+          session.currency?.toUpperCase() ?? null,
+        amountTotalCents:
+          session.amount_total ?? 0,
+      });
+    }
+
     const paymentIntentId =
       getPaymentIntentId(session);
 
@@ -246,12 +256,16 @@ if (
         latest.paidAt
       ) {
         return NextResponse.json({
-  success: true,
-  alreadyUnlocked: true,
-  unlockStatus: "paid",
-  livemode: session.livemode,
-  verifiedSessionId: session.id,
-});
+          success: true,
+          alreadyUnlocked: true,
+          unlockStatus: "paid",
+          livemode: session.livemode,
+          verifiedSessionId: session.id,
+          currency:
+            session.currency?.toUpperCase() ?? null,
+          amountTotalCents:
+            session.amount_total ?? 0,
+        });
       }
 
       return NextResponse.json(
@@ -264,13 +278,17 @@ if (
       );
     }
 
-   return NextResponse.json({
-  success: true,
-  alreadyUnlocked: false,
-  unlockStatus: "paid",
-  livemode: session.livemode,
-  verifiedSessionId: session.id,
-});
+    return NextResponse.json({
+      success: true,
+      alreadyUnlocked: false,
+      unlockStatus: "paid",
+      livemode: session.livemode,
+      verifiedSessionId: session.id,
+      currency:
+        session.currency?.toUpperCase() ?? null,
+      amountTotalCents:
+        session.amount_total ?? 0,
+    });
   } catch (error) {
     console.error(
       "STRIPE PAYMENT VERIFY ERROR:",

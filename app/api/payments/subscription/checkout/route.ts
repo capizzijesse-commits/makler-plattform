@@ -4,6 +4,9 @@ import { NextResponse } from "next/server";
 
 import { getAppUrl } from "@/lib/app-url";
 import {
+  getInseratAiCurrencyFromHeaders,
+} from "@/lib/inserat-ai-market";
+import {
   OFFER_PRICES_CENTS,
   normalizeUserPlan,
 } from "@/lib/plans";
@@ -352,6 +355,11 @@ export async function POST(
         ? "standard"
         : "founder";
 
+    const expectedCurrency =
+      getInseratAiCurrencyFromHeaders(
+        request.headers
+      );
+
     const stripe = getStripe();
 
     const customerId =
@@ -388,6 +396,8 @@ export async function POST(
             selectedPlan &&
           session.metadata?.trialPeriodDays ===
             String(SUBSCRIPTION_TRIAL_DAYS) &&
+          session.metadata?.expectedCurrency ===
+            expectedCurrency &&
           typeof session.url === "string"
       );
 
@@ -406,7 +416,9 @@ export async function POST(
           session.metadata?.plan !==
             selectedPlan ||
           session.metadata?.trialPeriodDays !==
-            String(SUBSCRIPTION_TRIAL_DAYS)
+            String(SUBSCRIPTION_TRIAL_DAYS) ||
+          session.metadata?.expectedCurrency !==
+            expectedCurrency
       );
 
     await Promise.all(
@@ -492,7 +504,10 @@ export async function POST(
     const productDescription =
       SUBSCRIPTION_PRODUCT_DESCRIPTIONS[
         descriptionLocale
-      ][selectedPlan];
+      ][selectedPlan].replaceAll(
+        "CHF",
+        expectedCurrency.toUpperCase()
+      );
 
     const checkoutSession =
       await stripe.checkout.sessions.create({
@@ -516,7 +531,7 @@ export async function POST(
           {
             quantity: 1,
             price_data: {
-              currency: "chf",
+              currency: expectedCurrency,
               unit_amount: amountCents,
               recurring: {
                 interval: "month",
@@ -539,7 +554,7 @@ export async function POST(
           paymentModel: "subscription",
           expectedAmountCents:
             String(amountCents),
-          expectedCurrency: "chf",
+          expectedCurrency,
           trialPeriodDays:
             String(SUBSCRIPTION_TRIAL_DAYS),
         },
@@ -562,7 +577,7 @@ export async function POST(
               "subscription",
             expectedAmountCents:
               String(amountCents),
-            expectedCurrency: "chf",
+            expectedCurrency,
             trialPeriodDays:
               String(SUBSCRIPTION_TRIAL_DAYS),
           },

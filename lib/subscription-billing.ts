@@ -1,6 +1,10 @@
 import type Stripe from "stripe";
 import type { Prisma } from "@prisma/client";
 
+import {
+  isInseratAiCurrency,
+  type InseratAiCurrency,
+} from "@/lib/inserat-ai-market";
 import { OFFER_PRICES_CENTS } from "@/lib/plans";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
@@ -25,6 +29,7 @@ type SubscriptionMetadata = {
   userId: string;
   plan: SubscriptionPlan;
   expectedAmountCents: number;
+  expectedCurrency: InseratAiCurrency;
 };
 
 function getReferenceId(
@@ -132,7 +137,7 @@ function readCheckoutMetadata(
     );
   }
 
-  if (currency !== "chf") {
+  if (!isInseratAiCurrency(currency)) {
     throw new Error(
       "Die Stripe-Abo-Währung ist ungültig."
     );
@@ -146,6 +151,7 @@ function readCheckoutMetadata(
         plan,
         session.metadata?.expectedAmountCents
       ),
+    expectedCurrency: currency,
   };
 }
 
@@ -185,7 +191,7 @@ function readSubscriptionMetadata(
     );
   }
 
-  if (currency !== "chf") {
+  if (!isInseratAiCurrency(currency)) {
     throw new Error(
       "Die Abo-Währung ist ungültig."
     );
@@ -200,6 +206,7 @@ function readSubscriptionMetadata(
         subscription.metadata
           ?.expectedAmountCents
       ),
+    expectedCurrency: currency,
   };
 }
 
@@ -300,7 +307,10 @@ function validateSubscription(
       metadata.plan ||
     subscriptionMetadata
       .expectedAmountCents !==
-      metadata.expectedAmountCents
+      metadata.expectedAmountCents ||
+    subscriptionMetadata
+      .expectedCurrency !==
+      metadata.expectedCurrency
   ) {
     throw new Error(
       "Checkout und Abonnement stimmen nicht überein."
@@ -312,7 +322,7 @@ function validateSubscription(
 
   if (
     price.currency.toLowerCase() !==
-      "chf" ||
+      metadata.expectedCurrency ||
     price.unit_amount !==
       metadata.expectedAmountCents ||
     price.unit_amount !==
@@ -329,11 +339,11 @@ function validateSubscription(
 function validateSubscriptionCheckoutCompletion(
   session: Stripe.Checkout.Session,
   subscription: Stripe.Subscription,
-  expectedAmountCents: number
+  metadata: SubscriptionMetadata
 ): void {
   if (
     session.currency?.toLowerCase() !==
-    "chf"
+    metadata.expectedCurrency
   ) {
     throw new Error(
       "Die Stripe-Abo-Währung ist ungültig."
@@ -343,7 +353,7 @@ function validateSubscriptionCheckoutCompletion(
   const paidCheckoutIsValid =
     session.payment_status === "paid" &&
     session.amount_total ===
-      expectedAmountCents &&
+      metadata.expectedAmountCents &&
     subscription.status === "active";
 
   const sessionTrialDays = Number(
@@ -549,7 +559,7 @@ export async function processSuccessfulSubscriptionCheckout(
   validateSubscriptionCheckoutCompletion(
     session,
     subscription,
-    metadata.expectedAmountCents
+    metadata
   );
 
   const price =
@@ -812,7 +822,7 @@ export async function verifyAndActivateSubscriptionCheckout(
   validateSubscriptionCheckoutCompletion(
     session,
     subscription,
-    metadata.expectedAmountCents
+    metadata
   );
 
   if (
@@ -1068,7 +1078,7 @@ export async function processSubscriptionLifecycleEvent(
 
   if (
     price.currency.toLowerCase() !==
-      "chf" ||
+      metadata.expectedCurrency ||
     price.unit_amount !==
       metadata.expectedAmountCents ||
     price.unit_amount !==
