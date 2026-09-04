@@ -33,7 +33,7 @@ export default function PricingSection({
   const isGermany = market === "DE";
 
   const singleObjectDescription = isGermany
-    ? "Ein hochwertiger Arbeitsbereich für genau eine Immobilie. Einmal 9,90 € bezahlen und nur dieses konkrete Objekt mit bis zu 5 Objektbildern freischalten – ohne Abonnement."
+    ? "Nur eine Immobilie? Für 9,90 € einmalig freischalten – ohne Abonnement."
     : t("singleObject.description");
 
   const singleObjectNote = isGermany
@@ -82,22 +82,27 @@ export default function PricingSection({
         : t("plans.founder.button"),
       href: "#",
       highlighted: true,
-      features: [
-        t("plans.founder.features.trial"),
-        isGermany
-          ? "Founder-Preisgarantie: 19,90 € pro Monat dauerhaft bei ununterbrochen aktivem Abonnement"
-          : t("plans.founder.features.founderGuarantee"),
-        isGermany
-          ? "Limitiert auf die ersten 50 Founder-Kunden"
-          : t("plans.founder.features.regularPrice"),
-        t("plans.founder.features.projects"),
-        t("plans.founder.features.variants"),
-        t("plans.founder.features.images"),
-        t("plans.founder.features.analysis"),
-        t("plans.founder.features.social"),
-        t("plans.founder.features.marketingHub"),
-        t("plans.founder.features.storage"),
-      ],
+      features: isGermany
+        ? [
+            "30 Tage kostenlos testen",
+            "19,90 € pro Monat dauerhaft für die ersten 50 Founder-Kunden*",
+            "Mehrere Immobilien im Makler-Cockpit",
+            "3 professionelle Inserat-Varianten pro Objekt",
+            "Bis zu 10 Objektbilder pro Immobilie",
+            "Bildanalyse, Social-Media-Texte und Marketing Hub",
+          ]
+        : [
+            t("plans.founder.features.trial"),
+            t("plans.founder.features.founderGuarantee"),
+            t("plans.founder.features.regularPrice"),
+            t("plans.founder.features.projects"),
+            t("plans.founder.features.variants"),
+            t("plans.founder.features.images"),
+            t("plans.founder.features.analysis"),
+            t("plans.founder.features.social"),
+            t("plans.founder.features.marketingHub"),
+            t("plans.founder.features.storage"),
+          ],
     },
     {
       id: "pro",
@@ -122,15 +127,26 @@ export default function PricingSection({
     },
   ];
 
-  const singleObjectFeatures = [
-    t("singleObject.features.property"),
-    t("singleObject.features.variants"),
-    t("singleObject.features.images"),
-    t("singleObject.features.social"),
-    t("singleObject.features.marketingHub"),
-    t("singleObject.features.storage"),
-    t("singleObject.features.noMonthlyCosts"),
-  ];
+  const visiblePlans = isGermany
+    ? plans.filter((plan) => plan.id === "founder")
+    : plans;
+
+  const singleObjectFeatures = isGermany
+    ? [
+        "1 Immobilie freischalten",
+        "3 professionelle Inserat-Varianten",
+        "Bis zu 5 Objektbilder mit Bildanalyse",
+        "Social-Media-Texte und Marketing Hub",
+      ]
+    : [
+        t("singleObject.features.property"),
+        t("singleObject.features.variants"),
+        t("singleObject.features.images"),
+        t("singleObject.features.social"),
+        t("singleObject.features.marketingHub"),
+        t("singleObject.features.storage"),
+        t("singleObject.features.noMonthlyCosts"),
+      ];
 
   async function startFounderCheckout() {
 
@@ -180,7 +196,9 @@ export default function PricingSection({
         window.location.pathname,
       requested_plan: "founder",
       cta_text:
-        t("plans.founder.button"),
+        isGermany
+          ? "30 Tage kostenlos starten"
+          : t("plans.founder.button"),
       transport_type: "beacon",
     }
   );
@@ -247,7 +265,11 @@ export default function PricingSection({
   return (
     <section
       id="preise"
-      className="pricingSection"
+      className={
+        isGermany
+          ? "pricingSection pricingSectionGermany"
+          : "pricingSection"
+      }
     >
       <div className="pricingShell">
         <header className="pricingHeader">
@@ -255,9 +277,17 @@ export default function PricingSection({
             {t("header.eyebrow")}
           </span>
 
-          <h2>{t("header.title")}</h2>
+          <h2>
+            {isGermany
+              ? "30 Tage kostenlos starten. Danach flexibel entscheiden."
+              : t("header.title")}
+          </h2>
 
-          <p>{t("header.description")}</p>
+          <p>
+            {isGermany
+              ? "Founder ist unser empfohlener Einstieg für Makler. Alternativ kannst du eine einzelne Immobilie einmalig für 9,90 € freischalten."
+              : t("header.description")}
+          </p>
         </header>
 
         <article className="singleObjectCard">
@@ -304,6 +334,21 @@ export default function PricingSection({
             <a
               href="/register?plan=single-object"
               className="singleObjectButton"
+              onClick={() => {
+                trackAnalyticsEvent(
+                  "register_cta_click",
+                  {
+                    cta_page:
+                      window.location.pathname,
+                    requested_plan:
+                      "single-object",
+                    cta_text: isGermany
+                      ? "Einzelimmobilie starten"
+                      : t("singleObject.button"),
+                    transport_type: "beacon",
+                  }
+                );
+              }}
             >
               {isGermany
                 ? "Einzelimmobilie starten"
@@ -321,6 +366,7 @@ export default function PricingSection({
 
         {checkoutErrorMessage ? (
           <div
+            className="checkoutNotice"
             role={
               isFounderExistingNotice
                 ? "status"
@@ -370,7 +416,7 @@ export default function PricingSection({
         ) : null}
 
         <div className="plansGrid">
-          {plans.map((plan) => (
+          {visiblePlans.map((plan) => (
             <article
               key={plan.id}
               className={
@@ -465,24 +511,92 @@ export default function PricingSection({
           ))}
         </div>
 
+        {isGermany ? (
+          <div className="demoTeaser">
+            <div>
+              <span className="demoTeaserLabel">
+                KOSTENLOS KENNENLERNEN
+              </span>
+
+              <strong>
+                Noch unsicher? Teste Inserat-AI kostenlos.
+              </strong>
+
+              <p>
+                Keine Kreditkarte. Eine kostenlose
+                Textgenerierung mit drei Varianten.
+              </p>
+            </div>
+
+            <a
+              href="/register"
+              className="demoTeaserButton"
+              onClick={() => {
+                trackAnalyticsEvent(
+                  "register_cta_click",
+                  {
+                    cta_page:
+                      window.location.pathname,
+                    requested_plan: "demo",
+                    cta_text: "Kostenlos testen",
+                    transport_type: "beacon",
+                  }
+                );
+              }}
+            >
+              Kostenlos testen
+              <span aria-hidden="true">
+                {"\u2192"}
+              </span>
+            </a>
+          </div>
+        ) : null}
+
         <div className="agencyTeaser">
-          <div>
-            <span className="agencyLabel">
-              {t("agency.label")}
-            </span>
+          {isGermany ? (
+            <>
+              <div>
+                <span className="agencyLabel">
+                  FÜR WACHSENDE TEAMS
+                </span>
 
-            <strong>Agency</strong>
+                <strong>Pro & Agency</strong>
 
-            <p>{t("agency.description")}</p>
-          </div>
+                <p>
+                  Mehr Automatisierung und
+                  Premium-Funktionen für größere
+                  Immobilien-Teams.
+                </p>
+              </div>
 
-          <div className="agencyStatus">
-            <span>
-              {isGermany ? "149,90 €" : "149.90 CHF"} /{" "}
-              {t("agency.month")}
-            </span>
-            <strong>{t("agency.status")}</strong>
-          </div>
+              <div className="agencyStatus">
+                <span>ab 79,90 € / Monat</span>
+                <strong>In Vorbereitung</strong>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <span className="agencyLabel">
+                  {t("agency.label")}
+                </span>
+
+                <strong>Agency</strong>
+
+                <p>{t("agency.description")}</p>
+              </div>
+
+              <div className="agencyStatus">
+                <span>
+                  149.90 CHF /{" "}
+                  {t("agency.month")}
+                </span>
+                <strong>
+                  {t("agency.status")}
+                </strong>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -879,6 +993,170 @@ export default function PricingSection({
           margin-top: 5px;
           color: #fbbf24;
           font-size: 12px;
+        }
+
+        /* =================================================
+           DE CONVERSION WAVE 2
+           Founder zuerst, weniger Entscheidungsstress
+           ================================================= */
+
+        .pricingSectionGermany .pricingShell {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .pricingSectionGermany .pricingHeader {
+          order: 0;
+          max-width: 820px;
+          margin-bottom: 30px;
+        }
+
+        .pricingSectionGermany .checkoutNotice {
+          order: 1;
+        }
+
+        .pricingSectionGermany .plansGrid {
+          order: 2;
+          grid-template-columns:
+            minmax(0, 760px);
+          justify-content: center;
+          margin-top: 0;
+        }
+
+        .pricingSectionGermany .planCardHighlighted {
+          min-height: 0;
+          padding: 34px;
+          transform: none;
+          border-width: 2px;
+          box-shadow:
+            0 30px 75px rgba(245, 158, 11, 0.24);
+        }
+
+        .pricingSectionGermany .planDescription {
+          min-height: 0;
+        }
+
+        .pricingSectionGermany .planFeatures {
+          grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+          gap: 11px 20px;
+        }
+
+        .pricingSectionGermany .planButtonHighlighted {
+          min-height: 56px;
+          font-size: 15px;
+        }
+
+        .pricingSectionGermany .singleObjectCard {
+          order: 3;
+          margin-top: 22px;
+          padding: 26px;
+          border-color:
+            rgba(148, 163, 184, 0.24);
+          background:
+            linear-gradient(
+              135deg,
+              rgba(15, 23, 42, 0.88),
+              rgba(30, 41, 59, 0.72)
+            );
+          box-shadow:
+            0 18px 45px rgba(0, 0, 0, 0.2);
+        }
+
+        .pricingSectionGermany .singleObjectMain h3 {
+          font-size:
+            clamp(28px, 3vw, 36px);
+        }
+
+        .pricingSectionGermany .singleObjectFeatures {
+          gap: 10px 22px;
+          margin-top: 20px;
+        }
+
+        .pricingSectionGermany .singleObjectPriceBox {
+          padding: 22px;
+        }
+
+        .pricingSectionGermany .singleObjectPrice strong {
+          font-size:
+            clamp(46px, 5vw, 58px);
+        }
+
+        .demoTeaser {
+          order: 4;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 24px;
+          margin-top: 18px;
+          padding: 22px 26px;
+          border:
+            1px solid rgba(148, 163, 184, 0.2);
+          border-radius: 18px;
+          background:
+            rgba(15, 23, 42, 0.52);
+        }
+
+        .demoTeaserLabel {
+          display: block;
+          margin-bottom: 7px;
+          color: #94a3b8;
+          font-size: 9px;
+          font-weight: 900;
+          letter-spacing: 0.13em;
+        }
+
+        .demoTeaser strong {
+          display: block;
+          color: #ffffff;
+          font-size: 18px;
+        }
+
+        .demoTeaser p {
+          margin: 5px 0 0;
+          color:
+            rgba(226, 232, 240, 0.58);
+          font-size: 13px;
+        }
+
+        .demoTeaserButton {
+          flex-shrink: 0;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 9px;
+          min-height: 46px;
+          padding: 0 18px;
+          border:
+            1px solid rgba(251, 191, 36, 0.35);
+          border-radius: 12px;
+          background:
+            rgba(245, 158, 11, 0.1);
+          color: #fbbf24;
+          text-decoration: none;
+          font-size: 13px;
+          font-weight: 900;
+        }
+
+        .pricingSectionGermany .agencyTeaser {
+          order: 5;
+          margin-top: 14px;
+          opacity: 0.82;
+        }
+
+        @media (max-width: 900px) {
+          .pricingSectionGermany .planFeatures {
+            grid-template-columns: 1fr;
+          }
+
+          .pricingSectionGermany .demoTeaser {
+            align-items: flex-start;
+            flex-direction: column;
+          }
+
+          .pricingSectionGermany .demoTeaserButton {
+            width: 100%;
+          }
         }
 
         @media (max-width: 900px) {
