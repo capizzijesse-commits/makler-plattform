@@ -5,13 +5,21 @@ import {
   useLocale,
   useTranslations,
 } from "next-intl";
+import type { InseratAiMarket } from "@/lib/inserat-ai-market";
 
-export default function ExampleGenerator() {
+type ExampleGeneratorProps = {
+  market: InseratAiMarket;
+};
+
+export default function ExampleGenerator({
+  market,
+}: ExampleGeneratorProps) {
   const locale = useLocale();
   const t = useTranslations("ExampleGenerator");
 
   const [rooms, setRooms] = useState(
-    () => t("defaults.rooms")
+    () =>
+      market === "DE" ? "4" : t("defaults.rooms")
   );
 
   const [propertyType, setPropertyType] = useState(
@@ -19,7 +27,10 @@ export default function ExampleGenerator() {
   );
 
   const [location, setLocation] = useState(
-    () => t("defaults.location")
+    () =>
+      market === "DE"
+        ? "München, Bayern"
+        : t("defaults.location")
   );
 
   const [livingSpace, setLivingSpace] = useState(
@@ -27,7 +38,10 @@ export default function ExampleGenerator() {
   );
 
   const [price, setPrice] = useState(
-    () => t("defaults.price")
+    () =>
+      market === "DE"
+        ? "795.000 €"
+        : t("defaults.price")
   );
 
   const [highlights, setHighlights] = useState(
@@ -35,7 +49,10 @@ export default function ExampleGenerator() {
   );
 
   const [title, setTitle] = useState(
-    () => t("defaults.title")
+    () =>
+      market === "DE"
+        ? "Stilvolle 4-Zimmer-Wohnung mit Balkon in München"
+        : t("defaults.title")
   );
 
   const [description, setDescription] = useState(
@@ -264,11 +281,15 @@ export default function ExampleGenerator() {
 
               <div className="mt-5 flex flex-wrap gap-2">
                 <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
-                  Homegate
+{market === "DE"
+                    ? "ImmobilienScout24"
+                    : "Homegate"}
                 </span>
 
                 <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
-                  ImmoScout24
+{market === "DE"
+                    ? "immowelt"
+                    : "ImmoScout24"}
                 </span>
 
                 <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
