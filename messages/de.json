@@ -34,7 +34,7 @@
     "dashboardCta": "Zum Dashboard",
     "dashboardShort": "Dashboard",
     "login": "Login",
-    "register": "Kostenlos registrieren",
+    "register": "Kostenlos starten",
     "logout": "Abmelden",
     "loggingOut": "Abmeldung läuft …",
     "logoutError": "Logout fehlgeschlagen.",
@@ -100,7 +100,7 @@
       "headlineLine2": "wird ein Inserat,",
       "headlineLine3": "das überzeugt.",
       "subline": "Inserat-AI erstellt hochwertige Immobilieninserate in Sekunden – emotional formuliert, professionell strukturiert und bereit für Homegate, ImmoScout24, Exposés und Social Media.",
-      "register": "Kostenlos registrieren",
+      "register": "Kostenlos starten",
       "noCreditCard": "Keine Kreditkarte erforderlich"
     },
     "benefits": {
@@ -189,9 +189,9 @@
         "label": "KOSTENLOS KENNENLERNEN",
         "cadence": "ohne Abonnement",
         "description": "Teste Inserat-AI mit einer kostenlosen Textgenerierung und drei Varianten. Bilder, Bildanalyse und vollständige Exporte sind nicht Bestandteil der Demo.",
-        "button": "Kostenlos registrieren",
+        "button": "Kostenlos starten",
         "features": {
-          "registration": "Kostenlose Registrierung",
+          "registration": "Kostenloser Zugang",
           "generation": "1 kostenlose Textgenerierung mit 3 Varianten",
           "noImages": "Keine Bilder und keine Bildanalyse",
           "noBilling": "Keine automatische Abbuchung"
@@ -200,7 +200,7 @@
       "founder": {
         "label": "FÜR DIE ERSTEN 50 MAKLER",
         "cadence": "danach 19.90 CHF / Monat",
-        "description": "30 Tage kostenlos testen. Die ersten 50 Founder-Kunden sichern sich CHF 19.90 pro Monat dauerhaft, solange das Abonnement ohne Unterbruch aktiv bleibt. Danach beträgt der reguläre Preis CHF 39.90 pro Monat.",
+        "description": "30 Tage kostenlos testen. Die ersten 50 Founder-Kunden sichern sich CHF 19.90 pro Monat dauerhaft, solange das Abonnement ohne Unterbruch aktiv bleibt.",
         "button": "Founder sichern",
         "loading": "Checkout wird geöffnet …",
         "features": {
@@ -213,7 +213,7 @@
           "storage": "Objekte, Texte und Bilder dauerhaft speichern",
           "trial": "30 Tage kostenlos testen",
           "founderGuarantee": "Founder-Preisgarantie: CHF 19.90 pro Monat dauerhaft bei ununterbrochen aktivem Abonnement",
-          "regularPrice": "Limitiert auf die ersten 50 Kunden – danach regulär CHF 39.90 pro Monat",
+          "regularPrice": "Limitiert auf die ersten 50 Founder-Kunden",
           "marketingHub": "Marketing Hub für mehrere Immobilien"
         },
         "price": "30 Tage kostenlos"
@@ -248,14 +248,14 @@
   },
   "ExampleGenerator": {
     "intro": {
-      "eyebrow": "Live-Beispiel",
-      "title": "Teste direkt, wie Inserat-AI aus wenigen Angaben ein Inserat macht.",
-      "description": "Gib ein paar Objektdaten ein und sieh sofort, wie daraus ein professioneller Titel und eine hochwertige Beschreibung entstehen."
+      "eyebrow": "Sofort-Vorschau",
+      "title": "Sieh sofort, wie ein Inserat mit Inserat-AI aufgebaut sein kann.",
+      "description": "Diese schnelle Vorschau zeigt dir direkt das Ergebnisformat. Erstelle danach kostenlos dein erstes Inserat mit deiner eigenen Immobilie."
     },
     "input": {
       "eyebrow": "Eingabe",
       "title": "Objektangaben",
-      "demo": "Demo",
+      "demo": "Vorschau",
       "labels": {
         "rooms": "Zimmer",
         "propertyType": "Objektart",
@@ -264,8 +264,8 @@
         "price": "Preis",
         "highlights": "Highlights"
       },
-      "generateButton": "Beispiel-Inserat erstellen",
-      "note": "Ohne Anmeldung testen – im kostenlosen Account warten weitere Funktionen."
+      "generateButton": "Sofort-Vorschau erstellen",
+      "note": "Diese Vorschau läuft ohne Anmeldung. Für echte AI-Generierung mit deinem Objekt kostenlos starten."
     },
     "creates": {
       "eyebrow": "Was Inserat-AI erstellt",
@@ -284,14 +284,14 @@
       "expose": "Exposé"
     },
     "output": {
-      "eyebrow": "Generiertes Inserat",
-      "title": "Generiertes Inserat",
+      "eyebrow": "Vorschau",
+      "title": "Beispiel-Ergebnis",
       "ready": "Bereit",
       "titleLabel": "Titel",
       "descriptionLabel": "Beschreibung",
       "highlightsLabel": "Highlights",
       "roomsValue": "{rooms} Zimmer",
-      "register": "Kostenlos registrieren",
+      "register": "Kostenlos starten",
       "prices": "Preise ansehen"
     },
     "defaults": {
@@ -312,7 +312,7 @@
   },
   "Register": {
     "back": "Zurück zur Startseite",
-    "badge": "Kostenlos registrieren",
+    "badge": "Kostenlos starten",
     "hero": {
       "title": "Starte mit Inserat-AI und erstelle bessere Inserate.",
       "description": "Erstelle deinen kostenlosen Zugang ohne Kreditkarte und lerne Inserat-AI unverbindlich kennen. Generiere dein erstes professionelles Immobilieninserat in wenigen Sekunden."
@@ -323,7 +323,7 @@
         "title": "Account erstellen",
         "description": "Kostenlos starten und direkt dein erstes Inserat generieren.",
         "submit": "Kostenlos starten",
-        "note": "Die Registrierung und die Demo sind kostenlos. Für die Demo ist keine Kreditkarte erforderlich. Kosten entstehen erst, wenn du ein Angebot auswählst oder eine einzelne Immobilie freischaltest.",
+        "note": "Der Zugang und die Demo sind kostenlos. Für die Demo ist keine Kreditkarte erforderlich. Kosten entstehen erst, wenn du ein Angebot auswählst oder eine einzelne Immobilie freischaltest.",
         "statGeneration": "kostenlose Generierung",
         "statInstant": "Sofort",
         "statDashboard": "Dashboard nutzen",
@@ -333,12 +333,12 @@
       "founder": {
         "eyebrow": "FOUNDER-ANGEBOT",
         "title": "Founder-Zugang sichern",
-        "description": "Konto erstellen und Founder 30 Tage kostenlos testen. Die ersten 50 Kunden sichern sich CHF 19.90 pro Monat dauerhaft. Danach beträgt der reguläre Preis CHF 39.90 pro Monat.",
+        "description": "Konto erstellen und Founder 30 Tage kostenlos testen. Die ersten 50 Kunden sichern sich CHF 19.90 pro Monat dauerhaft.",
         "submit": "Founder-Zugang vorbereiten",
-        "note": "Die Registrierung ist kostenlos. Nach der E-Mail-Bestätigung und dem Login wirst du zum sicheren Stripe-Checkout weitergeleitet. Dort beginnt der kostenlose Testzeitraum von 30 Tagen. Die ersten 50 Founder-Kunden behalten CHF 19.90 pro Monat dauerhaft, solange das Abonnement ohne Unterbruch aktiv bleibt. Danach beträgt der reguläre Preis CHF 39.90 pro Monat.",
+        "note": "Die Kontoerstellung ist kostenlos. Nach der E-Mail-Bestätigung und dem Login wirst du zum sicheren Stripe-Checkout weitergeleitet. Dort beginnt der kostenlose Testzeitraum von 30 Tagen. Die ersten 50 Founder-Kunden behalten CHF 19.90 pro Monat dauerhaft, solange das Abonnement ohne Unterbruch aktiv bleibt.",
         "statPrice": "pro Monat",
         "statImages": "Bilder pro Immobilie",
-        "statPlaces": "Founder-Plätze – danach CHF 39.90",
+        "statPlaces": "Founder-Plätze verfügbar",
         "statTrialValue": "30 Tage",
         "statTrialLabel": "kostenlos testen",
         "statAfterTrial": "dauerhaft bei aktivem Abo"
@@ -348,7 +348,7 @@
         "title": "Einzelimmobilie vorbereiten",
         "description": "Erstelle dein Konto und schalte danach genau eine Immobilie für einmalig CHF 9.90 frei.",
         "submit": "Einzelimmobilie vorbereiten",
-        "note": "Die Registrierung ist kostenlos. Nach der E-Mail-Bestätigung und dem Login kannst du eine konkrete Immobilie für einmalig CHF 9.90 freischalten – ohne Abonnement.",
+        "note": "Die Kontoerstellung ist kostenlos. Nach der E-Mail-Bestätigung und dem Login kannst du eine konkrete Immobilie für einmalig CHF 9.90 freischalten – ohne Abonnement.",
         "statPrice": "einmalig",
         "statImages": "Bilder für das Objekt",
         "statNo": "Kein",
@@ -366,22 +366,22 @@
       "loading": "Account wird erstellt …"
     },
     "login": {
-      "alreadyRegistered": "Bereits registriert?",
+      "alreadyRegistered": "Du hast bereits einen Account?",
       "button": "Einloggen"
     },
     "dialog": {
-      "title": "Registrierung prüfen",
+      "title": "Angaben prüfen",
       "close": "Verstanden"
     },
     "errors": {
-      "invalidResponse": "Die Registrierung hat keine gültige Antwort geliefert.",
+      "invalidResponse": "Die Kontoerstellung hat keine gültige Antwort geliefert.",
       "missingFields": "Bitte fülle Name, E-Mail und Passwort vollständig aus.",
       "invalidName": "Der Name muss zwischen 2 und 100 Zeichen lang sein.",
       "invalidEmail": "Bitte gib eine gültige E-Mail-Adresse ein.",
       "invalidPassword": "Das Passwort muss zwischen 8 und 128 Zeichen lang sein.",
-      "serviceUnavailable": "Die Registrierung ist momentan nicht verfügbar.",
+      "serviceUnavailable": "Die Kontoerstellung ist momentan nicht verfügbar.",
       "emailSendFailed": "Die Bestätigungs-E-Mail konnte momentan nicht versendet werden.",
-      "processingFailed": "Die Registrierung konnte momentan nicht verarbeitet werden."
+      "processingFailed": "Die Kontoerstellung konnte momentan nicht verarbeitet werden."
     }
   },
   "Account": {
@@ -452,16 +452,16 @@
     },
     "account": {
       "prompt": "Noch keinen Account?",
-      "register": "Kostenlos registrieren"
+      "register": "Kostenlos starten"
     },
     "info": {
       "description": "Inserat-AI erstellt aus wenigen Angaben professionelle Immobilieninserate für Portale, Website und Social Media."
     },
     "messages": {
       "resetSuccess": "Dein Passwort wurde erfolgreich geändert. Du kannst dich jetzt anmelden.",
-      "registrationSuccess": "Registrierung erfolgreich. Bitte prüfe dein E-Mail-Postfach und bestätige dein Konto.",
+      "registrationSuccess": "Account erfolgreich erstellt. Bitte prüfe dein E-Mail-Postfach und bestätige dein Konto.",
       "verificationSuccess": "Deine E-Mail-Adresse wurde erfolgreich bestätigt. Du kannst dich jetzt einloggen.",
-      "verificationExpired": "Der Bestätigungslink ist abgelaufen. Bitte registriere dich erneut, um einen neuen Link zu erhalten.",
+      "verificationExpired": "Der Bestätigungslink ist abgelaufen. Bitte starte die Kontoerstellung erneut, um einen neuen Link zu erhalten.",
       "verificationInvalid": "Der Bestätigungslink ist ungültig oder wurde bereits verwendet.",
       "verificationMissing": "Im Bestätigungslink fehlt der notwendige Token.",
       "verificationError": "Die E-Mail-Adresse konnte nicht bestätigt werden. Bitte versuche es später erneut.",
@@ -695,7 +695,7 @@
   "ForgotPassword": {
     "hero": {
       "title": "Passwort vergessen?",
-      "description": "Gib deine registrierte E-Mail-Adresse ein. Wir senden dir einen Link, mit dem du ein neues Passwort festlegen kannst."
+      "description": "Gib die E-Mail-Adresse deines Accounts ein. Wir senden dir einen Link, mit dem du ein neues Passwort festlegen kannst."
     },
     "fields": {
       "email": "E-Mail-Adresse"
@@ -712,7 +712,7 @@
       "requestFailed": "Die Anfrage konnte momentan nicht verarbeitet werden.",
       "success": "Falls ein Konto existiert, wurde ein Reset-Link versendet."
     },
-    "securityNotice": "Aus Sicherheitsgründen zeigen wir nicht an, ob eine E-Mail-Adresse bei Inserat-AI registriert ist."
+    "securityNotice": "Aus Sicherheitsgründen zeigen wir nicht an, ob zu einer E-Mail-Adresse ein Inserat-AI-Konto existiert."
   },
   "ResetPassword": {
     "hero": {
