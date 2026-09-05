@@ -1,7 +1,8 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import type { InseratAiMarket } from "@/lib/inserat-ai-market";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 
 type SocialProofSectionProps = {
   market: InseratAiMarket;
@@ -69,18 +70,18 @@ export default function SocialProofSection({
     ? [
         {
           number: "01",
-          title: "Kostenlos ausprobieren",
-          text: "Ohne Kreditkarte starten und Inserat-AI direkt mit einer eigenen Immobilie kennenlernen.",
+          title: "Ohne Kreditkarte ausprobieren",
+          text: "Starte kostenlos und teste Inserat-AI direkt mit einer eigenen Immobilie – bevor du dich für einen Tarif entscheidest.",
         },
         {
           number: "02",
-          title: "In wenigen Minuten zum Inserat",
-          text: "Objektdaten eingeben und daraus professionelle Inserat-Varianten für die Vermarktung erstellen.",
+          title: "Für Deutschland bereit",
+          text: "Deutsche Immobilienbegriffe, Preise in EUR und Inhalte für ImmobilienScout24, immowelt und Social Media.",
         },
         {
           number: "03",
-          title: "Alles an einem Ort",
-          text: "Inserat, Bilder, Social Media und weitere Marketing-Inhalte zentral bearbeiten.",
+          title: "Mit dem eigenen Objekt testen",
+          text: "Arbeite direkt mit deinen eigenen Objektdaten und sieh selbst, wie Inserat-AI deinen Vermarktungsalltag unterstützt.",
         },
       ]
     : [
@@ -113,7 +114,7 @@ export default function SocialProofSection({
           <div className="max-w-3xl">
             <span className="text-xs font-black uppercase tracking-[0.24em] text-amber-300">
               {isGermany
-                ? "Für den Immobilienalltag entwickelt"
+                ? "Vertrauen vor dem ersten Klick"
                 : "Für Immobilienprofis entwickelt"}
             </span>
 
@@ -122,13 +123,13 @@ export default function SocialProofSection({
               className="mt-4 text-3xl font-black tracking-[-0.035em] text-white md:text-5xl"
             >
               {isGermany
-                ? "Professionelle Immobilienvermarktung. Einfacher gemacht."
+                ? "Erst ausprobieren. Dann entscheiden."
                 : "Professionelle Immobilienvermarktung. Einfacher gemacht."}
             </h2>
 
             <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
               {isGermany
-                ? "Inserat-AI unterstützt Immobilienprofis dabei, hochwertige Inhalte schneller zu erstellen und den gesamten Vermarktungsprozess übersichtlich zu organisieren."
+                ? "Teste Inserat-AI zuerst kostenlos mit einer eigenen Immobilie und entscheide danach, welcher Einstieg zu deinem Alltag passt."
                 : "Inserat-AI unterstützt Immobilienprofis dabei, hochwertige Inhalte schneller zu erstellen und den Vermarktungsprozess übersichtlich zu organisieren."}
             </p>
           </div>
@@ -163,13 +164,47 @@ export default function SocialProofSection({
             ))}
           </div>
 
+          {isGermany && (
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <a
+                href="/register"
+                onClick={() => {
+                  trackAnalyticsEvent(
+                    "register_cta_click",
+                    {
+                      cta_page:
+                        window.location.pathname,
+                      requested_plan: "demo",
+                      cta_text:
+                        "Kostenlos ausprobieren",
+                      transport_type: "beacon",
+                    }
+                  );
+                }}
+                className="inline-flex min-h-12 items-center justify-center rounded-xl bg-gradient-to-r from-amber-300 to-amber-500 px-6 font-black text-slate-950 shadow-lg shadow-amber-500/20 transition hover:-translate-y-0.5"
+              >
+                Kostenlos ausprobieren
+                <span className="ml-2" aria-hidden="true">
+                  {"\u2192"}
+                </span>
+              </a>
+
+              <span className="text-sm font-bold text-slate-400">
+                Keine Kreditkarte für den kostenlosen Einstieg.
+              </span>
+            </div>
+          )}
+
           <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-white/10 pt-6 text-sm font-bold text-slate-400">
             <span>✓ Keine Kreditkarte erforderlich</span>
 
             <span>✓ Datenschutz im Fokus</span>
 
             {isGermany && (
-              <span>✓ Für den deutschen Immobilienmarkt</span>
+              <>
+                <span>✓ Preise und Checkout in EUR</span>
+                <span>✓ Für den deutschen Immobilienmarkt</span>
+              </>
             )}
 
             {showRegistrationCount && (
