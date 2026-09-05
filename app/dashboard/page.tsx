@@ -16,6 +16,10 @@ import {
 import PortalExportButton from "../components/PortalExportButton";
 import { useAppDialog } from "@/components/AppDialogProvider";
 import {
+  getInseratAiMarketFromHostname,
+  type InseratAiMarket,
+} from "@/lib/inserat-ai-market";
+import {
   SWISS_LOCATIONS,
   SWISS_POSTAL_LOCATIONS,
 } from "@/lib/swissLocations";
@@ -1635,7 +1639,9 @@ const startSingleObjectCheckoutFromDemo =
         "begin_checkout",
         {
           currency:
-            "CHF",
+            market === "DE"
+              ? "EUR"
+              : "CHF",
           value:
             9.9,
           checkout_type:
@@ -1825,9 +1831,19 @@ const clearForm = () => {
  * INSERAT_AI_MARKET_SWITCH_V1
  */
 const [market, setMarket] =
-  useState<"CH" | "DE">("CH");
+  useState<InseratAiMarket>("CH");
 
 useEffect(() => {
+  const domainMarket =
+    getInseratAiMarketFromHostname(
+      window.location.hostname
+    );
+
+  if (domainMarket) {
+    setMarket(domainMarket);
+    return;
+  }
+
   const savedMarket =
     localStorage.getItem(
       "inseratAiMarket"
@@ -1837,9 +1853,7 @@ useEffect(() => {
     savedMarket === "CH" ||
     savedMarket === "DE"
   ) {
-    setMarket(
-      savedMarket
-    );
+    setMarket(savedMarket);
   }
 }, []);
 
@@ -1849,6 +1863,39 @@ useEffect(() => {
     market
   );
 }, [market]);
+
+const localizeGermanyDashboardTerm = (
+  value: string
+): string => {
+  if (
+    locale !== "de" ||
+    market !== "DE"
+  ) {
+    return value;
+  }
+
+  const replacements: Record<string, string> = {
+    "Attikawohnung": "Penthouse",
+    "Doppeleinfamilienhaus": "Doppelhaushälfte",
+    "Bauland": "Grundstück",
+    "Rollstuhlgängig": "barrierefrei",
+    "Minergie-Standard": "energieeffizient",
+    "Lift": "Aufzug",
+    "Aussenparkplatz": "Außenstellplatz",
+  };
+
+  return replacements[value] ?? value;
+};
+
+const localizedQuickPropertyTypes =
+  quickPropertyTypes.map(
+    localizeGermanyDashboardTerm
+  );
+
+const localizedExtraHighlightSuggestions =
+  extraHighlightSuggestions.map(
+    localizeGermanyDashboardTerm
+  );
 
 const allLocationSuggestions: string[] = Array.from(
   new Set([
@@ -2036,9 +2083,15 @@ localStorage.setItem(getTodayKey(), String(newDailyCount));
         title:
           t("demo.limitTitle"),
         message:
-          t("demo.limitMessage"),
+          locale === "de" &&
+          market === "DE"
+            ? "Sichere jetzt dieses Inserat inklusive bis zu 5 Bildern, Standard-Bildanalyse, Social-Media-Texten und Marketing Hub für einmalig 9,90 €."
+            : t("demo.limitMessage"),
         confirmLabel:
-          t("demo.unlock"),
+          locale === "de" &&
+          market === "DE"
+            ? "Für 9,90 € freischalten"
+            : t("demo.unlock"),
         secondaryLabel:
           t("demo.compareFounder"),
         cancelLabel:
@@ -2076,7 +2129,10 @@ localStorage.setItem(getTodayKey(), String(newDailyCount));
     const openOffers = await confirmAction({
       title: t("demo.previewTitle"),
       message:
-        t("demo.copyMessage"),
+        locale === "de" &&
+        market === "DE"
+          ? "Das Kopieren des vollständigen Inserattexts ist nach der Freischaltung verfügbar. Die Einzelimmobilie kostet einmalig 9,90 €."
+          : t("demo.copyMessage"),
       confirmLabel: t("demo.viewOffers"),
       cancelLabel: t("demo.laterShort"),
       tone: "warning",
@@ -2288,7 +2344,12 @@ return (
 
     <div className="hero">
         <h1>{t("hero.title")}</h1>
-        <p>{t("hero.description")}</p>
+        <p>
+          {locale === "de" &&
+          market === "DE"
+            ? "Erstelle in Sekunden hochwertige Immobilieninserate für ImmobilienScout24, immowelt und Social Media. Professionell formuliert, klar strukturiert und auf maximale Wirkung bei Käufern ausgelegt."
+            : t("hero.description")}
+        </p>
       </div>
 
         <div className="grid">
@@ -2569,7 +2630,7 @@ return (
       {t("fields.propertyType")}
     </div>
     <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-      {quickPropertyTypes.map((item) => (
+      {localizedQuickPropertyTypes.map((item) => (
         <button
           key={item}
           type="button"
@@ -2643,7 +2704,7 @@ return (
         gap: "8px",
       }}
     >
-      {extraHighlightSuggestions.map((suggestion) => (
+      {localizedExtraHighlightSuggestions.map((suggestion) => (
         <button
           key={suggestion}
           type="button"
@@ -3067,7 +3128,12 @@ return (
 {!canUseDashboardImages && (
   <div className="mb-4 rounded-2xl border border-amber-300/30 bg-amber-400/10 p-4 text-sm leading-6 text-amber-100">
     <div className="font-black text-amber-300">
-      📷 {t("images.singleObjectTitle")}
+      📷 {
+        locale === "de" &&
+        market === "DE"
+          ? "Bilder für die 9,90-€-Einzelimmobilie vorbereiten"
+          : t("images.singleObjectTitle")
+      }
     </div>
 
     <div className="mt-1 text-slate-200">
@@ -3389,13 +3455,18 @@ return (
       {t("actions.newObject")}
     </button>
 
-    <button
-      onClick={exportPdf}
-      disabled={!current}
-      className="btn btn-secondary"
-    >
-      {t("actions.pdf")}
-    </button>
+    {!(
+      locale === "de" &&
+      market === "DE"
+    ) && (
+      <button
+        onClick={exportPdf}
+        disabled={!current}
+        className="btn btn-secondary"
+      >
+        {t("actions.pdf")}
+      </button>
+    )}
 
     <PortalExportButton
       data={{
