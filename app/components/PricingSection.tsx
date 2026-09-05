@@ -75,7 +75,7 @@ export default function PricingSection({
         ? "danach 19,90 € / Monat"
         : t("plans.founder.cadence"),
       text: isGermany
-        ? "30 Tage kostenlos testen. Die ersten 50 Founder-Kunden sichern sich 19,90 € pro Monat dauerhaft, solange das Abonnement ohne Unterbrechung aktiv bleibt."
+        ? "Die ersten 50 Founder-Kunden sichern sich 19,90 € pro Monat dauerhaft – solange das Abonnement ohne Unterbrechung aktiv bleibt."
         : t("plans.founder.description"),
       button: isGermany
         ? "30 Tage kostenlos starten"
@@ -84,8 +84,7 @@ export default function PricingSection({
       highlighted: true,
       features: isGermany
         ? [
-            "30 Tage kostenlos testen",
-            "19,90 € pro Monat dauerhaft für die ersten 50 Founder-Kunden*",
+            "19,90 € pro Monat dauerhaft für die ersten 50 Founder-Kunden",
             "Mehrere Immobilien im Makler-Cockpit",
             "3 professionelle Inserat-Varianten pro Objekt",
             "Bis zu 10 Objektbilder pro Immobilie",
