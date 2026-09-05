@@ -10749,3 +10749,39 @@ svg {
       none !important;
   }
 }
+
+/* INSERAT_AI_MOBILE_COMPACT_HEADER_CTA_V1 */
+@media screen and (max-width: 520px) {
+
+  .landingHeroActions {
+    align-items: flex-start !important;
+  }
+
+  .landingPrimaryButton {
+    width: auto !important;
+    max-width: 220px !important;
+    min-width: 0 !important;
+
+    min-height: 44px !important;
+
+    padding:
+      0 16px !important;
+
+    border-radius:
+      12px !important;
+
+    font-size:
+      12px !important;
+
+    line-height:
+      1 !important;
+
+    align-self:
+      flex-start !important;
+  }
+
+  .landingPrimaryButton span {
+    font-size:
+      12px !important;
+  }
+}

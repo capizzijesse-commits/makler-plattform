@@ -5,6 +5,15 @@ import {useParams, useRouter} from "next/navigation";
 import {type FormEvent, useEffect, useMemo, useState} from "react";
 import {useLocale} from "next-intl";
 
+import GermanyFinancingCheck from "./GermanyFinancingCheck";
+import WorkspaceFrame from "../../../components/WorkspaceFrame";
+
+import {
+  getInseratAiMarketFromHostname,
+  INSERAT_AI_MARKET_STORAGE_KEY,
+  type InseratAiMarket,
+} from "@/lib/inserat-ai-market";
+
 type LocaleKey = "de" | "it" | "fr" | "en";
 type MarketingType = "sale" | "rent";
 
@@ -74,7 +83,7 @@ const COPY = {
     title: "Finanzen & Preisstrategie",
     description:
       "Verwalten Sie Verkaufspreise, Mietkosten und Provisionsangaben zentral für dieses Objekt.",
-    back: "Zurück zum Marketing Hub",
+    back: "Zurück zur Finanzierung",
     loading: "Finanzdaten werden geladen …",
     object: "Objekt",
     sale: "Verkauf",
@@ -113,7 +122,7 @@ const COPY = {
     title: "Finanze e strategia di prezzo",
     description:
       "Gestisci centralmente prezzi di vendita, costi di locazione e provvigioni per questo immobile.",
-    back: "Torna al Marketing Hub",
+    back: "Torna al finanziamento",
     loading: "Caricamento dei dati finanziari …",
     object: "Immobile",
     sale: "Vendita",
@@ -152,7 +161,7 @@ const COPY = {
     title: "Finances et stratégie de prix",
     description:
       "Gérez les prix de vente, les coûts de location et les commissions de ce bien au même endroit.",
-    back: "Retour au Marketing Hub",
+    back: "Retour au financement",
     loading: "Chargement des données financières …",
     object: "Bien",
     sale: "Vente",
@@ -191,7 +200,7 @@ const COPY = {
     title: "Finance & pricing strategy",
     description:
       "Manage sale prices, rental costs and commissions for this property in one place.",
-    back: "Back to Marketing Hub",
+    back: "Back to financing",
     loading: "Loading financial data …",
     object: "Property",
     sale: "Sale",
@@ -412,24 +421,37 @@ function parseNumber(value: string): number | null {
 function formatMoney(
   value: number | null,
   locale: LocaleKey,
-  fallback: string
+  fallback: string,
+  currency: "CHF" | "EUR" = "CHF"
 ) {
   if (value === null || !Number.isFinite(value)) {
     return fallback;
   }
 
-  const localeMap: Record<LocaleKey, string> = {
-    de: "de-CH",
-    it: "it-CH",
-    fr: "fr-CH",
-    en: "en-CH",
-  };
+  const localeMap:
+    Record<LocaleKey, string> =
+      currency === "EUR"
+        ? {
+            de: "de-DE",
+            it: "it-IT",
+            fr: "fr-FR",
+            en: "en-DE",
+          }
+        : {
+            de: "de-CH",
+            it: "it-CH",
+            fr: "fr-CH",
+            en: "en-CH",
+          };
 
-  return new Intl.NumberFormat(localeMap[locale], {
-    style: "currency",
-    currency: "CHF",
-    maximumFractionDigits: 0,
-  }).format(value);
+  return new Intl.NumberFormat(
+    localeMap[locale],
+    {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    }
+  ).format(value);
 }
 
 export default function FinancePage() {
@@ -443,6 +465,15 @@ export default function FinancePage() {
   const financeText =
     FINANCING_COPY[localeKey] ??
     FINANCING_COPY.de;
+
+  const [market, setMarket] =
+    useState<InseratAiMarket>("CH");
+
+  const currency:
+    "CHF" | "EUR" =
+      market === "DE"
+        ? "EUR"
+        : "CHF";
 
   const [listing, setListing] =
     useState<ListingSummary | null>(null);
@@ -458,6 +489,31 @@ export default function FinancePage() {
       tone: "success" | "warning" | "error";
       message: string;
     } | null>(null);
+
+  useEffect(() => {
+    const hostnameMarket =
+      getInseratAiMarketFromHostname(
+        window.location.hostname
+      );
+
+    const stored =
+      localStorage.getItem(
+        INSERAT_AI_MARKET_STORAGE_KEY
+      );
+
+    const storedMarket:
+      InseratAiMarket | null =
+        stored === "DE" ||
+        stored === "CH"
+          ? stored
+          : null;
+
+    setMarket(
+      hostnameMarket ??
+        storedMarket ??
+        "CH"
+    );
+  }, []);
 
   useEffect(() => {
     if (!listingId) {
@@ -566,6 +622,19 @@ export default function FinancePage() {
     void loadFinance();
     return () => controller.abort();
   }, [listingId, router, text.loadError]);
+
+  function currencyLabel(
+    value: string
+  ) {
+    if (market !== "DE") {
+      return value;
+    }
+
+    return value.replace(
+      /CHF/g,
+      "EUR"
+    );
+  }
 
   const askingPrice = parseNumber(form.askingPrice);
   const minimumPrice = parseNumber(form.minimumPrice);
@@ -755,6 +824,7 @@ export default function FinancePage() {
     }
 
     if (
+      market === "CH" &&
       form.marketingType === "sale" &&
       askingPrice !== null &&
       financingEquity !== null &&
@@ -770,6 +840,7 @@ export default function FinancePage() {
     }
 
     if (
+      market === "CH" &&
       form.marketingType === "sale" &&
       financingEquity !== null &&
       financingHardEquity !== null &&
@@ -839,12 +910,20 @@ export default function FinancePage() {
 
   if (loading) {
     return (
-      <main className="grid min-h-screen place-items-center bg-[#050a1d] px-4 text-white">
-        <div className="rounded-3xl border border-amber-300/20 bg-white/[0.05] px-8 py-10 text-center">
-          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-amber-300/20 border-t-amber-300" />
-          <p className="mt-5 font-black">{text.loading}</p>
-        </div>
-      </main>
+      <WorkspaceFrame
+        market={market}
+        active="finance"
+        title="Finanzierung"
+      >
+        <main className="grid min-h-[calc(100vh-84px)] place-items-center bg-[#050a1d] px-4 text-white">
+          <div className="rounded-3xl border border-emerald-300/20 bg-white/[0.05] px-8 py-10 text-center">
+            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-emerald-300/20 border-t-emerald-300" />
+            <p className="mt-5 font-black">
+              {text.loading}
+            </p>
+          </div>
+        </main>
+      </WorkspaceFrame>
     );
   }
 
@@ -852,7 +931,12 @@ export default function FinancePage() {
     "min-h-13 rounded-xl border border-white/10 bg-slate-950/55 px-4 text-white outline-none focus:border-amber-300";
 
   return (
-    <main className="financeMobilePage min-h-screen bg-[#050a1d] px-4 pb-24 pt-10 text-white sm:px-6 lg:px-8">
+    <WorkspaceFrame
+      market={market}
+      active="finance"
+      title="Finanzierung"
+    >
+      <main className="financeMobilePage min-h-[calc(100vh-84px)] bg-[#050a1d] px-4 pb-24 pt-10 text-white sm:px-6 lg:px-8">
 
       {financePopup ? (
         <div
@@ -946,7 +1030,7 @@ export default function FinancePage() {
       ) : null}
       <div className="mx-auto w-full max-w-6xl">
         <Link
-          href="/marketing-hub"
+          href="/finanzierung"
           className="inline-flex items-center gap-2 font-black text-amber-300"
         >
           <span aria-hidden="true">←</span>
@@ -1018,7 +1102,7 @@ export default function FinancePage() {
             {form.marketingType === "sale" ? (
               <div className="mt-7 grid gap-5 sm:grid-cols-2">
                 <Field
-                  label={text.askingPrice}
+                  label={currencyLabel(text.askingPrice)}
                   value={form.askingPrice}
                   onChange={(value) =>
                     updateField("askingPrice", value)
@@ -1027,7 +1111,7 @@ export default function FinancePage() {
                   className={inputClass}
                 />
                 <Field
-                  label={text.minimumPrice}
+                  label={currencyLabel(text.minimumPrice)}
                   value={form.minimumPrice}
                   onChange={(value) =>
                     updateField("minimumPrice", value)
@@ -1048,7 +1132,7 @@ export default function FinancePage() {
             ) : (
               <div className="mt-7 grid gap-5 sm:grid-cols-2">
                 <Field
-                  label={text.netRent}
+                  label={currencyLabel(text.netRent)}
                   value={form.netRentMonthly}
                   onChange={(value) =>
                     updateField("netRentMonthly", value)
@@ -1057,7 +1141,7 @@ export default function FinancePage() {
                   className={inputClass}
                 />
                 <Field
-                  label={text.additionalCosts}
+                  label={currencyLabel(text.additionalCosts)}
                   value={form.additionalCostsMonthly}
                   onChange={(value) =>
                     updateField("additionalCostsMonthly", value)
@@ -1066,7 +1150,7 @@ export default function FinancePage() {
                   className={inputClass}
                 />
                 <Field
-                  label={text.heatingCosts}
+                  label={currencyLabel(text.heatingCosts)}
                   value={form.heatingCostsMonthly}
                   onChange={(value) =>
                     updateField("heatingCostsMonthly", value)
@@ -1116,46 +1200,26 @@ export default function FinancePage() {
                 <>
                   <Summary
                     label={text.asking}
-                    value={formatMoney(
-                      askingPrice,
-                      localeKey,
-                      text.unset
-                    )}
+                    value={formatMoney(askingPrice, localeKey, text.unset, currency)}
                   />
                   <Summary
                     label={text.minimum}
-                    value={formatMoney(
-                      minimumPrice,
-                      localeKey,
-                      text.unset
-                    )}
+                    value={formatMoney(minimumPrice, localeKey, text.unset, currency)}
                   />
                   <Summary
                     label={text.commission}
-                    value={formatMoney(
-                      estimatedCommission,
-                      localeKey,
-                      text.unset
-                    )}
+                    value={formatMoney(estimatedCommission, localeKey, text.unset, currency)}
                   />
                 </>
               ) : (
                 <>
                   <Summary
                     label={text.monthly}
-                    value={formatMoney(
-                      totalMonthly,
-                      localeKey,
-                      text.unset
-                    )}
+                    value={formatMoney(totalMonthly, localeKey, text.unset, currency)}
                   />
                   <Summary
                     label={text.deposit}
-                    value={formatMoney(
-                      estimatedDeposit,
-                      localeKey,
-                      text.unset
-                    )}
+                    value={formatMoney(estimatedDeposit, localeKey, text.unset, currency)}
                   />
                 </>
               )}
@@ -1165,6 +1229,21 @@ export default function FinancePage() {
           </aside>
 
             {form.marketingType === "sale" ? (
+              market === "DE" ? (
+                <GermanyFinancingCheck
+                  askingPrice={askingPrice}
+                  equityValue={
+                    form.financingEquity
+                  }
+                  onEquityChange={(value) =>
+                    updateField(
+                      "financingEquity",
+                      value
+                    )
+                  }
+                  locale={locale}
+                />
+              ) : (
               <section
                 data-section="FINANCING-CHECK-V1"
                 className="mt-8 rounded-[28px] border border-amber-300/20 bg-gradient-to-br from-slate-950/90 via-[#0a1428] to-[#101c36] p-6 shadow-2xl shadow-black/20 sm:p-8 lg:col-span-2 lg:p-10"
@@ -1232,11 +1311,7 @@ export default function FinancePage() {
                       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
                         <Summary
                           label={financeText.mortgage}
-                          value={formatMoney(
-                            financingResult.mortgage,
-                            localeKey,
-                            text.unset
-                          )}
+                          value={formatMoney(financingResult.mortgage, localeKey, text.unset, currency)}
                         />
 
                         <Summary
@@ -1270,47 +1345,27 @@ export default function FinancePage() {
 
                         <Summary
                           label={financeText.interest}
-                          value={formatMoney(
-                            financingResult.annualInterest,
-                            localeKey,
-                            text.unset
-                          )}
+                          value={formatMoney(financingResult.annualInterest, localeKey, text.unset, currency)}
                         />
 
                         <Summary
                           label={financeText.amortization}
-                          value={formatMoney(
-                            financingResult.annualAmortization,
-                            localeKey,
-                            text.unset
-                          )}
+                          value={formatMoney(financingResult.annualAmortization, localeKey, text.unset, currency)}
                         />
 
                         <Summary
                           label={financeText.maintenance}
-                          value={formatMoney(
-                            financingResult.annualMaintenance,
-                            localeKey,
-                            text.unset
-                          )}
+                          value={formatMoney(financingResult.annualMaintenance, localeKey, text.unset, currency)}
                         />
 
                         <Summary
                           label={financeText.annualCost}
-                          value={formatMoney(
-                            financingResult.annualCost,
-                            localeKey,
-                            text.unset
-                          )}
+                          value={formatMoney(financingResult.annualCost, localeKey, text.unset, currency)}
                         />
 
                         <Summary
                           label={financeText.monthlyCost}
-                          value={formatMoney(
-                            financingResult.monthlyCost,
-                            localeKey,
-                            text.unset
-                          )}
+                          value={formatMoney(financingResult.monthlyCost, localeKey, text.unset, currency)}
                         />
 
                         <Summary
@@ -1361,6 +1416,7 @@ export default function FinancePage() {
                   {financeText.disclaimer}
                 </p>
               </section>
+              )
             ) : null}
 
             <button
@@ -1372,7 +1428,8 @@ export default function FinancePage() {
             </button>
         </form>
       </div>
-    </main>
+      </main>
+    </WorkspaceFrame>
   );
 }
 

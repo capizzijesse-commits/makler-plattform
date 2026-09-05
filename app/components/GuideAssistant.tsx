@@ -78,7 +78,7 @@ const WELCOME_MESSAGE: ChatMessage = {
   id: "guide-welcome",
   role: "assistant",
   content:
-    "Hallo! Ich bin dein Inserat-AI Guide. Ich helfe dir bei Objekten, Inseraten, Exposés, Social Media, Tour Guide und Immobilienvermarktung. Was möchtest du als Nächstes erledigen?",
+    "Hallo! Ich bin dein Inserat-AI Guide. Ich helfe dir bei Objekten, Inseraten, Social Media, Tour Guide und Immobilienvermarktung. Was möchtest du als Nächstes erledigen?",
 };
 
 function createMessageId(): string {
@@ -319,7 +319,7 @@ function getQuickActions(
       {
         label: "Hashtags",
         prompt:
-          "Schlage passende Schweizer Immobilien-Hashtags vor.",
+          "Schlage passende Immobilien-Hashtags für dieses Objekt und den aktiven Markt vor.",
       },
       {
         label: "Plattform wählen",
@@ -409,12 +409,12 @@ function getQuickActions(
       {
         label: "Profil prüfen",
         prompt:
-          "Welche Profilangaben sind für professionelle Inserate und Exposés besonders wichtig?",
+          "Welche Profilangaben sind für professionelle Immobilieninserate besonders wichtig und was sollte vollständig ausgefüllt sein?",
       },
       {
         label: "Kontaktdaten",
         prompt:
-          "Wie sollten meine Kontaktdaten in einem Immobilienexposé dargestellt werden?",
+          "Welche Kontaktdaten sollte ich für eine professionelle Immobilienvermarktung hinterlegen?",
       },
       {
         label: "Inserat-AI nutzen",

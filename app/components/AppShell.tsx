@@ -23,10 +23,25 @@ export default function AppShell({
     pathname === "/expose" ||
     pathname.startsWith("/expose/");
 
+  const isCockpitDetailPage =
+    /^\/cockpit\/[^/]+$/.test(
+      pathname
+    );
+
+  const isWorkspacePage =
+    pathname === "/cockpit" ||
+    pathname === "/dashboard" ||
+    pathname === "/dashboard/social-media" ||
+    pathname === "/dashboard/analyse" ||
+    pathname.startsWith("/marketing-hub") ||
+    pathname.startsWith("/finanzierung") ||
+    isCockpitDetailPage;
+
  const showSupportTools =
   pathname.startsWith("/dashboard") ||
   pathname.startsWith("/cockpit") ||
   pathname.startsWith("/marketing-hub") ||
+  pathname.startsWith("/finanzierung") ||
   pathname.startsWith("/konto");
 
   return (
@@ -35,9 +50,11 @@ export default function AppShell({
 
       {children}
 
-      {!isExposePage ? <Footer /> : null}
+      {!isExposePage && !isWorkspacePage ? (
+        <Footer />
+      ) : null}
 
-      {showSupportTools ? (
+      {showSupportTools && !isWorkspacePage ? (
         <>
           <WhatsAppButton />
           <FeedbackButton />

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { trackAnalyticsEvent } from "@/lib/analytics";
 
@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ListingActions from "./ListingActions";
+import WorkspaceFrame from "../../components/WorkspaceFrame";
 import { useAppDialog } from "../../../components/AppDialogProvider";
 import {
   getInseratAiMarketFromHostname,
@@ -706,6 +707,11 @@ function showNextImage() {
 
   if (loading) {
     return (
+      <WorkspaceFrame
+        market={market}
+        active="objects"
+        title="Objektdetails"
+      >
       <main className="detailPage">
         <div className="statusBox">
           <div className="spinner" />
@@ -715,11 +721,17 @@ function showNextImage() {
 
         <PageStyles />
       </main>
+      </WorkspaceFrame>
     );
   }
 
   if (error || !listing) {
     return (
+      <WorkspaceFrame
+        market={market}
+        active="objects"
+        title="Objektdetails"
+      >
       <main className="detailPage">
         <div className="errorBox">
           <strong>Objekt konnte nicht geöffnet werden</strong>
@@ -732,6 +744,7 @@ function showNextImage() {
 
         <PageStyles />
       </main>
+      </WorkspaceFrame>
     );
   }
 
@@ -742,6 +755,11 @@ function showNextImage() {
   ].includes(listing.viewerPlan);
 
   return (
+    <WorkspaceFrame
+      market={market}
+      active="objects"
+      title="Objektdetails"
+    >
     <main className="detailPage">
       {paymentNotice && (
         <div
@@ -1413,6 +1431,7 @@ function showNextImage() {
 
       <PageStyles />
     </main>
+    </WorkspaceFrame>
   );
 }
 

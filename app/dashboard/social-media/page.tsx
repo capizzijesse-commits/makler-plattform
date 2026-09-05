@@ -2,6 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import WorkspaceFrame from "../../components/WorkspaceFrame";
+import {
+  getInseratAiMarketFromHostname,
+  type InseratAiMarket,
+} from "@/lib/inserat-ai-market";
 
 type PlatformName = "Instagram" | "Facebook" | "LinkedIn" | "X";
 
@@ -38,6 +43,33 @@ type ListingResponse = {
 const PLATFORM_NAMES: PlatformName[] = ["Instagram", "Facebook", "LinkedIn", "X"];
 
 export default function SocialMediaPage() {
+  const [market, setMarket] =
+    useState<InseratAiMarket>("CH");
+
+  useEffect(() => {
+    const domainMarket =
+      getInseratAiMarketFromHostname(
+        window.location.hostname
+      );
+
+    if (domainMarket) {
+      setMarket(domainMarket);
+      return;
+    }
+
+    const storedMarket =
+      window.localStorage.getItem(
+        "inseratAiMarket"
+      );
+
+    if (
+      storedMarket === "CH" ||
+      storedMarket === "DE"
+    ) {
+      setMarket(storedMarket);
+    }
+  }, []);
+
   const [location, setLocation] = useState("Winterthur");
   const [propertyType, setPropertyType] = useState("Wohnung");
   const [rooms, setRooms] = useState("4.5");
@@ -449,7 +481,12 @@ async function saveSocialVariants(
   }
 }
 return (
-    <main className="socialMediaPage min-h-screen bg-slate-950 px-6 py-10 text-white">
+  <WorkspaceFrame
+    market={market}
+    active="social"
+    title="Social Media"
+  >
+    <main className="socialMediaPage min-h-screen bg-[#071a2f] px-6 py-10 text-white">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -477,7 +514,7 @@ return (
         </div>
 
    <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
- <section className="socialFormScroll flex h-[760px] min-h-[760px] flex-col overflow-y-scroll rounded-[2rem] border border-white/10 bg-white/[0.07] p-6 pr-3 shadow-2xl backdrop-blur">
+ <section className="socialFormScroll flex h-[760px] min-h-[760px] flex-col overflow-y-scroll rounded-[20px] border border-white/10 bg-white/[0.07] p-6 pr-3 shadow-2xl backdrop-blur">
   <div className="min-h-0 flex-1">
 
       <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">
@@ -666,7 +703,7 @@ return (
             )}
           </section>
 
-          <section className="flex max-h-[760px] min-h-[760px] flex-col overflow-hidden rounded-[2rem] border border-amber-400/30 bg-gradient-to-br from-slate-950 via-slate-900 to-[#111d4a] p-6 text-white shadow-2xl">
+          <section className="flex max-h-[760px] min-h-[760px] flex-col overflow-hidden rounded-[20px] border border-amber-400/30 bg-gradient-to-br from-slate-950 via-slate-900 to-[#111d4a] p-6 text-white shadow-2xl">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">
               Ausgabe
             </p>
@@ -806,5 +843,6 @@ className="inline-flex items-center justify-center rounded-xl border border-ambe
   }
 `}</style>
     </main>
+  </WorkspaceFrame>
   );
 }

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   useEffect,
@@ -409,7 +409,7 @@ export default function MarketSwitcher() {
         <span
           style={{
             fontSize:
-              "21px",
+              "clamp(13px, 3.4vw, 21px)",
             lineHeight:
               1,
             fontWeight:

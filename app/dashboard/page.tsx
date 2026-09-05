@@ -14,6 +14,7 @@ import {
   type ChangeEvent,
 } from "react";
 import PortalExportButton from "../components/PortalExportButton";
+import WorkspaceFrame from "../components/WorkspaceFrame";
 import { useAppDialog } from "@/components/AppDialogProvider";
 import {
   getInseratAiMarketFromHostname,
@@ -67,6 +68,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const t = useTranslations("Dashboard");
   const locale = useLocale();
+
 
   const localizedApiError = (
     apiError: unknown,
@@ -147,7 +149,7 @@ export default function DashboardPage() {
 const [instagramPost, setInstagramPost] = useState("");
   const [linkedinPost, setLinkedinPost] = useState("");
   const [facebookPost, setFacebookPost] = useState("");
- 
+
 const [imageAnalyses, setImageAnalyses] = useState<
   ImageAnalysisResult[]
 >([]);
@@ -220,7 +222,7 @@ if (!isLoggedIn || !loginExpiresAt || Date.now() > loginExpiresAt) {
 }
 const nextLoginExpiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
 localStorage.setItem("loginExpiresAt", nextLoginExpiresAt.toString());
- 
+
   const savedName = localStorage.getItem("userName");
   if (savedName) {
     setUserName(savedName);
@@ -1755,7 +1757,7 @@ const loadObjectTemplate = (template: ObjectTemplate) => {
   setShowExtraHighlights(true);
 };
 const addSuggestedHighlight = (value: string) => {
-  
+
   const cleanValue = value.trim();
 
   if (!cleanValue) return;
@@ -2007,7 +2009,7 @@ try {
   styleText,
   imageAnalysis,
   email: localStorage.getItem("userEmail"),
-  
+
 }),
       });
 
@@ -2333,6 +2335,11 @@ localStorage.removeItem("inseratAiImageAnalysis");
 }
 
 return (
+<WorkspaceFrame
+  market={market}
+  active="dashboard"
+  title="Dashboard"
+>
 <main
   className="page dashboardPage"
   style={{
@@ -2353,7 +2360,10 @@ return (
       </div>
 
         <div className="grid">
-         <section className="leftCard">
+         <section
+  className="leftCard"
+  id="new-listing"
+>
   <div className="leftCardScroll">
     <h2>{t("input.title")}</h2>
   <p className="sectionText">
@@ -2613,7 +2623,7 @@ return (
       >
         {t("additional.close")}
       </button>
-      
+
     </div>
 <div
   style={{
@@ -3027,7 +3037,7 @@ return (
         placeholder={t("placeholders.propertyType")}
         onChange={(e) => setPropertyType(e.target.value)}
         className="input"
-        
+
       />
     </Field>
 
@@ -3081,7 +3091,7 @@ return (
   </div>
 </Field>
 
-  
+
 
 <Field label={t("fields.price")}>
   <input
@@ -3110,7 +3120,7 @@ return (
         className="input"
       />
     </Field>
-    
+
 
    <div className="full">
   <div
@@ -3170,7 +3180,7 @@ return (
   <button
     data-analysis-button="true"
     type="button"
-    onClick={analyzeImage}
+              onClick={analyzeImage}
     disabled={
       !canUseDashboardImages ||
       imagePreviews.length === 0 ||
@@ -3347,7 +3357,7 @@ return (
   </div>
 )}
 
- 
+
 
   {imageAnalysis && (
     <div
@@ -3547,7 +3557,7 @@ return (
         </div>
       ) : (
         <>
-    
+
           <h2 className="outputTitle">{variants[activeIndex]?.title}</h2>
           {socialPosts.instagramPost && (
   <div style={{ marginTop: "20px" }}>
@@ -3591,19 +3601,19 @@ return (
   </div>
 )}
         </>
-        
+
       )}
     </div>
 
-   
-   
+
+
   </div>
 </section>
         </div>
       </div>
 
       <style jsx>{`
-     
+
       .topStats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -3784,7 +3794,7 @@ return (
 .leftCard .actions {
   flex-shrink: 0;
 }
-        
+
 
         .leftCard h2 {
           font-size: 26px;
@@ -3907,7 +3917,7 @@ return (
 }
 
 
-        
+
 .miniStats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -4115,12 +4125,663 @@ return (
             align-items: flex-start;
             gap: 14px;
           }
-          
+
 }
         }
 
-      `}</style>
+
+        /* ======================================
+           DASHBOARD PREMIUM WORKSPACE V2
+           ====================================== */
+
+        .dashboardPage.page {
+          min-height: calc(100vh - 84px) !important;
+
+          padding:
+            18px !important;
+
+          background:
+            #eef3f9 !important;
+
+          color:
+            #172033 !important;
+        }
+
+
+        .dashboardPage .shell {
+          width:
+            100% !important;
+
+          max-width:
+            1400px !important;
+
+          margin:
+            0 auto !important;
+        }
+
+
+        /* BRAND HERO */
+
+        .dashboardPage .hero {
+          position:
+            relative;
+
+          overflow:
+            hidden;
+
+          margin:
+            0 0 14px !important;
+
+          padding:
+            26px 30px !important;
+
+          border:
+            1px solid
+            rgba(251,191,36,.10);
+
+          border-radius:
+            17px;
+
+          background:
+            radial-gradient(
+              circle at 88% 18%,
+              rgba(251,191,36,.13),
+              transparent 26%
+            ),
+            radial-gradient(
+              circle at 72% 86%,
+              rgba(37,99,235,.22),
+              transparent 32%
+            ),
+            linear-gradient(
+              120deg,
+              #07182f 0%,
+              #0b274a 55%,
+              #12375d 100%
+            ) !important;
+
+          box-shadow:
+            0 16px 34px
+            rgba(15,23,42,.10);
+
+          text-align:
+            left !important;
+        }
+
+
+        .dashboardPage .hero::after {
+          position:
+            absolute;
+
+          top:
+            -30%;
+
+          right:
+            4%;
+
+          width:
+            42%;
+
+          height:
+            170%;
+
+          pointer-events:
+            none;
+
+          background:
+            repeating-linear-gradient(
+              90deg,
+              rgba(147,197,253,.045) 0,
+              rgba(147,197,253,.045) 1px,
+              transparent 1px,
+              transparent 46px
+            );
+
+          content:
+            "";
+
+          transform:
+            skewX(-12deg);
+        }
+
+
+        .dashboardPage .hero h1 {
+          position:
+            relative;
+
+          z-index:
+            2;
+
+          max-width:
+            900px;
+
+          margin:
+            0 !important;
+
+          color:
+            #ffffff !important;
+
+          font-size:
+            clamp(
+              28px,
+              3vw,
+              40px
+            ) !important;
+
+          line-height:
+            1.08 !important;
+
+          letter-spacing:
+            -.035em !important;
+
+          text-align:
+            left !important;
+        }
+
+
+        .dashboardPage .hero p {
+          position:
+            relative;
+
+          z-index:
+            2;
+
+          max-width:
+            930px;
+
+          margin:
+            12px 0 0 !important;
+
+          color:
+            #c7d6e7 !important;
+
+          font-size:
+            14px !important;
+
+          line-height:
+            1.65 !important;
+
+          text-align:
+            left !important;
+        }
+
+
+        /* TWO-COLUMN WORKSPACE */
+
+        .dashboardPage .grid {
+          gap:
+            14px !important;
+
+          align-items:
+            stretch !important;
+        }
+
+
+        .dashboardPage .leftCard {
+          border:
+            1px solid
+            rgba(106,139,177,.22) !important;
+
+          border-radius:
+            16px !important;
+
+          background:
+            linear-gradient(
+              155deg,
+              #0b1d39 0%,
+              #132b4e 100%
+            ) !important;
+
+          box-shadow:
+            0 12px 30px
+            rgba(15,23,42,.10) !important;
+        }
+
+
+        .dashboardPage .rightCard {
+          border:
+            1px solid
+            #dce5ef !important;
+
+          border-radius:
+            16px !important;
+
+          background:
+            #ffffff !important;
+
+          box-shadow:
+            0 12px 30px
+            rgba(15,23,42,.07) !important;
+
+          color:
+            #172033 !important;
+        }
+
+
+        .dashboardPage .leftCard h2 {
+          color:
+            #ffffff !important;
+
+          font-size:
+            21px !important;
+
+          letter-spacing:
+            -.02em;
+        }
+
+
+        .dashboardPage .sectionText {
+          color:
+            #b9c9da !important;
+
+          line-height:
+            1.6 !important;
+        }
+
+
+        .dashboardPage .rightCard h2,
+        .dashboardPage .rightCard h3 {
+          color:
+            #172033 !important;
+        }
+
+
+        /* INPUT SURFACES */
+
+        .dashboardPage input,
+        .dashboardPage select,
+        .dashboardPage textarea {
+          border-radius:
+            10px !important;
+
+          transition:
+            border-color 150ms ease,
+            box-shadow 150ms ease !important;
+        }
+
+
+        .dashboardPage input:focus,
+        .dashboardPage select:focus,
+        .dashboardPage textarea:focus {
+          border-color:
+            rgba(251,191,36,.58) !important;
+
+          box-shadow:
+            0 0 0 3px
+            rgba(251,191,36,.08) !important;
+
+          outline:
+            none !important;
+        }
+
+
+        /* BUTTONS */
+
+        .dashboardPage button {
+          transition:
+            transform 150ms ease,
+            box-shadow 150ms ease,
+            background 150ms ease !important;
+        }
+
+
+        .dashboardPage button:hover {
+          transform:
+            translateY(-1px);
+        }
+
+
+        /* EMPTY OUTPUT */
+
+        .dashboardPage .rightCard
+        > div {
+          border-color:
+            #e3eaf2;
+        }
+
+
+        /* REMOVE OLD PURPLE GLOW */
+
+        .dashboardPage::before,
+        .dashboardPage::after {
+          display:
+            none !important;
+        }
+
+
+        @media (max-width: 900px) {
+          .dashboardPage.page {
+            padding:
+              10px !important;
+          }
+
+          .dashboardPage .hero {
+            padding:
+              22px 20px !important;
+          }
+
+          .dashboardPage .hero h1 {
+            font-size:
+              28px !important;
+          }
+        }
+
+        /* ======================================
+           DASHBOARD STICKY ACTION DOCK V1
+           ====================================== */
+
+        .dashboardPage .leftCard {
+          position:
+            relative !important;
+        }
+
+
+        .dashboardPage .leftCardScroll {
+          padding-bottom:
+            24px !important;
+        }
+
+
+        /*
+         * Die Aktionszone bleibt am unteren
+         * Rand des Eingabebereichs sichtbar.
+         */
+
+        .dashboardPage .actionArea,
+        .dashboardPage .actionBar,
+        .dashboardPage .buttonRow {
+          position:
+            sticky;
+
+          z-index:
+            24;
+
+          bottom:
+            0;
+
+          padding:
+            12px 0 10px;
+
+          background:
+            linear-gradient(
+              180deg,
+              rgba(15,35,65,0) 0%,
+              rgba(15,35,65,.96) 22%,
+              rgba(15,35,65,.99) 100%
+            );
+
+          backdrop-filter:
+            blur(12px);
+        }
+
+
+        /*
+         * Primäre Aktionsbuttons klarer
+         * und auf gleicher Höhe.
+         */
+
+        .dashboardPage .primaryActionRow {
+          display:
+            grid;
+
+          grid-template-columns:
+            minmax(0,1fr)
+            minmax(0,1fr);
+
+          gap:
+            10px;
+        }
+
+
+        .dashboardPage .primaryActionRow
+        button {
+          min-height:
+            48px;
+
+          border-radius:
+            12px;
+        }
+
+
+        /*
+         * Sekundäre Tools kompakt.
+         */
+
+        .dashboardPage .secondaryActions {
+          display:
+            flex;
+
+          flex-wrap:
+            wrap;
+
+          gap:
+            8px;
+
+          margin-top:
+            8px;
+        }
+
+
+        .dashboardPage .secondaryActions
+        button,
+        .dashboardPage .secondaryActions
+        a {
+          min-height:
+            38px;
+
+          border-radius:
+            10px;
+        }
+
+
+        /*
+         * Die drei Status-Karten bleiben
+         * normal im Dokumentfluss.
+         */
+
+        .dashboardPage .topStats {
+          position:
+            relative !important;
+
+          z-index:
+            1 !important;
+
+          margin-top:
+            12px !important;
+        }
+
+
+        @media (max-width: 650px) {
+          .dashboardPage .primaryActionRow {
+            grid-template-columns:
+              1fr;
+          }
+
+          .dashboardPage .actionArea,
+          .dashboardPage .actionBar,
+          .dashboardPage .buttonRow {
+            padding-bottom:
+              max(
+                10px,
+                env(safe-area-inset-bottom)
+              );
+          }
+        }
+
+        /* =============================================
+           DASHBOARD SOFT PREMIUM V3
+           ============================================= */
+
+        /*
+         * Keine helle Umrandung mehr.
+         * Der Workspace wird eine ruhige,
+         * zusammenhängende Inserat-AI-Fläche.
+         */
+
+        .dashboardPage.page {
+          background:
+            radial-gradient(
+              circle at 92% 18%,
+              rgba(79,70,229,.14),
+              transparent 30%
+            ),
+            radial-gradient(
+              circle at 8% 80%,
+              rgba(37,99,235,.10),
+              transparent 32%
+            ),
+            linear-gradient(
+              135deg,
+              #071a2f 0%,
+              #0a213d 62%,
+              #10213a 100%
+            ) !important;
+
+          padding:
+            22px 20px 28px !important;
+
+          border:
+            0 !important;
+
+          box-shadow:
+            none !important;
+        }
+
+
+        /*
+         * Äusseren "Kasten im Kasten"-Effekt entfernen.
+         */
+
+        .dashboardPage .shell {
+          background:
+            transparent !important;
+
+          border:
+            0 !important;
+
+          box-shadow:
+            none !important;
+        }
+
+
+        .dashboardPage .grid {
+          background:
+            transparent !important;
+
+          border:
+            0 !important;
+
+          box-shadow:
+            none !important;
+
+          gap:
+            16px !important;
+        }
+
+
+        /*
+         * Haupt-Hero weicher und hochwertiger.
+         */
+
+        .dashboardPage .hero {
+          border-radius:
+            22px !important;
+
+          border:
+            1px solid
+            rgba(96,165,250,.16) !important;
+
+          box-shadow:
+            0 16px 42px
+            rgba(2,6,23,.18) !important;
+
+          overflow:
+            hidden;
+        }
+
+
+        /*
+         * Eingabe und Ausgabe weniger eckig.
+         */
+
+        .dashboardPage .leftCard,
+        .dashboardPage .rightCard {
+          border-radius:
+            20px !important;
+
+          overflow:
+            hidden;
+        }
+
+
+        .dashboardPage .leftCard {
+          border:
+            1px solid
+            rgba(96,165,250,.16) !important;
+
+          box-shadow:
+            0 14px 34px
+            rgba(2,6,23,.18) !important;
+        }
+
+
+        .dashboardPage .rightCard {
+          border:
+            1px solid
+            rgba(203,213,225,.70) !important;
+
+          box-shadow:
+            0 14px 34px
+            rgba(2,6,23,.12) !important;
+        }
+
+
+        /*
+         * Kleine Karten ebenfalls etwas weicher,
+         * aber nicht übertrieben rund.
+         */
+
+        .dashboardPage .topStats > *,
+        .dashboardPage .fact,
+        .dashboardPage .statCard {
+          border-radius:
+            16px !important;
+        }
+
+
+        @media (max-width: 900px) {
+          .dashboardPage.page {
+            padding:
+              14px !important;
+          }
+
+          .dashboardPage .hero,
+          .dashboardPage .leftCard,
+          .dashboardPage .rightCard {
+            border-radius:
+              18px !important;
+          }
+        }
+
+        /* =============================================
+           DASHBOARD ANALYSIS MOVED TO STUDIO V1
+           Bildanalyse lebt jetzt unter /dashboard/analyse
+           ============================================= */
+
+        .dashboardPage
+        [data-analysis-button="true"],
+        .dashboardPage
+        .dashboardImageAnalysisMessage,
+        .dashboardPage
+        .dashboardImageAnalysisItem,
+        .dashboardPage
+        .dashboardImageAnalysisSummary {
+          display:
+            none !important;
+        }
+`}</style>
     </main>
+</WorkspaceFrame>
   );
 }
 

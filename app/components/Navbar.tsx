@@ -207,6 +207,7 @@ export default function Navbar() {
   pathname?.startsWith("/dashboard") ||
   pathname?.startsWith("/cockpit") ||
   pathname?.startsWith("/marketing-hub") ||
+  pathname?.startsWith("/finanzierung") ||
   pathname?.startsWith("/bewertungen") ||
   pathname?.startsWith("/expose") ||
   pathname?.startsWith("/konto");
@@ -602,28 +603,6 @@ export default function Navbar() {
                 >
                   {t("dashboardShort")}
                 </Link>
-
-                <button
-                  type="button"
-                  className="appMenuButton"
-                  onClick={() =>
-                    setMenuOpen((current) => !current)
-                  }
-                  aria-expanded={menuOpen}
-                  aria-controls="inserat-ai-app-menu"
-                  aria-label={t("menuButton")}
-                >
-                  <span
-                    className="appMenuButtonIcon"
-                    aria-hidden="true"
-                  >
-                    {"\u2630"}
-                  </span>
-
-                  <span className="appMenuButtonLabel">
-                    {t("menuButton")}
-                  </span>
-                </button>
               </>
             ) : sessionStatus === "loading" ? (
               <span

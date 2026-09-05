@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { type ChangeEvent, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import CockpitOverviewV2 from "./CockpitOverviewV2";
 type ListingImage = {
   id: string;
   url: string;
@@ -670,11 +671,39 @@ useEffect(() => {
   }
 
 return (
-    <main className="cockpitPage">
-      <div className="pageGlow pageGlowOne" />
-      <div className="pageGlow pageGlowTwo" />
+    <main
+      className="cockpitPage"
+      style={{
+        padding: 0,
+        overflow: "visible",
+        background: "#eef3f9",
+        color: "#0f172a",
+      }}
+    >
+      <div
+        className="pageGlow pageGlowOne"
+        style={{ display: "none" }}
+      />
 
-      <div className="cockpitContainer">
+      <div
+        className="pageGlow pageGlowTwo"
+        style={{ display: "none" }}
+      />
+
+      <CockpitOverviewV2
+        userName={userName}
+        companyName={companyName}
+        companyLogoUrl={companyLogoPreview}
+        listings={listings}
+        loadingListings={loadingListings}
+        listingsError={listingsError}
+      />
+
+      <div
+        className="cockpitContainer"
+        style={{ display: "none" }}
+        aria-hidden="true"
+      >
         <div className="cockpitTopbar">
           <div
             className="cockpitSkylineLayer"

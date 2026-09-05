@@ -1,6 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import WorkspaceFrame from "../components/WorkspaceFrame";
+
+import {
+  getInseratAiMarketFromHostname,
+  type InseratAiMarket,
+} from "@/lib/inserat-ai-market";
 import {useEffect, useMemo, useState} from "react";
 import {useLocale} from "next-intl";
 
@@ -73,7 +79,7 @@ const COPY = {
       social: ["Social Media", "Beiträge für Instagram, Facebook, LinkedIn und X erstellen."],
       expose: ["Exposé", "Das professionelle Immobilien-Exposé öffnen und prüfen."],
       tour: ["3D-Video-Tour", "Eine geführte Video-Präsentation für das Objekt erstellen."],
-      finance: ["Finanzierung", "Preisstrategie, Käufer-Finanzierung und Tragbarkeit für dieses Objekt prüfen."],
+      finance: ["Finanzierung", "Preisstrategie, Käufer-Finanzierung und Finanzierungsrahmen für dieses Objekt prüfen."],
       campaigns: ["Kampagnen", "Eine vollständige Vermarktungsabfolge für das Objekt planen."],
       publishing: ["Publishing Center", "Inhalte vorbereiten, terminieren und später veröffentlichen."],
       reviews: ["Bewertungen", "Kundenfeedback anfragen und positive Bewertungen nutzen."],
@@ -288,6 +294,33 @@ function hasContent(value: unknown): boolean {
 
 export default function MarketingHubPage() {
   const locale = useLocale();
+
+  const [market, setMarket] =
+    useState<InseratAiMarket>("CH");
+
+  useEffect(() => {
+    const domainMarket =
+      getInseratAiMarketFromHostname(
+        window.location.hostname
+      );
+
+    if (domainMarket) {
+      setMarket(domainMarket);
+      return;
+    }
+
+    const storedMarket =
+      window.localStorage.getItem(
+        "inseratAiMarket"
+      );
+
+    if (
+      storedMarket === "CH" ||
+      storedMarket === "DE"
+    ) {
+      setMarket(storedMarket);
+    }
+  }, []);
   const localeKey = locale.toLowerCase().slice(0, 2) as LocaleKey;
   const text = COPY[localeKey] ?? COPY.de;
   const financeText = FINANCE_COPY[localeKey] ?? FINANCE_COPY.de;
@@ -463,7 +496,12 @@ export default function MarketingHubPage() {
     : [];
 
   return (
-    <main className="min-h-screen bg-[#050a1d] px-4 pb-20 pt-12 text-white sm:px-6 sm:pt-16 lg:px-8">
+    <WorkspaceFrame
+      market={market}
+      active="marketing"
+      title="Marketing Hub"
+    >
+      <main className="min-h-[calc(100vh-84px)] bg-[#071a2f] px-4 pb-20 pt-6 text-white sm:px-6 sm:pt-8 lg:px-8">
       <div className="mx-auto w-full max-w-7xl">
         <section className="overflow-hidden rounded-[32px] border border-amber-300/25 bg-gradient-to-br from-slate-950 via-[#08142d] to-[#09224a] p-6 shadow-2xl shadow-black/30 sm:p-9 lg:p-12">
           <p className="mb-4 text-xs font-black tracking-[0.24em] text-amber-300 sm:text-sm">
@@ -699,5 +737,6 @@ export default function MarketingHubPage() {
         ) : null}
       </div>
     </main>
+    </WorkspaceFrame>
   );
 }

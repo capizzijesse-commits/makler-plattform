@@ -3,6 +3,12 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import {
+  getInseratAiMarketFromHostname,
+  INSERAT_AI_MARKET_STORAGE_KEY,
+  type InseratAiMarket,
+} from "@/lib/inserat-ai-market";
+
 type ListingImage = {
   id: string;
   url: string;
@@ -76,6 +82,25 @@ function formatNumber(value: number | null) {
   return new Intl.NumberFormat("de-CH").format(value);
 }
 
+function formatMarketMoney(
+  value: number,
+  market: InseratAiMarket
+) {
+  return new Intl.NumberFormat(
+    market === "DE"
+      ? "de-DE"
+      : "de-CH",
+    {
+      style: "currency",
+      currency:
+        market === "DE"
+          ? "EUR"
+          : "CHF",
+      maximumFractionDigits: 0,
+    }
+  ).format(value);
+}
+
 export default function TourGuidePage() {
   const [listing, setListing] = useState<TourListing | null>(null);
   const [listingImages, setListingImages] = useState<ListingImage[]>([]);
@@ -107,6 +132,9 @@ export default function TourGuidePage() {
   const [checkingPlan, setCheckingPlan] = useState(true);
   const [hasTourAccess, setHasTourAccess] = useState(false);
   const [planAccessError, setPlanAccessError] = useState("");
+
+  const [market, setMarket] =
+    useState<InseratAiMarket>("CH");
 
   const activeImage = listingImages[activeSceneIndex] ?? null;
 
@@ -147,6 +175,31 @@ export default function TourGuidePage() {
       description: "Natürlich & direkt",
     },
   ];
+
+  useEffect(() => {
+    const hostnameMarket =
+      getInseratAiMarketFromHostname(
+        window.location.hostname
+      );
+
+    const stored =
+      localStorage.getItem(
+        INSERAT_AI_MARKET_STORAGE_KEY
+      );
+
+    const storedMarket:
+      InseratAiMarket | null =
+        stored === "DE" ||
+        stored === "CH"
+          ? stored
+          : null;
+
+    setMarket(
+      hostnameMarket ??
+        storedMarket ??
+        "CH"
+    );
+  }, []);
 
   const visibleVoiceOptions = showAllVoices
     ? voiceOptions
@@ -459,7 +512,10 @@ export default function TourGuidePage() {
 
     const priceDescription =
       listing.price !== null
-        ? `Der Angebotspreis beträgt CHF ${formatNumber(listing.price)}.`
+        ? `Der Angebotspreis beträgt ${formatMarketMoney(
+            listing.price,
+            market
+          )}.`
         : "Der Preis ist auf Anfrage erhältlich.";
 
     const highlights =
@@ -679,7 +735,10 @@ export default function TourGuidePage() {
       label: "Preis",
       value:
         listing?.price !== null && listing?.price !== undefined
-          ? `CHF ${formatNumber(listing.price)}`
+          ? formatMarketMoney(
+              listing.price,
+              market
+            )
           : "–",
     },
     {
@@ -748,9 +807,19 @@ export default function TourGuidePage() {
           </h1>
 
           <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-slate-300 sm:text-base">
-            Die 3D-Video-Tour mit AI-Stimmen gehört zum Pro-Angebot für
-            CHF 79.90 pro Monat. Sie ist weder im Founder-Angebot für
-            CHF 19.90 noch im Einzelobjekt für CHF 9.90 enthalten.
+            Die 3D-Video-Tour mit AI-Stimmen gehört zum Pro-Angebot für{" "}
+            {market === "DE"
+              ? "79,90 €"
+              : "CHF 79.90"}{" "}
+            pro Monat. Sie ist weder im Founder-Angebot für{" "}
+            {market === "DE"
+              ? "19,90 €"
+              : "CHF 19.90"}{" "}
+            noch im Einzelobjekt für{" "}
+            {market === "DE"
+              ? "9,90 €"
+              : "CHF 9.90"}{" "}
+            enthalten.
           </p>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-2">
@@ -1257,7 +1326,7 @@ main > div.relative.mx-auto > section:first-of-type:hover,
 
                       <div className="pointer-events-none absolute bottom-0 left-0 right-0 p-5 sm:p-7">
                         <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300">
-                          {listing?.propertyType || "Immobilie"} in {listing?.location || "der Schweiz"}
+                          {listing?.propertyType || "Immobilie"} in {listing?.location || (market === "DE" ? "Deutschland" : "der Schweiz")}
                         </p>
                         <h3 className="mt-2 text-xl font-black text-white sm:text-3xl">
                           {activeTourSection?.title || "Tour-Vorschau"}

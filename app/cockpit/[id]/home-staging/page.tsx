@@ -4,6 +4,12 @@ import { upload } from "@vercel/blob/client";
 import FloorPlanAnalyzer from "./FloorPlanAnalyzer";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+
+import {
+  getInseratAiMarketFromHostname,
+  INSERAT_AI_MARKET_STORAGE_KEY,
+  type InseratAiMarket,
+} from "@/lib/inserat-ai-market";
 import {
   useEffect,
   useMemo,
@@ -451,6 +457,9 @@ export default function HomeStagingPage() {
   const params = useParams();
   const router = useRouter();
 
+  const [market, setMarket] =
+    useState<InseratAiMarket>("CH");
+
   const rawId = params.id;
   const listingId = Array.isArray(rawId)
     ? rawId[0]
@@ -573,6 +582,31 @@ export default function HomeStagingPage() {
     accessError,
     setAccessError,
   ] = useState("");
+
+  useEffect(() => {
+    const hostnameMarket =
+      getInseratAiMarketFromHostname(
+        window.location.hostname
+      );
+
+    const stored =
+      localStorage.getItem(
+        INSERAT_AI_MARKET_STORAGE_KEY
+      );
+
+    const storedMarket:
+      InseratAiMarket | null =
+        stored === "DE" ||
+        stored === "CH"
+          ? stored
+          : null;
+
+    setMarket(
+      hostnameMarket ??
+        storedMarket ??
+        "CH"
+    );
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -2460,13 +2494,23 @@ export default function HomeStagingPage() {
           <span>
             Fotorealistische AI-Visualisierungen und
             die integrierte Grundrissanalyse gehören
-            zum Pro-Angebot für CHF 79.90 pro Monat.
+            zum Pro-Angebot für{" "}
+            {market === "DE"
+              ? "79,90 €"
+              : "CHF 79.90"}{" "}
+            pro Monat.
           </span>
 
           <span>
             Diese Funktionen sind weder im
-            Founder-Angebot für CHF 19.90 pro Monat
-            noch im Einzelobjekt für CHF 9.90
+            Founder-Angebot für{" "}
+            {market === "DE"
+              ? "19,90 €"
+              : "CHF 19.90"}{" "}
+            pro Monat noch im Einzelobjekt für{" "}
+            {market === "DE"
+              ? "9,90 €"
+              : "CHF 9.90"}{" "}
             enthalten.
           </span>
 

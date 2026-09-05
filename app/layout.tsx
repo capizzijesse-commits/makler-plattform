@@ -1,17 +1,34 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
+import { getInseratAiMarketFromHeaders } from "@/lib/inserat-ai-market";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 import AppDialogProvider from "@/components/AppDialogProvider";
-import LanguageLaunchDialog from "@/app/components/LanguageLaunchDialog";
 import CookieConsentBanner from "@/app/components/CookieConsentBanner";
 import GoogleAnalytics from "@/app/components/GoogleAnalytics";
 import AppShell from "@/app/components/AppShell";
 
-export const metadata: Metadata = {
-  title: "Inserat-AI",
-  description: "Immobilien-Inserate-Generator für die Schweiz",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const requestHeaders = await headers();
+  const market =
+    getInseratAiMarketFromHeaders(requestHeaders) ??
+    "CH";
+
+  if (market === "DE") {
+    return {
+      title: "Inserat-AI Deutschland",
+      description:
+        "KI-gestützter Immobilien-Inserate-Generator für Immobilienprofis in Deutschland.",
+    };
+  }
+
+  return {
+    title: "Inserat-AI Schweiz",
+    description:
+      "KI-gestützter Immobilien-Inserate-Generator für Immobilienprofis in der Schweiz.",
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -34,7 +51,6 @@ export default async function RootLayout({
         <GoogleAnalytics />
         <NextIntlClientProvider>
           <AppDialogProvider>
-            <LanguageLaunchDialog />
             <AppShell>{children}</AppShell>
             <CookieConsentBanner />
           </AppDialogProvider>

@@ -1,6 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  getInseratAiMarketFromHostname,
+  INSERAT_AI_MARKET_STORAGE_KEY,
+  type InseratAiMarket,
+} from "@/lib/inserat-ai-market";
 
 export type LocationAssistantCategory = {
   key: string;
@@ -60,11 +70,41 @@ export default function LocationAssistantPanel({
   onDescriptionChange,
   onDataChange,
 }: LocationAssistantPanelProps) {
+  const [market, setMarket] =
+    useState<InseratAiMarket | null>(
+      null
+    );
+
   const [analyzing, setAnalyzing] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<
     "success" | "error" | ""
   >("");
+
+  useEffect(() => {
+    const hostnameMarket =
+      getInseratAiMarketFromHostname(
+        window.location.hostname
+      );
+
+    const stored =
+      localStorage.getItem(
+        INSERAT_AI_MARKET_STORAGE_KEY
+      );
+
+    const storedMarket:
+      InseratAiMarket | null =
+        stored === "DE" ||
+        stored === "CH"
+          ? stored
+          : null;
+
+    setMarket(
+      hostnameMarket ??
+        storedMarket ??
+        "CH"
+    );
+  }, []);
 
   const categories = useMemo(
     () =>
@@ -73,6 +113,10 @@ export default function LocationAssistantPanel({
         : [],
     [locationData]
   );
+
+  if (market !== "CH") {
+    return null;
+  }
 
   async function analyzeLocation() {
     if (analyzing) {
@@ -170,7 +214,7 @@ export default function LocationAssistantPanel({
           <p>
             Erkennt PLZ, Ort und Kanton aus dem amtlichen
             Ortschaftenverzeichnis und erstellt einen editierbaren
-            Lagetext für das Objekt und das Exposé.
+            Lagetext für das Objekt.
           </p>
         </div>
 

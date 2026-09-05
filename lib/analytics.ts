@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 export type AnalyticsEventParameters =
   Record<string, unknown>;
@@ -25,7 +25,11 @@ export function isAnalyticsAllowedHost(): boolean {
 
   return (
     hostname === "inserat-ai.ch" ||
-    hostname === "www.inserat-ai.ch"
+    hostname === "www.inserat-ai.ch" ||
+    hostname === "inserat-ai.de" ||
+    hostname === "www.inserat-ai.de" ||
+    hostname === "inserat-ai.at" ||
+    hostname === "www.inserat-ai.at"
   );
 }
 function hasAnalyticsConsent(): boolean {
