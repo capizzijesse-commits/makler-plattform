@@ -1,6 +1,7 @@
 "use client";
 
 import { trackAnalyticsEvent } from "@/lib/analytics";
+import type { InseratAiMarket } from "@/lib/inserat-ai-market";
 
 import { useState } from "react";
 import { useAppDialog } from "../../../components/AppDialogProvider";
@@ -10,6 +11,7 @@ type ListingActionsProps = {
   archived: boolean;
   unlockStatus: string;
   singleObjectPriceCents: number;
+  market: InseratAiMarket;
 };
 
 export default function ListingActions({
@@ -17,6 +19,7 @@ export default function ListingActions({
   archived,
   unlockStatus,
   singleObjectPriceCents,
+  market,
 }: ListingActionsProps) {
   const [busyAction, setBusyAction] = useState<
     "archive" | "delete" | "checkout" | null
@@ -28,10 +31,18 @@ export default function ListingActions({
     unlockStatus === "pending";
 
   const formattedSingleObjectPrice =
-    new Intl.NumberFormat("de-CH", {
-      style: "currency",
-      currency: "CHF",
-    }).format(
+    new Intl.NumberFormat(
+      market === "DE"
+        ? "de-DE"
+        : "de-CH",
+      {
+        style: "currency",
+        currency:
+          market === "DE"
+            ? "EUR"
+            : "CHF",
+      }
+    ).format(
       singleObjectPriceCents / 100
     );
   const [error, setError] = useState("");
@@ -223,7 +234,9 @@ if (!confirmed) {
         "begin_checkout",
         {
           currency:
-            "CHF",
+            market === "DE"
+              ? "EUR"
+              : "CHF",
           value:
             singleObjectPriceCents /
             100,
@@ -318,9 +331,20 @@ if (!confirmed) {
                 lineHeight: 1.55,
               }}
             >
-              Einmalige Zahlung für Inserat-Texte,
-              Social-Media-Texte und Exposé dieses
-              Objekts. Kein Abonnement.
+              {market === "DE" ? (
+                <>
+                  Einmalige Zahlung für Inserat-Texte,
+                  Bildfunktionen, Social-Media-Texte und
+                  Marketing Hub dieses Objekts. Kein
+                  Abonnement.
+                </>
+              ) : (
+                <>
+                  Einmalige Zahlung für Inserat-Texte,
+                  Social-Media-Texte und Exposé dieses
+                  Objekts. Kein Abonnement.
+                </>
+              )}
             </p>
 
             <button

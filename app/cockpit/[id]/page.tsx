@@ -7,6 +7,10 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ListingActions from "./ListingActions";
 import { useAppDialog } from "../../../components/AppDialogProvider";
+import {
+  getInseratAiMarketFromHostname,
+  type InseratAiMarket,
+} from "@/lib/inserat-ai-market";
 
 type Variant = {
   title: string;
@@ -89,6 +93,33 @@ export default function CockpitListingPage() {
   const [paymentNotice, setPaymentNotice] = useState("");
   const [verifyingPayment, setVerifyingPayment] =
     useState(false);
+
+  const [market, setMarket] =
+    useState<InseratAiMarket>("CH");
+
+  useEffect(() => {
+    const domainMarket =
+      getInseratAiMarketFromHostname(
+        window.location.hostname
+      );
+
+    if (domainMarket) {
+      setMarket(domainMarket);
+      return;
+    }
+
+    const storedMarket =
+      window.localStorage.getItem(
+        "inseratAiMarket"
+      );
+
+    if (
+      storedMarket === "CH" ||
+      storedMarket === "DE"
+    ) {
+      setMarket(storedMarket);
+    }
+  }, []);
   const [deletingImageId, setDeletingImageId] = useState<string | null>(
   null
 );
@@ -382,7 +413,14 @@ export default function CockpitListingPage() {
                     transaction_id:
                       sessionId,
                     currency:
-                      data.currency ?? "CHF",
+                      data.currency ??
+                      (
+                        getInseratAiMarketFromHostname(
+                          window.location.hostname
+                        ) === "DE"
+                          ? "EUR"
+                          : "CHF"
+                      ),
                     value:
                       typeof data.amountTotalCents ===
                         "number"
@@ -582,19 +620,32 @@ async function deleteListingImage(imageId: string) {
   function formatPrice(price: number | null) {
     if (price === null) return "Preis nicht angegeben";
 
-    return new Intl.NumberFormat("de-CH", {
-      style: "currency",
-      currency: "CHF",
-      maximumFractionDigits: 0,
-    }).format(price);
+    return new Intl.NumberFormat(
+      market === "DE"
+        ? "de-DE"
+        : "de-CH",
+      {
+        style: "currency",
+        currency:
+          market === "DE"
+            ? "EUR"
+            : "CHF",
+        maximumFractionDigits: 0,
+      }
+    ).format(price);
   }
 
   function formatNumber(value: number | null, suffix = "") {
     if (value === null) return "–";
 
-    return `${new Intl.NumberFormat("de-CH", {
-      maximumFractionDigits: 1,
-    }).format(value)}${suffix}`;
+    return `${new Intl.NumberFormat(
+      market === "DE"
+        ? "de-DE"
+        : "de-CH",
+      {
+        maximumFractionDigits: 1,
+      }
+    ).format(value)}${suffix}`;
   }
   function formatFileSize(sizeBytes: number | null) {
   if (sizeBytes === null) {
@@ -1210,7 +1261,11 @@ function showNextImage() {
 ) : (
   <Link
     href="/#preise"
-    aria-label="3D-Video-Tour – verfügbar mit Pro für CHF 79.90"
+    aria-label={`3D-Video-Tour – verfügbar mit Pro für ${
+      market === "DE"
+        ? "79,90 €"
+        : "CHF 79.90"
+    }`}
     style={{
       display: "inline-flex",
       width: "100%",
@@ -1254,7 +1309,7 @@ function showNextImage() {
           fontWeight: 800,
         }}
       >
-        Pro CHF 79.90
+        Pro {market === "DE" ? "79,90 €" : "CHF 79.90"}
       </small>
     </span>
   </Link>
@@ -1288,7 +1343,11 @@ function showNextImage() {
 ) : (
   <Link
     href="/#preise"
-    aria-label="Virtuelles Home Staging – verfügbar mit Pro für CHF 79.90"
+    aria-label={`Virtuelles Home Staging – verfügbar mit Pro für ${
+      market === "DE"
+        ? "79,90 €"
+        : "CHF 79.90"
+    }`}
     style={{
       display: "inline-flex",
       width: "100%",
@@ -1332,7 +1391,7 @@ function showNextImage() {
           fontWeight: 800,
         }}
       >
-        Pro CHF 79.90
+        Pro {market === "DE" ? "79,90 €" : "CHF 79.90"}
       </small>
     </span>
   </Link>
@@ -1345,7 +1404,7 @@ function showNextImage() {
                 singleObjectPriceCents={
                   listing.singleObjectPriceCents
                 }
-
+                market={market}
               />
             </section>
           </aside>

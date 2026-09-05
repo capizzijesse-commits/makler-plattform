@@ -6,6 +6,10 @@ import LocationAssistantPanel, {
 } from "./LocationAssistantPanel";
 
 import { useParams, useRouter } from "next/navigation";
+import {
+  getInseratAiMarketFromHostname,
+  type InseratAiMarket,
+} from "@/lib/inserat-ai-market";
 
 import { upload } from "@vercel/blob/client";
 import {
@@ -89,6 +93,33 @@ const [deletingImageId, setDeletingImageId] =
 
 const [settingPrimaryImageId, setSettingPrimaryImageId] =
   useState<string | null>(null);
+
+const [market, setMarket] =
+  useState<InseratAiMarket>("CH");
+
+useEffect(() => {
+  const domainMarket =
+    getInseratAiMarketFromHostname(
+      window.location.hostname
+    );
+
+  if (domainMarket) {
+    setMarket(domainMarket);
+    return;
+  }
+
+  const storedMarket =
+    window.localStorage.getItem(
+      "inseratAiMarket"
+    );
+
+  if (
+    storedMarket === "CH" ||
+    storedMarket === "DE"
+  ) {
+    setMarket(storedMarket);
+  }
+}, []);
 
   useEffect(() => {
     if (!listingId) {
@@ -217,7 +248,9 @@ async function handleImageUpload(
 
   if (imageUploadLimit === 0) {
     setUploadMessage(
-      "Bilder sind nach der CHF-9.90-Freischaltung verfügbar."
+      market === "DE"
+        ? "Bilder sind nach der 9,90-€-Freischaltung verfügbar."
+        : "Bilder sind nach der CHF-9.90-Freischaltung verfügbar."
     );
     return;
   }
@@ -607,7 +640,11 @@ async function deleteListingImage(imageId: string) {
                   onChange={(event) =>
                     updateField("location", event.target.value)
                   }
-                  placeholder="z. B. Winterthur"
+                  placeholder={
+                    market === "DE"
+                      ? "z. B. Berlin"
+                      : "z. B. Winterthur"
+                  }
                   required
                 />
               </label>
@@ -661,33 +698,41 @@ async function deleteListingImage(imageId: string) {
               </label>
 
               <label>
-                <span>Preis in CHF</span>
+                <span>
+                  Preis in {market === "DE" ? "EUR" : "CHF"}
+                </span>
                 <input
                   value={form.price}
                   onChange={(event) =>
                     updateField("price", event.target.value)
                   }
-                  placeholder="z. B. 1450000"
+                  placeholder={
+                    market === "DE"
+                      ? "z. B. 795000"
+                      : "z. B. 1450000"
+                  }
                   inputMode="numeric"
                 />
               </label>
             </div>
           </div>
 
-          <LocationAssistantPanel
-            postalCode={form.postalCode}
-            location={form.location}
-            locationDescription={locationDescription}
-            locationData={locationData}
-            onPostalCodeChange={(value) =>
-              updateField("postalCode", value)
-            }
-            onLocationChange={(value) =>
-              updateField("location", value)
-            }
-            onDescriptionChange={setLocationDescription}
-            onDataChange={setLocationData}
-          />
+          {market !== "DE" && (
+            <LocationAssistantPanel
+              postalCode={form.postalCode}
+              location={form.location}
+              locationDescription={locationDescription}
+              locationData={locationData}
+              onPostalCodeChange={(value) =>
+                updateField("postalCode", value)
+              }
+              onLocationChange={(value) =>
+                updateField("location", value)
+              }
+              onDescriptionChange={setLocationDescription}
+              onDataChange={setLocationData}
+            />
+          )}
           <div className="formSection">
             <div className="sectionHeading">
               <span>VERMARKTUNG</span>
@@ -701,7 +746,11 @@ async function deleteListingImage(imageId: string) {
                 onChange={(event) =>
                   updateField("highlights", event.target.value)
                 }
-                placeholder="Balkon, Seesicht, Garage, ruhige Lage"
+                placeholder={
+                  market === "DE"
+                    ? "Balkon, Aufzug, Garage, ruhige Lage"
+                    : "Balkon, Seesicht, Garage, ruhige Lage"
+                }
                 rows={5}
               />
               <small>
@@ -833,7 +882,9 @@ async function deleteListingImage(imageId: string) {
 
       <small>
         {imageUploadLimit === 0
-          ? "Bilder sind nach der CHF-9.90-Freischaltung oder mit einem Makler-Plan verfügbar."
+          ? market === "DE"
+            ? "Bilder sind nach der 9,90-€-Freischaltung oder mit einem Makler-Plan verfügbar."
+            : "Bilder sind nach der CHF-9.90-Freischaltung oder mit einem Makler-Plan verfügbar."
           : images.length >= imageUploadLimit
             ? `Für dieses Objekt sind ${images.length} von ${imageUploadLimit} Bildern gespeichert. Lösche ein Bild, um ein anderes hochzuladen.`
             : "JPEG, PNG oder WebP · maximal 10 MB pro Bild"}
