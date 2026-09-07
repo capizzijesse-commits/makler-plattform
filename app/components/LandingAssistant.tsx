@@ -294,6 +294,8 @@ export default function LandingAssistant({
 
               <p className="mt-2 px-1 text-[11px] leading-4 text-slate-500">
                 Der öffentliche Berater beantwortet nur Fragen zu Inserat-AI und allgemeiner Immobilienvermarktung.
+                Fragen und AI-Antworten können anonymisiert zur Verbesserung von Inserat-AI ausgewertet werden.
+                Bitte keine persönlichen oder vertraulichen Daten eingeben.
               </p>
             </form>
           </div>

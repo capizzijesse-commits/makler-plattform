@@ -7,6 +7,7 @@ import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import WhatsAppButton from "@/app/components/WhatsAppButton";
 import GuideAssistant from "@/app/components/GuideAssistant";
+import MaklerCommunicationHub from "@/app/components/MaklerCommunicationHub";
 import SupportActionDock from "@/app/components/SupportActionDock";
 import FeedbackButton from "@/components/FeedbackButton";
 
@@ -36,13 +37,7 @@ export default function AppShell({
     pathname.startsWith("/marketing-hub") ||
     pathname.startsWith("/finanzierung") ||
     isCockpitDetailPage;
-
- const showSupportTools =
-  pathname.startsWith("/dashboard") ||
-  pathname.startsWith("/cockpit") ||
-  pathname.startsWith("/marketing-hub") ||
-  pathname.startsWith("/finanzierung") ||
-  pathname.startsWith("/konto");
+  const showSupportTools = true;
 
   return (
     <>
@@ -54,12 +49,13 @@ export default function AppShell({
         <Footer />
       ) : null}
 
-      {showSupportTools && !isWorkspacePage ? (
+      {showSupportTools ? (
         <>
           <WhatsAppButton />
           <FeedbackButton />
           <GuideAssistant />
           <SupportActionDock />
+          <MaklerCommunicationHub />
         </>
       ) : null}
     </>

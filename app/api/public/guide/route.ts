@@ -1,6 +1,9 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
+import { randomUUID } from "node:crypto";
+
+import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -127,6 +130,30 @@ function consumeRateLimit(key: string): boolean {
 
   return true;
 }
+
+function getRequestPagePath(
+  request: NextRequest
+): string | null {
+  const referer =
+    request.headers.get(
+      "referer"
+    );
+
+  if (!referer) {
+    return null;
+  }
+
+  try {
+    const url =
+      new URL(referer);
+
+    return url.pathname
+      .slice(0, 500);
+  } catch {
+    return null;
+  }
+}
+
 
 function normalizeAnswer(value: string): string {
   return value
@@ -285,6 +312,43 @@ export async function POST(request: NextRequest) {
         {
           status: 500,
         }
+      );
+    }
+
+    const pagePath =
+      getRequestPagePath(
+        request
+      );
+
+    try {
+      await prisma.$executeRaw`
+        INSERT INTO "PublicGuideQuestionLog"
+          (
+            "id",
+            "market",
+            "pagePath",
+            "question",
+            "answer",
+            "createdAt"
+          )
+        VALUES
+          (
+            ${randomUUID()},
+            ${market},
+            ${pagePath},
+            ${message},
+            ${answer},
+            CURRENT_TIMESTAMP
+          )
+      `;
+    } catch (loggingError) {
+      /*
+       * Die AI-Antwort darf niemals daran scheitern,
+       * dass das anonyme Analyse-Logging ausfällt.
+       */
+      console.error(
+        "PUBLIC GUIDE QUESTION LOG ERROR:",
+        loggingError
       );
     }
 
