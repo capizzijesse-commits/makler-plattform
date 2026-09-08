@@ -1,10 +1,12 @@
-﻿import type Stripe from "stripe";
+import type Stripe from "stripe";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { getAppUrl } from "@/lib/app-url";
 import {
-  getInseratAiCurrencyFromHeaders,
+  getInseratAiCurrencyForMarket,
+  getInseratAiMarketFromHeaders,
+  type InseratAiMarket,
 } from "@/lib/inserat-ai-market";
 import {
   OFFER_PRICES_CENTS,
@@ -61,6 +63,7 @@ const ACTIVE_SUBSCRIPTION_STATUSES = [
 
 type CheckoutRequestBody = {
   plan?: unknown;
+  market?: unknown;
 };
 
 function getStripeErrorCode(
@@ -216,7 +219,7 @@ export async function POST(
           success: false,
           loginRequired: true,
           error:
-            "Bitte zuerst einloggen oder registrieren.",
+            "Bitte zuerst einloggen.",
         },
         { status: 401 }
       );
@@ -246,9 +249,22 @@ export async function POST(
         ? body.plan.trim().toLowerCase()
         : "";
 
+    const requestedMarketValue =
+      typeof body?.market === "string"
+        ? body.market.trim().toUpperCase()
+        : "";
+
+    const requestedMarket:
+      InseratAiMarket | null =
+      requestedMarketValue === "DE" ||
+      requestedMarketValue === "CH"
+        ? requestedMarketValue
+        : null;
+
     if (
       requestedPlan !== "founder" &&
-      requestedPlan !== "standard"
+      requestedPlan !== "standard" &&
+      requestedPlan !== "pro"
     ) {
       return NextResponse.json(
         {
@@ -349,15 +365,48 @@ export async function POST(
 
     const selectedPlan:
       | "founder"
-      | "standard" =
-      requestedPlan === "standard" ||
-      !founderIsAvailable
-        ? "standard"
-        : "founder";
+      | "standard"
+      | "pro" =
+      requestedPlan === "pro"
+        ? "pro"
+        : requestedPlan === "standard" ||
+            !founderIsAvailable
+          ? "standard"
+          : "founder";
+
+    /*
+     * Founder und Standard behalten den bestehenden
+     * 30-Tage-Test. Pro startet direkt kostenpflichtig.
+     */
+    const selectedTrialDays =
+      selectedPlan === "pro"
+        ? 0
+        : SUBSCRIPTION_TRIAL_DAYS;
+
+    /*
+     * Produktion:
+     * inserat-ai.de erzwingt DE/EUR.
+     * inserat-ai.ch erzwingt CH/CHF.
+     *
+     * Lokal:
+     * localhost besitzt keinen Markt-Hostname.
+     * Dort darf die aktive Dashboard-Marktauswahl
+     * DE/CH den Checkout bestimmen.
+     */
+    const hostnameMarket =
+      getInseratAiMarketFromHeaders(
+        request.headers
+      );
+
+    const effectiveMarket:
+      InseratAiMarket =
+      hostnameMarket ??
+      requestedMarket ??
+      "CH";
 
     const expectedCurrency =
-      getInseratAiCurrencyFromHeaders(
-        request.headers
+      getInseratAiCurrencyForMarket(
+        effectiveMarket
       );
 
     const stripe = getStripe();
@@ -395,7 +444,7 @@ export async function POST(
           session.metadata?.plan ===
             selectedPlan &&
           session.metadata?.trialPeriodDays ===
-            String(SUBSCRIPTION_TRIAL_DAYS) &&
+            String(selectedTrialDays) &&
           session.metadata?.expectedCurrency ===
             expectedCurrency &&
           typeof session.url === "string"
@@ -416,7 +465,7 @@ export async function POST(
           session.metadata?.plan !==
             selectedPlan ||
           session.metadata?.trialPeriodDays !==
-            String(SUBSCRIPTION_TRIAL_DAYS) ||
+            String(selectedTrialDays) ||
           session.metadata?.expectedCurrency !==
             expectedCurrency
       );
@@ -455,7 +504,9 @@ export async function POST(
             subscription.metadata?.plan ===
               "founder" ||
             subscription.metadata?.plan ===
-              "standard"
+              "standard" ||
+            subscription.metadata?.plan ===
+              "pro"
           ) &&
           ![
             "canceled",
@@ -502,12 +553,22 @@ export async function POST(
         : checkoutLocale;
 
     const productDescription =
-      SUBSCRIPTION_PRODUCT_DESCRIPTIONS[
-        descriptionLocale
-      ][selectedPlan].replaceAll(
-        "CHF",
-        expectedCurrency.toUpperCase()
-      );
+      selectedPlan === "pro"
+        ? expectedCurrency === "eur" &&
+          descriptionLocale === "de"
+          ? "Inserat-AI Pro für 79,90 € pro Monat. Erweiterte KI- und Pro-Funktionen. Jederzeit kündbar."
+          : `Inserat-AI Pro für ${expectedCurrency.toUpperCase()} 79.90 pro Monat. Erweiterte KI- und Pro-Funktionen.`
+        : expectedCurrency === "eur" &&
+            descriptionLocale === "de"
+          ? selectedPlan === "founder"
+            ? "30 Tage kostenlos. Die ersten 50 Founder-Kunden behalten 19,90 € pro Monat dauerhaft, solange das Abonnement ohne Unterbrechung aktiv bleibt."
+            : "30 Tage kostenlos. Danach 39,90 € pro Monat. Jederzeit kündbar."
+          : SUBSCRIPTION_PRODUCT_DESCRIPTIONS[
+              descriptionLocale
+            ][selectedPlan].replaceAll(
+              "CHF",
+              expectedCurrency.toUpperCase()
+            );
 
     const checkoutSession =
       await stripe.checkout.sessions.create({
@@ -540,7 +601,9 @@ export async function POST(
                 name:
                   selectedPlan === "founder"
                     ? "Inserat-AI Founder"
-                    : "Inserat-AI Standard",
+                    : selectedPlan === "pro"
+                      ? "Inserat-AI Pro"
+                      : "Inserat-AI Standard",
                 description:
                   productDescription,
               },
@@ -556,19 +619,23 @@ export async function POST(
             String(amountCents),
           expectedCurrency,
           trialPeriodDays:
-            String(SUBSCRIPTION_TRIAL_DAYS),
+            String(selectedTrialDays),
         },
 
         subscription_data: {
-          trial_period_days:
-            SUBSCRIPTION_TRIAL_DAYS,
+          ...(selectedTrialDays > 0
+            ? {
+                trial_period_days:
+                  selectedTrialDays,
 
-          trial_settings: {
-            end_behavior: {
-              missing_payment_method:
-                "cancel",
-            },
-          },
+                trial_settings: {
+                  end_behavior: {
+                    missing_payment_method:
+                      "cancel",
+                  },
+                },
+              }
+            : {}),
 
           metadata: {
             userId: billingUser.id,
@@ -579,7 +646,7 @@ export async function POST(
               String(amountCents),
             expectedCurrency,
             trialPeriodDays:
-              String(SUBSCRIPTION_TRIAL_DAYS),
+              String(selectedTrialDays),
           },
         },
 

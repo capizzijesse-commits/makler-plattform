@@ -193,6 +193,16 @@ export default function Navbar() {
   const [sessionStatus, setSessionStatus] =
     useState<SessionStatus>("loading");
 
+  // INSERAT_AI_DASHBOARD_UPGRADE_V1
+  const [dashboardMarket, setDashboardMarket] =
+    useState<"CH" | "DE">("CH");
+
+  const [upgradeBusy, setUpgradeBusy] =
+    useState(false);
+
+  const [upgradeError, setUpgradeError] =
+    useState("");
+
   // GLOBAL_NAVBAR_AUTO_HIDE_V1
   const [navbarVisible, setNavbarVisible] =
     useState(true);
@@ -215,6 +225,11 @@ export default function Navbar() {
   const moduleClass = getModuleClass(pathname);
   const planLabel = getPlanLabel(userPlan);
 
+  const planActionLabel =
+    userPlan.trim().toLowerCase() === "free"
+      ? "UPGRADE"
+      : "PLAN";
+
   const hasProAccess = [
     "pro",
     "agency",
@@ -230,6 +245,101 @@ export default function Navbar() {
     userName.trim() ||
     userEmail.trim() ||
     t("account.fallback");
+
+  const founderPrice =
+    dashboardMarket === "DE"
+      ? "19,90 €"
+      : "CHF 19.90";
+
+  const proPrice =
+    dashboardMarket === "DE"
+      ? "79,90 €"
+      : "CHF 79.90";
+
+  useEffect(() => {
+    const hostname =
+      window.location.hostname.toLowerCase();
+
+    const storedMarket =
+      localStorage
+        .getItem("inseratAiMarket")
+        ?.trim()
+        .toUpperCase();
+
+    setDashboardMarket(
+      hostname.endsWith(".de") ||
+        storedMarket === "DE"
+        ? "DE"
+        : "CH"
+    );
+  }, [pathname]);
+
+  async function startSubscriptionCheckoutFromNavbar(
+    plan: "founder" | "pro"
+  ) {
+    if (upgradeBusy) {
+      return;
+    }
+
+    setUpgradeBusy(true);
+    setUpgradeError("");
+
+    try {
+      const response = await fetch(
+        "/api/payments/subscription/checkout",
+        {
+          method: "POST",
+          credentials: "include",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            plan,
+            market: dashboardMarket,
+          }),
+        }
+      );
+
+      const data =
+        (await response
+          .json()
+          .catch(() => null)) as
+          | {
+              success?: boolean;
+              url?: string;
+              error?: string;
+              alreadySubscribed?: boolean;
+            }
+          | null;
+
+      if (data?.alreadySubscribed) {
+        window.location.assign("/konto");
+        return;
+      }
+
+      if (
+        !response.ok ||
+        !data?.success ||
+        !data.url
+      ) {
+        throw new Error(
+          data?.error ||
+            "Der Checkout konnte nicht gestartet werden."
+        );
+      }
+
+      window.location.assign(data.url);
+    } catch (error) {
+      setUpgradeError(
+        error instanceof Error
+          ? error.message
+          : "Der Checkout konnte nicht gestartet werden."
+      );
+    } finally {
+      setUpgradeBusy(false);
+    }
+  }
 
   useEffect(() => {
     setMenuOpen(false);
@@ -593,9 +703,40 @@ export default function Navbar() {
                   </span>
                 </Link>
 
-                <span className="appPlanBadge">
-                  {planLabel}
-                </span>
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen(true)}
+                  aria-label="Plan und Upgrade öffnen"
+                  title="Plan & Upgrade"
+                  style={{
+                    all: "unset",
+                    display: "inline-flex",
+                    cursor: "pointer",
+                  }}
+                >
+                  <span className="appPlanBadge">
+                    {planLabel}
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        margin: "0 5px",
+                        opacity: 0.55,
+                      }}
+                    >
+                      ·
+                    </span>
+                    {planActionLabel}
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        marginLeft: "5px",
+                        fontSize: "14px",
+                      }}
+                    >
+                      ›
+                    </span>
+                  </span>
+                </button>
 
                 <Link
                   href="/dashboard"
@@ -624,9 +765,40 @@ export default function Navbar() {
                   {displayUserName}
                 </Link>
 
-                <span className="appPlanBadge">
-                  {planLabel}
-                </span>
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen(true)}
+                  aria-label="Plan und Upgrade öffnen"
+                  title="Plan & Upgrade"
+                  style={{
+                    all: "unset",
+                    display: "inline-flex",
+                    cursor: "pointer",
+                  }}
+                >
+                  <span className="appPlanBadge">
+                    {planLabel}
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        margin: "0 5px",
+                        opacity: 0.55,
+                      }}
+                    >
+                      ·
+                    </span>
+                    {planActionLabel}
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        marginLeft: "5px",
+                        fontSize: "14px",
+                      }}
+                    >
+                      ›
+                    </span>
+                  </span>
+                </button>
 
                 <Link
                   href="/dashboard"
@@ -708,20 +880,202 @@ export default function Navbar() {
             </div>
 
             <div className="appMenuPlanCard">
-              <span>{t("currentPlan")}</span>
+              <span>Dein aktueller Plan</span>
               <strong>{planLabel}</strong>
 
-              {userPlan !== "pro" &&
-                userPlan !== "agency" && (
-                  <Link
-                    href="/#preise"
-                    onClick={() =>
-                      setMenuOpen(false)
-                    }
+              {!hasProAccess && (
+                <div
+                  style={{
+                    display: "grid",
+                    gap: "12px",
+                    marginTop: "16px",
+                  }}
+                >
+                  {userPlan
+                    .trim()
+                    .toLowerCase() === "free" && (
+                    <div
+                      style={{
+                        padding: "14px",
+                        border:
+                          "1px solid rgba(251,191,36,.35)",
+                        borderRadius: "14px",
+                        background:
+                          "rgba(251,191,36,.08)",
+                      }}
+                    >
+                      <span
+                        style={{
+                          display: "block",
+                          fontSize: "11px",
+                          fontWeight: 900,
+                          letterSpacing: ".08em",
+                          textTransform: "uppercase",
+                          color: "#fbbf24",
+                        }}
+                      >
+                        Founder
+                      </span>
+
+                      <strong
+                        style={{
+                          display: "block",
+                          marginTop: "5px",
+                          fontSize: "18px",
+                        }}
+                      >
+                        {founderPrice} / Monat
+                      </strong>
+
+                      <small
+                        style={{
+                          display: "block",
+                          marginTop: "5px",
+                          opacity: 0.8,
+                        }}
+                      >
+                        30 Tage kostenlos · für die
+                        ersten 50 Founder-Kunden
+                      </small>
+
+                      <button
+                        type="button"
+                        disabled={upgradeBusy}
+                        onClick={() =>
+                          void startSubscriptionCheckoutFromNavbar(
+                            "founder"
+                          )
+                        }
+                        style={{
+                          width: "100%",
+                          marginTop: "12px",
+                          padding: "11px 12px",
+                          border: 0,
+                          borderRadius: "10px",
+                          background:
+                            "linear-gradient(135deg, #fbbf24, #f97316)",
+                          color: "#081126",
+                          fontWeight: 900,
+                          cursor: upgradeBusy
+                            ? "wait"
+                            : "pointer",
+                          opacity: upgradeBusy
+                            ? 0.65
+                            : 1,
+                        }}
+                      >
+                        {upgradeBusy
+                          ? "Checkout wird geöffnet …"
+                          : "Founder kostenlos testen"}
+                      </button>
+                    </div>
+                  )}
+
+                  <div
+                    style={{
+                      padding: "14px",
+                      border:
+                        "1px solid rgba(96,165,250,.3)",
+                      borderRadius: "14px",
+                      background:
+                        "rgba(59,130,246,.07)",
+                    }}
                   >
-                    {t("upgradeToPro")}
-                  </Link>
-                )}
+                    <span
+                      style={{
+                        display: "block",
+                        fontSize: "11px",
+                        fontWeight: 900,
+                        letterSpacing: ".08em",
+                        textTransform: "uppercase",
+                        color: "#93c5fd",
+                      }}
+                    >
+                      Pro
+                    </span>
+
+                    <strong
+                      style={{
+                        display: "block",
+                        marginTop: "5px",
+                        fontSize: "18px",
+                      }}
+                    >
+                      {proPrice} / Monat
+                    </strong>
+
+                    <small
+                      style={{
+                        display: "block",
+                        marginTop: "5px",
+                        opacity: 0.8,
+                      }}
+                    >
+                      Erweiterte KI- und
+                      Pro-Funktionen
+                    </small>
+
+                    <button
+                      type="button"
+                      disabled={upgradeBusy}
+                      onClick={() => {
+                        const normalizedPlan =
+                          userPlan
+                            .trim()
+                            .toLowerCase();
+
+                        if (
+                          normalizedPlan !==
+                          "free"
+                        ) {
+                          setUpgradeError(
+                            "Der Wechsel von einem bestehenden Makler-Plan auf Pro wird separat verwaltet."
+                          );
+                          return;
+                        }
+
+                        void startSubscriptionCheckoutFromNavbar(
+                          "pro"
+                        );
+                      }}
+                      style={{
+                        width: "100%",
+                        marginTop: "12px",
+                        padding: "11px 12px",
+                        borderRadius: "10px",
+                        border:
+                          "1px solid rgba(147,197,253,.4)",
+                        background:
+                          "rgba(59,130,246,.08)",
+                        color: "#bfdbfe",
+                        fontWeight: 900,
+                        cursor: upgradeBusy
+                          ? "wait"
+                          : "pointer",
+                        opacity: upgradeBusy
+                          ? 0.65
+                          : 1,
+                      }}
+                    >
+                      {upgradeBusy
+                        ? "Checkout wird geöffnet …"
+                        : "Pro abonnieren"}
+                    </button>
+                  </div>
+
+                  {upgradeError ? (
+                    <small
+                      role="alert"
+                      style={{
+                        color: "#fca5a5",
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {upgradeError}
+                    </small>
+                  ) : null}
+                </div>
+              )}
             </div>
             <div className="appMenuMobileMeta">
               <Link

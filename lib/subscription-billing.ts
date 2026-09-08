@@ -23,7 +23,8 @@ const SUBSCRIPTION_ACCESS_STATUSES = [
 
 type SubscriptionPlan =
   | "founder"
-  | "standard";
+  | "standard"
+  | "pro";
 
 type SubscriptionMetadata = {
   userId: string;
@@ -65,7 +66,8 @@ function readSubscriptionPlan(
 
   if (
     plan !== "founder" &&
-    plan !== "standard"
+    plan !== "standard" &&
+    plan !== "pro"
   ) {
     throw new Error(
       "Der Stripe-Abo-Plan ist ungültig."
@@ -78,9 +80,15 @@ function readSubscriptionPlan(
 function getExpectedPlanAmount(
   plan: SubscriptionPlan
 ): number {
-  return plan === "founder"
-    ? OFFER_PRICES_CENTS.founder
-    : OFFER_PRICES_CENTS.standard;
+  if (plan === "founder") {
+    return OFFER_PRICES_CENTS.founder;
+  }
+
+  if (plan === "pro") {
+    return OFFER_PRICES_CENTS.pro;
+  }
+
+  return OFFER_PRICES_CENTS.standard;
 }
 
 function readExpectedAmount(
@@ -743,6 +751,7 @@ export async function verifyAndActivateSubscriptionCheckout(
   plan:
     | "founder"
     | "standard"
+    | "pro"
     | "admin";
   founderNumber: number | null;
   subscriptionStatus: string;
