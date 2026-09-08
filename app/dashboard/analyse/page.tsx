@@ -36,6 +36,13 @@ type AnalyzeResponse = {
   error?: string;
 };
 
+type SessionResponse = {
+  success?: boolean;
+  user?: {
+    plan?: string | null;
+  };
+};
+
 
 type ParsedAnalysis = {
   room: string;
@@ -49,9 +56,19 @@ type ParsedAnalysis = {
 function parseAnalysis(
   value: string
 ): ParsedAnalysis | null {
+  const raw = value.trim();
+
+  if (!raw) {
+    return null;
+  }
+
+  /*
+   * Neues/strukturiertes Format:
+   * direktes JSON der Bildanalyse.
+   */
   try {
     const parsed =
-      JSON.parse(value) as Record<
+      JSON.parse(raw) as Record<
         string,
         unknown
       >;
@@ -59,28 +76,155 @@ function parseAnalysis(
     return {
       room:
         typeof parsed.room === "string"
-          ? parsed.room
+          ? parsed.room.trim()
           : "",
       condition:
         typeof parsed.condition === "string"
-          ? parsed.condition
+          ? parsed.condition.trim()
           : "",
       visibleFacts:
         Array.isArray(parsed.visibleFacts)
-          ? parsed.visibleFacts.map(String)
+          ? parsed.visibleFacts
+              .map(String)
+              .map((item) => item.trim())
+              .filter(Boolean)
           : [],
       strengths:
         Array.isArray(parsed.strengths)
-          ? parsed.strengths.map(String)
+          ? parsed.strengths
+              .map(String)
+              .map((item) => item.trim())
+              .filter(Boolean)
           : [],
       limitations:
         Array.isArray(parsed.limitations)
-          ? parsed.limitations.map(String)
+          ? parsed.limitations
+              .map(String)
+              .map((item) => item.trim())
+              .filter(Boolean)
           : [],
     };
   } catch {
+    // Bestehendes Textformat weiter unten behandeln.
+  }
+
+  /*
+   * Bestehende API-Ausgabe:
+   * "Raum oder Bereich: ...\\n\\nSichtbare Elemente: ..."
+   *
+   * Einige Antworten enthalten echte Zeilenumbrüche,
+   * andere die beiden Zeichen "\\n".
+   */
+  const normalized =
+    raw
+      .replace(/\\r\\n/g, "\n")
+      .replace(/\\n/g, "\n")
+      .replace(/\r\n/g, "\n")
+      .trim();
+
+  const labels = [
+    {
+      key: "room",
+      label: "Raum oder Bereich:",
+    },
+    {
+      key: "visibleFacts",
+      label: "Sichtbare Elemente:",
+    },
+    {
+      key: "condition",
+      label: "Zustand und Eindruck:",
+    },
+    {
+      key: "strengths",
+      label: "Vermarktungsrelevante Stärken:",
+    },
+    {
+      key: "limitations",
+      label: "Hinweise und Einschränkungen:",
+    },
+  ] as const;
+
+  const positions =
+    labels
+      .map((entry) => ({
+        ...entry,
+        index:
+          normalized.indexOf(entry.label),
+      }))
+      .filter(
+        (entry) => entry.index >= 0
+      )
+      .sort(
+        (a, b) => a.index - b.index
+      );
+
+  if (positions.length < 2) {
     return null;
   }
+
+  const sections: Record<
+    string,
+    string
+  > = {};
+
+  positions.forEach(
+    (entry, index) => {
+      const contentStart =
+        entry.index +
+        entry.label.length;
+
+      const next =
+        positions[index + 1];
+
+      const contentEnd =
+        next
+          ? next.index
+          : normalized.length;
+
+      sections[entry.key] =
+        normalized
+          .slice(
+            contentStart,
+            contentEnd
+          )
+          .trim()
+          .replace(
+            /^[\s:–—-]+/,
+            ""
+          );
+    }
+  );
+
+  function splitList(
+    text: string
+  ): string[] {
+    return text
+      .split(
+        /\s*(?:,|;|\n|•|\u2022)\s*/
+      )
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return {
+    room:
+      sections.room ?? "",
+    condition:
+      sections.condition ?? "",
+    visibleFacts:
+      splitList(
+        sections.visibleFacts ?? ""
+      ),
+    strengths:
+      splitList(
+        sections.strengths ?? ""
+      ),
+    limitations:
+      splitList(
+        sections.limitations ?? ""
+      ),
+  };
 }
 
 
@@ -97,6 +241,68 @@ export default function AnalysisStudioPage() {
   const [message, setMessage] =
     useState("");
 
+  const [userPlan, setUserPlan] =
+    useState("free");
+
+  const normalizedPlan =
+    userPlan.trim().toLowerCase();
+
+  const imageLimit =
+    normalizedPlan === "free"
+      ? 5
+      : 10;
+
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadSessionPlan() {
+      try {
+        const response =
+          await fetch(
+            "/api/session",
+            {
+              credentials: "include",
+              cache: "no-store",
+            }
+          );
+
+        const data =
+          (await response
+            .json()
+            .catch(() => null)) as
+            | SessionResponse
+            | null;
+
+        if (!active) {
+          return;
+        }
+
+        const nextPlan =
+          typeof data?.user?.plan ===
+          "string"
+            ? data.user.plan
+            : "free";
+
+        setUserPlan(nextPlan);
+      } catch (error) {
+        console.error(
+          "ANALYSE PLAN KONNTE NICHT GELADEN WERDEN:",
+          error
+        );
+
+        if (active) {
+          setUserPlan("free");
+        }
+      }
+    }
+
+    void loadSessionPlan();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     const domainMarket =
@@ -126,10 +332,16 @@ export default function AnalysisStudioPage() {
   function handleSelectImages(
     event: ChangeEvent<HTMLInputElement>
   ) {
-    const selected =
+    const allSelected =
       Array.from(
         event.target.files ?? []
-      ).slice(0, 10);
+      );
+
+    const selected =
+      allSelected.slice(
+        0,
+        imageLimit
+      );
 
     items.forEach((item) => {
       URL.revokeObjectURL(
@@ -148,7 +360,16 @@ export default function AnalysisStudioPage() {
       }))
     );
 
-    setMessage("");
+    if (
+      allSelected.length >
+      imageLimit
+    ) {
+      setMessage(
+        `Für deinen aktuellen Plan können maximal ${imageLimit} Bilder gleichzeitig ausgewählt werden.`
+      );
+    } else {
+      setMessage("");
+    }
   }
 
 
@@ -212,6 +433,11 @@ export default function AnalysisStudioPage() {
         formData.append(
           "image",
           working[index].file
+        );
+
+        formData.append(
+          "market",
+          market
         );
 
         const response =
@@ -432,9 +658,25 @@ export default function AnalysisStudioPage() {
           </section>
 
 
-          <div className="mt-5 grid gap-5 xl:grid-cols-[0.88fr_1.12fr]">
+          <div className="mt-5 grid gap-5 xl:h-[calc(100vh-220px)] xl:min-h-[620px] xl:grid-cols-[0.88fr_1.12fr]">
 
-            <section className="rounded-[20px] border border-cyan-300/15 bg-[#0b213b] p-6 shadow-2xl">
+            <section
+              className="
+                min-h-0
+                rounded-[20px]
+                border
+                border-cyan-300/15
+                bg-[#0b213b]
+                p-6
+                shadow-2xl
+                xl:h-full
+                xl:overflow-y-auto
+                xl:overscroll-contain
+                xl:pr-4
+                xl:[scrollbar-color:rgba(34,211,238,0.70)_rgba(255,255,255,0.06)]
+                xl:[scrollbar-width:thin]
+              "
+            >
               <div className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300">
                 Eingabe
               </div>
@@ -444,7 +686,7 @@ export default function AnalysisStudioPage() {
               </h2>
 
               <p className="mt-2 text-sm leading-6 text-slate-300">
-                Bis zu 10 JPG-, PNG- oder WEBP-Bilder auswählen.
+                Bis zu {imageLimit} JPG-, PNG- oder WEBP-Bilder auswählen.
                 Inserat-AI analysiert maximal vier Bilder gleichzeitig.
               </p>
 
@@ -470,7 +712,7 @@ export default function AnalysisStudioPage() {
                 </div>
 
                 <div className="mt-2 text-sm text-slate-400">
-                  Maximal 10 Bilder
+                  Maximal {imageLimit} Bilder
                 </div>
               </label>
 
@@ -564,7 +806,7 @@ export default function AnalysisStudioPage() {
             </section>
 
 
-            <section className="min-h-[620px] rounded-[20px] border border-cyan-300/15 bg-[#071329] p-6 shadow-2xl">
+            <section className="flex min-h-0 flex-col rounded-[20px] border border-cyan-300/15 bg-[#071329] p-6 shadow-2xl xl:h-full">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <div className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300">
@@ -603,7 +845,19 @@ export default function AnalysisStudioPage() {
                   </div>
                 </div>
               ) : (
-                <div className="mt-6 space-y-4">
+                <div
+                  className="
+                    mt-6
+                    min-h-0
+                    flex-1
+                    space-y-4
+                    overflow-y-scroll
+                    overscroll-contain
+                    pr-3
+                    [scrollbar-color:rgba(34,211,238,0.75)_rgba(255,255,255,0.08)]
+                    [scrollbar-width:thin]
+                  "
+                >
                   {items.map(
                     (
                       item,

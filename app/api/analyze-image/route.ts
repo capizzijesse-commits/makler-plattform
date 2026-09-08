@@ -47,6 +47,53 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
 
+    const requestedMarketRaw =
+      formData.get("market");
+
+    const requestedMarketValue =
+      typeof requestedMarketRaw === "string"
+        ? requestedMarketRaw
+            .trim()
+            .toUpperCase()
+        : "";
+
+    const requestedMarket:
+      "CH" | "DE" | null =
+      requestedMarketValue === "DE" ||
+      requestedMarketValue === "CH"
+        ? requestedMarketValue
+        : null;
+
+    const forwardedHost =
+      request.headers.get(
+        "x-forwarded-host"
+      ) ??
+      request.headers.get("host") ??
+      "";
+
+    const normalizedHost =
+      forwardedHost
+        .split(",")[0]
+        .trim()
+        .toLowerCase()
+        .replace(/:\d+$/, "");
+
+    const analysisMarket:
+      "CH" | "DE" =
+      normalizedHost ===
+        "inserat-ai.de" ||
+      normalizedHost.endsWith(
+        ".inserat-ai.de"
+      )
+        ? "DE"
+        : normalizedHost ===
+              "inserat-ai.ch" ||
+            normalizedHost.endsWith(
+              ".inserat-ai.ch"
+            )
+          ? "CH"
+          : requestedMarket ?? "CH";
+
     const listingIdValue =
       formData.get("listingId");
 
@@ -121,7 +168,7 @@ export async function POST(request: NextRequest) {
     const ultraSpeedKey =
       createUltraSpeedFingerprint({
         namespace:
-          "listing-image-analysis",
+          `listing-image-analysis-${analysisMarket.toLowerCase()}`,
         version:
           "listing-image-analysis-v3-compact-json-low",
         payload: {
@@ -147,6 +194,21 @@ export async function POST(request: NextRequest) {
         process.env.OPENAI_API_KEY,
     });
 
+    const imageAnalysisSystemPrompt =
+      analysisMarket === "DE"
+        ? "Du bist ein präziser Immobilienfoto-Analyst für den deutschen Immobilienmarkt. " +
+          "Analysiere ausschließlich das tatsächlich sichtbare einzelne Foto. " +
+          "Erfinde keine Räume, Materialien, Flächen, Ausstattungen oder Aussichten. " +
+          "Verwende in Deutschland übliche Immobilienbegriffe und deutsche Rechtschreibung. " +
+          "Gib ausschließlich ein gültiges kompaktes JSON-Objekt aus. " +
+          "Kein Markdown und keine Erklärungen außerhalb des JSON."
+        : "Du bist ein präziser Immobilienfoto-Analyst für den Schweizer Immobilienmarkt. " +
+          "Analysiere ausschliesslich das tatsächlich sichtbare einzelne Foto. " +
+          "Erfinde keine Räume, Materialien, Flächen, Ausstattungen oder Aussichten. " +
+          "Verwende Schweizer Immobilienbegriffe und Schweizer Rechtschreibung ohne ß. " +
+          "Gib ausschliesslich ein gültiges kompaktes JSON-Objekt aus. " +
+          "Kein Markdown und keine Erklärungen ausserhalb des JSON.";
+
     const ultraSpeedTask =
       await runUltraSpeedTask<string>({
         key:
@@ -169,11 +231,7 @@ export async function POST(request: NextRequest) {
                   role:
                     "system",
                   content:
-                    "Du bist ein pr\u00e4ziser Schweizer Immobilienfoto-Analyst. " +
-                    "Analysiere ausschliesslich das tats\u00e4chlich sichtbare einzelne Foto. " +
-                    "Erfinde keine R\u00e4ume, Materialien, Fl\u00e4chen, Ausstattungen oder Aussichten. " +
-                    "Gib ausschliesslich ein g\u00fcltiges kompaktes JSON-Objekt aus. " +
-                    "Kein Markdown und keine Erkl\u00e4rungen ausserhalb des JSON.",
+                    imageAnalysisSystemPrompt,
                 },
                 {
                   role:
