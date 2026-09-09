@@ -21,6 +21,7 @@ type AppLocale =
 type RequestedPlan =
   | ""
   | "founder"
+  | "pro"
   | "single-object";
 
 type RegisterBody = {
@@ -225,6 +226,7 @@ function getRequestedPlan(
 
   if (
     normalized === "founder" ||
+    normalized === "pro" ||
     normalized === "single-object"
   ) {
     return normalized;

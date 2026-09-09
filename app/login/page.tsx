@@ -5,9 +5,56 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import GoogleSignInButton from "@/app/components/GoogleSignInButton";
+import {
+  getInseratAiMarketFromHostname,
+} from "@/lib/inserat-ai-market";
 
 
-type MessageType = "success" | "error" | "info";
+type MessageType =
+  | "success"
+  | "error"
+  | "info";
+
+type RequestedPlan =
+  | ""
+  | "founder"
+  | "pro"
+  | "single-object";
+
+function getRequestedPlan(): RequestedPlan {
+  const value =
+    new URLSearchParams(
+      window.location.search
+    ).get("plan");
+
+  if (
+    value === "founder" ||
+    value === "pro" ||
+    value === "single-object"
+  ) {
+    return value;
+  }
+
+  return "";
+}
+
+function getCheckoutMarket():
+  "DE" | "CH" {
+  const hostnameMarket =
+    getInseratAiMarketFromHostname(
+      window.location.hostname
+    );
+
+  if (hostnameMarket) {
+    return hostnameMarket;
+  }
+
+  return window.localStorage.getItem(
+    "inseratAiMarket"
+  ) === "DE"
+    ? "DE"
+    : "CH";
+}
 
 type LoginResponse = {
   success?: boolean;
@@ -94,11 +141,7 @@ export default function LoginPage() {
     credential: string
   ) {
     const requestedPlan =
-      new URLSearchParams(
-        window.location.search
-      ).get("plan") === "founder"
-        ? "founder"
-        : "";
+      getRequestedPlan();
 
     if (!credential) {
       setMessage(
@@ -195,11 +238,16 @@ export default function LoginPage() {
         String(loginExpiresAt)
       );
 
-      if (requestedPlan === "founder") {
+      if (
+        requestedPlan === "founder" ||
+        requestedPlan === "pro"
+      ) {
         setMessage(
-          t(
-            "messages.founderCheckoutOpening"
-          )
+          requestedPlan === "pro"
+            ? "Pro-Checkout wird geöffnet …"
+            : t(
+                "messages.founderCheckoutOpening"
+              )
         );
 
         setMessageType("info");
@@ -216,7 +264,10 @@ export default function LoginPage() {
                   "application/json",
               },
               body: JSON.stringify({
-                plan: "founder",
+                plan:
+                  requestedPlan,
+                market:
+                  getCheckoutMarket(),
               }),
             }
           );
@@ -260,8 +311,14 @@ export default function LoginPage() {
         ) {
           throw new Error(
             checkoutData?.error ||
-              t(
-                "messages.founderCheckoutError"
+              (
+                requestedPlan === "pro"
+                  ? t(
+                      "messages.genericError"
+                    )
+                  : t(
+                      "messages.founderCheckoutError"
+                    )
               )
           );
         }
@@ -296,11 +353,7 @@ export default function LoginPage() {
     event.preventDefault();
 
     const requestedPlan =
-      new URLSearchParams(
-        window.location.search
-      ).get("plan") === "founder"
-        ? "founder"
-        : "";
+      getRequestedPlan();
 
     if (!email.trim() || !password) {
       setMessage(t("messages.missingCredentials"));
@@ -378,9 +431,16 @@ export default function LoginPage() {
         String(loginExpiresAt)
       );
 
-      if (requestedPlan === "founder") {
+      if (
+        requestedPlan === "founder" ||
+        requestedPlan === "pro"
+      ) {
         setMessage(
-          t("messages.founderCheckoutOpening")
+          requestedPlan === "pro"
+            ? "Pro-Checkout wird geöffnet …"
+            : t(
+                "messages.founderCheckoutOpening"
+              )
         );
         setMessageType("info");
 
@@ -395,8 +455,11 @@ export default function LoginPage() {
                 "application/json",
             },
             body: JSON.stringify({
-              plan: "founder",
-            }),
+                plan:
+                  requestedPlan,
+                market:
+                  getCheckoutMarket(),
+              }),
           }
         );
 
@@ -432,7 +495,15 @@ export default function LoginPage() {
         ) {
           throw new Error(
             checkoutData?.error ||
-              t("messages.founderCheckoutError")
+              (
+                requestedPlan === "pro"
+                  ? t(
+                      "messages.genericError"
+                    )
+                  : t(
+                      "messages.founderCheckoutError"
+                    )
+              )
           );
         }
 

@@ -14,13 +14,19 @@ function hashVerificationToken(token: string): string {
 function redirectToLogin(
   request: Request,
   status: string,
-  requestedPlan?: "founder"
+  requestedPlan?:
+    | "founder"
+    | "pro"
+    | "single-object"
 ) {
   const appUrl = getAppUrl(request.url);
 
   const planQuery =
-    requestedPlan === "founder"
-      ? "&plan=founder"
+    requestedPlan
+      ? "&plan=" +
+        encodeURIComponent(
+          requestedPlan
+        )
       : "";
 
   return NextResponse.redirect(
@@ -37,9 +43,18 @@ export async function GET(request: Request) {
     const token =
       searchParams.get("token")?.trim();
 
-    const requestedPlan =
-      searchParams.get("plan") === "founder"
-        ? "founder" as const
+    const plan =
+      searchParams.get("plan");
+
+    const requestedPlan:
+      | "founder"
+      | "pro"
+      | "single-object"
+      | undefined =
+      plan === "founder" ||
+      plan === "pro" ||
+      plan === "single-object"
+        ? plan
         : undefined;
 
     if (!token) {

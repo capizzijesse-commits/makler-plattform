@@ -24,6 +24,7 @@ import {
 type RequestedPlan =
   | ""
   | "founder"
+  | "pro"
   | "single-object";
 
 type RegisterResponse = {
@@ -54,6 +55,8 @@ export default function RegisterPage() {
   const router = useRouter();
   const detectedLocale = useLocale();
   const t = useTranslations("Register");
+  const pricingT =
+    useTranslations("Pricing");
 
   const locale: AppLocale = locales.includes(
     detectedLocale as AppLocale
@@ -77,6 +80,13 @@ export default function RegisterPage() {
         ? "€9.90"
         : "9,90 €"
       : "CHF 9.90";
+
+  const proPrice =
+    isGermany
+      ? locale === "en"
+        ? "€79.90"
+        : "79,90 €"
+      : "CHF 79.90";
 
   function localizePlanCurrency(value: string): string {
     if (!isGermany) {
@@ -133,10 +143,22 @@ function handleRegisterFormStart() {
 }
 
  useEffect(() => {
-  setIsGermany(
+  const hostnameMarket =
     getInseratAiMarketFromHostname(
       window.location.hostname
-    ) === "DE"
+    );
+
+  const storedMarket =
+    window.localStorage.getItem(
+      "inseratAiMarket"
+    );
+
+  setIsGermany(
+    hostnameMarket === "DE" ||
+    (
+      hostnameMarket === null &&
+      storedMarket === "DE"
+    )
   );
 
   const plan = new URLSearchParams(
@@ -145,6 +167,7 @@ function handleRegisterFormStart() {
 
   const normalizedPlan: RequestedPlan =
     plan === "founder" ||
+    plan === "pro" ||
     plan === "single-object"
       ? plan
       : "";
@@ -191,6 +214,9 @@ function handleRegisterFormStart() {
   const isFounderRegistration =
     requestedPlan === "founder";
 
+  const isProRegistration =
+    requestedPlan === "pro";
+
   const isSingleObjectRegistration =
     requestedPlan === "single-object";
 
@@ -231,8 +257,55 @@ function handleRegisterFormStart() {
             },
           ],
         }
-      : isSingleObjectRegistration
+      : isProRegistration
         ? {
+            eyebrow:
+              pricingT("plans.pro.label"),
+            title:
+              "Inserat-AI Pro",
+            description:
+              isGermany
+                ? "Premium-Zugang für Makler mit erweiterten KI-, Home-Staging- und Automatisierungsfunktionen."
+                : pricingT(
+                    "plans.pro.description"
+                  ),
+            submit:
+              isGermany
+                ? "Pro starten"
+                : pricingT(
+                    "plans.pro.button"
+                  ),
+            note:
+              isGermany
+                ? "79,90 € pro Monat. Jederzeit kündbar."
+                : "CHF 79.90 pro Monat.",
+
+            stats: [
+              {
+                value: proPrice,
+                label:
+                  pricingT(
+                    "plans.pro.cadence"
+                  ),
+              },
+              {
+                value: "Home Staging",
+                label:
+                  pricingT(
+                    "plans.pro.features.staging"
+                  ),
+              },
+              {
+                value: "3D-Video-Tour",
+                label:
+                  pricingT(
+                    "plans.pro.features.tour"
+                  ),
+              },
+            ],
+          }
+        : isSingleObjectRegistration
+          ? {
             eyebrow:
               t("plans.singleObject.eyebrow"),
             title:
@@ -503,8 +576,8 @@ function handleRegisterFormStart() {
       );
 
       if (
-        requestedPlan ===
-        "founder"
+        requestedPlan === "founder" ||
+        requestedPlan === "pro"
       ) {
         const checkoutResponse =
           await fetch(
@@ -521,7 +594,11 @@ function handleRegisterFormStart() {
               body:
                 JSON.stringify({
                   plan:
-                    "founder",
+                    requestedPlan,
+                  market:
+                    isGermany
+                      ? "DE"
+                      : "CH",
                 }),
             }
           );
