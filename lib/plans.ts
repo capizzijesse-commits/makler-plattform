@@ -107,9 +107,11 @@ export function getPlanCapabilities(
      * mehrere Immobilien und vollständiger Basis-Arbeitsbereich.
      */
     canUseMultipleListings: hasCompleteBasePlan,
-    canUseBasicCockpit: hasCompleteBasePlan,
+    // Jeder angemeldete Nutzer darf das Basis-Cockpit verwenden.
+    canUseBasicCockpit: true,
     canUseStandardImageAnalysis: hasCompleteBasePlan,
-    canUseSocialMedia: hasCompleteBasePlan,
+    // Social Media ist Teil des kostenlosen Einstiegs.
+    canUseSocialMedia: true,
     canUseExpose: hasCompleteBasePlan,
 
     /*
@@ -153,17 +155,18 @@ export function isPaidSingleObjectListing(
 }
 
 /*
- * Basisfunktionen eines konkreten Objekts:
+ * Bezahlte Kerninhalte eines konkreten Objekts:
  * Founder/Standard/Pro/Agency/Admin oder bezahltes Einzelobjekt.
+ * Das kostenlose Basis-Cockpit ist davon bewusst getrennt.
  */
 export function hasListingCoreAccess(
   planValue: unknown,
   listing: ListingAccessInput | null | undefined
 ): boolean {
-  const capabilities = getPlanCapabilities(planValue);
+  const plan = normalizeUserPlan(planValue);
 
   return (
-    capabilities.canUseBasicCockpit ||
+    plan !== "free" ||
     isPaidSingleObjectListing(listing)
   );
 }
