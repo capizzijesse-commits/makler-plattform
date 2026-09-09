@@ -27,6 +27,20 @@ const DE_LANDING_COPY = {
   dataProtection:
     "DSGVO-konformer Datenschutz im Fokus",
   market: "Deutscher Immobilienmarkt",
+  workflow:
+    "Inserat, Bilder und Social Media aus einem Workflow.",
+  portalText:
+    "Inserattexte und Social-Media-Varianten in einem Schritt.",
+  listingTextsText:
+    "Moderne 4,5-Zimmer-Wohnung mit Balkon, guter Anbindung und hochwertigem Ausbau.",
+  demoHighlight:
+    "Helle Räume",
+  parking:
+    "Tiefgaragenstellplatz",
+  marketingHubDescription:
+    "Der Inserat-AI Marketing Hub verbindet Inserat, Bilder, Social Media, 3D-Video-Tour und Finanzierung. Er zeigt, was bereits fertig ist und welcher Schritt als Nächstes sinnvoll ist.",
+  marketingHubCentral:
+    "Social Media, Bilder, Video-Tour und Finanzierung lassen sich direkt aus einer zentralen Übersicht öffnen.",
 } as const;
 
 export default function HomePageClient({
@@ -94,7 +108,60 @@ export default function HomePageClient({
 
   return (
     <>
-      <section className="landingHero">
+      <section className={market === "DE" ? "landingHero landingHeroGermanyCompact" : "landingHero"}>
+        {market === "DE" ? (
+          <div
+            className="deLaunchMomentum"
+            style={{
+              width: "100%",
+              padding: "13px 18px",
+              boxSizing: "border-box",
+              borderBottom:
+                "1px solid rgba(245,189,33,.30)",
+              background:
+                "linear-gradient(90deg, rgba(7,18,39,.98), rgba(82,49,5,.96), rgba(7,18,39,.98))",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                color: "#fbbf24",
+                fontSize: 10,
+                fontWeight: 950,
+                letterSpacing: ".10em",
+                textTransform: "uppercase",
+              }}
+            >
+              Jetzt für Immobilienprofis in Deutschland
+            </div>
+
+            <strong
+              style={{
+                display: "block",
+                marginTop: 4,
+                color: "#ffffff",
+                fontSize: "clamp(15px, 2vw, 20px)",
+                lineHeight: 1.25,
+                fontWeight: 950,
+              }}
+            >
+              Jetzt startet Inserat-AI in Deutschland.
+            </strong>
+
+            <div
+              style={{
+                marginTop: 4,
+                color: "#dbe4ef",
+                fontSize: 12,
+                lineHeight: 1.4,
+                fontWeight: 750,
+              }}
+            >
+              Founder-Start: 30 Tage kostenlos · danach dauerhaft
+              19,90 € / Monat für die ersten 50
+            </div>
+          </div>
+        ) : null}
         <div className="landingHeroInner">
           <div className="landingHeroContent">
             <div className="landingBadge">
@@ -173,7 +240,7 @@ export default function HomePageClient({
                   </strong>
 
                   <p>
-                    {t("benefits.inquiriesText")}
+                    {market === "DE" ? DE_LANDING_COPY.workflow : t("benefits.inquiriesText")}
                   </p>
                 </div>
               </div>
@@ -184,7 +251,7 @@ export default function HomePageClient({
             id="demo"
             className="landingVideoArea"
           >
-            <div className="landingVideoCard">
+            <div className="landingVideoCard" style={{ display: market === "DE" ? "none" : undefined }}>
               <div className="landingVideoLabel">
                 <span />
                 {t("demo.label")}
@@ -210,7 +277,9 @@ export default function HomePageClient({
                 </strong>
 
                 <p>
-                  {t("demo.listingTextsText")}
+                  {market === "DE"
+                    ? DE_LANDING_COPY.listingTextsText
+                    : t("demo.listingTextsText")}
                 </p>
               </div>
 
@@ -220,9 +289,17 @@ export default function HomePageClient({
                 </strong>
 
                 <ul>
-                  <li>{t("demo.seaView")}</li>
+                  <li>
+                    {market === "DE"
+                      ? DE_LANDING_COPY.demoHighlight
+                      : t("demo.seaView")}
+                  </li>
                   <li>{t("demo.balcony")}</li>
-                  <li>{t("demo.parking")}</li>
+                  <li>
+                    {market === "DE"
+                      ? DE_LANDING_COPY.parking
+                      : t("demo.parking")}
+                  </li>
                 </ul>
               </div>
 
@@ -231,7 +308,7 @@ export default function HomePageClient({
                   {t("demo.portalTitle")}
                 </strong>
 
-                <p>{t("demo.portalText")}</p>
+                <p>{market === "DE" ? DE_LANDING_COPY.portalText : t("demo.portalText")}</p>
               </div>
             </div>
           </div>
@@ -292,7 +369,9 @@ export default function HomePageClient({
             </h2>
 
             <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
-              {t("marketingHub.description")}
+              {market === "DE"
+                ? DE_LANDING_COPY.marketingHubDescription
+                : t("marketingHub.description")}
             </p>
 
             <div className="landingMarketingHubGrid mt-10 grid gap-5 md:grid-cols-3">
@@ -328,7 +407,11 @@ export default function HomePageClient({
                   {t("marketingHub.cards.central.title")}
                 </h3>
                 <p className="mt-3 leading-7 text-slate-300">
-                  {t("marketingHub.cards.central.text")}
+                  {market === "DE"
+                    ? DE_LANDING_COPY.marketingHubCentral
+                    : t(
+                        "marketingHub.cards.central.text"
+                      )}
                 </p>
               </article>
             </div>
