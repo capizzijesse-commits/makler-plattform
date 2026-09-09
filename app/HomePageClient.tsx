@@ -106,6 +106,13 @@ export default function HomePageClient({
     };
   }, []);
 
+  useEffect(() => {
+    document.title =
+      market === "DE"
+        ? "Inserat-AI Deutschland"
+        : "Inserat-AI Schweiz";
+  }, [market]);
+
   return (
     <>
       <section className={market === "DE" ? "landingHero landingHeroGermanyCompact" : "landingHero"}>
