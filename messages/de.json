@@ -48,7 +48,7 @@
         "description": "Inserate und Bilder erstellen"
       },
       "projects": {
-        "label": "Meine Projekte",
+        "label": "Meine Objekte",
         "description": "Immobilien öffnen, bearbeiten und verwalten"
       },
       "marketingHub": {
@@ -61,7 +61,7 @@
       },
       "account": {
         "label": "Mein Konto",
-        "description": "Kontaktdaten für Exposés verwalten"
+        "description": "Kontaktdaten und Profil verwalten"
       },
       "social": {
         "label": "Social Media",
@@ -852,7 +852,7 @@
     },
     "hero": {
       "eyebrow": "DEIN MAKLER-COCKPIT",
-      "fallbackTitle": "Meine Projekte",
+      "fallbackTitle": "Meine Objekte",
       "description": "Erstelle Inserate, verwalte Immobilien und bereite Social-Media-Beiträge an einem zentralen Ort vor.",
       "newListing": "Neues Inserat"
     },

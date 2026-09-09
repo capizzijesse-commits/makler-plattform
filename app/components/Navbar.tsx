@@ -30,6 +30,7 @@ type MenuItem = {
   accent: string;
   comingSoon?: boolean;
   proOnly?: boolean;
+  chOnly?: boolean;
 };
 
 function getModuleClass(pathname: string | null): string {
@@ -121,6 +122,7 @@ export default function Navbar() {
       icon: "\u{1F4CA}",
       href: "/bewertungen",
       accent: "gold",
+      chOnly: true,
     },
     {
       label: t("items.about.label"),
@@ -169,10 +171,12 @@ export default function Navbar() {
     },
     {
       label: t("items.location.label"),
-      description: t("items.location.description"),
+      description:
+        t("items.location.description"),
       icon: "\u{1F4CD}",
       accent: "turquoise",
       proOnly: true,
+      chOnly: true,
       comingSoon: true,
     },
     {
@@ -196,6 +200,13 @@ export default function Navbar() {
   // INSERAT_AI_DASHBOARD_UPGRADE_V1
   const [dashboardMarket, setDashboardMarket] =
     useState<"CH" | "DE">("CH");
+
+  const visibleMenuItems =
+    dashboardMarket === "DE"
+      ? menuItems.filter(
+          (item) => !item.chOnly
+        )
+      : menuItems;
 
   const [upgradeBusy, setUpgradeBusy] =
     useState(false);
@@ -1112,7 +1123,7 @@ export default function Navbar() {
   <PrivacyModeButton />
 </div>
             <nav className="appMenuLinks">
-              {menuItems.map((item) => {
+              {visibleMenuItems.map((item) => {
                 const active = isMenuItemActive(
                   pathname,
                   item.href
