@@ -1,7 +1,22 @@
 import { getTranslations } from "next-intl/server";
+import { headers } from "next/headers";
+import { getInseratAiMarketFromHeaders } from "@/lib/inserat-ai-market";
 
 export default async function ImpressumPage() {
   const t = await getTranslations("Imprint");
+
+  const requestHeaders =
+    await headers();
+
+  const market =
+    getInseratAiMarketFromHeaders(
+      requestHeaders
+    ) ?? "CH";
+
+  const website =
+    market === "DE"
+      ? "https://www.inserat-ai.de"
+      : "https://www.inserat-ai.ch";
 
   return (
     <main
@@ -64,7 +79,7 @@ export default async function ImpressumPage() {
           <br />
           {t("labels.email")}: info@inserat-ai.ch
           <br />
-          {t("labels.website")}: https://www.inserat-ai.ch
+          {t("labels.website")}: {website}
         </p>
 
         <p>{t("productNotice")}</p>

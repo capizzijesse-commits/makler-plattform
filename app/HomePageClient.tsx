@@ -25,7 +25,7 @@ const DE_LANDING_COPY = {
   professionals:
     "Entwickelt für Immobilienprofis in Deutschland",
   dataProtection:
-    "DSGVO-konformer Datenschutz im Fokus",
+    "Datenschutz und Einwilligung im Fokus",
   market: "Deutscher Immobilienmarkt",
   workflow:
     "Inserat, Bilder und Social Media aus einem Workflow.",
