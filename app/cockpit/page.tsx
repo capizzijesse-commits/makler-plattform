@@ -1298,35 +1298,35 @@ justifySelf: "start",
             ? "Mes projets"
             : locale === "en"
               ? "My projects"
-              : "Meine Projekte"}
+              : "Meine Objekte"}
       </h3>
 
       <p>
         {loadingListings
           ? locale === "en"
             ? "Loading saved projects…"
-            : "Gespeicherte Projekte werden geladen…"
+            : "Gespeicherte Objekte werden geladen…"
           : locale === "it"
             ? `${listings.length} progetti salvati aprire e gestire.`
             : locale === "fr"
               ? `${listings.length} projets enregistrés à ouvrir et gérer.`
               : locale === "en"
                 ? `Open and manage ${listings.length} saved projects.`
-                : `${listings.length} gespeicherte Projekte öffnen und verwalten.`}
+                : `${listings.length} gespeicherte Objekte öffnen und verwalten.`}
       </p>
 
       <strong>
         {projectsOpen
           ? locale === "en"
             ? "Close projects ↑"
-            : "Projekte schliessen ↑"
+            : "Objekte schliessen ↑"
           : locale === "it"
             ? "Mostra progetti →"
             : locale === "fr"
               ? "Afficher les projets →"
               : locale === "en"
                 ? "View projects →"
-                : "Projekte anzeigen →"}
+                : "Objekte anzeigen →"}
       </strong>
     </button>
 
@@ -1383,7 +1383,7 @@ justifySelf: "start",
                 ? "PROJETS"
                 : locale === "en"
                   ? "PROJECTS"
-                  : "PROJEKTE"}
+                  : "OBJEKTE"}
           </p>
 
           <h3>
@@ -1393,7 +1393,7 @@ justifySelf: "start",
                 ? "Mes projets"
                 : locale === "en"
                   ? "My projects"
-                  : "Meine Projekte"}
+                  : "Meine Objekte"}
           </h3>
         </div>
 
@@ -1415,7 +1415,7 @@ justifySelf: "start",
                 ? "Chargement des projets…"
                 : locale === "en"
                   ? "Loading projects…"
-                  : "Projekte werden geladen…"}
+                  : "Objekte werden geladen…"}
           </div>
 
         ) : listingsError ? (

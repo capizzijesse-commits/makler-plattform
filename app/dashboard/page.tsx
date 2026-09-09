@@ -1460,7 +1460,7 @@ if (projectName.trim().length < 3) {
         ? "Donnez d'abord un nom au projet (au moins 3 caractères)."
         : locale === "en"
           ? "Please give the project a name first (at least 3 characters)."
-          : "Bitte gib dem Projekt zuerst einen Namen (mindestens 3 Zeichen).",
+          : "Bitte gib dem Objekt zuerst einen Namen (mindestens 3 Zeichen).",
     "warning"
   );
   return null;
@@ -2827,7 +2827,7 @@ return (
             ? "Projet"
             : locale === "en"
               ? "Project"
-              : "Projekt"}
+              : "Objekt"}
       </div>
 
       <div
@@ -2844,7 +2844,7 @@ return (
             ? "Nommer le projet"
             : locale === "en"
               ? "Name this project"
-              : "Projekt benennen"}
+              : "Objekt benennen"}
       </div>
     </div>
 

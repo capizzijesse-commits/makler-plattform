@@ -260,6 +260,13 @@ export default function CockpitOverviewV2({
   }, []);
 
   useEffect(() => {
+    document.title =
+      market === "DE"
+        ? "Inserat-AI Deutschland"
+        : "Inserat-AI Schweiz";
+  }, [market]);
+
+  useEffect(() => {
     let cancelled = false;
 
     async function loadAnalytics() {
@@ -1696,7 +1703,7 @@ export default function CockpitOverviewV2({
         }
 
         .v2Content {
-          width: min(1380px, 100%);
+          width: min(1540px, 100%);
           margin: 0 auto;
           padding: 24px 26px 48px;
         }
