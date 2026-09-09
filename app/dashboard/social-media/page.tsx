@@ -8,7 +8,7 @@ import {
   type InseratAiMarket,
 } from "@/lib/inserat-ai-market";
 
-type PlatformName = "Instagram" | "Facebook" | "LinkedIn" | "X";
+type PlatformName = "Instagram" | "Facebook" | "LinkedIn" | "X" | "WhatsApp";
 
 type SocialVariant = {
   title: string;
@@ -40,7 +40,7 @@ type ListingResponse = {
   error?: string;
 };
 
-const PLATFORM_NAMES: PlatformName[] = ["Instagram", "Facebook", "LinkedIn", "X"];
+const PLATFORM_NAMES: PlatformName[] = ["WhatsApp", "Instagram", "Facebook", "LinkedIn", "X"];
 
 export default function SocialMediaPage() {
   const [market, setMarket] =
@@ -70,7 +70,7 @@ export default function SocialMediaPage() {
     }
   }, []);
 
-  const [location, setLocation] = useState("Winterthur");
+  const [location, setLocation] = useState("");
   const [propertyType, setPropertyType] = useState("Wohnung");
   const [rooms, setRooms] = useState("4.5");
   const [livingArea, setLivingArea] = useState("150");
@@ -97,6 +97,27 @@ const [sourceListingId, setSourceListingId] = useState<string | null>(
     Facebook: 0,
     LinkedIn: 0,
     X: 0,
+    WhatsApp: 0,
+  });
+
+  const [
+    activePlatform,
+    setActivePlatform,
+  ] = useState<PlatformName>(
+    "WhatsApp"
+  );
+
+  const [
+    selectedImageByPlatform,
+    setSelectedImageByPlatform,
+  ] = useState<
+    Record<PlatformName, number>
+  >({
+    Instagram: 0,
+    Facebook: 0,
+    LinkedIn: 0,
+    X: 0,
+    WhatsApp: 0,
   });
 useEffect(() => {
   const savedAnalysis = localStorage.getItem("inseratAiImageAnalysis");
@@ -106,30 +127,6 @@ useEffect(() => {
   }
 }, []);
   useEffect(() => {
-    const savedDraft = localStorage.getItem("inseratAiSocialDraft");
-
-    if (!savedDraft) return;
-
-    try {
-      const data = JSON.parse(savedDraft);
-
-      if (typeof data.location === "string") setLocation(data.location);
-      if (typeof data.propertyType === "string") {
-        setPropertyType(data.propertyType);
-      }
-      if (typeof data.rooms === "string") setRooms(data.rooms);
-      if (typeof data.livingArea === "string") setLivingArea(data.livingArea);
-      if (typeof data.price === "string") setPrice(data.price);
-      if (typeof data.highlights === "string") setHighlights(data.highlights);
-      if (typeof data.styleText === "string") setStyleText(data.styleText);
-      if (typeof data.imageAnalysis === "string") {
-        setImageAnalysis(data.imageAnalysis);
-      }
-    } catch {
-      console.log("Social-Media-Daten konnten nicht geladen werden.");
-    }
-  }, []);
-useEffect(() => {
   const listingId = new URLSearchParams(
     window.location.search
   ).get("listingId");
@@ -237,7 +234,7 @@ setSourceListingId(listingId);
   }
 
   void loadListingForSocialMedia();
-  
+
 
   return () => {
     controller.abort();
@@ -250,6 +247,7 @@ setSourceListingId(listingId);
     if (value.includes("facebook")) return "Facebook";
     if (value.includes("linkedin")) return "LinkedIn";
     if (value.includes("x variante") || value.includes("twitter")) return "X";
+    if (value.includes("whatsapp")) return "WhatsApp";
 
     return null;
   }
@@ -259,6 +257,7 @@ setSourceListingId(listingId);
     if (platform === "Facebook") return "Facebook öffnen";
     if (platform === "LinkedIn") return "LinkedIn öffnen";
     if (platform === "X") return "X öffnen";
+    if (platform === "WhatsApp") return "WhatsApp öffnen";
 
     return "Plattform öffnen";
   }
@@ -268,6 +267,7 @@ setSourceListingId(listingId);
     if (platform === "Facebook") return "📘";
     if (platform === "LinkedIn") return "💼";
     if (platform === "X") return "𝕏";
+    if (platform === "WhatsApp") return "💬";
 
     return "🔗";
   }
@@ -288,6 +288,10 @@ setSourceListingId(listingId);
     return `${baseClass} border-sky-300/40 bg-gradient-to-r from-sky-700 to-blue-600 shadow-sky-500/15 hover:from-sky-600 hover:to-blue-500`;
   }
 
+  if (platform === "WhatsApp") {
+    return `${baseClass} border-green-300/50 bg-gradient-to-r from-green-600 to-emerald-500 shadow-green-500/25 hover:from-green-500 hover:to-emerald-400 hover:shadow-green-500/35`;
+  }
+
   if (platform === "X") {
     return `${baseClass} border-white/25 bg-gradient-to-r from-slate-950 to-slate-800 shadow-black/20 hover:from-slate-800 hover:to-slate-700`;
   }
@@ -295,11 +299,42 @@ setSourceListingId(listingId);
   return `${baseClass} border-amber-400/40 bg-slate-900`;
 }
 
+  function getPlatformTabClass(
+    platform: PlatformName,
+    isActive: boolean
+  ) {
+    const base =
+      "flex min-h-[54px] items-center justify-center gap-2 rounded-xl border px-3 py-3 text-xs font-black transition";
+
+    if (!isActive) {
+      return `${base} border-white/10 bg-white/[0.05] text-slate-300 hover:border-white/25 hover:bg-white/10`;
+    }
+
+    if (platform === "WhatsApp") {
+      return `${base} border-green-300/50 bg-gradient-to-r from-green-600 to-emerald-500 text-white shadow-lg shadow-green-500/20`;
+    }
+
+    if (platform === "Instagram") {
+      return `${base} border-fuchsia-300/40 bg-gradient-to-r from-pink-500 via-fuchsia-500 to-orange-400 text-white`;
+    }
+
+    if (platform === "Facebook") {
+      return `${base} border-blue-300/40 bg-gradient-to-r from-blue-600 to-blue-500 text-white`;
+    }
+
+    if (platform === "LinkedIn") {
+      return `${base} border-sky-300/40 bg-gradient-to-r from-sky-700 to-blue-600 text-white`;
+    }
+
+    return `${base} border-white/30 bg-slate-950 text-white`;
+  }
+
   function getPlatformUrl(platform: PlatformName) {
     if (platform === "Instagram") return "https://www.instagram.com/";
     if (platform === "Facebook") return "https://www.facebook.com/";
     if (platform === "LinkedIn") return "https://www.linkedin.com/";
     if (platform === "X") return "https://x.com/";
+    if (platform === "WhatsApp") return "https://web.whatsapp.com/";
 
     return "#";
   }
@@ -352,7 +387,7 @@ setSourceListingId(listingId);
     setImageAnalysis(
       `${fileArray.length} Immobilienbilder wurden hochgeladen. Die Social-Media-Texte sollen die Bilder berücksichtigen und visuell ansprechend formuliert werden.`
     );
-    
+
   }
   function removeImage(indexToRemove: number) {
   const previewToRemove = imagePreviews[indexToRemove];
@@ -385,6 +420,207 @@ setSourceListingId(listingId);
     await navigator.clipboard.writeText(text);
     alert("Text wurde kopiert.");
   }
+
+  async function downloadPostImage(
+    platform: PlatformName,
+    imageIndex: number
+  ) {
+    const imageUrl =
+      imagePreviews[imageIndex];
+
+    if (!imageUrl) {
+      return;
+    }
+
+    try {
+      const response =
+        await fetch(imageUrl);
+
+      if (!response.ok) {
+        throw new Error(
+          "Bild konnte nicht geladen werden."
+        );
+      }
+
+      const blob =
+        await response.blob();
+
+      const extension =
+        blob.type.includes("png")
+          ? "png"
+          : blob.type.includes("webp")
+            ? "webp"
+            : "jpg";
+
+      const objectUrl =
+        URL.createObjectURL(blob);
+
+      const anchor =
+        document.createElement("a");
+
+      anchor.href =
+        objectUrl;
+
+      anchor.download =
+        `inserat-ai-${platform.toLowerCase()}-bild-${
+          imageIndex + 1
+        }.${extension}`;
+
+      document.body.appendChild(
+        anchor
+      );
+
+      anchor.click();
+      anchor.remove();
+
+      URL.revokeObjectURL(
+        objectUrl
+      );
+    } catch (downloadError) {
+      console.error(
+        "SOCIAL IMAGE DOWNLOAD:",
+        downloadError
+      );
+
+      alert(
+        "Das Bild konnte nicht gespeichert werden."
+      );
+    }
+  }
+
+  async function sharePostWithImage(
+    platform: PlatformName,
+    text: string,
+    imageIndex: number
+  ) {
+    const imageUrl =
+      imagePreviews[imageIndex];
+
+    if (!imageUrl) {
+      await copyPost(text);
+
+      alert(
+        "Kein Bild ausgewählt. Der Text wurde kopiert."
+      );
+
+      return;
+    }
+
+    try {
+      const response =
+        await fetch(imageUrl);
+
+      if (!response.ok) {
+        throw new Error(
+          "Bild konnte nicht geladen werden."
+        );
+      }
+
+      const blob =
+        await response.blob();
+
+      const mimeType =
+        blob.type ||
+        "image/jpeg";
+
+      const extension =
+        mimeType.includes("png")
+          ? "png"
+          : mimeType.includes("webp")
+            ? "webp"
+            : "jpg";
+
+      const file =
+        new File(
+          [blob],
+          `inserat-ai-${platform.toLowerCase()}-${imageIndex + 1}.${extension}`,
+          {
+            type: mimeType,
+          }
+        );
+
+      /*
+       * Caption vorsorglich auch kopieren.
+       * Manche Ziel-Apps übernehmen beim Teilen
+       * zwar das Bild, aber nicht automatisch
+       * den kompletten Begleittext.
+       */
+      try {
+        await navigator.clipboard.writeText(
+          text
+        );
+      } catch {
+        // Teilen funktioniert auch ohne Clipboard.
+      }
+
+      const canShareFiles =
+        typeof navigator.share ===
+          "function" &&
+        typeof navigator.canShare ===
+          "function" &&
+        navigator.canShare({
+          files: [file],
+        });
+
+      if (canShareFiles) {
+        await navigator.share({
+          files: [file],
+          text,
+          title:
+            platform +
+            " Immobilien-Post",
+        });
+
+        return;
+      }
+
+      /*
+       * Fallback für Browser ohne File-Sharing.
+       */
+      await downloadPostImage(
+        platform,
+        imageIndex
+      );
+
+      window.open(
+        getPlatformUrl(platform),
+        "_blank",
+        "noopener,noreferrer"
+      );
+
+      alert(
+        "Der Text wurde kopiert und das Bild gespeichert. " +
+        platform +
+        " wurde geöffnet."
+      );
+    } catch (shareError) {
+      if (
+        shareError instanceof DOMException &&
+        shareError.name ===
+          "AbortError"
+      ) {
+        return;
+      }
+
+      console.error(
+        "SOCIAL SHARE FEHLER:",
+        shareError
+      );
+
+      try {
+        await navigator.clipboard.writeText(
+          text
+        );
+      } catch {
+        // Kein weiterer Fallback möglich.
+      }
+
+      alert(
+        "Direktes Teilen war auf diesem Gerät nicht möglich. Der Text wurde nach Möglichkeit kopiert."
+      );
+    }
+  }
+
 async function saveSocialVariants(
   listingId: string,
   generatedVariants: SocialVariant[]
@@ -405,7 +641,6 @@ async function saveSocialVariants(
         price,
         highlights,
         style: styleText,
-        imageAnalysis,
         socialVariants: generatedVariants,
       }),
     }
@@ -440,6 +675,7 @@ async function saveSocialVariants(
         highlights,
         styleText,
         imageAnalysis,
+        market,
         listingId: sourceListingId,
       }),
     });
@@ -485,6 +721,7 @@ return (
     market={market}
     active="social"
     title="Social Media"
+    listingId={sourceListingId}
   >
     <main className="socialMediaPage min-h-screen bg-[#071a2f] px-6 py-10 text-white">
       <div className="mx-auto max-w-7xl">
@@ -499,8 +736,8 @@ return (
             </h1>
 
             <p className="mt-3 max-w-2xl text-slate-300">
-              Erstelle professionelle Immobilien-Posts für Instagram, Facebook,
-              LinkedIn und X – inklusive Bildhinweis, Hashtags und Copy-Funktion.
+              Erstelle fertige Immobilien-Posts für Instagram, Facebook,
+              LinkedIn und X – inklusive Objektbild, Text, Hashtags und direkter Teilen-Funktion.
             </p>
           </div>
 
@@ -537,6 +774,11 @@ return (
                 <input
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
+                  placeholder={
+                    market === "DE"
+                      ? "München"
+                      : "Zürich"
+                  }
                   className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-4 text-white outline-none"
                 />
               </div>
@@ -617,34 +859,44 @@ return (
 </label>
 
               <label
-  className={`flex cursor-pointer items-center justify-center rounded-2xl border border-dashed border-white/15 bg-white/10 transition hover:border-amber-300 hover:bg-white/[0.14] ${
-    sourceListingId ? "px-5 py-4" : "px-6 py-8"
-  }`}
+  className={
+    imagePreviews.length > 0
+      ? "flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-dashed border-cyan-300/20 bg-white/[0.05] px-4 py-3 transition hover:border-cyan-300/50 hover:bg-white/[0.08]"
+      : "flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-dashed border-white/15 bg-white/[0.06] px-4 py-4 transition hover:border-amber-300/50 hover:bg-white/[0.09]"
+  }
 >
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  multiple
-                  className="hidden"
-                  onChange={handleImageUpload}
-                />
+  <input
+    type="file"
+    accept="image/png,image/jpeg,image/webp"
+    multiple
+    onChange={handleImageUpload}
+    className="hidden"
+  />
 
-                <div className="text-center">
-                  <div className="text-3xl">📷</div>
+  <div className="flex min-w-0 items-center gap-3">
+    <div className="flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-white/10 text-lg">
+      📷
+    </div>
 
-                 <div className="mt-3 text-lg font-black text-white">
-  {sourceListingId
-    ? "Weitere Bilder hinzufügen"
-    : "Fotos hochladen"}
-</div>
+    <div className="min-w-0">
+      <div className="text-sm font-black text-white">
+        {imagePreviews.length > 0
+          ? "+ Weitere Bilder hinzufügen"
+          : "Fotos hochladen"}
+      </div>
 
-<div className="mt-2 text-sm leading-6 text-slate-400">
-  {sourceListingId
-    ? "Die gespeicherten Bilder wurden bereits automatisch übernommen."
-    : "JPG, PNG oder WEBP hochladen. Maximal 10 Bilder."}
-</div>
-                </div>
-              </label>
+      <div className="mt-0.5 text-xs text-slate-400">
+        JPG, PNG oder WEBP · maximal 10 Bilder
+      </div>
+    </div>
+  </div>
+
+  <div className="flex-none rounded-lg border border-white/10 bg-white/[0.06] px-3 py-2 text-xs font-black text-slate-300">
+    {imagePreviews.length > 0
+      ? imagePreviews.length + " ausgewählt"
+      : "Auswählen"}
+  </div>
+</label>
 {sourceListingId && imagePreviews.length > 0 && (
   <div className="mt-4 rounded-2xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm font-bold text-amber-200">
     ✓ Automatisch aus dem Makler-Cockpit übernommen. Das Hauptbild
@@ -684,7 +936,7 @@ return (
                 automatisch für bessere Social-Media-Posts.
               </div>
             </div>
-                
+
             <button
               type="button"
               onClick={handleGenerateSocial}
@@ -709,15 +961,14 @@ return (
             </p>
 
           <h2 className="mt-3 text-3xl font-black text-white">
-              Fertige Social-Media-Posts
+              Dein fertiger Social-Media-Post
             </h2>
 
            <p className="mt-2 text-sm leading-6 text-slate-300">
-  Jeder Text wird mit Plattform-Stil, Call-to-Action und passenden
-  Hashtags erstellt.
+  Wähle Plattform, Textvariante und Objektbild. Inserat-AI passt den Post automatisch an den jeweiligen Kanal an.
 </p>
 
-<div className="mt-5 inline-flex w-fit rounded-full border border-amber-400/40 bg-amber-400/10 px-4 py-2 text-sm font-black text-amber-200">              4 Plattformen
+<div className="mt-5 inline-flex w-fit rounded-full border border-amber-400/40 bg-amber-400/10 px-4 py-2 text-sm font-black text-amber-200">              5 Plattformen
             </div>
 
             {variants.length === 0 ? (
@@ -731,10 +982,31 @@ return (
               </div>
             ) : (
               <div className="mt-8 min-h-0 flex-1 space-y-6 overflow-y-auto pr-2">
-                {PLATFORM_NAMES.map((platform) => {
-  const platformVariants = getVariantsForPlatform(platform);
-  const activeIndex = activeVariantByPlatform[platform] ?? 0;
-  const activeVariant = platformVariants[activeIndex];
+                {[activePlatform].map((platform) => {
+  const platformVariants =
+    getVariantsForPlatform(platform);
+
+  const activeIndex =
+    activeVariantByPlatform[platform] ?? 0;
+
+  const activeVariant =
+    platformVariants[activeIndex];
+
+  const requestedImageIndex =
+    selectedImageByPlatform[platform] ?? 0;
+
+  const selectedImageIndex =
+    imagePreviews.length > 0
+      ? Math.min(
+          requestedImageIndex,
+          imagePreviews.length - 1
+        )
+      : -1;
+
+  const selectedPostImage =
+    selectedImageIndex >= 0
+      ? imagePreviews[selectedImageIndex]
+      : null;
 
   if (!activeVariant) return null;
 
@@ -772,6 +1044,68 @@ className="rounded-3xl border border-amber-400/30 bg-gradient-to-br from-white/[
         })}
       </div>
 
+      {selectedPostImage && (
+        <div className="mt-6 rounded-3xl border border-cyan-300/20 bg-slate-950/45 p-4 shadow-inner">
+
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-cyan-300">
+              BILD FÜR DIESEN POST
+            </p>
+
+            <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-black text-cyan-100">
+              Bild {selectedImageIndex + 1} / {imagePreviews.length}
+            </span>
+          </div>
+
+          <div className="mt-3 overflow-hidden rounded-2xl border border-white/10 bg-slate-900">
+            <img
+              src={selectedPostImage}
+              alt={`${platform} Objektbild`}
+              className="aspect-[4/3] w-full object-cover"
+            />
+          </div>
+
+          {imagePreviews.length > 1 && (
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+              {imagePreviews.map(
+                (
+                  preview,
+                  imageIndex
+                ) => (
+                  <button
+                    key={`${platform}-image-${imageIndex}`}
+                    type="button"
+                    onClick={() =>
+                      setSelectedImageByPlatform(
+                        (current) => ({
+                          ...current,
+                          [platform]:
+                            imageIndex,
+                        })
+                      )
+                    }
+                    className={
+                      imageIndex ===
+                      selectedImageIndex
+                        ? "h-16 w-20 flex-none overflow-hidden rounded-xl border-2 border-amber-300"
+                        : "h-16 w-20 flex-none overflow-hidden rounded-xl border border-white/10 opacity-70 hover:opacity-100"
+                    }
+                  >
+                    <img
+                      src={preview}
+                      alt={`Objektbild ${
+                        imageIndex + 1
+                      }`}
+                      className="h-full w-full object-cover"
+                    />
+                  </button>
+                )
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="mt-6 rounded-3xl border border-white/10 bg-slate-950/45 p-6 shadow-inner">
        <p className="text-lg font-black uppercase tracking-wide text-amber-300">
           {platform} Variante {activeIndex + 1}
@@ -781,28 +1115,89 @@ className="rounded-3xl border border-amber-400/30 bg-gradient-to-br from-white/[
         </p>
       </div>
 
-      <div className="mt-6 flex flex-wrap items-center gap-4">
+      {/* SOCIAL PLATFORM SELECTOR */}
+      <div className="mt-6">
+        <p className="mb-3 text-xs font-black uppercase tracking-[0.16em] text-slate-400">
+          Plattform wählen
+        </p>
+
+        <div className="grid grid-cols-5 gap-2">
+          {PLATFORM_NAMES.map(
+            (platformOption) => {
+              const isActive =
+                platformOption ===
+                activePlatform;
+
+              return (
+                <button
+                  key={platformOption}
+                  type="button"
+                  onClick={() =>
+                    setActivePlatform(
+                      platformOption
+                    )
+                  }
+                  className={getPlatformTabClass(
+                    platformOption,
+                    isActive
+                  )}
+                  title={platformOption}
+                >
+                  <span className="text-base">
+                    {getPlatformButtonIcon(
+                      platformOption
+                    )}
+                  </span>
+
+                  <span className="hidden xl:inline">
+                    {platformOption}
+                  </span>
+                </button>
+              );
+            }
+          )}
+        </div>
+
+        <p className="mt-3 text-xs leading-5 text-slate-400">
+          Der Text passt sich automatisch an die gewählte Plattform an.
+        </p>
+      </div>
+
+      <div className="mt-5">
         <button
           type="button"
-          onClick={() => copyPost(activeVariant.text)}
-className="inline-flex items-center justify-center rounded-xl border border-amber-400/60 bg-amber-400/10 px-5 py-3 text-sm font-black text-amber-200 shadow-[0_8px_20px_rgba(245,158,11,0.12)] transition hover:-translate-y-0.5 hover:bg-gradient-to-r hover:from-amber-500 hover:to-yellow-400 hover:text-slate-950"        >
-          📋 Text kopieren
+          onClick={() =>
+            void sharePostWithImage(
+              platform,
+              activeVariant.text,
+              selectedImageIndex
+            )
+          }
+          className={`${getPlatformButtonClass(
+            platform
+          )} w-full min-h-[58px] text-base`}
+        >
+          <span>
+            {getPlatformButtonIcon(
+              platform
+            )}
+          </span>
+
+          <span>
+            Auf {platform} teilen
+          </span>
         </button>
 
-        <button
-          type="button"
-          onClick={() => window.open(getPlatformUrl(platform), "_blank")}
-          className={getPlatformButtonClass(platform)}
-        >
-          {getPlatformButtonIcon(platform)} {getPlatformButtonLabel(platform)}
-        </button>
+        <p className="mt-3 text-center text-xs leading-5 text-slate-400">
+          Bild und Text werden automatisch gemeinsam vorbereitet.
+        </p>
       </div>
     </div>
   );
 })}
               </div>
             )}
-                   
+
           </section>
         </div>
       </div>

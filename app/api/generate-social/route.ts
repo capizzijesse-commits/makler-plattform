@@ -1,7 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { canUseListingCoreForUser } from "@/lib/listing-access";
 import { getAuthenticatedUser } from "@/lib/session";
 
 type SocialVariant = {
@@ -208,6 +207,18 @@ Eine professionelle Präsentation hilft dabei, die Qualität einer Immobilie sch
   title: "X Variante 3",
   text: `✨ Objekt im Fokus: ${propertyType} in ${location} mit ca. ${livingArea} m², ${rooms} Zimmern und starken Highlights. Wer ein Zuhause mit Qualität und Ausstrahlung sucht, sollte dieses Angebot genauer ansehen. #Immobilien #Wohnen #${tag}`,
 },
+    {
+      title: "WhatsApp Variante 1",
+      text: `Hallo, ich habe eine ${rooms}-Zimmer-${propertyType} in ${location} mit ca. ${livingArea} m² Wohnfläche. ${highlights ? "Zu den angegebenen Merkmalen gehören " + highlights + "." : ""} Bei Interesse sende ich gerne weitere Informationen.`,
+    },
+    {
+      title: "WhatsApp Variante 2",
+      text: `Guten Tag, aktuell ist eine ${propertyType} in ${location} verfügbar. Sie verfügt über ${rooms} Zimmer und ca. ${livingArea} m² Wohnfläche. ${highlights ? highlights + "." : ""} Gerne sende ich Ihnen bei Interesse die Unterlagen.`,
+    },
+    {
+      title: "WhatsApp Variante 3",
+      text: `Kurzer Immobilienhinweis: ${propertyType} in ${location}, ${rooms} Zimmer, ca. ${livingArea} m². ${highlights ? "Merkmale laut Angaben: " + highlights + "." : ""} Wenn das Objekt interessant ist, können wir gerne die nächsten Schritte besprechen.`,
+    },
   ];
 }
 
@@ -267,27 +278,52 @@ export async function POST(request: NextRequest) {
         ? body.listingId.trim()
         : "";
 
-    const hasListingAccess =
-      await canUseListingCoreForUser({
-        userId: user.id,
-        plan: user.plan,
-        listingId,
-      });
+    // Social Media ist für alle angemeldeten Nutzer kostenlos.
+    const requestedMarketValue =
+      typeof body?.market === "string"
+        ? body.market
+            .trim()
+            .toUpperCase()
+        : "";
 
-    if (!hasListingAccess) {
-      return NextResponse.json(
-        {
-          error:
-            "Social-Media-Texte sind für dieses Objekt erst nach der Freischaltung verfügbar.",
-          code: "LISTING_PAYMENT_REQUIRED",
-        },
-        {
-          status: 403,
-        }
-      );
-    }
+    const requestedMarket:
+      "CH" | "DE" | null =
+      requestedMarketValue === "CH" ||
+      requestedMarketValue === "DE"
+        ? requestedMarketValue
+        : null;
 
-    const location = cleanValue(body.location, "Winterthur");
+    const forwardedHost =
+      request.headers.get(
+        "x-forwarded-host"
+      ) ??
+      request.headers.get("host") ??
+      "";
+
+    const normalizedHost =
+      forwardedHost
+        .split(",")[0]
+        .trim()
+        .toLowerCase()
+        .replace(/:\d+$/, "");
+
+    const socialMarket:
+      "CH" | "DE" =
+      normalizedHost ===
+        "inserat-ai.de" ||
+      normalizedHost.endsWith(
+        ".inserat-ai.de"
+      )
+        ? "DE"
+        : normalizedHost ===
+              "inserat-ai.ch" ||
+            normalizedHost.endsWith(
+              ".inserat-ai.ch"
+            )
+          ? "CH"
+          : requestedMarket ?? "CH";
+
+    const location = cleanValue(body.location, "");
     const propertyType = cleanValue(body.propertyType, "Wohnung");
     const rooms = cleanValue(body.rooms, "4.5");
     const livingArea = cleanValue(body.livingArea, "120");
@@ -295,6 +331,72 @@ export async function POST(request: NextRequest) {
     const highlights = cleanValue(body.highlights, "");
     const styleText = cleanValue(body.styleText, "hochwertig und modern");
     const imageAnalysis = cleanValue(body.imageAnalysis, "");
+
+    function parseSocialNumber(
+      value: string
+    ) {
+      const normalized =
+        value
+          .trim()
+          .replace(/[\s'’]/g, "")
+          .replace(",", ".");
+
+      const parsed =
+        Number(normalized);
+
+      return Number.isFinite(parsed)
+        ? parsed
+        : null;
+    }
+
+    const roomNumber =
+      parseSocialNumber(rooms);
+
+    const areaNumber =
+      parseSocialNumber(livingArea);
+
+    const priceNumber =
+      parseSocialNumber(price);
+
+    const locale =
+      socialMarket === "DE"
+        ? "de-DE"
+        : "de-CH";
+
+    const formattedRooms =
+      roomNumber !== null
+        ? new Intl.NumberFormat(
+            locale,
+            {
+              maximumFractionDigits: 1,
+            }
+          ).format(roomNumber)
+        : rooms;
+
+    const formattedLivingArea =
+      areaNumber !== null
+        ? new Intl.NumberFormat(
+            locale,
+            {
+              maximumFractionDigits: 1,
+            }
+          ).format(areaNumber)
+        : livingArea;
+
+    const formattedPrice =
+      priceNumber !== null
+        ? new Intl.NumberFormat(
+            locale,
+            {
+              style: "currency",
+              currency:
+                socialMarket === "DE"
+                  ? "EUR"
+                  : "CHF",
+              maximumFractionDigits: 0,
+            }
+          ).format(priceNumber)
+        : "";
 
     const fallbackData = {
       location,
@@ -311,7 +413,7 @@ export async function POST(request: NextRequest) {
 
     if (!apiKey) {
       return NextResponse.json({
-        variants: fallbackPosts(fallbackData),
+        variants: marketSafeFallbackPosts(),
       });
     }
 
@@ -347,6 +449,148 @@ export async function POST(request: NextRequest) {
       )
         ? imageAnalysis
         : "";
+
+    function sanitizeSocialMarketText(
+      input: string
+    ) {
+      let text =
+        input.trim();
+
+      if (socialMarket === "DE") {
+        text =
+          text
+            .replace(
+              /CHF\s+[0-9][0-9'’.,]*/gi,
+              formattedPrice || ""
+            )
+            .replace(
+              /#RealEstateSwitzerland\b/gi,
+              "#RealEstateGermany"
+            )
+            .replace(
+              /#ImmobilienSchweiz\b/gi,
+              "#ImmobilienDeutschland"
+            )
+            .replace(
+              /#SchweizerImmobilien\b/gi,
+              "#DeutscheImmobilien"
+            )
+            .replace(
+              /#WohnenInDerSchweiz\b/gi,
+              "#WohnenInDeutschland"
+            )
+            .replace(
+              /#Schweiz\b/gi,
+              "#Deutschland"
+            )
+            .replace(
+              /#SwissRealEstate\b/gi,
+              "#GermanRealEstate"
+            )
+            .replace(
+              /#SwissProperty\b/gi,
+              "#GermanProperty"
+            );
+      } else {
+        text =
+          text
+            .replace(
+              /#RealEstateGermany\b/gi,
+              "#RealEstateSwitzerland"
+            )
+            .replace(
+              /#ImmobilienDeutschland\b/gi,
+              "#ImmobilienSchweiz"
+            )
+            .replace(
+              /#DeutscheImmobilien\b/gi,
+              "#SchweizerImmobilien"
+            )
+            .replace(
+              /#WohnenInDeutschland\b/gi,
+              "#WohnenInDerSchweiz"
+            )
+            .replace(
+              /#Deutschland\b/gi,
+              "#Schweiz"
+            );
+      }
+
+      return text
+        .replace(
+          /[ \t]{2,}/g,
+          " "
+        )
+        .replace(
+          /\n{3,}/g,
+          "\n\n"
+        )
+        .trim();
+    }
+
+    function hasWrongMarketReference(
+      text: string
+    ) {
+      if (socialMarket === "DE") {
+        return /CHF|Schweiz|Switzerland|Swiss/i.test(
+          text
+        );
+      }
+
+      return /€|Deutschland|Germany|GermanRealEstate|ImmobilienDeutschland/i.test(
+        text
+      );
+    }
+
+    function marketSafeFallbackPosts() {
+      return fallbackPosts(
+        fallbackData
+      ).map(
+        (variant) => ({
+          ...variant,
+          text:
+            sanitizeSocialMarketText(
+              variant.text
+            ),
+        })
+      );
+    }
+
+
+    const socialSystemPrompt =
+      socialMarket === "DE"
+        ? "Du bist der Social-Media-Redaktor von Inserat-AI für den deutschen Immobilienmarkt. " +
+          "FACT LOCK hat höchste Priorität: Verwende nur ausdrücklich gelieferte Objektfakten. " +
+          "Erfinde keine Vorteile, Wirkungen, Zielgruppen oder Qualitätsurteile und verstärke vorhandene Fakten nicht durch zusätzliche Adjektive. " +
+          "Der gewünschte Schreibton ist kein Objektmerkmal. " +
+          "Verwende deutsche Standardschreibung mit ß, deutsche Immobilienbegriffe und ausschließlich Euro. " +
+          "Verwende niemals Schweiz-, Swiss-, Switzerland- oder CHF-Bezüge. " +
+          "Schreibe professionell, grammatikalisch sauber und plattformspezifisch."
+        : "Du bist der Social-Media-Redaktor von Inserat-AI für den Schweizer Immobilienmarkt. " +
+          "FACT LOCK hat höchste Priorität: Verwende nur ausdrücklich gelieferte Objektfakten. " +
+          "Erfinde keine Vorteile, Wirkungen, Zielgruppen oder Qualitätsurteile und verstärke vorhandene Fakten nicht durch zusätzliche Adjektive. " +
+          "Der gewünschte Schreibton ist kein Objektmerkmal. " +
+          "Verwende Schweizer Standarddeutsch ohne ß, Schweizer Immobilienbegriffe und ausschließlich CHF. " +
+          "Verwende niemals Deutschland-, Germany- oder Euro-Bezüge. " +
+          "Schreibe professionell, grammatikalisch sauber und plattformspezifisch.";
+
+
+    const socialMarketRules =
+      socialMarket === "DE"
+        ? [
+            "Markt Deutschland.",
+            "Deutsche Standardschreibung mit ß verwenden.",
+            "Zimmerzahl mit Dezimalkomma schreiben, zum Beispiel 4,5 Zimmer.",
+            "Preise ausschließlich in Euro schreiben.",
+            "Keine CHF-Angaben verwenden.",
+            "Keine Schweiz-Hashtags verwenden.",
+          ].join(" ")
+        : [
+            "Markt Schweiz.",
+            "Schweizer Standarddeutsch ohne ß verwenden.",
+            "Preise ausschließlich in CHF schreiben.",
+            "Keine Euro-Angaben verwenden.",
+          ].join(" ");
 
     const platformConfigs = [
       {
@@ -404,15 +648,27 @@ export async function POST(request: NextRequest) {
         styleRule:
           "X-first: sehr kompakt und faktisch. Beginne mit der stärksten belegten Kennzahl oder Kombination aus Ort und Objektart. 1 bis 2 konkrete Merkmale, kurzer CTA, keine Füllsätze und keine Werbesuperlative.",
       },
+
+      {
+        platform:
+          "WhatsApp",
+
+        lengthRule:
+          "220 bis 420 Zeichen",
+
+        hashtagRule:
+          "Keine Hashtags verwenden.",
+
+        styleRule:
+          "WhatsApp-first: kurz, persönlich, direkt und sachlich. Formuliere wie eine professionelle Nachricht eines Immobilienmaklers an einen Interessenten oder Geschäftskontakt. Verwende höchstens ein dezentes Emoji. Keine Hashtags, keine Werbesprache und keine langen Absätze. Nenne 2 bis 4 belegte Eckdaten und schliesse mit einem kurzen CTA wie: Bei Interesse sende ich gerne weitere Informationen oder einen Besichtigungstermin.",
+      },
     ] as const;
 
 
     function fallbackForPlatform(
       platform: string
     ) {
-      return fallbackPosts(
-        fallbackData
-      )
+      return marketSafeFallbackPosts()
         .filter(
           (variant) =>
             variant.title.startsWith(
@@ -447,18 +703,16 @@ export async function POST(request: NextRequest) {
           propertyType,
 
         "Zimmer: " +
-          rooms,
+          formattedRooms,
 
         "Wohnfläche: " +
-          livingArea +
+          formattedLivingArea +
           " m²",
 
         "Preis: " +
           (
-            price
-              ? "CHF " +
-                price
-              : "nicht angegeben"
+            formattedPrice ||
+            "nicht angegeben"
           ),
 
         "Highlights: " +
@@ -484,6 +738,11 @@ export async function POST(request: NextRequest) {
 
         "OBJEKTDATEN:",
         facts,
+
+        "",
+
+        "MARKTREGELN:",
+        socialMarketRules,
 
         "",
 
@@ -591,7 +850,7 @@ export async function POST(request: NextRequest) {
 
         "- Preis nur erwähnen, wenn tatsächlich ein Preis angegeben wurde.",
 
-        "- Schweizer Standarddeutsch verwenden und niemals ß schreiben.",
+        "- Befolge Rechtschreibung, Zahlenformat und Währung aus den MARKTREGELN.",
 
         "- Kontrolliere vor der Ausgabe Grammatik, Kasus, Singular und Plural sowie alle Adjektivendungen.",
 
@@ -601,7 +860,7 @@ export async function POST(request: NextRequest) {
 
         "- Die drei Varianten dürfen weder denselben Einstieg noch denselben CTA kopieren.",
 
-        "- Instagram, Facebook, LinkedIn und X müssen erkennbar unterschiedlich klingen.",
+        "- WhatsApp, Instagram, Facebook, LinkedIn und X müssen erkennbar unterschiedlich klingen.",
 
         "- LinkedIn darf niemals mit Entdecken Sie beginnen und soll keine Konsumenten-Werbesprache verwenden.",
 
@@ -705,7 +964,7 @@ export async function POST(request: NextRequest) {
                         "system",
 
                       content:
-                        "Du bist der Social-Media-Redaktor von Inserat-AI für den Schweizer Immobilienmarkt. FACT LOCK hat höchste Priorität: Verwende nur ausdrücklich gelieferte Objektfakten. Erfinde keine Vorteile, Wirkungen, Zielgruppen oder Qualitätsurteile und verstärke vorhandene Fakten nicht durch zusätzliche Adjektive. Der gewünschte Schreibton ist kein Objektmerkmal. Schreibe professionell, grammatikalisch sauber und plattformspezifisch.",
+                        socialSystemPrompt,
                     },
 
                     {
@@ -785,7 +1044,9 @@ export async function POST(request: NextRequest) {
                   ),
 
                 text:
-                  variant.text.trim(),
+                  sanitizeSocialMarketText(
+                    variant.text.trim()
+                  ),
               })
             )
             .filter(
@@ -793,6 +1054,21 @@ export async function POST(request: NextRequest) {
                 variant.text.length >
                 0
             );
+
+
+        if (
+          normalized.some(
+            (variant) =>
+              hasWrongMarketReference(
+                variant.text
+              )
+          )
+        ) {
+          throw new Error(
+            "OPENAI_SOCIAL_MARKET_LEAK_" +
+              config.platform.toUpperCase()
+          );
+        }
 
 
         if (
@@ -850,7 +1126,7 @@ export async function POST(request: NextRequest) {
 
 
     /*
-     * Alle vier Plattformen starten gleichzeitig.
+     * Alle fünf Plattformen starten gleichzeitig.
      */
     const platformResults =
       await Promise.all(
@@ -876,11 +1152,11 @@ export async function POST(request: NextRequest) {
 
     /*
      * Sicherheitsnetz:
-     * Die bestehende UI erwartet 12 Varianten.
+     * Die bestehende UI erwartet 15 Varianten.
      */
     if (
       variants.length !==
-      12
+      15
     ) {
       console.error(
         "[generate-social] Ungültige Gesamtzahl:",
@@ -889,9 +1165,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         variants:
-          fallbackPosts(
-            fallbackData
-          ),
+          marketSafeFallbackPosts(),
 
         generationMs:
           Date.now() -

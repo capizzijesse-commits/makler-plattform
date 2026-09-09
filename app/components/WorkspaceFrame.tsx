@@ -36,6 +36,7 @@ type WorkspaceFrameProps = {
   market: InseratAiMarket;
   active: WorkspaceSection;
   title: string;
+  listingId?: string | null;
 };
 
 function WorkspaceIcon({
@@ -181,6 +182,7 @@ export default function WorkspaceFrame({
   market,
   active,
   title,
+  listingId,
 }: WorkspaceFrameProps) {
   const locale =
     useLocale();
@@ -273,7 +275,11 @@ export default function WorkspaceFrame({
       key: "social" as const,
       icon: "social" as const,
       label: labels.social,
-      href: "/dashboard/social-media",
+      href: listingId
+        ? `/dashboard/social-media?listingId=${encodeURIComponent(
+            listingId
+          )}`
+        : "/dashboard/social-media",
     },
     {
       key: "marketing" as const,
@@ -474,7 +480,7 @@ export default function WorkspaceFrame({
           height: 39px;
           place-items: center;
           flex: 0 0 39px;
-          color: #fbbf24;
+          color: #67e8f9;
         }
 
         .iaBrandMark svg {
@@ -532,9 +538,9 @@ export default function WorkspaceFrame({
           border:
             1px solid transparent;
           border-radius: 9px;
-          color: #bac8d8;
+          color: #9fb0c3;
           font-size: 11px;
-          font-weight: 750;
+          font-weight: 500;
           text-decoration: none;
           transition:
             color 160ms ease,
@@ -554,10 +560,11 @@ export default function WorkspaceFrame({
               rgba(25,63,104,.96),
               rgba(13,44,76,.78)
             );
-          color: white;
+          color: #e6f7fb;
+          font-weight: 500;
           box-shadow:
             0 7px 18px
-            rgba(0,0,0,.12);
+            rgba(0,0,0,.10);
         }
 
         .iaNavItem.active::before {
@@ -570,13 +577,13 @@ export default function WorkspaceFrame({
           background:
             linear-gradient(
               180deg,
-              #fcd34d,
-              #f59e0b
+              #67e8f9,
+              #22d3ee
             );
           content: "";
           box-shadow:
             0 0 12px
-            rgba(251,191,36,.38);
+            rgba(34,211,238,.30);
         }
 
         .iaNavIcon {
@@ -748,6 +755,29 @@ export default function WorkspaceFrame({
 
         .iaWorkspaceContent {
           padding: 18px;
+        }
+
+
+        /* ======================================
+           FINAL SIDEBAR TYPOGRAPHY
+           ====================================== */
+
+        .iaNavItem,
+        .iaNavItem > span:last-child {
+          color: #a9bacb !important;
+          font-weight: 500 !important;
+        }
+
+        .iaNavItem:hover,
+        .iaNavItem:hover > span:last-child {
+          color: #e2eef5 !important;
+          font-weight: 500 !important;
+        }
+
+        .iaNavItem.active,
+        .iaNavItem.active > span:last-child {
+          color: #c8f4fb !important;
+          font-weight: 500 !important;
         }
 
         @media (max-width: 900px) {
@@ -1115,10 +1145,10 @@ export default function WorkspaceFrame({
         .iaNavItem.active
         .iaNavIcon {
           color:
-            #fbbf24 !important;
+            #67e8f9 !important;
 
           -webkit-text-fill-color:
-            #fbbf24 !important;
+            #67e8f9 !important;
 
           background:
             linear-gradient(
@@ -1267,6 +1297,125 @@ export default function WorkspaceFrame({
             0 8px 22px
             rgba(2,6,23,.28) !important;
         }
+
+        /* =============================================
+           SIDEBAR TYPOGRAPHY FINAL V2
+           ============================================= */
+
+        html body
+        .iaWorkspace
+        .iaSidebar
+        a.iaNavItem,
+        html body
+        .iaWorkspace
+        .iaSidebar
+        a.iaNavItem
+        > span:not(.iaNavIcon) {
+          font-family:
+            Inter,
+            ui-sans-serif,
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            sans-serif !important;
+
+          font-weight:
+            400 !important;
+
+          letter-spacing:
+            0 !important;
+
+          color:
+            #a7b9c9 !important;
+
+          -webkit-text-fill-color:
+            #a7b9c9 !important;
+        }
+
+
+        html body
+        .iaWorkspace
+        .iaSidebar
+        a.iaNavItem:hover,
+        html body
+        .iaWorkspace
+        .iaSidebar
+        a.iaNavItem:hover
+        > span:not(.iaNavIcon) {
+          font-weight:
+            400 !important;
+
+          color:
+            #d7eef2 !important;
+
+          -webkit-text-fill-color:
+            #d7eef2 !important;
+        }
+
+
+        html body
+        .iaWorkspace
+        .iaSidebar
+        a.iaNavItem.active {
+          font-weight:
+            400 !important;
+
+          color:
+            #bdebf2 !important;
+
+          -webkit-text-fill-color:
+            #bdebf2 !important;
+
+          border-color:
+            rgba(34,211,238,.10) !important;
+
+          background:
+            linear-gradient(
+              90deg,
+              rgba(8,145,178,.18) 0%,
+              rgba(14,116,144,.08) 100%
+            ) !important;
+
+          box-shadow:
+            none !important;
+        }
+
+
+        html body
+        .iaWorkspace
+        .iaSidebar
+        a.iaNavItem.active
+        > span:not(.iaNavIcon) {
+          font-weight:
+            400 !important;
+
+          color:
+            #bdebf2 !important;
+
+          -webkit-text-fill-color:
+            #bdebf2 !important;
+        }
+
+
+        html body
+        .iaWorkspace
+        .iaSidebar
+        a.iaNavItem.active
+        .iaNavIcon {
+          color:
+            #67e8f9 !important;
+
+          -webkit-text-fill-color:
+            #67e8f9 !important;
+
+          background:
+            rgba(34,211,238,.08) !important;
+
+          box-shadow:
+            none !important;
+        }
+
       `}</style>
 
       <style jsx global>{`
@@ -1341,16 +1490,16 @@ export default function WorkspaceFrame({
         .iaSidebar
         a.iaNavItem.active {
           color:
-            #ffffff !important;
+            #c8f4fb !important;
 
           -webkit-text-fill-color:
-            #ffffff !important;
+            #c8f4fb !important;
 
           background:
             linear-gradient(
               90deg,
-              rgba(30,69,111,.98) 0%,
-              rgba(16,48,82,.94) 100%
+              rgba(8,78,98,.82) 0%,
+              rgba(8,47,73,.78) 100%
             ) !important;
 
           border-color:
@@ -1368,13 +1517,13 @@ export default function WorkspaceFrame({
         a.iaNavItem.active
         > span:not(.iaNavIcon) {
           color:
-            #ffffff !important;
+            #c8f4fb !important;
 
           -webkit-text-fill-color:
-            #ffffff !important;
+            #c8f4fb !important;
 
           font-weight:
-            800 !important;
+            500 !important;
         }
 
 
@@ -1447,6 +1596,217 @@ export default function WorkspaceFrame({
 
           -webkit-text-fill-color:
             #91a6bd !important;
+        }
+
+
+        /* ======================================
+           SIDEBAR TEXT FINAL ONLY
+           ====================================== */
+
+        html body
+        .iaWorkspace
+        .iaSidebar
+        a.iaNavItem
+        > span:not(.iaNavIcon) {
+          color:
+            #aabaca !important;
+
+          -webkit-text-fill-color:
+            #aabaca !important;
+
+          font-weight:
+            400 !important;
+
+          opacity:
+            1 !important;
+        }
+
+        html body
+        .iaWorkspace
+        .iaSidebar
+        a.iaNavItem:hover
+        > span:not(.iaNavIcon) {
+          color:
+            #e0f2f5 !important;
+
+          -webkit-text-fill-color:
+            #e0f2f5 !important;
+
+          font-weight:
+            400 !important;
+        }
+
+        html body
+        .iaWorkspace
+        .iaSidebar
+        a.iaNavItem.active
+        > span:not(.iaNavIcon) {
+          color:
+            #b8edf2 !important;
+
+          -webkit-text-fill-color:
+            #b8edf2 !important;
+
+          font-weight:
+            400 !important;
+
+          opacity:
+            1 !important;
+        }
+
+        html body
+        .iaWorkspace
+        .iaSidebar
+        a.iaNavItem.active
+        .iaNavIcon {
+          color:
+            #67e8f9 !important;
+
+          -webkit-text-fill-color:
+            #67e8f9 !important;
+        }
+
+
+        /* ======================================
+           SIDEBAR ICON + TEXT ROW
+           ====================================== */
+
+        html body
+        .iaWorkspace
+        .iaSidebar
+        a.iaNavItem {
+          display:
+            flex !important;
+
+          flex-direction:
+            row !important;
+
+          align-items:
+            center !important;
+
+          justify-content:
+            flex-start !important;
+
+          gap:
+            10px !important;
+
+          text-align:
+            left !important;
+        }
+
+        html body
+        .iaWorkspace
+        .iaSidebar
+        a.iaNavItem
+        .iaNavIcon {
+          flex:
+            0 0 auto !important;
+
+          margin:
+            0 !important;
+        }
+
+        html body
+        .iaWorkspace
+        .iaSidebar
+        a.iaNavItem
+        > span:not(.iaNavIcon) {
+          display:
+            inline-block !important;
+
+          margin:
+            0 !important;
+        }
+
+
+        /* ======================================
+           SIDEBAR SPACING + CLEAN ICONS
+           ====================================== */
+
+        html body
+        .iaWorkspace
+        .iaSidebar
+        .iaNav {
+          display:
+            flex !important;
+
+          flex-direction:
+            column !important;
+
+          gap:
+            7px !important;
+        }
+
+        html body
+        .iaWorkspace
+        .iaSidebar
+        a.iaNavItem {
+          min-height:
+            48px !important;
+
+          gap:
+            14px !important;
+
+          padding:
+            7px 12px !important;
+        }
+
+        html body
+        .iaWorkspace
+        .iaSidebar
+        .iaNavIcon {
+          width:
+            28px !important;
+
+          height:
+            28px !important;
+
+          min-width:
+            28px !important;
+
+          flex:
+            0 0 28px !important;
+
+          padding:
+            0 !important;
+
+          border:
+            0 !important;
+
+          border-radius:
+            0 !important;
+
+          background:
+            transparent !important;
+
+          box-shadow:
+            none !important;
+        }
+
+        html body
+        .iaWorkspace
+        .iaSidebar
+        .iaNavIcon svg {
+          width:
+            25px !important;
+
+          height:
+            25px !important;
+
+          stroke-width:
+            1.7 !important;
+        }
+
+        html body
+        .iaWorkspace
+        .iaSidebar
+        a.iaNavItem.active
+        .iaNavIcon {
+          background:
+            transparent !important;
+
+          box-shadow:
+            none !important;
         }
 
         /* ======================================

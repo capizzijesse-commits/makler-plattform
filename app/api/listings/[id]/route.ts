@@ -148,9 +148,8 @@ export async function GET(
         generatedVariants: hasCoreAccess
           ? parseJsonValue(listing.generatedVariants)
           : null,
-        socialVariants: hasCoreAccess
-          ? parseJsonValue(listing.socialVariants)
-          : null,
+        // Social Media ist für alle angemeldeten Nutzer kostenlos.
+        socialVariants: parseJsonValue(listing.socialVariants),
         imageAnalysis: hasCoreAccess
           ? listing.imageAnalysis
           : null,
@@ -234,7 +233,6 @@ export async function PATCH(
 
     const updatesProtectedContent =
       body.generatedVariants !== undefined ||
-      body.socialVariants !== undefined ||
       body.imageAnalysis !== undefined ||
       body.locationDescription !== undefined ||
       body.locationData !== undefined;
@@ -328,9 +326,7 @@ export async function PATCH(
         generatedVariants: hasCoreAccess
           ? parseJsonValue(updatedListing.generatedVariants)
           : null,
-        socialVariants: hasCoreAccess
-          ? parseJsonValue(updatedListing.socialVariants)
-          : null,
+        socialVariants: parseJsonValue(updatedListing.socialVariants),
         imageAnalysis: hasCoreAccess
           ? updatedListing.imageAnalysis
           : null,
@@ -430,9 +426,7 @@ export async function POST(
         generatedVariants: hasCoreAccess
           ? parseJsonValue(listing.generatedVariants)
           : null,
-        socialVariants: hasCoreAccess
-          ? parseJsonValue(listing.socialVariants)
-          : null,
+        socialVariants: parseJsonValue(listing.socialVariants),
         imageAnalysis: hasCoreAccess
           ? listing.imageAnalysis
           : null,
