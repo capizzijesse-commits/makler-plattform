@@ -6,6 +6,7 @@ import { trackAnalyticsEvent } from "@/lib/analytics";
 import type { InseratAiMarket } from "@/lib/inserat-ai-market";
 type CheckoutError =
   | "existing"
+  | "founder-unavailable"
   | "generic"
   | null;
 
@@ -107,10 +108,18 @@ export default function PricingSection({
       id: "pro",
       name: "Pro",
       label: t("plans.pro.label"),
-      price: isGermany ? "79,90 €" : "79.90 CHF",
-      cadence: t("plans.pro.cadence"),
-      text: t("plans.pro.description"),
-      button: t("plans.pro.button"),
+      price: isGermany
+        ? "79,90 €"
+        : "79.90 CHF",
+      cadence: isGermany
+        ? "pro Monat"
+        : t("plans.pro.cadence"),
+      text: isGermany
+        ? "Für Makler mit erweiterten KI-, Home-Staging- und Automatisierungsfunktionen."
+        : t("plans.pro.description"),
+      button: isGermany
+        ? "Pro starten"
+        : t("plans.pro.button"),
       href: "#preise",
       highlighted: false,
       features: [
@@ -127,7 +136,11 @@ export default function PricingSection({
   ];
 
   const visiblePlans = isGermany
-    ? plans.filter((plan) => plan.id === "founder")
+    ? plans.filter(
+        (plan) =>
+          plan.id === "founder" ||
+          plan.id === "pro"
+      )
     : plans;
 
   const singleObjectFeatures = isGermany
@@ -147,8 +160,9 @@ export default function PricingSection({
         t("singleObject.features.noMonthlyCosts"),
       ];
 
-  async function startFounderCheckout() {
-
+  async function startSubscriptionCheckout(
+    plan: "founder" | "pro"
+  ) {
     if (checkoutLoading) {
       return;
     }
@@ -167,7 +181,8 @@ export default function PricingSection({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            plan: "founder",
+            plan,
+            market,
           }),
         }
       );
@@ -180,48 +195,68 @@ export default function PricingSection({
             url?: string;
             loginRequired?: boolean;
             verificationRequired?: boolean;
+            founderUnavailable?: boolean;
             error?: string;
           }
         | null;
 
       if (
-  response.status === 401 ||
-  data?.loginRequired
-) {
-  trackAnalyticsEvent(
-    "register_cta_click",
-    {
-      cta_page:
-        window.location.pathname,
-      requested_plan: "founder",
-      cta_text:
-        isGermany
-          ? "30 Tage kostenlos starten"
-          : t("plans.founder.button"),
-      transport_type: "beacon",
-    }
-  );
+        response.status === 401 ||
+        data?.loginRequired
+      ) {
+        const ctaText =
+          plan === "founder"
+            ? isGermany
+              ? "30 Tage kostenlos starten"
+              : t("plans.founder.button")
+            : isGermany
+              ? "Pro starten"
+              : t("plans.pro.button");
 
-  window.location.assign(
-    "/register?plan=founder"
-  );
+        trackAnalyticsEvent(
+          "register_cta_click",
+          {
+            cta_page:
+              window.location.pathname,
+            requested_plan: plan,
+            cta_text: ctaText,
+            transport_type: "beacon",
+          }
+        );
 
-  return;
-}
+        window.location.assign(
+          `/register?plan=${plan}`
+        );
+
+        return;
+      }
 
       if (
         !response.ok ||
         !data?.success ||
         !data.url
       ) {
+        if (
+          plan === "founder" &&
+          data?.founderUnavailable
+        ) {
+          setCheckoutError(
+            "founder-unavailable"
+          );
+          return;
+        }
+
         const message =
           typeof data?.error === "string"
             ? data.error.toLocaleLowerCase(
-                "de-CH"
+                isGermany
+                  ? "de-DE"
+                  : "de-CH"
               )
             : "";
 
         const founderAlreadyExists =
+          plan === "founder" &&
           message.includes("founder") &&
           (
             message.includes("bereits") ||
@@ -238,28 +273,39 @@ export default function PricingSection({
         return;
       }
 
-      window.location.assign(data.url);
+      window.location.assign(
+        data.url
+      );
     } catch (error) {
       console.warn(
-        "FOUNDER CHECKOUT HINWEIS:",
+        "SUBSCRIPTION CHECKOUT HINWEIS:",
         error
       );
 
-      setCheckoutError("generic");
+      setCheckoutError(
+        "generic"
+      );
     } finally {
       setCheckoutLoading(false);
     }
   }
 
   const isFounderExistingNotice =
-    checkoutError === "existing";
+    checkoutError === "existing" ||
+    checkoutError ===
+      "founder-unavailable";
 
   const checkoutErrorMessage =
     checkoutError === "existing"
       ? t("errors.founderExisting")
-      : checkoutError === "generic"
-        ? t("errors.checkoutStart")
-        : "";
+      : checkoutError ===
+          "founder-unavailable"
+        ? isGermany
+          ? "Die 50 Founder-Plätze sind bereits vergeben. Du kannst stattdessen Inserat-AI Pro für 79,90 € pro Monat wählen."
+          : "Die verfügbaren Founder-Plätze sind bereits vergeben."
+        : checkoutError === "generic"
+          ? t("errors.checkoutStart")
+          : "";
 
   return (
     <section
@@ -414,6 +460,7 @@ export default function PricingSection({
           </div>
         ) : null}
 
+
         <div className="plansGrid">
           {visiblePlans.map((plan) => (
             <article
@@ -456,7 +503,11 @@ export default function PricingSection({
               {plan.id === "founder" ? (
                 <button
                   type="button"
-                  onClick={startFounderCheckout}
+                  onClick={() =>
+                    startSubscriptionCheckout(
+                      "founder"
+                    )
+                  }
                   disabled={checkoutLoading}
                   className="planButton planButtonHighlighted"
                   style={{
@@ -477,23 +528,52 @@ export default function PricingSection({
                   </span>
                 </button>
               ) : plan.id === "pro" ? (
-                <button
-                  type="button"
-                  disabled
-                  className="planButton"
-                  style={{
-                    border: 0,
-                    font: "inherit",
-                    opacity: 0.62,
-                    cursor: "not-allowed",
-                  }}
-                >
-                  {plan.button}
+                isGermany ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      startSubscriptionCheckout(
+                        "pro"
+                      )
+                    }
+                    disabled={checkoutLoading}
+                    className="planButton"
+                    style={{
+                      border: 0,
+                      cursor: checkoutLoading
+                        ? "wait"
+                        : "pointer",
+                      opacity: 1,
+                      font: "inherit",
+                    }}
+                  >
+                    {checkoutLoading
+                      ? "Checkout wird geöffnet …"
+                      : plan.button}
 
-                  <span aria-hidden="true">
-                    {"\u{1F512}"}
-                  </span>
-                </button>
+                    <span aria-hidden="true">
+                      {"\u2192"}
+                    </span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled
+                    className="planButton"
+                    style={{
+                      border: 0,
+                      font: "inherit",
+                      opacity: 0.62,
+                      cursor: "not-allowed",
+                    }}
+                  >
+                    {plan.button}
+
+                    <span aria-hidden="true">
+                      {"\u{1F512}"}
+                    </span>
+                  </button>
+                )
               ) : (
                 <a
                   href={plan.href}
@@ -587,7 +667,10 @@ export default function PricingSection({
 
               <div className="agencyStatus">
                 <span>
-                  149.90 CHF /{" "}
+                  {isGermany
+                    ? "149,90 €"
+                    : "149.90 CHF"}{" "}
+                  /{" "}
                   {t("agency.month")}
                 </span>
                 <strong>

@@ -363,14 +363,34 @@ export async function POST(
       claimedFounderCount < FOUNDER_LIMIT &&
       !billingUser.founderNumber;
 
+    /*
+     * Ein Founder-Klick darf niemals still auf
+     * den Standardpreis wechseln.
+     */
+    if (
+      requestedPlan === "founder" &&
+      !founderIsAvailable
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          founderUnavailable: true,
+          error:
+            "Die 50 Founder-Plätze sind bereits vergeben.",
+        },
+        {
+          status: 409,
+        }
+      );
+    }
+
     const selectedPlan:
       | "founder"
       | "standard"
       | "pro" =
       requestedPlan === "pro"
         ? "pro"
-        : requestedPlan === "standard" ||
-            !founderIsAvailable
+        : requestedPlan === "standard"
           ? "standard"
           : "founder";
 
