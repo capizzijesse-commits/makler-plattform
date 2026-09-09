@@ -667,17 +667,67 @@ const [postalCode, setPostalCode] = useState("");
 const [showPostalSuggestions, setShowPostalSuggestions] = useState(false);
 const [showExtraHighlights, setShowExtraHighlights] = useState(false);
 const highlightsInputRef = useRef<HTMLInputElement>(null);
+const getDashboardStorageMarket = (): InseratAiMarket => {
+  const hostnameMarket =
+    getInseratAiMarketFromHostname(
+      window.location.hostname
+    );
+
+  if (hostnameMarket) {
+    return hostnameMarket;
+  }
+
+  const savedMarket =
+    localStorage.getItem(
+      "inseratAiMarket"
+    );
+
+  return savedMarket === "DE"
+    ? "DE"
+    : "CH";
+};
+
 const getFormStorageKey = () => {
-  const email = localStorage.getItem("userEmail") || "guest";
+  const email =
+    localStorage.getItem("userEmail") ||
+    "guest";
+
+  const storageMarket =
+    getDashboardStorageMarket();
+
+  if (storageMarket === "DE") {
+    return `inseratAiDashboardForm_DE_${email}`;
+  }
+
   return `inseratAiDashboardForm_${email}`;
 };
 
 const getLocationSuggestionsKey = () => {
-  const email = localStorage.getItem("userEmail") || "guest";
+  const email =
+    localStorage.getItem("userEmail") ||
+    "guest";
+
+  const storageMarket =
+    getDashboardStorageMarket();
+
+  if (storageMarket === "DE") {
+    return `inseratAiLocationSuggestions_DE_${email}`;
+  }
+
   return `inseratAiLocationSuggestions_${email}`;
 };
 const getObjectTemplatesKey = () => {
-  const email = localStorage.getItem("userEmail") || "guest";
+  const email =
+    localStorage.getItem("userEmail") ||
+    "guest";
+
+  const storageMarket =
+    getDashboardStorageMarket();
+
+  if (storageMarket === "DE") {
+    return `inseratAiObjectTemplates_DE_${email}`;
+  }
+
   return `inseratAiObjectTemplates_${email}`;
 };
 
@@ -1836,6 +1886,13 @@ const [market, setMarket] =
   useState<InseratAiMarket>("CH");
 
 useEffect(() => {
+  document.title =
+    market === "DE"
+      ? "Inserat-AI Deutschland"
+      : "Inserat-AI Schweiz";
+}, [market]);
+
+useEffect(() => {
   const domainMarket =
     getInseratAiMarketFromHostname(
       window.location.hostname
@@ -1859,12 +1916,6 @@ useEffect(() => {
   }
 }, []);
 
-useEffect(() => {
-  localStorage.setItem(
-    "inseratAiMarket",
-    market
-  );
-}, [market]);
 
 const localizeGermanyDashboardTerm = (
   value: string
@@ -2844,13 +2895,16 @@ return (
       className="input"
       aria-required="true"
       placeholder={
-        locale === "it"
-          ? "es. Appartamento 4.5 locali a Winterthur"
-          : locale === "fr"
-            ? "p. ex. Appartement 4.5 pièces à Winterthur"
-            : locale === "en"
-              ? "e.g. 4.5-room apartment in Winterthur"
-              : "z. B. 4.5 Zimmer Wohnung in Winterthur"
+        locale === "de" &&
+        market === "DE"
+          ? "z. B. 4.5-Zimmer-Wohnung in Berlin"
+          : locale === "it"
+            ? "es. Appartamento 4.5 locali a Winterthur"
+            : locale === "fr"
+              ? "p. ex. Appartement 4.5 pièces à Winterthur"
+              : locale === "en"
+                ? "e.g. 4.5-room apartment in Winterthur"
+                : "z. B. 4.5 Zimmer Wohnung in Winterthur"
       }
       onChange={(event) =>
         setProjectName(event.target.value)
@@ -2930,7 +2984,7 @@ return (
         ? "Ce nom apparaîtra dans «Mes projets»."
         : locale === "en"
           ? "This name will appear under “My projects”."
-          : "Dieser Name erscheint später unter «Meine Projekte»."}
+          : "Dieser Name erscheint später unter «Meine Objekte»."}
   </div>
 </div>
 <Field label={t("fields.location")}>
@@ -3047,6 +3101,12 @@ return (
       value={rooms}
       placeholder="4.5"
       type="number"
+      style={{
+        color:
+          rooms === "4.5"
+            ? "rgba(148,163,184,.48)"
+            : "#ffffff",
+      }}
       min="1"
       max="10"
       step="0.5"
@@ -3096,7 +3156,11 @@ return (
 <Field label={t("fields.price")}>
   <input
     value={price}
-    placeholder={t("placeholders.price")}
+    placeholder={
+      market === "DE"
+        ? "650.000 €"
+        : t("placeholders.price")
+    }
     onChange={(e) => setPrice(e.target.value)}
     className="input"
   />
