@@ -33,6 +33,16 @@ type ListingsResponse = {
   error?: string;
 };
 
+type SessionResponse = {
+  success?: boolean;
+  authenticated?: boolean;
+  user?: {
+    capabilities?: {
+      canUseTourGuide?: boolean;
+    };
+  };
+};
+
 const COPY = {
   de: {
     eyebrow: "INSERAT-AI MARKETING HUB",
@@ -49,8 +59,8 @@ const COPY = {
     progress: "Marketingfortschritt",
     completed: "abgeschlossen",
     next: "Empfohlener nächster Schritt",
-    lockedTitle: "Dieses Objekt ist noch nicht freigeschaltet.",
-    lockedText: "Öffne das Objekt im Cockpit, um den Zugang zu aktivieren.",
+    lockedTitle: "Die Basisfunktionen dieses Objekts sind noch nicht freigeschaltet.",
+    lockedText: "Social Media bleibt verfügbar. Für weitere Objektfunktionen kannst du den Zugang im Cockpit aktivieren.",
     openCockpit: "Objekt im Cockpit öffnen",
     available: "Verfügbar",
     ready: "Bereit",
@@ -76,7 +86,7 @@ const COPY = {
       expose: "Exposé öffnen",
     },
     cards: {
-      social: ["Social Media", "Beiträge für Instagram, Facebook, LinkedIn und X erstellen."],
+      social: ["Social Media", "Beiträge für WhatsApp, Instagram, Facebook, LinkedIn und X erstellen."],
       expose: ["Exposé", "Das professionelle Immobilien-Exposé öffnen und prüfen."],
       tour: ["3D-Video-Tour", "Eine geführte Video-Präsentation für das Objekt erstellen."],
       finance: ["Finanzierung", "Preisstrategie, Käufer-Finanzierung und Finanzierungsrahmen für dieses Objekt prüfen."],
@@ -100,8 +110,8 @@ const COPY = {
     progress: "Avanzamento marketing",
     completed: "completato",
     next: "Prossimo passo consigliato",
-    lockedTitle: "Questo immobile non è ancora stato sbloccato.",
-    lockedText: "Apri l’immobile nel cockpit per attivare l’accesso.",
+    lockedTitle: "Le funzioni di base di questo immobile non sono ancora sbloccate.",
+    lockedText: "I social media restano disponibili. Per le altre funzioni puoi attivare l’accesso nel cockpit.",
     openCockpit: "Apri nel cockpit",
     available: "Disponibile",
     ready: "Pronto",
@@ -127,7 +137,7 @@ const COPY = {
       expose: "Apri exposé",
     },
     cards: {
-      social: ["Social Media", "Crea contenuti per Instagram, Facebook, LinkedIn e X."],
+      social: ["Social Media", "Crea contenuti per WhatsApp, Instagram, Facebook, LinkedIn e X."],
       expose: ["Exposé", "Apri e controlla l’exposé professionale dell’immobile."],
       tour: ["Tour video 3D", "Crea una presentazione video guidata dell’immobile."],
       finance: ["Finanziamento", "Verifica strategia di prezzo, finanziamento dell’acquirente e sostenibilità."],
@@ -151,8 +161,8 @@ const COPY = {
     progress: "Avancement marketing",
     completed: "terminé",
     next: "Prochaine étape recommandée",
-    lockedTitle: "Ce bien n’est pas encore débloqué.",
-    lockedText: "Ouvrez le bien dans le cockpit afin d’activer son accès.",
+    lockedTitle: "Les fonctions de base de ce bien ne sont pas encore débloquées.",
+    lockedText: "Les réseaux sociaux restent disponibles. Pour les autres fonctions, activez l’accès dans le cockpit.",
     openCockpit: "Ouvrir dans le cockpit",
     available: "Disponible",
     ready: "Prêt",
@@ -178,7 +188,7 @@ const COPY = {
       expose: "Ouvrir le dossier",
     },
     cards: {
-      social: ["Réseaux sociaux", "Créer des publications pour Instagram, Facebook, LinkedIn et X."],
+      social: ["Réseaux sociaux", "Créer des publications pour WhatsApp, Instagram, Facebook, LinkedIn et X."],
       expose: ["Dossier de vente", "Ouvrir et contrôler le dossier professionnel du bien."],
       tour: ["Visite vidéo 3D", "Créer une présentation vidéo guidée du bien."],
       finance: ["Financement", "Vérifier la stratégie de prix, le financement de l’acheteur et la capacité financière."],
@@ -202,8 +212,8 @@ const COPY = {
     progress: "Marketing progress",
     completed: "completed",
     next: "Recommended next step",
-    lockedTitle: "This property has not been unlocked yet.",
-    lockedText: "Open the property in the cockpit to activate access.",
+    lockedTitle: "The core features of this property have not been unlocked yet.",
+    lockedText: "Social Media remains available. Unlock the property in the cockpit for the other features.",
     openCockpit: "Open in cockpit",
     available: "Available",
     ready: "Ready",
@@ -229,7 +239,7 @@ const COPY = {
       expose: "Open brochure",
     },
     cards: {
-      social: ["Social Media", "Create posts for Instagram, Facebook, LinkedIn and X."],
+      social: ["Social Media", "Create posts for WhatsApp, Instagram, Facebook, LinkedIn and X."],
       expose: ["Property brochure", "Open and review the professional property brochure."],
       tour: ["3D video tour", "Create a guided video presentation for the property."],
       finance: ["Financing", "Review pricing strategy, buyer financing and affordability for this property."],
@@ -329,6 +339,8 @@ export default function MarketingHubPage() {
   const [selectedId, setSelectedId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [canUseTourGuide, setCanUseTourGuide] =
+    useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -376,6 +388,49 @@ export default function MarketingHubPage() {
     void loadListings();
     return () => controller.abort();
   }, [text.loadError]);
+
+  useEffect(() => {
+    const controller =
+      new AbortController();
+
+    async function loadCapabilities() {
+      try {
+        const response =
+          await fetch("/api/session", {
+            credentials: "include",
+            cache: "no-store",
+            signal: controller.signal,
+          });
+
+        if (!response.ok) {
+          setCanUseTourGuide(false);
+          return;
+        }
+
+        const data =
+          (await response.json()) as SessionResponse;
+
+        setCanUseTourGuide(
+          data.user?.capabilities?.canUseTourGuide === true
+        );
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.name === "AbortError"
+        ) {
+          return;
+        }
+
+        setCanUseTourGuide(false);
+      }
+    }
+
+    void loadCapabilities();
+
+    return () =>
+      controller.abort();
+  }, []);
+
 
   const selectedListing = useMemo(
     () =>
@@ -703,14 +758,32 @@ export default function MarketingHubPage() {
                     <div className="mt-6 font-black text-amber-300">
                       {!card.enabled
                     ? text.development
-                    : selectedListing.hasCoreAccess === false
-                      ? text.lockedTitle
-                      : `${text.open} →`}
+                    : card.number === "02" &&
+                        !canUseTourGuide
+                      ? text.pro
+                      : selectedListing.hasCoreAccess === false &&
+                          card.number !== "01"
+                        ? text.lockedTitle
+                        : `${text.open} →`}
                     </div>
                   </>
                 );
 
-                if (card.enabled && selectedListing.hasCoreAccess !== false) {
+                const requiresCoreAccess =
+                  card.number !== "01";
+
+                const hasPlanAccess =
+                  card.number !== "02" ||
+                  canUseTourGuide;
+
+                if (
+                  card.enabled &&
+                  hasPlanAccess &&
+                  (
+                    !requiresCoreAccess ||
+                    selectedListing.hasCoreAccess !== false
+                  )
+                ) {
                   return (
                     <Link
                       key={card.number}
