@@ -24,14 +24,14 @@ const COPY = {
     eyebrow: "\u00dcBER INSERAT-AI",
     title: "Warum gibt es Inserat-AI?",
     lead:
-      "Wir haben Inserat-AI entwickelt, weil wir aus eigener Erfahrung wissen, wie viel Zeit das Erstellen von Inseraten, Expos\u00e9s und Social-Media-Beitr\u00e4gen kostet.",
+      "Wir haben Inserat-AI entwickelt, weil wir aus eigener Erfahrung wissen, wie viel Zeit das Erstellen von Inseraten, Bildinhalten und Social-Media-Beitr\u00e4gen kostet.",
     missionTitle: "Unsere Mission",
     missionText:
       "Unser Ziel ist eine Plattform, die alle wichtigen Werkzeuge an einem Ort vereint \u2013 einfach, effizient und f\u00fcr jeden zug\u00e4nglich.",
     audienceTitle:
       "F\u00fcr wen wir Inserat-AI entwickeln",
     audienceText:
-      "Ob Makler, Verwaltung oder Privatverk\u00e4ufer: Inserat-AI unterst\u00fctzt Sie dabei, Immobilien professionell zu vermarkten und wertvolle Zeit zu sparen.",
+      "Ob Makler oder Verwaltung: Inserat-AI unterst\u00fctzt Sie dabei, Immobilien professionell zu vermarkten und wertvolle Zeit zu sparen.",
     visionTitle: "Unsere Vision",
     visionText:
       "Wir m\u00f6chten die Zukunft der Immobilienvermarktung aktiv mitgestalten \u2013 innovativ, einfach und f\u00fcr alle zug\u00e4nglich.",
@@ -39,11 +39,11 @@ const COPY = {
     values: [
       "Professionelle Ergebnisse in wenigen Sekunden",
       "Einfache und verst\u00e4ndliche Bedienung",
-      "Schweizer Begriffe, CHF und mehrsprachige Kommunikation",
+      "Marktgerechte Begriffe, W\u00e4hrungen und mehrsprachige Kommunikation",
       "Transparente Kennzeichnung von Funktionen in Entwicklung",
     ],
     imageCaptionTitle:
-      "Pers\u00f6nlich. Engagiert. Schweizerisch.",
+      "Pers\u00f6nlich. Engagiert. Praxisnah.",
     imageCaptionText:
       "Wir entwickeln Inserat-AI laufend weiter, damit Immobilienvermarktung einfacher, schneller und professioneller wird.",
     journey:
@@ -52,7 +52,7 @@ const COPY = {
       "Lernen Sie Inserat-AI kostenlos kennen",
     ctaText:
       "Erstellen Sie Ihr erstes professionelles Immobilieninserat und entdecken Sie den vollst\u00e4ndigen Workflow.",
-    register: "Kostenlos registrieren",
+    register: "Kostenlos starten",
     prices: "Angebote ansehen",
     imageAlt:
       "Die Menschen hinter Inserat-AI",
@@ -65,14 +65,14 @@ const COPY = {
     eyebrow: "CHI SIAMO",
     title: "Perch\u00e9 esiste Inserat-AI?",
     lead:
-      "Abbiamo sviluppato Inserat-AI perch\u00e9 sappiamo per esperienza diretta quanto tempo richiedono annunci, dossier di vendita e contenuti per i social media.",
+      "Abbiamo sviluppato Inserat-AI perch\u00e9 sappiamo per esperienza diretta quanto tempo richiedono annunci, contenuti visivi e contenuti per i social media.",
     missionTitle: "La nostra missione",
     missionText:
       "Il nostro obiettivo \u00e8 offrire una piattaforma che riunisca tutti gli strumenti importanti in un unico posto: semplice, efficiente e accessibile.",
     audienceTitle:
       "Per chi sviluppiamo Inserat-AI",
     audienceText:
-      "Agenti immobiliari, amministrazioni e venditori privati possono commercializzare immobili in modo professionale e risparmiare tempo prezioso.",
+      "Agenti immobiliari e amministrazioni possono commercializzare immobili in modo professionale e risparmiare tempo prezioso.",
     visionTitle: "La nostra visione",
     visionText:
       "Vogliamo contribuire attivamente al futuro del marketing immobiliare: innovativo, semplice e accessibile a tutti.",
@@ -80,11 +80,11 @@ const COPY = {
     values: [
       "Risultati professionali in pochi secondi",
       "Utilizzo semplice e comprensibile",
-      "Terminologia svizzera, CHF e comunicazione multilingue",
+      "Terminologia adatta al mercato, valute e comunicazione multilingue",
       "Funzioni in sviluppo indicate con trasparenza",
     ],
     imageCaptionTitle:
-      "Personale. Impegnata. Svizzera.",
+      "Personale. Impegnata. Concreta.",
     imageCaptionText:
       "Sviluppiamo continuamente Inserat-AI per rendere il marketing immobiliare pi\u00f9 semplice, veloce e professionale.",
     journey:
@@ -93,7 +93,7 @@ const COPY = {
       "Scopri Inserat-AI gratuitamente",
     ctaText:
       "Crea il tuo primo annuncio immobiliare professionale e scopri l\u2019intero flusso di lavoro.",
-    register: "Registrati gratuitamente",
+    register: "Inizia gratuitamente",
     prices: "Vedi le offerte",
     imageAlt:
       "Le persone dietro Inserat-AI",
@@ -109,14 +109,14 @@ const COPY = {
     title:
       "Pourquoi Inserat-AI existe-t-il?",
     lead:
-      "Nous avons d\u00e9velopp\u00e9 Inserat-AI parce que nous savons par exp\u00e9rience combien de temps demandent les annonces, les dossiers de vente et les contenus pour les r\u00e9seaux sociaux.",
+      "Nous avons d\u00e9velopp\u00e9 Inserat-AI parce que nous savons par exp\u00e9rience combien de temps demandent les annonces, les contenus visuels et les contenus pour les r\u00e9seaux sociaux.",
     missionTitle: "Notre mission",
     missionText:
       "Notre objectif est de r\u00e9unir tous les outils importants sur une seule plateforme, simple, efficace et accessible.",
     audienceTitle:
       "Pour qui d\u00e9veloppons-nous Inserat-AI?",
     audienceText:
-      "Courtiers, r\u00e9gies et vendeurs priv\u00e9s peuvent commercialiser leurs biens de mani\u00e8re professionnelle tout en gagnant un temps pr\u00e9cieux.",
+      "Courtiers et r\u00e9gies peuvent commercialiser leurs biens de mani\u00e8re professionnelle tout en gagnant un temps pr\u00e9cieux.",
     visionTitle: "Notre vision",
     visionText:
       "Nous voulons contribuer activement \u00e0 l\u2019avenir de la commercialisation immobili\u00e8re: innovante, simple et accessible \u00e0 tous.",
@@ -124,11 +124,11 @@ const COPY = {
     values: [
       "Des r\u00e9sultats professionnels en quelques secondes",
       "Une utilisation simple et compr\u00e9hensible",
-      "Terminologie suisse, CHF et communication multilingue",
+      "Terminologie adapt\u00e9e au march\u00e9, devises et communication multilingue",
       "Une indication transparente des fonctions en d\u00e9veloppement",
     ],
     imageCaptionTitle:
-      "Personnel. Engag\u00e9. Suisse.",
+      "Personnel. Engag\u00e9. Pragmatique.",
     imageCaptionText:
       "Nous am\u00e9liorons continuellement Inserat-AI afin de rendre la commercialisation immobili\u00e8re plus simple, rapide et professionnelle.",
     journey:
@@ -137,7 +137,7 @@ const COPY = {
       "D\u00e9couvrez Inserat-AI gratuitement",
     ctaText:
       "Cr\u00e9ez votre premi\u00e8re annonce immobili\u00e8re professionnelle et d\u00e9couvrez le flux de travail complet.",
-    register: "S\u2019inscrire gratuitement",
+    register: "Commencer gratuitement",
     prices: "Voir les offres",
     imageAlt:
       "Les personnes derri\u00e8re Inserat-AI",
@@ -150,14 +150,14 @@ const COPY = {
     eyebrow: "ABOUT INSERAT-AI",
     title: "Why does Inserat-AI exist?",
     lead:
-      "We developed Inserat-AI because we know from experience how much time it takes to create property listings, brochures and social-media content.",
+      "We developed Inserat-AI because we know from experience how much time it takes to create property listings, visual content and social-media content.",
     missionTitle: "Our mission",
     missionText:
       "Our goal is to provide one platform that brings every important tool together: simple, efficient and accessible.",
     audienceTitle:
       "Who we build Inserat-AI for",
     audienceText:
-      "Estate agents, property managers and private sellers can market properties professionally while saving valuable time.",
+      "Estate agents and property managers can market properties professionally while saving valuable time.",
     visionTitle: "Our vision",
     visionText:
       "We want to help shape the future of property marketing: innovative, simple and accessible to everyone.",
@@ -165,11 +165,11 @@ const COPY = {
     values: [
       "Professional results in seconds",
       "Simple and understandable operation",
-      "Swiss terminology, CHF and multilingual communication",
+      "Market-appropriate terminology, currencies and multilingual communication",
       "Transparent labelling of features in development",
     ],
     imageCaptionTitle:
-      "Personal. Committed. Swiss.",
+      "Personal. Committed. Practical.",
     imageCaptionText:
       "We continuously improve Inserat-AI to make property marketing simpler, faster and more professional.",
     journey:
@@ -177,7 +177,7 @@ const COPY = {
     ctaTitle: "Discover Inserat-AI for free",
     ctaText:
       "Create your first professional property listing and discover the complete workflow.",
-    register: "Register for free",
+    register: "Start for free",
     prices: "View plans",
     imageAlt:
       "The people behind Inserat-AI",
@@ -247,10 +247,10 @@ export default async function AboutPage() {
           <div className="relative border-t border-white/10 bg-slate-950/45 p-4 sm:p-6 lg:border-l lg:border-t-0">
             <div className="overflow-hidden rounded-[24px] border border-white/10 bg-[#020817]">
               <Image
-                src="/ueber-uns-inserat-ai.jpeg"
+                src="/ueber-uns-inserat-ai.png"
                 alt={text.imageAlt}
-                width={1080}
-                height={1440}
+                width={1448}
+                height={1086}
                 priority
                 sizes="(max-width: 1024px) 100vw, 55vw"
                 className="h-auto w-full"
