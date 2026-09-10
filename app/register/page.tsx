@@ -153,13 +153,19 @@ function handleRegisterFormStart() {
       "inseratAiMarket"
     );
 
-  setIsGermany(
+  const germany =
     hostnameMarket === "DE" ||
     (
       hostnameMarket === null &&
       storedMarket === "DE"
-    )
-  );
+    );
+
+  setIsGermany(germany);
+
+  document.title =
+    germany
+      ? "Inserat-AI Deutschland"
+      : "Inserat-AI Schweiz";
 
   const plan = new URLSearchParams(
     window.location.search
@@ -792,26 +798,27 @@ let registerErrorTracked = false;
     : "/login";
 
   return (
-    <main className="registerPage relative isolate min-h-screen overflow-hidden px-6 py-20 text-white">
-      <video
-        className="absolute inset-0 -z-30 h-full w-full object-cover"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-      >
-        <source
-          src="/zürich-skyline-loop.mp4"
-          media="(max-width: 768px)"
-          type="video/mp4"
-        />
-
-        <source
-          src="/zürich-skyline-loop.mp4"
-          type="video/mp4"
-        />
-      </video>
+    <main className="registerPage relative isolate min-h-screen overflow-hidden bg-slate-950 px-6 py-20 text-white">
+      {!isGermany && (
+        <video
+          className="absolute inset-0 -z-30 h-full w-full object-cover"
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+        >
+          <source
+            src="/zürich-skyline-loop.mp4"
+            media="(max-width: 768px)"
+            type="video/mp4"
+          />
+          <source
+            src="/zürich-skyline-loop.mp4"
+            type="video/mp4"
+          />
+        </video>
+      )}
 
       <div className="absolute inset-0 -z-20 bg-slate-950/25" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-slate-950/75 via-slate-950/35 to-transparent" />

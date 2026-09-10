@@ -87,6 +87,13 @@ export default function LoginPage() {
     useState<MessageType>("info");
 
   useEffect(() => {
+    document.title =
+      getCheckoutMarket() === "DE"
+        ? "Inserat-AI Deutschland"
+        : "Inserat-AI Schweiz";
+  }, []);
+
+  useEffect(() => {
     const searchParams = new URLSearchParams(
       window.location.search
     );
