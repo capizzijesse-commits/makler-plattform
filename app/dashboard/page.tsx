@@ -3102,12 +3102,6 @@ return (
       value={rooms}
       placeholder="4.5"
       type="number"
-      style={{
-        color:
-          rooms === "4.5"
-            ? "rgba(148,163,184,.48)"
-            : "#ffffff",
-      }}
       min="1"
       max="10"
       step="0.5"
