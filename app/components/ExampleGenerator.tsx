@@ -234,73 +234,89 @@ export default function ExampleGenerator({
               {t("input.note")}
             </p>
 
-            <div className="mt-8 rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-              <p className="text-xs font-bold uppercase tracking-wide text-amber-300">
-                {t("creates.eyebrow")}
-              </p>
+            {/* DE EXAMPLE HOW IT WORKS V2 */}
+            {market === "DE" ? (
+              <div className="mt-8 rounded-3xl border border-white/10 bg-white/[0.035] p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">
+                      So funktioniert&apos;s
+                    </p>
 
-              <div className="mt-4 grid gap-3">
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                  <p className="font-semibold text-white">
-                    {t(
-                      "creates.professionalTitle.title"
-                    )}
-                  </p>
+                    <p className="mt-1 text-sm text-slate-400">
+                      In drei einfachen Schritten zum Inserat.
+                    </p>
+                  </div>
 
-                  <p className="mt-1 text-sm text-slate-400">
-                    {t(
-                      "creates.professionalTitle.description"
-                    )}
-                  </p>
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-amber-400/20 bg-amber-400/10 text-xl text-amber-300">
+                    ✦
+                  </span>
                 </div>
 
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                  <p className="font-semibold text-white">
-                    {t(
-                      "creates.emotionalDescription.title"
-                    )}
-                  </p>
+                <div className="mt-5 space-y-3">
+                  <div className="flex gap-4 rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-amber-400/25 bg-amber-400/10 text-sm font-black text-amber-300">
+                      01
+                    </div>
 
-                  <p className="mt-1 text-sm text-slate-400">
-                    {t(
-                      "creates.emotionalDescription.description"
-                    )}
-                  </p>
+                    <div>
+                      <p className="font-bold text-white">
+                        Objektdaten eingeben
+                      </p>
+                      <p className="mt-1 text-sm leading-5 text-slate-400">
+                        Zimmer, Fläche, Preis und Highlights genügen.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4 rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-amber-400/25 bg-amber-400/10 text-sm font-black text-amber-300">
+                      02
+                    </div>
+
+                    <div>
+                      <p className="font-bold text-white">
+                        Vorschau ansehen
+                      </p>
+                      <p className="mt-1 text-sm leading-5 text-slate-400">
+                        Sofort sehen, wie dein Immobilieninserat wirken kann.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4 rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-amber-400/25 bg-amber-400/10 text-sm font-black text-amber-300">
+                      03
+                    </div>
+
+                    <div>
+                      <p className="font-bold text-white">
+                        Kostenlos starten
+                      </p>
+                      <p className="mt-1 text-sm leading-5 text-slate-400">
+                        Danach echte AI-Texte und 3 Varianten erstellen.
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                  <p className="font-semibold text-white">
-                    {t("creates.social.title")}
-                  </p>
-
-                  <p className="mt-1 text-sm text-slate-400">
-                    {t("creates.social.description")}
-                  </p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {[
+                    "Keine Kreditkarte",
+                    "In Sekunden startklar",
+                    "Für deutsche Immobilienportale",
+                  ].map((item) => (
+                    <span
+                      key={item}
+                      className="rounded-full border border-emerald-400/15 bg-emerald-400/[0.07] px-3 py-1.5 text-xs font-semibold text-emerald-200"
+                    >
+                      ✓ {item}
+                    </span>
+                  ))}
                 </div>
               </div>
+            ) : null}
 
-              <div className="mt-5 flex flex-wrap gap-2">
-                <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
-{market === "DE"
-                    ? "ImmobilienScout24"
-                    : "Homegate"}
-                </span>
-
-                <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
-{market === "DE"
-                    ? "immowelt"
-                    : "ImmoScout24"}
-                </span>
-
-                <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
-                  {t("creates.expose")}
-                </span>
-
-                <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
-                  Social Media
-                </span>
-              </div>
-            </div>
           </div>
 
           <div className="landingExampleResultPanel rounded-[1.5rem] border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-6 md:p-8">

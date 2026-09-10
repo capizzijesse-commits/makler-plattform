@@ -318,12 +318,176 @@ export default function HomePageClient({
                 <p>{market === "DE" ? DE_LANDING_COPY.portalText : t("demo.portalText")}</p>
               </div>
             </div>
+
+            {/* DE HERO LIVE PREVIEW V1 */}
+            {market === "DE" ? (
+              <div className="mt-6 rounded-[1.75rem] border border-amber-400/30 bg-gradient-to-br from-slate-950 via-[#0a1830] to-[#0b2b50] p-5 shadow-2xl shadow-black/30 md:p-6">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-amber-400/25 bg-amber-400/10 text-xl text-amber-300">
+                      ✦
+                    </span>
+
+                    <div>
+                      <div className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">
+                        Live-Vorschau
+                      </div>
+
+                      <div className="mt-1 text-lg font-black text-white">
+                        So arbeitet Inserat-AI
+                      </div>
+                    </div>
+                  </div>
+
+                  <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs font-semibold text-slate-300">
+                    3 Varianten in Sekunden
+                  </span>
+                </div>
+
+                <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {[
+                    "Berlin-Charlottenburg",
+                    "4,5 Zimmer",
+                    "112 m²",
+                    "895.000 €",
+                  ].map((item) => (
+                    <div
+                      key={item}
+                      className="rounded-xl border border-white/10 bg-white/[0.045] px-3 py-2 text-center text-xs font-bold text-slate-200"
+                    >
+                      {item}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-5 grid gap-4 lg:grid-cols-[0.9fr_0.8fr_1.2fr]">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
+                    <div className="text-sm font-black text-white">
+                      Objektdaten
+                    </div>
+
+                    <div className="mt-4 space-y-3 text-xs">
+                      <div className="flex justify-between gap-4 border-b border-white/5 pb-2">
+                        <span className="text-slate-400">
+                          Objektart
+                        </span>
+                        <strong className="text-slate-200">
+                          Wohnung
+                        </strong>
+                      </div>
+
+                      <div className="flex justify-between gap-4 border-b border-white/5 pb-2">
+                        <span className="text-slate-400">
+                          Ort
+                        </span>
+                        <strong className="text-slate-200">
+                          Berlin
+                        </strong>
+                      </div>
+
+                      <div className="flex justify-between gap-4 border-b border-white/5 pb-2">
+                        <span className="text-slate-400">
+                          Zimmer
+                        </span>
+                        <strong className="text-slate-200">
+                          4,5
+                        </strong>
+                      </div>
+
+                      <div className="flex justify-between gap-4">
+                        <span className="text-slate-400">
+                          Wohnfläche
+                        </span>
+                        <strong className="text-slate-200">
+                          112 m²
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-center justify-center rounded-2xl border border-amber-400/20 bg-amber-400/[0.04] p-4 text-center">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full border border-amber-400/30 bg-amber-400/10 text-2xl text-amber-300">
+                      ✦
+                    </div>
+
+                    <strong className="mt-4 text-sm leading-5 text-white">
+                      Inserat-AI erstellt
+                      <br />
+                      3 Varianten
+                    </strong>
+
+                    <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                      <div className="h-full w-3/4 rounded-full bg-amber-400" />
+                    </div>
+
+                    <div className="mt-3 text-xs text-slate-400">
+                      Daten analysieren
+                      <br />
+                      Texte optimieren
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.055] p-4">
+                    <div className="text-xs font-black uppercase tracking-[0.16em] text-amber-300">
+                      Ergebnis
+                    </div>
+
+                    <div className="mt-3 text-lg font-black leading-snug text-white">
+                      Moderne 4,5-Zimmer-Wohnung
+                      mit Balkon in Berlin
+                    </div>
+
+                    <p className="mt-3 text-sm leading-6 text-slate-300">
+                      Helle Räume, 112 m² Wohnfläche
+                      und ein Balkon bilden die Basis
+                      für einen professionell
+                      strukturierten Inserattext.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                  <div className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3">
+                    <strong className="text-sm text-white">
+                      ✓ 3 Varianten
+                    </strong>
+                    <div className="mt-1 text-xs text-slate-400">
+                      unterschiedliche Tonalitäten
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3">
+                    <strong className="text-sm text-white">
+                      ✓ Portal-ready
+                    </strong>
+                    <div className="mt-1 text-xs text-slate-400">
+                      für Immobilienportale
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3">
+                    <strong className="text-sm text-white">
+                      ✓ Social Media
+                    </strong>
+                    <div className="mt-1 text-xs text-slate-400">
+                      direkt weiterverwenden
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
 
         <div
           id="trust"
           className="landingTrustBar"
+          style={{
+            display:
+              market === "DE"
+                ? "none"
+                : undefined,
+          }}
         >
           <div className="landingTrustTitle">
             {t("trust.title")}
