@@ -100,6 +100,7 @@ const listings = await prisma.listing.findMany({
           imageAnalysis: hasCoreAccess
             ? listing.imageAnalysis
             : null,
+          market: listing.market,
           locationDescription: hasCoreAccess
             ? listing.locationDescription
             : null,
@@ -138,6 +139,12 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+
+    const listingMarket =
+      body.market === "DE" ||
+      body.market === "CH"
+        ? body.market
+        : null;
 
     const location =
       typeof body.location === "string" ? body.location.trim() : "";
@@ -199,6 +206,7 @@ export async function POST(request: NextRequest) {
           ? "locked"
           : "included",
         projectName,
+        market: listingMarket,
         location,
         postalCode: optionalText(body.postalCode),
         propertyType,

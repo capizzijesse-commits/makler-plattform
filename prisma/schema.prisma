@@ -57,6 +57,7 @@ model Listing {
   projectName  String?
   location     String
   postalCode   String?
+  market       String?
   propertyType String
   rooms        Float?
   livingArea   Float?
@@ -80,6 +81,7 @@ model Listing {
 
   images            ListingImage[]
   homeStagingImages HomeStagingImage[]
+  floorPlans        FloorPlan[]
   finance           ListingFinance?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
@@ -88,6 +90,48 @@ model Listing {
   @@index([userId])
   @@index([userId, archivedAt])
   @@index([userId, unlockStatus])
+}
+
+model FloorPlan {
+  id String @id @default(cuid())
+
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  // Geschoss / Reihenfolge
+  floorLevel String
+  sortOrder  Int    @default(0)
+
+  // Originaldatei
+  fileName   String?
+  mimeType   String
+  sizeBytes  Int
+  url        String
+  storageKey String  @unique
+
+  // Massstab und Kalibrierung
+  scaleLabel               String?
+  scaleDenominator         Int?
+  scaleSource              String?
+  calibratedDistanceMeters Float?
+  calibrationData          Json?
+
+  // Für die spätere 3D-Konstruktion
+  floorHeightMeters Float?
+  analysis          Json?
+  analysisVersion   String?
+  geometry          Json?
+  geometryVersion   String?
+
+  // Workflow
+  status String @default("uploaded")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([listingId])
+  @@index([listingId, floorLevel])
+  @@index([listingId, sortOrder])
 }
 
 model ListingViewEvent {

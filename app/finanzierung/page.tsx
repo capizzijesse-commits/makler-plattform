@@ -17,6 +17,7 @@ import {
 
 type FinanceListing = {
   id: string;
+  market?: InseratAiMarket | null;
   location?: string | null;
   propertyType?: string | null;
   price?: number | null;
@@ -146,6 +147,12 @@ export default function FinanceOverviewPage() {
       ? "Deutschland"
       : "Schweiz";
 
+
+  const visibleListings =
+    listings.filter(
+      (listing) =>
+        listing.market === market
+    );
 
   function formatPrice(
     value: number | null | undefined
@@ -304,7 +311,7 @@ export default function FinanceOverviewPage() {
 
           {!loading &&
           !error &&
-          listings.length === 0 ? (
+          visibleListings.length === 0 ? (
             <div className="financeEmpty">
               <strong>
                 Noch kein Objekt vorhanden
@@ -325,9 +332,9 @@ export default function FinanceOverviewPage() {
 
           {!loading &&
           !error &&
-          listings.length > 0 ? (
+          visibleListings.length > 0 ? (
             <div className="financeObjectGrid">
-              {listings.map(
+              {visibleListings.map(
                 (listing) => {
                   const title =
                     listing.location?.trim() ||

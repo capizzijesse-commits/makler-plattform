@@ -1482,6 +1482,7 @@ if (!location.trim() || !propertyType.trim()) {
       },
       body: JSON.stringify({
         projectName: projectName.trim(),
+        market,
         location,
         postalCode,
         propertyType,
