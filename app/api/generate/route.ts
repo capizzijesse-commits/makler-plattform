@@ -583,6 +583,16 @@ VARIANT 3 - DISTINCTIVE FEATURE OR MARKET ANGLE:
 - Use a concise, contemporary editorial rhythm without unsupported sales language.
 
 FACT INTERPRETATION RULES:
+- A room count alone does not prove the existence of a living room, bedroom, kitchen, bathroom, office or another named room.
+- Do not invent a kitchen, separate kitchen, bathroom, bedroom, living room or utility room unless OBJECT FACTS explicitly support it.
+- An apartment does not prove that the building is a Mehrfamilienhaus, Mehrparteienhaus or another specific building type.
+- A house does not prove that it is freestanding.
+- Do not infer a direct connection or adjacency between two features. A terrace and a garden do not prove direct access between them.
+- Keep separate highlights separate. Do not combine two independent facts into a new relationship, for example Naturstein plus maßgefertigte Einbauten must not become maßgefertigte Einbauten aus Naturstein.
+- "Leerstehend" proves only that the unit is vacant. It does not prove immediate move-in, immediate legal availability or a specific handover date.
+- A city or district name alone does not prove urban infrastructure, an established neighbourhood, prestige, centrality or accessibility.
+- Do not invent a floor-plan structure, separation of living and sleeping areas or room relationships unless explicitly stated.
+- Never infer technical, legal, structural or contractual facts from a generic property type.
 - A bare keyword proves only the keyword itself.
 - "Bahnhof" alone does not prove proximity, a short walking distance, quick connections or commuter suitability.
 - "Schule" or "Kindergarten" alone does not prove immediate proximity, a safe route or family-friendliness.
@@ -639,7 +649,10 @@ TITLE RULES:
 - Do not begin all titles with the property type.
 - Avoid generic titles and unsupported evaluations.
 - Maximum approximately 70 characters.
-- For German output, use natural Swiss room notation with the half-room symbol when applicable instead of decimal notation.
+${isGermany
+  ? "- For German output in Germany, use natural German decimal room notation such as 4,5-Zimmer-Wohnung. Do not convert 4,5 into 4½."
+  : "- For German output in Switzerland, use natural Swiss room notation with the half-room symbol when applicable instead of decimal notation."
+}
 - Do not use unsupported superlatives.
 
 BODY RULES:
@@ -649,7 +662,10 @@ BODY RULES:
 - Silently verify that every body contains at least 110 words before returning JSON.
 - The first paragraph should introduce the property and its primary verified angle.
 - The following paragraph or paragraphs should develop documented features, layout, outdoor space, parking or location information.
-- The description must feel complete enough to publish on a Swiss real estate portal.
+${isGermany
+  ? "- The description must feel complete enough to publish on a professional German real estate portal."
+  : "- The description must feel complete enough to publish on a Swiss real estate portal."
+}
 - Avoid database-style reporting phrases such as "aufgeführt", "angegeben", "erfasst", "ausgewiesen", "Objektmerkmale" or "fasst ... zusammen" when natural real-estate language is possible.
 - Factual accuracy remains mandatory, but brevity must not reduce the text to a short promotional post.
 - Do not use bullet points inside the body.
@@ -659,7 +675,10 @@ BODY RULES:
 - Do not repeat the same three major facts in every first paragraph.
 - Never claim that the listing was automatically published or uploaded.
 - Preserve proper names, place names, numbers, prices, currencies and measurements.
-- Use Swiss spelling and Swiss real estate terminology for German output.
+${isGermany
+  ? "- Use German spelling and terminology customary in the German real estate market."
+  : "- Use Swiss spelling and Swiss real estate terminology for German output."
+}
 OBJECT FACTS:
 ${JSON.stringify(facts, null, 2)}
 
@@ -1086,6 +1105,2324 @@ IMPORTANT:
     (result) =>
       result.variant
   );
+}
+
+type GermanyFactAuditCode =
+  | "PROPERTY_STRUCTURE"
+  | "ROOM_LAYOUT"
+  | "PRICE_OR_INCLUSION"
+  | "AVAILABILITY_OR_LEGAL_STATUS"
+  | "ACCESSIBILITY"
+  | "LOCATION_OR_INFRASTRUCTURE"
+  | "UTILITY_OR_SERVICING"
+  | "PHYSICAL_RELATIONSHIP"
+  | "CONDITION_OR_RENOVATION_SCOPE"
+  | "OWNERSHIP_OR_USE_RIGHT"
+  | "OTHER_MATERIAL_FACT";
+
+type GermanyFactAuditFinding = {
+  variantNumber: number;
+  field: "title" | "sentence";
+  sentenceNumber: number | null;
+  text: string;
+  code: GermanyFactAuditCode;
+  reason: string;
+};
+
+type GermanyFactAuditResult = {
+  findings: GermanyFactAuditFinding[];
+  durationMs: number;
+};
+
+function splitGermanyAuditSentences(
+  value: string
+): string[] {
+  return value
+    .replace(/\r\n/g, "\n")
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) =>
+      sentence.trim()
+    )
+    .filter(Boolean);
+}
+
+function normalizeGermanyAuditText(
+  value: unknown
+): string {
+  return String(value ?? "")
+    .normalize("NFKC")
+    .toLocaleLowerCase("de-DE")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isGermanyAiAuditFindingActionable(
+  finding: GermanyFactAuditFinding,
+  factsText: string
+): boolean {
+  const text =
+    normalizeGermanyAuditText(
+      finding.text
+    );
+
+  const reason =
+    normalizeGermanyAuditText(
+      finding.reason
+    );
+
+  // V4B.2: Explizit belegter barrierefreier Zugang
+  // darf vom AI-Auditor nicht wieder als unbelegt
+  // markiert werden.
+  if (
+    finding.code === "ACCESSIBILITY" &&
+    /(?:barrierefrei|stufenlos|rollstuhlgerecht)/
+      .test(factsText)
+  ) {
+    const accessibilityOverreach =
+      (
+        /uneingeschränkt/.test(text) &&
+        !/uneingeschränkt/.test(factsText)
+      ) ||
+      (
+        /alle bereiche/.test(text) &&
+        !/alle bereiche/.test(factsText)
+      ) ||
+      (
+        /barrierefreier alltag/.test(text) &&
+        !/barrierefreier alltag/.test(factsText)
+      ) ||
+      (
+        /rollstuhlgerecht/.test(text) &&
+        !/rollstuhlgerecht/.test(factsText)
+      );
+
+    if (!accessibilityOverreach) {
+      return false;
+    }
+  }
+
+  // Ein explizit belegtes "renoviert" ist ein Hard Fact.
+  // Der AI-Auditor darf die neutrale Wiederholung nicht
+  // wegen fehlender Angaben zum Umfang blockieren.
+  if (
+    finding.code === "CONDITION_OR_RENOVATION_SCOPE" &&
+    /\brenoviert\b/.test(factsText) &&
+    /\brenoviert\b/.test(text) &&
+    !/(?:umfassend|vollständig|komplett|hochwertig|modern(?:e|er|en|em|es)?\s+standard|modernisiert|saniert|gepflegt(?:e|en|er|es)?\s+zustand)/
+      .test(text)
+  ) {
+    return false;
+  }
+  // Renovierungsbedarf darf sachlich beschrieben
+  // werden. Ein erfundener Preisbezug oder eine
+  // angeblich bereits erfolgte Vollsanierung nicht.
+  if (
+    finding.code === "CONDITION_OR_RENOVATION_SCOPE" &&
+    /renovierungsbedürftig/.test(factsText) &&
+    /(?:renovierungsbedürftig|ältere fenster|modernisierungsmaßnahmen)/
+      .test(text) &&
+    !/(?:preisgestaltung|umfassend modernisiert|vollständig modernisiert|komplett modernisiert|umfassend saniert|vollständig saniert|komplett saniert)/
+      .test(text)
+  ) {
+    return false;
+  }
+
+  // Redundanz ist ein Stilproblem, kein Hard-Fact-
+  // Sicherheitsfehler.
+  if (
+    finding.code === "UTILITY_OR_SERVICING" &&
+    /(?:redundant|does not provide additional information|keine zusätzliche information)/
+      .test(reason)
+  ) {
+    return false;
+  }
+
+  // 'Leerstehend' darf als Leerstand wiederholt
+  // werden. Nur zusätzliche Verfügbarkeitsversprechen
+  // bleiben Hard-Fact-Findings.
+  if (
+    finding.code === "AVAILABILITY_OR_LEGAL_STATUS" &&
+    /leerstehend/.test(factsText) &&
+    /leerstehend/.test(text)
+  ) {
+    const availabilityRemainder =
+      text.replace(/leerstehend/g, "");
+
+    if (
+      !/(?:sofort|zeitnah|verfügbar|bezugsfrei|beziehbar|übergabe|unmittelbar)/
+        .test(availabilityRemainder)
+    ) {
+      return false;
+    }
+  }
+
+  // 'Renovierungsbedarf inklusive' beschreibt
+  // keinen Kaufpreisbestandteil.
+  if (
+    finding.code === "PRICE_OR_INCLUSION" &&
+    finding.field === "title" &&
+    /\binklusive\b/.test(text) &&
+    !/(?:kaufpreis|preis|eur|€|stellplatz|garage|einbauküche|mobiliar)/
+      .test(text)
+  ) {
+    return false;
+  }
+
+  if (
+    finding.code === "ACCESSIBILITY"
+  ) {
+    const hasHardAccessibilityClaim =
+      /(barrierefrei|stufenlos|rollstuhlgerecht|uneingeschränkt)/
+        .test(text);
+
+    if (!hasHardAccessibilityClaim) {
+      return false;
+    }
+
+    const explicitAccessibilityFact =
+      /(barrierefrei|stufenlos|rollstuhlgerecht)/
+        .test(factsText);
+
+    const overclaimsEntireProperty =
+      /(uneingeschränkt|alle bereiche|gesamte wohnung|vollständig barrierefrei|barrierefreie\s+(?:wohnung|neubauwohnung|immobilie|einheit))/
+        .test(text);
+
+    if (
+      explicitAccessibilityFact &&
+      !overclaimsEntireProperty
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  if (
+    finding.code === "PRICE_OR_INCLUSION"
+  ) {
+    const inclusionClaim =
+      /(im kaufpreis enthalten|im preis enthalten|inbegriffen|inklusive|im angebot enthalten)/
+        .test(text);
+
+    const separatePriceClaim =
+      /(separat|zusätzlich).{0,80}(€|euro|[0-9])/i
+        .test(text);
+
+    if (
+      separatePriceClaim &&
+      factsText.includes("separat")
+    ) {
+      return false;
+    }
+
+    return inclusionClaim;
+  }
+
+  if (
+    finding.code === "AVAILABILITY_OR_LEGAL_STATUS"
+  ) {
+    return /(?:leerstehend|bezugsfrei|sofort\s+(?:bezogen|übernommen|verfügbar)|zeitnah(?:e[rmns]?)?\s+(?:bezug|einzug|übernahme)|kurzfristig(?:e[rmns]?)?\s+(?:bezug|einzug|übernahme)|übergabetermin|frei\s+verfügbar)/
+      .test(text);
+  }
+
+  if (
+    finding.code === "ROOM_LAYOUT"
+  ) {
+    return /(?:direkter\s+zugang|direkt\s+verbunden|angrenzend|zwei\s+etagen|2\s+etagen|zwei\s+geschosse|2\s+geschosse|mehrere\s+etagen|mehrere\s+geschosse|mehrgeschossig)/
+      .test(text);
+  }
+
+  if (
+    finding.code === "PHYSICAL_RELATIONSHIP"
+  ) {
+    const hardRelationship =
+      /(?:direkter\s+zugang|direkt\s+verbunden|angrenzend|verbindung\s+zwischen|führt\s+direkt|zugang\s+zum\s+garten|zugang\s+zur\s+terrasse)/
+        .test(text);
+
+    if (!hardRelationship) {
+      return false;
+    }
+
+    const explicitDirectLiftAccess =
+      /(?:aufzug.{0,60}direkt.{0,40}(?:wohnung|wohnungszugang)|direkt.{0,40}wohnungszugang)/
+        .test(factsText);
+
+    const directLiftAccessClaim =
+      /(?:aufzug.{0,60}direkt.{0,40}(?:wohnung|zugang)|direkt.{0,40}(?:wohnung|wohnungszugang))/
+        .test(text);
+
+    if (
+      explicitDirectLiftAccess &&
+      directLiftAccessClaim
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  if (
+    finding.code === "LOCATION_OR_INFRASTRUCTURE"
+  ) {
+    const positiveLocationClaim =
+      /(zentrale lage|zentral gelegen|infrastruktur bietet|gute anbindung|verkehrsanbindung|einkaufsmöglichkeiten|nahversorgung|ruhige lage|etablierter stadtteil|beliebter stadtteil|begehrte lage|prestig)/
+        .test(text);
+
+    return positiveLocationClaim;
+  }
+
+  if (
+    finding.code === "OTHER_MATERIAL_FACT"
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+function buildGermanyDeterministicHardFindings(
+  facts: unknown,
+  variants: ListingTextVariant[]
+): GermanyFactAuditFinding[] {
+  const factsText =
+    normalizeGermanyAuditText(
+      JSON.stringify(facts ?? {})
+    );
+
+  const findings:
+    GermanyFactAuditFinding[] = [];
+
+  const pushFinding = (
+    variantNumber: number,
+    field: "title" | "sentence",
+    sentenceNumber: number | null,
+    text: string,
+    code: GermanyFactAuditCode,
+    reason: string
+  ) => {
+    findings.push({
+      variantNumber,
+      field,
+      sentenceNumber,
+      text,
+      code,
+      reason,
+    });
+  };
+
+  variants.forEach(
+    (variant, variantIndex) => {
+      const entries = [
+        {
+          field: "title" as const,
+          sentenceNumber: null,
+          text: variant.title,
+        },
+        ...splitGermanyAuditSentences(
+          variant.text
+        ).map(
+          (text, sentenceIndex) => ({
+            field: "sentence" as const,
+            sentenceNumber:
+              sentenceIndex + 1,
+            text,
+          })
+        ),
+      ];
+
+      for (const entry of entries) {
+        const text =
+          normalizeGermanyAuditText(
+            entry.text
+          );
+
+        const variantNumber =
+          variantIndex + 1;
+
+        const claimsMultiPartyBuilding =
+          /(mehrparteienhaus|mehrfamilienhaus|mehrparteiengebäude)/
+            .test(text);
+
+        const hasMultiPartyFact =
+          /(mehrparteienhaus|mehrfamilienhaus|mehrparteiengebäude)/
+            .test(factsText);
+
+        if (
+          claimsMultiPartyBuilding &&
+          !hasMultiPartyFact
+        ) {
+          pushFinding(
+            variantNumber,
+            entry.field,
+            entry.sentenceNumber,
+            entry.text,
+            "PROPERTY_STRUCTURE",
+            "Mehrparteien-/Mehrfamilienhaus ist in den Objektdaten nicht belegt."
+          );
+        }
+
+        const claimsVacancy =
+          /(leerstehend|leerstand|bezugsfrei|unbewohnt|derzeit frei)/
+            .test(text);
+
+        const hasVacancyFact =
+          /(leerstehend|leerstand|bezugsfrei|unbewohnt|derzeit frei)/
+            .test(factsText);
+
+        if (
+          claimsVacancy &&
+          !hasVacancyFact
+        ) {
+          pushFinding(
+            variantNumber,
+            entry.field,
+            entry.sentenceNumber,
+            entry.text,
+            "AVAILABILITY_OR_LEGAL_STATUS",
+            "Leerstand oder Bezugsfreiheit wurde nicht angegeben."
+          );
+        }
+        const hasImmediateAvailabilityFact =
+          /(?:sofort|zeitnah|kurzfristig|ohne verzögerung).{0,45}(?:bezieh|nutz|verfüg|übergab|übernahm)|(?:bezugsfertig|bezugsfrei|sofort verfügbar|sofort beziehbar)/
+            .test(factsText);
+
+        const claimsImmediateAvailability =
+          /(?:sofort|zeitnah|kurzfristig|ohne verzögerung).{0,45}(?:bezieh|nutz|verfüg|übergab|übernahm)|(?:bezugsfertig|sofort verfügbar|sofort beziehbar)|flexible(?:n|r|s|m)?\s+übergabe|(?:leerstehend|leerstehung).{0,55}(?:ermöglicht|erleichtert).{0,35}(?:übergabe|nutzung|bezug)/
+            .test(text);
+
+        if (
+          claimsImmediateAvailability &&
+          !hasImmediateAvailabilityFact
+        ) {
+          pushFinding(
+            variantNumber,
+            entry.field,
+            entry.sentenceNumber,
+            entry.text,
+            "AVAILABILITY_OR_LEGAL_STATUS",
+            "Aus den gelieferten Fakten folgt keine sofortige oder kurzfristige Verfügbarkeit."
+          );
+        }
+
+        const claimsSpecificBuildingStructure =
+          /(?:gebäudekomplex|wohnanlage|reihenhausanlage|gewachsene\s+wohnanlage|klare\s+bauliche\s+struktur)/
+            .test(text);
+
+        const hasSpecificBuildingStructureFact =
+          /(?:gebäudekomplex|wohnanlage|reihenhausanlage|klare\s+bauliche\s+struktur)/
+            .test(factsText);
+
+        if (
+          claimsSpecificBuildingStructure &&
+          !hasSpecificBuildingStructureFact
+        ) {
+          pushFinding(
+            variantNumber,
+            entry.field,
+            entry.sentenceNumber,
+            entry.text,
+            "PROPERTY_STRUCTURE",
+            "Eine konkrete Gebäudestruktur oder Wohnanlage ist nicht belegt."
+          );
+        }
+
+        const claimsBarrierFree =
+          /(barrierefrei|stufenlos|rollstuhlgerecht)/
+            .test(text);
+
+        const hasBarrierFreeFact =
+          /(barrierefrei|stufenlos|rollstuhlgerecht)/
+            .test(factsText);
+
+        if (
+          claimsBarrierFree &&
+          !hasBarrierFreeFact
+        ) {
+          pushFinding(
+            variantNumber,
+            entry.field,
+            entry.sentenceNumber,
+            entry.text,
+            "ACCESSIBILITY",
+            "Barrierefreiheit wurde nicht ausdrücklich angegeben."
+          );
+        }
+        const claimsWholePropertyBarrierFree =
+          /barrierefreies+(?:wohnung|neubauwohnung|immobilie|einheit)/
+            .test(text);
+
+        const hasWholePropertyBarrierFreeFact =
+          /barrierefreies+(?:wohnung|neubauwohnung|immobilie|einheit)/
+            .test(factsText);
+
+        if (
+          claimsWholePropertyBarrierFree &&
+          !hasWholePropertyBarrierFreeFact
+        ) {
+          pushFinding(
+            variantNumber,
+            entry.field,
+            entry.sentenceNumber,
+            entry.text,
+            "ACCESSIBILITY",
+            "Ein barrierefreier Zugang belegt nicht die vollständige Barrierefreiheit der Wohnung."
+          );
+        }
+
+        const claimsIncludedPrice =
+          /(im kaufpreis enthalten|im preis enthalten|inbegriffen|inklusive)/
+            .test(text) &&
+          !(
+            entry.field === "title" &&
+            /renovierungsbedarf\s+inklusive/.test(text) &&
+            !/(?:kaufpreis|preis|€|euro)/.test(text)
+          );
+
+        const hasIncludedPriceFact =
+          /(im kaufpreis enthalten|im preis enthalten|inbegriffen|inklusive)/
+            .test(factsText);
+
+        if (
+          claimsIncludedPrice &&
+          !hasIncludedPriceFact
+        ) {
+          pushFinding(
+            variantNumber,
+            entry.field,
+            entry.sentenceNumber,
+            entry.text,
+            "PRICE_OR_INCLUSION",
+            "Eine Preisinklusion wurde in den Objektdaten nicht angegeben."
+          );
+        }
+
+        const servicingTerms = [
+          "vollständig erschlossen",
+          "versorgungsleitungen",
+          "versorgungsnetz",
+          "stromanschluss",
+          "wasseranschluss",
+          "abwasseranschluss",
+          "telekommunikationsanschluss",
+          "strom, wasser",
+          "strom und wasser",
+        ];
+
+        const unsupportedServicingTerm =
+          servicingTerms.find(
+            (term) =>
+              text.includes(term) &&
+              !factsText.includes(term)
+          );
+
+        const unsupportedConstructionConsequence =
+          /(?:unmittelbare\s+bebauung|direkte\s+bebauung|sofortige\s+bebauung|zeitnahe\s+bebauung|zeitnah(?:e[rmns]?)?\s+baubeginn|sofortige\s+baureife|sofort\s+nutzbares\s+baugrundstück|keine\s+weiteren\s+erschließungskosten|ohne\s+zusätzliche\s+erschließungskosten|notwendige\s+versorgungsanschlüsse|gesicherte\s+infrastruktur|gut\s+vorbereitet.{0,50}bauprojekt|verkürzt.{0,40}vorbereitungszeit|erleichtert.{0,30}bebauung|erleichtert.{0,30}bauliche\s+nutzung|anbindung.{0,50}infrastruktur)/
+            .test(text);
+
+        if (
+          unsupportedServicingTerm ||
+          unsupportedConstructionConsequence
+        ) {
+          pushFinding(
+            variantNumber,
+            entry.field,
+            entry.sentenceNumber,
+            entry.text,
+            "UTILITY_OR_SERVICING",
+            "Der Umfang oder die Folge der Erschließung wurde über die gelieferten Fakten hinaus konkretisiert."
+          );
+        }
+
+        const claimsStrongRenovation =
+          /(umfassend renoviert|vollständig renoviert|komplett renoviert|umfassende sanierung|umfangreiche sanierung|umfangreiche arbeiten|umfassende arbeiten|vollsanierung)/
+            .test(text);
+
+        const hasStrongRenovationFact =
+          /(umfassend renoviert|vollständig renoviert|komplett renoviert|umfassende sanierung|umfangreiche sanierung|umfangreiche arbeiten|umfassende arbeiten|vollsanierung)/
+            .test(factsText);
+
+        if (
+          claimsStrongRenovation &&
+          !hasStrongRenovationFact
+        ) {
+          pushFinding(
+            variantNumber,
+            entry.field,
+            entry.sentenceNumber,
+            entry.text,
+            "CONDITION_OR_RENOVATION_SCOPE",
+            "Der Umfang der Renovierung oder Sanierung ist nicht belegt."
+          );
+        }
+
+        const claimsTwoFloors =
+          /(zwei etagen|2 etagen|zwei geschosse|2 geschosse|zwei ebenen|2 ebenen|mehrere ebenen|mehrere etagen|mehrere geschosse|mehrgeschossig)/
+            .test(text);
+
+        const hasTwoFloorsFact =
+          /(zwei etagen|2 etagen|zwei geschosse|2 geschosse|zwei ebenen|2 ebenen|mehrere ebenen|mehrere etagen|mehrere geschosse|mehrgeschossig)/
+            .test(factsText);
+
+        if (
+          claimsTwoFloors &&
+          !hasTwoFloorsFact
+        ) {
+          pushFinding(
+            variantNumber,
+            entry.field,
+            entry.sentenceNumber,
+            entry.text,
+            "ROOM_LAYOUT",
+            "Die Verteilung auf zwei Etagen oder Geschosse ist nicht belegt."
+          );
+        }
+
+        const claimsHardLocationQuality =
+          /(?:zentrale\s+lage|zentral\s+gelegen|beliebte\s+lage|beliebter\s+stadtteil|begehrte\s+lage|gefragte\s+lage|begehrtesten\s+lagen|städtische\s+infrastruktur|gut\s+ausgebaute\s+infrastruktur|gute\s+verkehrsanbindung|vielfältige\s+infrastrukturelle\s+angebote|vielfältige\s+annehmlichkeiten)/
+            .test(text);
+
+        const hasHardLocationEvidence =
+          /(?:zentrale\s+lage|zentral\s+gelegen|beliebte\s+lage|beliebter\s+stadtteil|begehrte\s+lage|gefragte\s+lage|begehrtesten\s+lagen|städtische\s+infrastruktur|gut\s+ausgebaute\s+infrastruktur|gute\s+verkehrsanbindung|vielfältige\s+infrastrukturelle\s+angebote|vielfältige\s+annehmlichkeiten)/
+            .test(factsText);
+
+        if (
+          claimsHardLocationQuality &&
+          !hasHardLocationEvidence
+        ) {
+          pushFinding(
+            variantNumber,
+            entry.field,
+            entry.sentenceNumber,
+            entry.text,
+            "LOCATION_OR_INFRASTRUCTURE",
+            "Die behauptete Lage- oder Infrastrukturqualität ist nicht belegt."
+          );
+        }
+
+        const claimsView =
+          /(?:panoramablick|fernblick|ausblick|blick\s+auf)/
+            .test(text);
+
+        const hasViewFact =
+          /(?:panoramablick|fernblick|ausblick|blick\s+auf)/
+            .test(factsText);
+
+        if (
+          claimsView &&
+          !hasViewFact
+        ) {
+          pushFinding(
+            variantNumber,
+            entry.field,
+            entry.sentenceNumber,
+            entry.text,
+            "OTHER_MATERIAL_FACT",
+            "Ein Ausblick oder Blick wurde nicht angegeben."
+          );
+        }
+
+        const claimsInventedFeatureAccess =
+          /(?:terrasse|garten).{0,70}(?:zugänglich|erreichbar).{0,35}(?:vom|aus dem)\s+haus|(?:vom|aus dem)\s+haus.{0,35}(?:zugänglich|erreichbar).{0,70}(?:terrasse|garten)/
+            .test(text);
+
+        const hasInventedFeatureAccessFact =
+          /(?:terrasse|garten).{0,70}(?:zugänglich|erreichbar).{0,35}(?:vom|aus dem)\s+haus|(?:vom|aus dem)\s+haus.{0,35}(?:zugänglich|erreichbar).{0,70}(?:terrasse|garten)/
+            .test(factsText);
+
+        if (
+          claimsInventedFeatureAccess &&
+          !hasInventedFeatureAccessFact
+        ) {
+          pushFinding(
+            variantNumber,
+            entry.field,
+            entry.sentenceNumber,
+            entry.text,
+            "PHYSICAL_RELATIONSHIP",
+            "Ein Zugang zwischen Haus und Außenfläche wurde nicht angegeben."
+          );
+        }
+
+        const claimsInventedMaterialRelationship =
+          /(?:dachterrasse.{0,60}(?:mit|aus).{0,20}naturstein|terrasse.{0,60}(?:mit|aus).{0,20}naturstein|einbauten.{0,60}(?:mit|aus).{0,20}naturstein)/
+            .test(text);
+
+        const sameMaterialRelationshipInFacts =
+          /(?:dachterrasse.{0,60}(?:mit|aus).{0,20}naturstein|terrasse.{0,60}(?:mit|aus).{0,20}naturstein|einbauten.{0,60}(?:mit|aus).{0,20}naturstein)/
+            .test(factsText);
+
+        if (
+          claimsInventedMaterialRelationship &&
+          !sameMaterialRelationshipInFacts
+        ) {
+          pushFinding(
+            variantNumber,
+            entry.field,
+            entry.sentenceNumber,
+            entry.text,
+            "PHYSICAL_RELATIONSHIP",
+            "Zwischen getrennt genannten Ausstattungsmerkmalen wurde eine unbelegte Verbindung hergestellt."
+          );
+        }
+
+        const claimsCommunalUse =
+          /(gemeinschaftlich|gemeinschaftlicher|gemeinschaftliche|gemeinschaftlichen)/
+            .test(text);
+
+        const hasCommunalUseFact =
+          /gemeinschaftlich/
+            .test(factsText);
+
+        if (
+          claimsCommunalUse &&
+          !hasCommunalUseFact
+        ) {
+          pushFinding(
+            variantNumber,
+            entry.field,
+            entry.sentenceNumber,
+            entry.text,
+            "OWNERSHIP_OR_USE_RIGHT",
+            "Eine gemeinschaftliche Nutzung wurde nicht angegeben."
+          );
+        }
+      }
+    }
+  );
+
+  return findings;
+}
+
+function finalizeGermanyFactAuditFindings(
+  facts: unknown,
+  variants: ListingTextVariant[],
+  aiFindings: GermanyFactAuditFinding[]
+): GermanyFactAuditFinding[] {
+  const factsText =
+    normalizeGermanyAuditText(
+      JSON.stringify(facts ?? {})
+    );
+
+  const filteredAiFindings =
+    aiFindings.filter(
+      (finding) =>
+        isGermanyAiAuditFindingActionable(
+          finding,
+          factsText
+        )
+    );
+
+  const deterministicFindings =
+    buildGermanyDeterministicHardFindings(
+      facts,
+      variants
+    );
+
+  const merged =
+    new Map<
+      string,
+      GermanyFactAuditFinding
+    >();
+
+  for (const finding of [
+    ...deterministicFindings,
+    ...filteredAiFindings,
+  ]) {
+    const key = [
+      finding.variantNumber,
+      finding.field,
+      finding.sentenceNumber ?? "title",
+      finding.code,
+      normalizeGermanyAuditText(
+        finding.text
+      ),
+    ].join("|");
+
+    if (!merged.has(key)) {
+      merged.set(
+        key,
+        finding
+      );
+    }
+  }
+
+  return Array.from(
+    merged.values()
+  );
+}
+
+async function requestGermanyFactAudit(
+  openai: OpenAI,
+  prompt: PromptBundle,
+  variants: ListingTextVariant[]
+): Promise<GermanyFactAuditResult> {
+  const startedAt = Date.now();
+
+  const auditVariants =
+    variants.map(
+      (variant, index) => ({
+        variantNumber: index + 1,
+        title: variant.title,
+        sentences:
+          splitGermanyAuditSentences(
+            variant.text
+          ).map(
+            (sentence, sentenceIndex) => ({
+              sentenceNumber:
+                sentenceIndex + 1,
+              text: sentence,
+            })
+          ),
+      })
+    );
+
+  const completion =
+    await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: `
+You are the HARD FACT auditor for Inserat-AI Germany.
+
+You are NOT a copywriter and NOT a style critic.
+
+Your sole task is to identify MATERIAL factual claims that could give a prospective buyer, tenant or broker an incorrect understanding of the property.
+
+Do NOT report harmless marketing language, ordinary wording, stylistic weakness or obvious neutral descriptions of an explicitly stated feature.
+
+REPORT ONLY claims that belong to one of these codes:
+
+PROPERTY_STRUCTURE
+- Invented building type, number of floors, number of units, freestanding construction or other building structure.
+
+ROOM_LAYOUT
+- Invented named rooms, room relationships, floor distribution, direct room connections or a specific layout.
+
+PRICE_OR_INCLUSION
+- Invented inclusion in purchase price, rent or offer.
+- Invented separate price or financial condition.
+
+AVAILABILITY_OR_LEGAL_STATUS
+- Vacancy presented as immediate move-in, immediate handover or guaranteed availability.
+- Invented tenancy, legal, approval or contractual status.
+
+ACCESSIBILITY
+- Elevator presented as barrier-free access when barrier-free access was not explicitly supplied.
+- Invented step-free or unrestricted accessibility.
+
+LOCATION_OR_INFRASTRUCTURE
+- Invented central, prestigious, established, quiet or prime location.
+- Invented transport, schools, shopping, infrastructure or amenities.
+
+UTILITY_OR_SERVICING
+- Erschlossen expanded into specific water, electricity, wastewater, telecom or other connections.
+- Erschlossen expanded into immediate construction, reduced costs, faster approval or simpler planning.
+
+PHYSICAL_RELATIONSHIP
+- Invented direct access, connection or physical relationship between terrace, garden, rooms, garage, courtyard or other features.
+
+CONDITION_OR_RENOVATION_SCOPE
+- Renoviert expanded into fully/comprehensively renovated, modern standard or a specific quality condition.
+- Renovierungsbedürftig expanded into extensive/comprehensive works, exact required works or costs.
+- Older windows do not prove that replacement is mandatory.
+
+OWNERSHIP_OR_USE_RIGHT
+- Invented private, communal, exclusive or legally assigned use.
+- Invented ownership association or rights.
+
+OTHER_MATERIAL_FACT
+- Use only for another concrete factual statement that would materially alter a buyer's understanding.
+
+IMPORTANT SAFE STATEMENTS — DO NOT REPORT:
+- A balcony or terrace may be called an Außenbereich, Außenfläche or space outdoors.
+- A garden may be called an Außenbereich or Gartenfläche.
+- A Keller or Kellerabteil may be described as storage space.
+- A garage or parking space may be described as a place to park a vehicle.
+- A Besprechungsraum may be described as a room for meetings.
+- A Teeküche may be described as usable for preparing drinks or small refreshments.
+- An Einbauküche may be described as a kitchen for preparing food.
+- An Aufzug may be described as providing or easing vertical access. Do not infer barrier-free access.
+- Explicit barrierefreier Zugang may be described as barrier-free access and may neutrally be said to facilitate access.
+- Direct apartment access by elevator may be repeated exactly and may neutrally be described as direct access.
+- Renovierungsbedürftig supports the neutral statement that renovation is required.
+- A stated propertyType may be repeated naturally.
+- Bahnhof 900 m entfernt or Schule 600 m entfernt may be repeated exactly or described as Nähe zum Bahnhof / Nähe zur Schule.
+- A neutral statement that OBJECT FACTS contain no further information is allowed.
+- A statement such as "vermietet, was für Kapitalanleger interessant sein kann" is marketing framing, not a material factual error.
+- Words such as praktisch, interessant, attraktiv, hochwertig, großzügig, modern or komfortabel are marketing language by themselves. Do not report them unless they are used to assert a concrete unsupported fact.
+- Do not report generic target-group language unless it falsely asserts a concrete property fact.
+
+Examples:
+
+SAFE:
+"Der Balkon bietet zusätzlichen Außenraum."
+"Ein Besprechungsraum steht für Meetings zur Verfügung."
+"Der Keller bietet zusätzlichen Stauraum."
+"Der barrierefreie Zugang erleichtert den Zutritt."
+"Die Wohnung ist vermietet, was für Kapitalanleger interessant sein kann."
+
+REPORT:
+"Die Wohnung befindet sich in einem Mehrparteienhaus."
+when OBJECT FACTS only say Eigentumswohnung.
+
+REPORT:
+"Der Tiefgaragenstellplatz ist im Kaufpreis enthalten."
+when inclusion was not explicitly supplied.
+
+REPORT:
+"Die Wohnung ist sofort bezugsfrei."
+when OBJECT FACTS only say leerstehend.
+
+REPORT:
+"Der Aufzug gewährleistet barrierefreien Zugang."
+when barrierefreier Zugang was not explicitly supplied.
+
+REPORT:
+"Das erschlossene Grundstück verfügt über Strom-, Wasser- und Abwasseranschlüsse."
+when OBJECT FACTS only say erschlossen.
+
+REPORT:
+"Die fünf Zimmer verteilen sich auf zwei Etagen."
+when floors were not supplied.
+
+When uncertain whether something is merely marketing language or a material factual error, DO NOT report it.
+
+Return JSON only.
+
+OUTPUT:
+{
+  "findings": [
+    {
+      "variantNumber": 1,
+      "field": "sentence",
+      "sentenceNumber": 3,
+      "text": "Exact sentence containing the material error",
+      "code": "PROPERTY_STRUCTURE",
+      "reason": "Short factual explanation"
+    }
+  ]
+}
+
+If there is no material factual error, return {"findings":[]}.
+`.trim(),
+        },
+        {
+          role: "user",
+          content: `
+TARGET MARKET:
+Germany
+
+OBJECT FACTS:
+${JSON.stringify(
+  prompt.facts,
+  null,
+  2
+)}
+
+FINAL TEXTS TO AUDIT:
+${JSON.stringify(
+  auditVariants,
+  null,
+  2
+)}
+`.trim(),
+        },
+      ],
+      temperature: 0,
+      max_tokens: 1400,
+      response_format: {
+        type: "json_object",
+      },
+    });
+
+  const content =
+    completion.choices[0]
+      ?.message?.content ?? "";
+
+  let parsed:
+    | { findings?: unknown }
+    | undefined;
+
+  try {
+    parsed = JSON.parse(content) as {
+      findings?: unknown;
+    };
+  } catch {
+    parsed = undefined;
+  }
+
+  const rawFindings =
+    Array.isArray(parsed?.findings)
+      ? parsed.findings
+      : [];
+
+  const allowedCodes =
+    new Set<GermanyFactAuditCode>([
+      "PROPERTY_STRUCTURE",
+      "ROOM_LAYOUT",
+      "PRICE_OR_INCLUSION",
+      "AVAILABILITY_OR_LEGAL_STATUS",
+      "ACCESSIBILITY",
+      "LOCATION_OR_INFRASTRUCTURE",
+      "UTILITY_OR_SERVICING",
+      "PHYSICAL_RELATIONSHIP",
+      "CONDITION_OR_RENOVATION_SCOPE",
+      "OWNERSHIP_OR_USE_RIGHT",
+      "OTHER_MATERIAL_FACT",
+    ]);
+
+  const findings:
+    GermanyFactAuditFinding[] = [];
+
+  for (const value of rawFindings) {
+    if (
+      !value ||
+      typeof value !== "object"
+    ) {
+      continue;
+    }
+
+    const finding =
+      value as Record<string, unknown>;
+
+    const variantNumber =
+      typeof finding.variantNumber === "number"
+        ? Math.trunc(finding.variantNumber)
+        : Number.NaN;
+
+    const field =
+      finding.field === "title" ||
+      finding.field === "sentence"
+        ? finding.field
+        : null;
+
+    const sentenceNumber =
+      typeof finding.sentenceNumber === "number"
+        ? Math.trunc(finding.sentenceNumber)
+        : null;
+
+    const text =
+      typeof finding.text === "string"
+        ? finding.text.trim()
+        : "";
+
+    const reason =
+      typeof finding.reason === "string"
+        ? finding.reason.trim()
+        : "";
+
+    const rawCode =
+      typeof finding.code === "string"
+        ? finding.code.trim()
+        : "";
+
+    if (
+      !Number.isInteger(variantNumber) ||
+      variantNumber < 1 ||
+      variantNumber > 3 ||
+      !field ||
+      !text ||
+      !allowedCodes.has(
+        rawCode as GermanyFactAuditCode
+      )
+    ) {
+      continue;
+    }
+
+    findings.push({
+      variantNumber,
+      field,
+      sentenceNumber:
+        field === "sentence"
+          ? sentenceNumber
+          : null,
+      text,
+      code:
+        rawCode as GermanyFactAuditCode,
+      reason,
+    });
+  }
+
+  const finalFindings =
+    finalizeGermanyFactAuditFindings(
+      prompt.facts,
+      variants,
+      findings
+    );
+
+  return {
+    findings: finalFindings,
+    durationMs:
+      Date.now() - startedAt,
+  };
+}
+
+function cleanGermanySurgicalFragment(
+  value: string
+): string {
+  return value
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/\s+([,.;:])/g, "$1")
+    .replace(/,\s*\./g, ".")
+    .trim();
+}
+
+
+function splitGermanyFinalDeliverySentences(
+  value: string
+): string[] {
+  return value
+    .replace(/\r\n/g, "\n")
+    .split(
+      /(?<=[!?])\s+|(?<=\.)\s+(?!Obergeschoss\b|Etage\b|OG\b)/
+    )
+    .map((sentence) =>
+      sentence.trim()
+    )
+    .filter(Boolean);
+}
+
+function normalizeGermanyFinalVariantsForDelivery(
+  variants: ListingTextVariant[],
+  facts: unknown
+): ListingTextVariant[] {
+  const factsText =
+    normalizeGermanyAuditText(
+      JSON.stringify(facts ?? {})
+    );
+
+  const hasBathroomFact =
+    /\b(?:bad|badezimmer|duschbad|sanitäreinrichtungen)\b/
+      .test(factsText);
+
+  const hasKitchenFact =
+    /\b(?:küche|einbauküche|teeküche|kochnische)\b/
+      .test(factsText);
+
+  const hasMultiUnitBuildingFact =
+    /\b(?:mehrparteienhaus|mehrparteiengebäude|mehrfamilienhaus)\b/
+      .test(factsText);
+
+  const hasDirectRelationshipFact =
+    /\bdirekt(?:e|er|en|em|es)?\b.{0,40}\b(?:zugang|wohnungszugang|verbindung)\b/
+      .test(factsText);
+
+  const hasFloorFact =
+    /\b\d+\.\s*(?:ober)?geschoss\b|\b(?:erdgeschoss|dachgeschoss|obergeschoss|stockwerk|etage)\b/
+      .test(factsText);
+
+  const hasUnbuiltFact =
+    /\b(?:unbebaut|unbebautes|frei von bestehenden gebäuden|ohne bestand)\b/
+      .test(factsText);
+
+  const hasVacancyFact =
+    /\b(?:leerstehend|leerstand|unbewohnt|derzeit frei)\b/
+      .test(factsText);
+
+  const hasImmediateAvailabilityFact =
+    /(?:bezugsfrei|bezugsfertig|sofort verfügbar|sofort beziehbar|zeitnah(?:e[rmns]?)?\s+(?:bezug|einzug|nutzung|verfügbarkeit)|kurzfristig(?:e[rmns]?)?\s+(?:bezug|einzug|nutzung|verfügbarkeit))/
+      .test(factsText);
+
+  const renovationYear =
+    factsText.match(/\b((?:19|20)\d{2})\s+renoviert\b/)?.[1] ??
+    null;
+
+  const hasFurnishingFact =
+    /\b(?:möbliert|unmöbliert|nicht möbliert)\b/
+      .test(factsText);
+
+  return variants.map(
+    (variant) => {
+      const sentences =
+        splitGermanyFinalDeliverySentences(
+          variant.text
+        );
+
+      const preparedSentences =
+        sentences.map(
+          (sentence) => {
+            const normalized =
+              normalizeGermanyAuditText(
+                sentence
+              );
+
+            // Barrierefreier Zugang ist belegt,
+            // aber nicht uneingeschränkte
+            // Erreichbarkeit aller Bereiche.
+            if (
+              /(?:barrierefrei|stufenlos|rollstuhlgerecht)/
+                .test(factsText) &&
+              /barrierefrei/.test(normalized) &&
+              /uneingeschränkt/.test(normalized)
+            ) {
+              return "Ein barrierefreier Zugang ist vorhanden.";
+            }
+
+            // Eine Anzahl von Wohneinheiten
+            // belegt weder 'separat' noch
+            // eigenständige Nutzung.
+            if (
+              /wohneinheiten/.test(factsText)
+            ) {
+              let next = sentence
+                .replace(
+                  /\bseparate\s+Wohneinheiten\b/gi,
+                  "Wohneinheiten"
+                )
+                .replace(
+                  /,\s*die\s+jeweils\s+eigenständig\s+genutzt\s+werden\s+können/gi,
+                  ""
+                );
+
+              if (next !== sentence) {
+                return next.trim();
+              }
+            }
+
+            // 'Erschlossen' nicht zu konkreten
+            // Anschlüssen oder Baureife aufblasen.
+            if (
+              /erschlossen/.test(factsText) &&
+              /(?:alle notwendigen anschlüsse|wasser.{0,30}strom|direkten anschluss|vollständig erschlossen)/
+                .test(normalized)
+            ) {
+              return "Das Grundstück ist erschlossen.";
+            }
+
+            // Leerstand belegt keine sofortige
+            // oder unkomplizierte Übergabe.
+            if (
+              /leerstehend/.test(factsText) &&
+              /leerstehend/.test(normalized) &&
+              /(?:unkomplizierte übergabe|kurzfristige verfügbarkeit|ohne verzögerung|sofort bezogen|sofort genutzt|sofortige nutzung)/
+                .test(normalized)
+            ) {
+              return "Das Objekt ist derzeit leerstehend.";
+            }
+
+            // Leerstand belegt auch keine flexible Übergabe
+            // oder flexible Nutzung nach dem Kauf.
+            if (
+              hasVacancyFact &&
+              !hasImmediateAvailabilityFact &&
+              /(?:leerstehend|leerstehung).{0,60}(?:flexible(?:n|r|s|m)?\s+(?:übergabe|nutzung)|(?:ermöglicht|erleichtert).{0,35}(?:übergabe|nutzung|bezug))/
+                .test(normalized)
+            ) {
+              return "Das Objekt ist derzeit leerstehend.";
+            }
+
+            // Leerstand ist nicht gleich sofortige oder
+            // kurzfristige Verfügbarkeit/Nutzung.
+            if (
+              hasVacancyFact &&
+              !hasImmediateAvailabilityFact &&
+              /(?:sofort|zeitnah|kurzfristig|ohne verzögerung).{0,55}(?:bezieh|nutz|verfüg|übergab|übernahm)|(?:bezugsfertig|sofort verfügbar|sofort beziehbar)/
+                .test(normalized)
+            ) {
+              if (
+                /einbauküche/.test(normalized) &&
+                /einbauküche/.test(factsText)
+              ) {
+                return "Eine Einbauküche ist vorhanden.";
+              }
+
+              return "Das Objekt ist derzeit leerstehend.";
+            }
+
+            // Erschlossen sagt nichts über konkrete
+            // Anschlüsse, Baureife oder Baugeschwindigkeit.
+            if (
+              /erschlossen/.test(factsText) &&
+              /(?:zeitnahe bebauung|zeitnaher baubeginn|sofortige baureife|sofortige bebauung|notwendige versorgungsanschlüsse|gesicherte infrastruktur|gut vorbereitet.{0,50}bauprojekt|ohne zusätzliche erschließungskosten|keine weiteren erschließungskosten)/
+                .test(normalized)
+            ) {
+              return "Das Grundstück ist erschlossen.";
+            }
+
+            // Innenhof allein belegt weder private noch
+            // gemeinschaftliche Nutzung oder Nutzungsrechte.
+            if (
+              /innenhof/.test(factsText) &&
+              /innenhof/.test(normalized) &&
+              /(?:privat|bewohner|gemeinschaft|von allen|nutzbar|genutzt werden)/
+                .test(normalized) &&
+              !/(?:privat|bewohner|gemeinschaft|von allen|nutzbar|genutzt werden)/
+                .test(factsText)
+            ) {
+              return "Ein Innenhof ist vorhanden.";
+            }
+
+            // Konkrete Gebäudekomplex-/Wohnanlagenclaims
+            // nicht aus einer Eigentumswohnung ableiten.
+            if (
+              /(?:gebäudekomplex|wohnanlage|reihenhausanlage|gewachsene wohnanlage|klare bauliche struktur)/
+                .test(normalized) &&
+              !/(?:gebäudekomplex|wohnanlage|reihenhausanlage|klare bauliche struktur)/
+                .test(factsText)
+            ) {
+              return "Weitere Angaben zur Gebäudestruktur liegen nicht vor.";
+            }
+            // DE FINAL: kein Aufzug darf niemals
+            // zu vorhandenem Aufzug werden.
+            if (
+              /(?:kein|keinen|ohne)\s+aufzug/
+                .test(factsText) &&
+              /aufzug/.test(normalized) &&
+              /(?:ist vorhanden|vorhanden und|erleichtert den zugang)/
+                .test(normalized) &&
+              !/(?:kein|keinen|ohne)\s+aufzug/
+                .test(normalized)
+            ) {
+              return "Das Gebäude verfügt über keinen Aufzug.";
+            }
+
+            // Leerstand ist keine Zusage für
+            // Bezugsfertigkeit oder Sofortbezug.
+            if (
+              /leerstehend/.test(factsText) &&
+              !/(?:bezugsfertig|bezugsfrei|sofort beziehbar|sofort verfügbar)/
+                .test(factsText) &&
+              /(?:bezugsfertig|bezugsfrei|sofort beziehbar|sofort verfügbar)/
+                .test(normalized)
+            ) {
+              return "Das Objekt ist derzeit leerstehend.";
+            }
+
+            // '2021 renoviert' nicht zu
+            // Qualitäts- oder Umfangsversprechen aufblasen.
+            if (
+              /renoviert/.test(factsText) &&
+              /(?:moderne renovierungsstandards|umfassend renoviert|hochwertige renovierung|hochwertig renoviert|ausstattung wurde bei der renovierung modernisiert)/
+                .test(normalized)
+            ) {
+              return renovationYear
+                ? `Die Immobilie wurde ${renovationYear} renoviert.`
+                : "Die Immobilie ist als renoviert angegeben.";
+            }
+
+            // Parkett ist belegt; daraus aber
+            // keine Lebensstil-Eignung ableiten.
+            if (
+              /parkett/.test(factsText) &&
+              /parkett/.test(normalized) &&
+              /(?:unterschiedliche wohnkonzepte|verschiedene lebensstile)/
+                .test(normalized)
+            ) {
+              return "Die Räume sind mit Parkett ausgestattet.";
+            }
+
+            // Eine negierte Aussage zur ruhigen
+            // Lage darf nicht als Lageversprechen
+            // vom lokalen Checker missverstanden werden.
+            if (
+              /(?:ohne dass|keine|nicht).{0,90}ruhige lage/
+                .test(normalized)
+            ) {
+              return "Weitere Angaben zur näheren Lage liegen nicht vor.";
+            }
+
+            // Bürofläche bedeutet nicht automatisch
+            // Gebäude mit mehreren Einheiten.
+            if (
+              /gebäude mit mehreren einheiten/
+                .test(normalized) &&
+              !/(?:wohneinheiten|mehrfamilienhaus|mehrparteienhaus|mehrparteiengebäude)/
+                .test(factsText)
+            ) {
+              return "Weitere Angaben zur Gebäudestruktur liegen nicht vor.";
+            }
+
+            // Bei belegtem Aufzug und belegter
+            // Raumanzahl den unnötigen Strukturclaim
+            // 'über mehrere Räume verteilt' entfernen.
+            if (
+              /aufzug/.test(factsText) &&
+              /aufzug/.test(normalized) &&
+              /über mehrere räume verteilt/
+                .test(normalized)
+            ) {
+              return "Ein Aufzug ist vorhanden und erleichtert den Zugang.";
+            }
+
+            return sentence;
+          }
+        );
+
+      const seen =
+        new Set<string>();
+
+      const cleaned =
+        preparedSentences.filter(
+          (sentence) => {
+            const normalized =
+              normalizeGermanyAuditText(
+                sentence
+              );
+
+            if (
+              !hasBathroomFact &&
+              /\b(?:badezimmer|duschbad|sanitäreinrichtungen)\b/
+                .test(normalized)
+            ) {
+              return false;
+            }
+
+            if (
+              !hasKitchenFact &&
+              /\b(?:küche|küchenbereich|einbauküche|kochnische)\b/
+                .test(normalized)
+            ) {
+              return false;
+            }
+
+            if (
+              !hasMultiUnitBuildingFact &&
+              /\b(?:mehrparteienhaus|mehrparteiengebäude|mehrfamilienhaus)\b/
+                .test(normalized)
+            ) {
+              return false;
+            }
+
+            if (
+              !hasDirectRelationshipFact &&
+              /\bdirekt(?:e|er|en|em|es)?\b.{0,35}\b(?:zugang|verbindung)\b/
+                .test(normalized)
+            ) {
+              return false;
+            }
+
+            if (
+              !hasFloorFact &&
+              (
+                /\b\d+\.\s*(?:ober)?geschoss\b/
+                  .test(normalized) ||
+                /\b(?:ersten|zweiten|dritten|vierten|fünften)\s+(?:stock|geschoss|obergeschoss|etage)\b/
+                  .test(normalized)
+              )
+            ) {
+              return false;
+            }
+
+            if (
+              !hasUnbuiltFact &&
+              /\b(?:unbebaut|frei von bestehenden gebäuden|keine rückbauarbeiten)\b/
+                .test(normalized)
+            ) {
+              return false;
+            }
+
+            // Kein erfundener Leerstand.
+            if (
+              !hasVacancyFact &&
+              /(?:leerstehend|leerstand|steht leer|unbewohnt)/
+                .test(normalized)
+            ) {
+              return false;
+            }
+
+            // Leerstand allein ist keine Zusage für
+            // sofortigen oder kurzfristigen Bezug.
+            if (
+              !hasImmediateAvailabilityFact &&
+              /(?:bezugsfertig|sofort verfügbar|sofort beziehbar|sofortige nutzung|zeitnah(?:e[rmns]?)?\s+(?:bezug|einzug|nutzung|verfügbarkeit)|kurzfristig(?:e[rmns]?)?\s+(?:bezug|einzug|nutzung|verfügbarkeit)|ohne verzögerung.{0,35}(?:bezieh|nutz|verfüg))/
+                .test(normalized)
+            ) {
+              return false;
+            }
+
+            // Keine erfundene Möblierung.
+            if (
+              !hasFurnishingFact &&
+              /(?:nicht möbliert|unmöbliert)/
+                .test(normalized)
+            ) {
+              return false;
+            }
+
+            // Eigentumswohnung beweist keinen
+            // größeren Gebäudekomplex.
+            if (
+              !hasMultiUnitBuildingFact &&
+              /(?:größeren gebäudekomplex|mehrparteiengebäude|mehrparteienhaus|mehrfamilienhaus)/
+                .test(normalized)
+            ) {
+              return false;
+            }
+
+            // 'Erschlossen' beweist weder
+            // unbebautes/rechteckiges Bauland
+            // noch eingesparte Anschlusskosten.
+            if (
+              !hasUnbuiltFact &&
+              /(?:reines bauland|bauliche anlagen sind nicht vorhanden|rechteckige parzelle|rechteckiges grundstück|frei von bestehenden gebäuden|frei von baulichen anlagen|frei von bebauung|unbebaut(?:es|e|er|en|em)?\s+(?:grundstück|areal)|bauliche altlasten)/
+                .test(normalized)
+            ) {
+              return false;
+            }
+
+            if (
+              !/(?:kosten|anschlusskosten)/
+                .test(factsText) &&
+              /(?:zusätzliche kosten.{0,60}(?:reduziert|entfallen)|entfallen.{0,60}zusätzliche kosten)/
+                .test(normalized)
+            ) {
+              return false;
+            }
+
+            // Keine erfundene räumliche
+            // Anordnung rund um einen Innenhof.
+            if (
+              /(?:anordnung|angeordnet).{0,50}(?:um|rund um).{0,30}innenhof/
+                .test(normalized) &&
+              !/(?:anordnung|angeordnet).{0,50}(?:um|rund um).{0,30}innenhof/
+                .test(factsText)
+            ) {
+              return false;
+            }
+
+            // Keine erfundenen allgemeinen
+            // Standortqualitäten.
+            if (
+              /(?:alle üblichen versorgungsmöglichkeiten|gewachsener stadtteil|gewachsenen stadtteil|etablierter stadtteil|etablierten stadtteil)/
+                .test(normalized) &&
+              !/(?:alle üblichen versorgungsmöglichkeiten|gewachsener stadtteil|gewachsenen stadtteil|etablierter stadtteil|etablierten stadtteil)/
+                .test(factsText)
+            ) {
+              return false;
+            }
+
+            // Barrierefreier Zugang darf nicht
+            // zu 'alle Bereiche uneingeschränkt'
+            // erweitert werden.
+            if (
+              /(?:uneingeschränkt.{0,50}alle bereiche|alle bereiche.{0,50}uneingeschränkt|barrierefreier alltag)/
+                .test(normalized) &&
+              !/(?:uneingeschränkt|alle bereiche|barrierefreier alltag)/
+                .test(factsText)
+            ) {
+              return false;
+            }
+
+            // Unsinnige Preis-Tautologie nicht
+            // ausliefern.
+            if (
+              /im kaufpreis.{0,40}ist die wohnung enthalten/
+                .test(normalized)
+            ) {
+              return false;
+            }
+
+            // Keine erfundene Freistellung.
+            if (
+              /\bfreistehend/.test(normalized) &&
+              !/\bfreistehend/.test(factsText)
+            ) {
+              return false;
+            }
+
+            // Keine erfundenen Geschosse.
+            if (
+              /(?:mehrere ebenen|mehrere etagen|mehrere geschosse|zwei ebenen|2 ebenen|zwei etagen|zwei geschosse|mehrgeschossig)/
+                .test(normalized) &&
+              !/(?:mehrere ebenen|mehrere etagen|mehrere geschosse|zwei ebenen|2 ebenen|zwei etagen|zwei geschosse|2 etagen|2 geschosse|mehrgeschossig)/
+                .test(factsText)
+            ) {
+              return false;
+            }
+
+            // Renovierungsbedarf beeinflusst
+            // nicht automatisch den Preis.
+            if (
+              /preisgestaltung.{0,40}(?:berücksichtigt|reflektiert)|(?:berücksichtigt|reflektiert).{0,40}preisgestaltung/
+                .test(normalized) &&
+              !/preisgestaltung/
+                .test(factsText)
+            ) {
+              return false;
+            }
+            if (seen.has(normalized)) {
+              return false;
+            }
+
+            seen.add(normalized);
+            return true;
+          }
+        );
+
+      return {
+        ...variant,
+        text:
+          cleaned.length > 0
+            ? cleaned.join(" ").trim()
+            : variant.text,
+      };
+    }
+  );
+}
+
+function dedupeGermanyVariantTitles(
+  variants: ListingTextVariant[]
+): ListingTextVariant[] {
+  const seen =
+    new Set<string>();
+
+  const prefixes = [
+    "Objekt im Überblick",
+    "Ausstattung im Fokus",
+    "Fakten zum Angebot",
+  ];
+
+  return variants.map(
+    (variant, index) => {
+      let title =
+        variant.title.trim();
+
+      if (
+        /^Eine Einbauküche ist vorhanden\.?$/i
+          .test(title)
+      ) {
+        title = "Ausstattung im Fokus: Einbauküche vorhanden";
+      }
+
+      if (
+        /^Ein Tiefgaragenstellplatz ist vorhanden\.?$/i
+          .test(title)
+      ) {
+        title = "Ausstattung im Fokus: Tiefgaragenstellplatz";
+      }
+
+      let key =
+        normalizeGermanyAuditText(
+          title
+        );
+
+      if (!seen.has(key)) {
+        seen.add(key);
+
+        return {
+          ...variant,
+          title,
+        };
+      }
+
+      title =
+        `${prefixes[index] ?? "Objektdetails"}: ${title}`;
+
+      key =
+        normalizeGermanyAuditText(
+          title
+        );
+
+      let suffix = 2;
+
+      while (seen.has(key)) {
+        title =
+          `Weitere Fakten ${suffix}: ${variant.title.trim()}`;
+
+        key =
+          normalizeGermanyAuditText(
+            title
+          );
+
+        suffix += 1;
+      }
+
+      seen.add(key);
+
+      return {
+        ...variant,
+        title,
+      };
+    }
+  );
+}
+
+function isGermanyNonBlockingQualityIssue(
+  issue: {
+    code: string;
+    message: string;
+  }
+): boolean {
+  if (
+    issue.code ===
+      "WORD_COUNT_OUTSIDE_TARGET"
+  ) {
+    return true;
+  }
+
+  if (
+    issue.code ===
+      "TITLE_DUPLICATE_EXACT" ||
+    issue.code ===
+      "TITLES_TOO_SIMILAR" ||
+    issue.code ===
+      "OPENINGS_TOO_SIMILAR" ||
+    issue.code ===
+      "VARIANTS_TOO_SIMILAR"
+  ) {
+    return true;
+  }
+
+  if (
+    issue.code !==
+      "CLAIM_WITHOUT_EVIDENCE"
+  ) {
+    return false;
+  }
+
+  return /(?:durchdachte raumaufteilung|besonders gute raumaufteilung|praktische raumaufteilung|eignung für verschiedene lebensstile|flexible oder vielseitige nutzung|pauschale praktische oder komfortable wahl|subjektiver nutzen einer garage oder parkierung|atmosphäre oder wohnqualität|helle wohnräume oder freundliche atmosphäre|emotionale balkonwirkung|wirkung eines balkons oder einer terrasse|attraktivitätswertung|durchdachte lösung)/i
+    .test(
+      issue.message
+    );
+}
+
+function repairGermanyHardFactFragment(
+  finding: GermanyFactAuditFinding,
+  factsText: string
+): string | null {
+  const original =
+    finding.text.trim();
+
+  let repaired = original;
+
+  const normalizedOriginal =
+    normalizeGermanyAuditText(
+      original
+    );
+
+  // Harte Fakten deterministisch auf belegte Form
+  // zurückführen; kein AI-Interpretationsspielraum.
+  if (
+    finding.code === "AVAILABILITY_OR_LEGAL_STATUS" &&
+    /einbauküche/.test(normalizedOriginal) &&
+    /einbauküche/.test(factsText)
+  ) {
+    return "Eine Einbauküche ist vorhanden.";
+  }
+
+  if (
+    finding.code === "CONDITION_OR_RENOVATION_SCOPE" &&
+    /\brenoviert\b/.test(factsText) &&
+    /\brenoviert\b/.test(normalizedOriginal)
+  ) {
+    const year =
+      factsText.match(/\b((?:19|20)\d{2})\s+renoviert\b/)?.[1] ??
+      null;
+
+    return year
+      ? `Die Immobilie wurde ${year} renoviert.`
+      : "Die Immobilie ist als renoviert angegeben.";
+  }
+
+  if (
+    finding.code === "PROPERTY_STRUCTURE" &&
+    /(?:gebäudekomplex|wohnanlage|reihenhausanlage|klare bauliche struktur)/
+      .test(normalizedOriginal) &&
+    !/(?:gebäudekomplex|wohnanlage|reihenhausanlage|klare bauliche struktur)/
+      .test(factsText)
+  ) {
+    return "Weitere Angaben zur Gebäudestruktur liegen nicht vor.";
+  }
+
+  if (
+    finding.code === "ACCESSIBILITY" &&
+    /(?:barrierefreie\s+(?:wohnung|neubauwohnung|immobilie|einheit)|alle bereiche|gesamte wohnung)/
+      .test(normalizedOriginal) &&
+    /(?:barrierefrei|stufenlos|rollstuhlgerecht)/
+      .test(factsText)
+  ) {
+    repaired = repaired
+      .replace(/barrierefreie\s+Neubauwohnung/gi, "Neubauwohnung mit barrierefreiem Zugang")
+      .replace(/barrierefreie\s+Wohnung/gi, "Wohnung mit barrierefreiem Zugang")
+      .replace(/barrierefreie\s+Immobilie/gi, "Immobilie mit barrierefreiem Zugang")
+      .replace(/barrierefreie\s+Einheit/gi, "Einheit mit barrierefreiem Zugang");
+
+    if (
+      /(?:alle bereiche|gesamte wohnung)/
+        .test(normalizedOriginal)
+    ) {
+      return "Ein barrierefreier Zugang ist vorhanden.";
+    }
+
+    return cleanGermanySurgicalFragment(repaired);
+  }
+  // FINAL: Renovierungsumfang neutralisieren.
+  if (
+    finding.code === "CONDITION_OR_RENOVATION_SCOPE" &&
+    /renoviert/.test(factsText) &&
+    /(?:renovierungsstandards|umfassend renoviert|hochwertig)/
+      .test(normalizedOriginal)
+  ) {
+    return "Die Immobilie wurde renoviert.";
+  }
+
+  // FINAL: unbelegte Gebäudestruktur entfernen.
+  if (
+    finding.code === "PROPERTY_STRUCTURE" &&
+    /gebäude mit mehreren einheiten/
+      .test(normalizedOriginal) &&
+    !/(?:wohneinheiten|mehrfamilienhaus|mehrparteienhaus|mehrparteiengebäude)/
+      .test(factsText)
+  ) {
+    return "Weitere Angaben zur Gebäudestruktur liegen nicht vor.";
+  }
+
+  // FINAL: 8 Räume sind belegt; daraus wird
+  // kein zusätzlicher Gebäudestruktur-Claim.
+  if (
+    finding.code === "PROPERTY_STRUCTURE" &&
+    /über mehrere räume verteilt/
+      .test(normalizedOriginal)
+  ) {
+    if (
+      /aufzug/.test(normalizedOriginal) &&
+      /aufzug/.test(factsText)
+    ) {
+      return "Ein Aufzug ist vorhanden und erleichtert den Zugang.";
+    }
+
+    return "Die angegebene Raumanzahl ist Bestandteil des Angebots.";
+  }
+
+  // FINAL: Leerstand nicht in Verfügbarkeit
+  // oder Bezugsfertigkeit erweitern.
+  if (
+    finding.code === "AVAILABILITY_OR_LEGAL_STATUS" &&
+    /leerstehend/.test(factsText)
+  ) {
+    return "Das Objekt ist derzeit leerstehend.";
+  }
+
+  // V4B.4: Barrierefreiheit nicht überdehnen.
+  if (
+    finding.code === "ACCESSIBILITY" &&
+    /(?:barrierefrei|stufenlos|rollstuhlgerecht)/
+      .test(factsText) &&
+    /uneingeschränkt/
+      .test(normalizedOriginal)
+  ) {
+    return "Ein barrierefreier Zugang ist vorhanden.";
+  }
+
+  // Anzahl Wohneinheiten ist belegt,
+  // 'separat/eigenständig' jedoch nicht.
+  if (
+    finding.code === "PROPERTY_STRUCTURE" &&
+    /wohneinheiten/.test(factsText) &&
+    /(?:separate wohneinheiten|eigenständig genutzt)/
+      .test(normalizedOriginal)
+  ) {
+    repaired = repaired
+      .replace(
+        /\bseparate\s+Wohneinheiten\b/gi,
+        "Wohneinheiten"
+      )
+      .replace(
+        /,\s*die\s+jeweils\s+eigenständig\s+genutzt\s+werden\s+können/gi,
+        ""
+      );
+
+    return cleanGermanySurgicalFragment(
+      repaired
+    );
+  }
+
+  // Erschlossen = keine erfundenen
+  // konkreten Anschlussdetails.
+  if (
+    finding.code === "UTILITY_OR_SERVICING" &&
+    /erschlossen/.test(factsText)
+  ) {
+    return "Das Grundstück ist erschlossen.";
+  }
+
+  // Leerstand = keine Zusage über
+  // Übergabe oder kurzfristige Verfügbarkeit.
+  if (
+    finding.code === "AVAILABILITY_OR_LEGAL_STATUS" &&
+    /leerstehend/.test(factsText)
+  ) {
+    return "Das Objekt ist derzeit leerstehend.";
+  }
+
+  // V4B.3: Einfamilienhaus bedeutet nicht
+  // automatisch freistehend.
+  if (
+    finding.code === "PROPERTY_STRUCTURE" &&
+    /\bfreistehend/.test(normalizedOriginal) &&
+    !/\bfreistehend/.test(factsText)
+  ) {
+    return "";
+  }
+
+  // Keine erfundenen Geschosse/Ebenen.
+  if (
+    (
+      finding.code === "PROPERTY_STRUCTURE" ||
+      finding.code === "ROOM_LAYOUT"
+    ) &&
+    /(?:mehrere ebenen|mehrere etagen|mehrere geschosse|zwei ebenen|2 ebenen|zwei etagen|zwei geschosse|mehrgeschossig)/
+      .test(normalizedOriginal) &&
+    !/(?:mehrere ebenen|mehrere etagen|mehrere geschosse|zwei ebenen|2 ebenen|zwei etagen|zwei geschosse|2 etagen|2 geschosse|mehrgeschossig)/
+      .test(factsText)
+  ) {
+    if (
+      /aufzug/.test(normalizedOriginal) &&
+      /aufzug/.test(factsText)
+    ) {
+      return "Ein Aufzug ist vorhanden und erleichtert den Zugang.";
+    }
+
+    return "";
+  }
+
+  // 'Renovierungsbedürftig' belegt keinen
+  // Einfluss auf die Preisgestaltung.
+  if (
+    finding.code === "CONDITION_OR_RENOVATION_SCOPE" &&
+    /preisgestaltung/.test(normalizedOriginal)
+  ) {
+    repaired = repaired.replace(
+      /,\s*was\s+bei\s+der\s+preisgestaltung\s+berücksichtigt\s+wurde/gi,
+      ""
+    );
+
+    return cleanGermanySurgicalFragment(
+      repaired
+    );
+  }
+
+  // Kein Struktur-Fakt aus einer allgemeinen
+  // Komfortaussage konstruieren.
+  if (
+    finding.code === "PROPERTY_STRUCTURE" &&
+    /gebäude selbst ist nicht näher beschrieben/.test(normalizedOriginal)
+  ) {
+    return "Weitere Angaben zum Gebäude liegen nicht vor.";
+  }
+  if (
+    finding.code === "PROPERTY_STRUCTURE" &&
+    /mehrparteiengebäude/
+      .test(normalizedOriginal) &&
+    !/mehrparteiengebäude/
+      .test(factsText)
+  ) {
+    return "";
+  }
+
+  if (
+    finding.code === "UTILITY_OR_SERVICING"
+  ) {
+    if (
+      /(?:entfallen zusätzliche kosten|keine zusätzlichen anschlusskosten|ohne zusätzliche anschlusskosten)/
+        .test(normalizedOriginal)
+    ) {
+      return "";
+    }
+
+    if (
+      /für die bebauung vorbereitet/
+        .test(normalizedOriginal)
+    ) {
+      repaired = repaired.replace(
+        /\s+und\s+ist\s+für\s+die\s+bebauung\s+vorbereitet/gi,
+        ""
+      );
+
+      return cleanGermanySurgicalFragment(
+        repaired
+      );
+    }
+  }
+
+  if (
+    finding.code === "PROPERTY_STRUCTURE"
+  ) {
+    if (
+      /zusammenhängenden\s+gebäudekomplex/i
+        .test(repaired)
+    ) {
+      repaired = repaired
+        .replace(
+          /\s+und\s+(?:sie|diese|die\s+zimmer)\s+sind\s+teil\s+eines\s+zusammenhängenden\s+gebäudekomplexes/gi,
+          ""
+        )
+        .replace(
+          /teil\s+eines\s+zusammenhängenden\s+gebäudekomplexes/gi,
+          ""
+        );
+    }
+
+    if (
+      /mehrparteienhaus|mehrfamilienhaus/i
+        .test(repaired)
+    ) {
+      if (
+        /\b(?:ist|befindet\s+sich)\s+teil\s+eines?\s+(?:mehrparteienhauses?|mehrfamilienhauses?)/i
+          .test(repaired) ||
+        /\bbefindet\s+sich\s+in\s+einem\s+(?:mehrparteienhaus|mehrfamilienhaus)/i
+          .test(repaired)
+      ) {
+        return "";
+      }
+
+      repaired = repaired
+        .replace(
+          /\s+eines\s+(?:mehrparteienhauses|mehrfamilienhauses)/gi,
+          ""
+        )
+        .replace(
+          /\s+in\s+einem\s+(?:mehrparteienhaus|mehrfamilienhaus)/gi,
+          ""
+        );
+    }
+
+    if (
+      /reihenhaus/i.test(factsText) &&
+      /bauliche\s+verbindung\s+mit\s+nachbargebäuden/i
+        .test(repaired)
+    ) {
+      repaired = repaired.replace(
+        /,?\s*was\s+auf\s+eine\s+bauliche\s+verbindung\s+mit\s+nachbargebäuden\s+hinweist/gi,
+        ""
+      );
+    }
+
+    if (
+      /mehrparteienhaus|mehrfamilienhaus|zusammenhängenden\s+gebäudekomplex/i
+        .test(repaired)
+    ) {
+      return null;
+    }
+
+    return cleanGermanySurgicalFragment(
+      repaired
+    );
+  }
+
+  if (
+    finding.code === "PRICE_OR_INCLUSION"
+  ) {
+    if (
+      /tiefgaragenstellplatz/i
+        .test(repaired)
+    ) {
+      if (
+        /separat/i.test(factsText)
+      ) {
+        return "Ein Tiefgaragenstellplatz ist separat erhältlich.";
+      }
+
+      return "Ein Tiefgaragenstellplatz ist vorhanden.";
+    }
+
+    if (
+      /einbauküche/i.test(repaired)
+    ) {
+      return "Eine Einbauküche ist vorhanden.";
+    }
+
+    repaired = repaired
+      .replace(
+        /,\s*(?:der|die|das)\s+(?:im\s+)?(?:kaufpreis|preis|angebot)\s+(?:enthalten|inbegriffen)\s+ist(?:\s+und[^.]*)?/gi,
+        ""
+      )
+      .replace(
+        /\s+(?:im\s+)?(?:kaufpreis|preis|angebot)\s+(?:enthalten|inbegriffen)/gi,
+        ""
+      );
+
+    return cleanGermanySurgicalFragment(
+      repaired
+    );
+  }
+
+  if (
+    finding.code === "AVAILABILITY_OR_LEGAL_STATUS"
+  ) {
+    if (
+      /leerstehend/i.test(factsText)
+    ) {
+      return "Das Objekt ist derzeit leerstehend.";
+    }
+
+    if (
+      /bezugsfrei/i.test(factsText)
+    ) {
+      return "Das Objekt ist als bezugsfrei angegeben.";
+    }
+
+    return "";
+  }
+
+  if (
+    finding.code === "ACCESSIBILITY"
+  ) {
+    if (
+      /barrierefrei|stufenlos|rollstuhlgerecht/i
+        .test(factsText)
+    ) {
+      return null;
+    }
+
+    if (
+      /aufzug/i.test(factsText)
+    ) {
+      return "Ein Aufzug ist vorhanden und erleichtert den Zugang.";
+    }
+
+    return "";
+  }
+
+  if (
+    finding.code === "UTILITY_OR_SERVICING"
+  ) {
+    if (
+      /erschlossen/i.test(factsText)
+    ) {
+      repaired = repaired
+        .replace(
+          /vollständig\s+erschlossen/gi,
+          "erschlossen"
+        );
+
+      if (
+        /strom|wasser|abwasser|versorgungs|infrastruktur|bebauung|bauliche\s+nutzung/i
+          .test(repaired)
+      ) {
+        return "Das Grundstück ist erschlossen.";
+      }
+
+      return cleanGermanySurgicalFragment(
+        repaired
+      );
+    }
+
+    return "";
+  }
+
+  if (
+    finding.code === "CONDITION_OR_RENOVATION_SCOPE"
+  ) {
+    repaired = repaired
+      .replace(
+        /\bumfassend\s+(?=renoviert|modernisiert|saniert)/gi,
+        ""
+      )
+      .replace(
+        /\bvollständig\s+(?=renoviert|modernisiert|saniert)/gi,
+        ""
+      )
+      .replace(
+        /\bkomplett\s+(?=renoviert|modernisiert|saniert)/gi,
+        ""
+      )
+      .replace(
+        /,\s*die\s+den\s+zustand[^.]*\./gi,
+        "."
+      );
+
+    if (
+      /renovierungsbedürftig/i
+        .test(factsText) &&
+      /umfassende\s+(?:modernisierung|sanierung|renovierung)/i
+        .test(repaired)
+    ) {
+      return "Das Objekt ist renovierungsbedürftig.";
+    }
+
+    return cleanGermanySurgicalFragment(
+      repaired
+    );
+  }
+
+  if (
+    finding.code === "OWNERSHIP_OR_USE_RIGHT"
+  ) {
+    if (
+      /innenhof/i.test(repaired)
+    ) {
+      return "Ein Innenhof ist vorhanden.";
+    }
+
+    repaired = repaired
+      .replace(
+        /\b(?:gemeinschaftlich(?:e[rmns]?)?|private[rnms]?|exklusive[rnms]?)\b/gi,
+        ""
+      );
+
+    return cleanGermanySurgicalFragment(
+      repaired
+    );
+  }
+
+  if (
+    finding.code === "LOCATION_OR_INFRASTRUCTURE"
+  ) {
+    if (finding.field === "title") {
+      repaired = repaired
+        .replace(
+          /\b(?:zentrale|zentral\s+gelegene|begehrte|gefragte|beliebte)\b/gi,
+          ""
+        );
+
+      return cleanGermanySurgicalFragment(
+        repaired
+      );
+    }
+
+    return "";
+  }
+
+  if (
+    finding.code === "ROOM_LAYOUT"
+  ) {
+    repaired = repaired
+      .replace(
+        /,?\s*verteilt\s+auf\s+mehrere\s+(?:ebenen|etagen|geschosse)/gi,
+        ""
+      )
+      .replace(
+        /,?\s*verteilt\s+auf\s+(?:zwei|2)\s+(?:etagen|geschosse)/gi,
+        ""
+      );
+
+    if (
+      /mehrere\s+(?:ebenen|etagen|geschosse)|(?:zwei|2)\s+(?:etagen|geschosse)/i
+        .test(repaired)
+    ) {
+      return null;
+    }
+
+    return cleanGermanySurgicalFragment(
+      repaired
+    );
+  }
+
+  if (
+    finding.code === "PHYSICAL_RELATIONSHIP"
+  ) {
+    if (
+      /dachterrasse/i.test(factsText) &&
+      /naturstein/i.test(factsText)
+    ) {
+      return "Zur Ausstattung gehören eine Dachterrasse und Naturstein.";
+    }
+
+    return "";
+  }
+
+  if (
+    finding.code === "OTHER_MATERIAL_FACT"
+  ) {
+    if (
+      /ausblick|fernblick|panoramablick|blick\s+auf/i
+        .test(repaired)
+    ) {
+      return "";
+    }
+
+    return null;
+  }
+
+  return null;
+}
+
+function applyGermanySurgicalHardFactRepairs(
+  variants: ListingTextVariant[],
+  findings: GermanyFactAuditFinding[],
+  facts: unknown
+): {
+  variants: ListingTextVariant[];
+  appliedCount: number;
+} {
+  const factsText =
+    normalizeGermanyAuditText(
+      JSON.stringify(facts ?? {})
+    );
+
+  const nextVariants =
+    variants.map(
+      (variant) => ({
+        ...variant,
+      })
+    );
+
+  let appliedCount = 0;
+
+  for (const finding of findings) {
+    const index =
+      finding.variantNumber - 1;
+
+    const variant =
+      nextVariants[index];
+
+    if (!variant) {
+      continue;
+    }
+
+    const replacement =
+      repairGermanyHardFactFragment(
+        finding,
+        factsText
+      );
+
+    if (replacement === null) {
+      continue;
+    }
+
+    if (finding.field === "title") {
+      if (
+        variant.title !== finding.text ||
+        variant.title === replacement
+      ) {
+        continue;
+      }
+
+      variant.title = replacement;
+      appliedCount += 1;
+      continue;
+    }
+
+    const position =
+      variant.text.indexOf(
+        finding.text
+      );
+
+    if (position < 0) {
+      continue;
+    }
+
+    if (replacement === finding.text) {
+      continue;
+    }
+
+    variant.text =
+      (
+        variant.text.slice(
+          0,
+          position
+        ) +
+        replacement +
+        variant.text.slice(
+          position + finding.text.length
+        )
+      )
+        .replace(/[ \t]{2,}/g, " ")
+        .replace(/[ \t]+\n/g, "\n")
+        .replace(/\n[ \t]+/g, "\n")
+        .replace(/\n{3,}/g, "\n\n")
+        .replace(/\s+([,.;:])/g, "$1")
+        .trim();
+
+    appliedCount += 1;
+  }
+
+  return {
+    variants: nextVariants,
+    appliedCount,
+  };
 }
 
 async function requestRepairedVariants(
@@ -1825,10 +4162,40 @@ function formatSwissPriceValue(
   return `CHF ${formattedDigits}`;
 }
 
+function formatGermanPriceValue(
+  value: string
+): string {
+  const trimmed =
+    value.trim();
+
+  if (!trimmed) {
+    return "";
+  }
+
+  const digitsOnly =
+    trimmed.replace(
+      /[^\d]/g,
+      ""
+    );
+
+  if (!digitsOnly) {
+    return trimmed;
+  }
+
+  const formattedDigits =
+    digitsOnly.replace(
+      /\B(?=(\d{3})+(?!\d))/g,
+      "."
+    );
+
+  return `${formattedDigits} €`;
+}
+
 function normalizeVariantPresentation(
   variant: ListingTextVariant,
   facts: ListingFacts,
-  locale: SupportedLocale
+  locale: SupportedLocale,
+  market: SupportedMarket
 ): ListingTextVariant {
   if (locale !== "de") {
     return variant;
@@ -1840,9 +4207,13 @@ function normalizeVariantPresentation(
     ).trim();
 
   const formattedPrice =
-    formatSwissPriceValue(
-      rawPrice
-    );
+    market === "DE"
+      ? formatGermanPriceValue(
+          rawPrice
+        )
+      : formatSwissPriceValue(
+          rawPrice
+        );
 
   const rawRooms =
     String(
@@ -1914,6 +4285,71 @@ function normalizeVariantPresentation(
         /\bm2\b/gi,
         "m²"
       );
+
+  if (market === "DE") {
+    const normalizeGermanOutput = (
+      value: string
+    ): string => {
+      let normalized =
+        value
+          .replace(
+            /(\d+)½(?=\s*-?\s*zimmern?\b)/gi,
+            "$1,5"
+          )
+          .replace(
+            /(\d+)\.5(?=\s*-?\s*zimmern?\b)/gi,
+            "$1,5"
+          )
+          .replace(
+            /\bm²\s+m²\b/gi,
+            "m²"
+          );
+
+      const rawPriceDigits =
+        rawPrice.replace(
+          /[^\d]/g,
+          ""
+        );
+
+      if (
+        rawPriceDigits &&
+        formattedPrice
+      ) {
+        const replaceKnownPrice = (
+          match: string
+        ): string =>
+          match.replace(
+            /[^\d]/g,
+            ""
+          ) === rawPriceDigits
+            ? formattedPrice
+            : match;
+
+        normalized =
+          normalized
+            .replace(
+              /\bCHF\s*\d(?:[\d'’.\s]*\d)?/gi,
+              replaceKnownPrice
+            )
+            .replace(
+              /\d(?:[\d'’.\s]*\d)?\s*(?:€|EUR\b|Euro\b)/gi,
+              replaceKnownPrice
+            );
+      }
+
+      return normalized;
+    };
+
+    title =
+      normalizeGermanOutput(
+        title
+      );
+
+    text =
+      normalizeGermanOutput(
+        text
+      );
+  }
 
   return {
     title,
@@ -2874,7 +5310,12 @@ export async function POST(
     // Schneller Standardlauf:
     // Nur eine OpenAI-Generierung pro Anfrage.
     // Qualitätsprüfung und Faktenkorrektur erfolgen danach lokal.
-    const enableSecondaryAiRepairs =
+    const enableFullAiRepair =
+      false;
+
+    // Deutschland nutzt in Development und Production
+    // denselben Surgical-Hard-Fact-Pfad.
+    const enableTargetedAiRepair =
       false;
 
     const ultraSpeedKey =
@@ -2882,7 +5323,7 @@ export async function POST(
         namespace:
           "listing-text",
         version:
-          "listing-generator-v4-parallel-variants",
+          "listing-generator-v5-de-precision",
         payload: {
           userId:
             user.id,
@@ -3000,7 +5441,7 @@ export async function POST(
       );
 
     if (
-      enableSecondaryAiRepairs &&
+      enableFullAiRepair &&
       !selectedQuality.passed &&
       !initialHasOnlyWordCountErrors
     ) {
@@ -3081,7 +5522,7 @@ export async function POST(
       let targetedPass = 0;
       targetedPass <
         (
-          enableSecondaryAiRepairs
+          enableTargetedAiRepair
             ? 1
             : 0
         ) &&
@@ -3200,6 +5641,7 @@ export async function POST(
     for (
       let localPass = 0;
       localPass < 4 &&
+      market === "CH" &&
       !selectedQuality.passed;
       localPass += 1
     ) {
@@ -3452,6 +5894,156 @@ export async function POST(
       }
     }
 
+
+    if (
+      market === "DE"
+    ) {
+      const normalizedForGermanyDelivery =
+        dedupeGermanyVariantTitles(
+          normalizeGermanyFinalVariantsForDelivery(
+            selectedVariants,
+            prompt.facts
+          )
+        );
+
+      if (
+        JSON.stringify(
+          normalizedForGermanyDelivery
+        ) !==
+        JSON.stringify(
+          selectedVariants
+        )
+      ) {
+        selectedVariants =
+          normalizedForGermanyDelivery;
+
+        selectedQuality =
+          evaluateListingQuality(
+            selectedVariants,
+            locale,
+            qualityFacts
+          );
+      }
+    }
+
+    let germanyFactAudit:
+      | GermanyFactAuditResult
+      | null = null;
+
+    let germanySurgicalRepairAttempted =
+      false;
+
+    let germanySurgicalRepairAppliedCount =
+      0;
+
+    let germanySurgicalRepairBeforeFindingCount =
+      0;
+
+    let germanySurgicalRepairDurationMs =
+      0;
+
+    if (
+      market === "DE"
+    ) {
+      try {
+        germanyFactAudit =
+          await requestGermanyFactAudit(
+            openai,
+            prompt,
+            selectedVariants
+          );
+
+        germanySurgicalRepairBeforeFindingCount =
+          germanyFactAudit.findings.length;
+
+        console.info(
+          "[Inserat-AI V4B.1] Germany pre-repair fact audit",
+          {
+            findingCount:
+              germanyFactAudit.findings.length,
+            durationMs:
+              germanyFactAudit.durationMs,
+          }
+        );
+
+        if (
+          germanyFactAudit.findings.length > 0
+        ) {
+          germanySurgicalRepairAttempted =
+            true;
+
+          const surgicalStartedAt =
+            Date.now();
+
+          const surgicalResult =
+            applyGermanySurgicalHardFactRepairs(
+              selectedVariants,
+              germanyFactAudit.findings,
+              prompt.facts
+            );
+
+          germanySurgicalRepairDurationMs =
+            Date.now() - surgicalStartedAt;
+
+          germanySurgicalRepairAppliedCount =
+            surgicalResult.appliedCount;
+
+          if (
+            surgicalResult.appliedCount > 0
+          ) {
+            selectedVariants =
+              dedupeGermanyVariantTitles(
+                normalizeGermanyFinalVariantsForDelivery(
+                  surgicalResult.variants,
+                  prompt.facts
+                )
+              );
+
+            selectedQuality =
+              evaluateListingQuality(
+                selectedVariants,
+                locale,
+                qualityFacts
+              );
+
+            germanyFactAudit =
+              await requestGermanyFactAudit(
+                openai,
+                prompt,
+                selectedVariants
+              );
+          }
+
+          console.info(
+            "[Inserat-AI V4B.1] Germany post-repair fact audit",
+            {
+              appliedCount:
+                germanySurgicalRepairAppliedCount,
+              findingCount:
+                germanyFactAudit.findings.length,
+              repairDurationMs:
+                germanySurgicalRepairDurationMs,
+            }
+          );
+        }
+      } catch (auditError) {
+        console.warn(
+          "[Inserat-AI V4B.1] Germany surgical fact repair failed:",
+          auditError
+        );
+
+        germanyFactAudit = {
+          findings:
+            finalizeGermanyFactAuditFindings(
+              prompt.facts,
+              selectedVariants,
+              []
+            ),
+          durationMs: 0,
+        };
+      }
+    }
+
     const nonBlockingFallbackCodes =
       new Set([
         "VARIANTS_TOO_SIMILAR",
@@ -3461,20 +6053,43 @@ export async function POST(
 
     const blockingQualityIssues =
       selectedQuality.issues.filter(
-        (issue) =>
-          issue.severity ===
-            "error" &&
-          !(
+        (issue) => {
+          if (
+            issue.severity !==
+              "error"
+          ) {
+            return false;
+          }
+
+          if (
+            market === "DE" &&
+            isGermanyNonBlockingQualityIssue(
+              issue
+            )
+          ) {
+            return false;
+          }
+
+          if (
             publishableFallbackUsed &&
             nonBlockingFallbackCodes.has(
               issue.code
             )
-          )
+          ) {
+            return false;
+          }
+
+          return true;
+        }
       );
 
     if (
       selectedVariants.length !== 3 ||
-      blockingQualityIssues.length > 0
+      blockingQualityIssues.length > 0 ||
+      (
+        germanyFactAudit?.findings.length ??
+        0
+      ) > 0
     ) {
       console.warn(
         "LISTING QUALITY CHECK FAILED:",
@@ -3524,13 +6139,286 @@ export async function POST(
       );
     }
 
+    /*
+     * INSERAT_AI_DE_BEST_VARIANT_FIRST_V1
+     *
+     * Deutschland:
+     * Nach allen Quality- und Fact-Gates
+     * werden die bereits freigegebenen
+     * Varianten nur noch für die Anzeige
+     * priorisiert.
+     *
+     * Kein neuer AI-Aufruf.
+     * Kein Umschreiben.
+     * Keine Abschwächung des Fact-Audits.
+     */
+    if (
+      market === "DE" &&
+      selectedVariants.length === 3
+    ) {
+      const normalizeRankingText =
+        (value: unknown) =>
+          String(value ?? "")
+            .normalize("NFD")
+            .replace(
+              /[\u0300-\u036f]/g,
+              ""
+            )
+            .replace(
+              /ß/g,
+              "ss"
+            )
+            .toLowerCase();
+
+      const rawHighlights =
+        Array.isArray(
+          prompt.facts.highlights
+        )
+          ? prompt.facts.highlights.join(
+              " "
+            )
+          : String(
+              prompt.facts.highlights ??
+                ""
+            );
+
+      const ignoredHighlightWords =
+        new Set([
+          "eine",
+          "einer",
+          "einem",
+          "einen",
+          "eines",
+          "oder",
+          "sowie",
+          "auch",
+          "sehr",
+          "lage",
+          "mit",
+          "und",
+          "der",
+          "die",
+          "das",
+          "den",
+          "dem",
+          "des",
+        ]);
+
+      const highlightTokens =
+        Array.from(
+          new Set(
+            normalizeRankingText(
+              rawHighlights
+            )
+              .split(
+                /[^a-z0-9]+/
+              )
+              .filter(
+                (token) =>
+                  token.length >= 4 &&
+                  !ignoredHighlightWords.has(
+                    token
+                  )
+              )
+          )
+        );
+
+      const genericPhrases = [
+        "die angebotene",
+        "verfugt uber",
+        "klare trennung",
+        "vielfaltige nutzungsmoglichkeiten",
+        "solide grundlage",
+        "klar definierten angebot",
+        "gut dokumentiert",
+        "insgesamt prasentiert",
+      ];
+
+      const metaLanguagePhrases = [
+        "ohne ubertriebene versprechen",
+        "bereitgestellten daten",
+        "bereitgestellten objektdaten",
+        "laut den angaben",
+        "qualitatsprufung",
+        "qualitatskontrolle",
+        "ki generiert",
+        "ai generiert",
+      ];
+
+      selectedVariants =
+        selectedVariants
+          .map(
+            (
+              variant,
+              index
+            ) => {
+              const title =
+                normalizeRankingText(
+                  variant.title
+                );
+
+              const text =
+                normalizeRankingText(
+                  variant.text
+                );
+
+              const combined =
+                title +
+                " " +
+                text;
+
+              const titleHighlightHits =
+                highlightTokens.filter(
+                  (token) =>
+                    title.includes(
+                      token
+                    )
+                ).length;
+
+              const textHighlightHits =
+                highlightTokens.filter(
+                  (token) =>
+                    combined.includes(
+                      token
+                    )
+                ).length;
+
+              const genericPenalty =
+                genericPhrases.filter(
+                  (phrase) =>
+                    combined.includes(
+                      phrase
+                    )
+                ).length;
+
+              const metaLanguagePenalty =
+                metaLanguagePhrases.filter(
+                  (phrase) =>
+                    combined.includes(
+                      phrase
+                    )
+                ).length;
+
+              const existingQualityScore =
+                selectedQuality
+                  .scores[index] ??
+                0;
+
+              const displayScore =
+                existingQualityScore *
+                  100 +
+                titleHighlightHits *
+                  12 +
+                textHighlightHits *
+                  2 -
+                genericPenalty *
+                  8 -
+                metaLanguagePenalty *
+                  100;
+
+              return {
+                variant,
+                originalIndex:
+                  index,
+                displayScore,
+              };
+            }
+          )
+          .sort(
+            (a, b) =>
+              b.displayScore -
+                a.displayScore ||
+              a.originalIndex -
+                b.originalIndex
+          )
+          .map(
+            (entry) =>
+              entry.variant
+          );
+    }
+
+    /*
+     * INSERAT_AI_DE_META_LANGUAGE_CLEANUP_V1
+     *
+     * Entfernt ausschliesslich interne
+     * AI-/Qualitätssicherungs-Sprache.
+     *
+     * Das Entfernen kann keine neuen
+     * Objektfakten erzeugen.
+     */
+    if (market === "DE") {
+      const metaSentencePatterns = [
+        /[^.!?]*ohne übertriebene Versprechen[^.!?]*[.!?]?/gi,
+        /[^.!?]*bereitgestellten (?:Objekt)?daten[^.!?]*[.!?]?/gi,
+        /[^.!?]*laut den Angaben[^.!?]*[.!?]?/gi,
+        /[^.!?]*Qualitätsprüfung[^.!?]*[.!?]?/gi,
+        /[^.!?]*Qualitätskontrolle[^.!?]*[.!?]?/gi,
+        /[^.!?]*(?:KI|AI)[ -]?generiert[^.!?]*[.!?]?/gi,
+      ];
+
+      selectedVariants =
+        selectedVariants.map(
+          (variant) => {
+            /*
+             * INSERAT_AI_DE_META_TITLE_CLEANUP_V1
+             *
+             * Entfernt nur interne /
+             * redaktionelle Präfixe.
+             */
+            const cleanedTitle =
+              variant.title
+                .replace(
+                  /^\s*(?:Fakten zum Angebot|Objektbeschreibung|Kurzfakten|Immobilienangebot)\s*:\s*/i,
+                  ""
+                )
+                .trim();
+
+            let cleanedText =
+              variant.text;
+
+            for (
+              const pattern of
+                metaSentencePatterns
+            ) {
+              cleanedText =
+                cleanedText.replace(
+                  pattern,
+                  " "
+                );
+            }
+
+            cleanedText =
+              cleanedText
+                .replace(
+                  /\s{2,}/g,
+                  " "
+                )
+                .replace(
+                  /\s+([,.!?;:])/g,
+                  "$1"
+                )
+                .trim();
+
+            return {
+              ...variant,
+              title:
+                cleanedTitle ||
+                variant.title,
+              text:
+                cleanedText,
+            };
+          }
+        );
+    }
+
     selectedVariants =
       selectedVariants.map(
         (variant) =>
           normalizeVariantPresentation(
             variant,
             prompt.facts,
-            locale
+            locale,
+            market
           )
       );
     return NextResponse.json({
@@ -3553,7 +6441,16 @@ export async function POST(
       quality: {
         passed: true,
         strictPassed:
-          selectedQuality.passed,
+          market === "DE"
+            ? (
+                blockingQualityIssues.length ===
+                  0 &&
+                (
+                  germanyFactAudit?.findings.length ??
+                  0
+                ) === 0
+              )
+            : selectedQuality.passed,
         publishableFallbackUsed,
         scores:
           selectedQuality.scores,

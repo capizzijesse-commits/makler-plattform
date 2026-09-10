@@ -33,6 +33,20 @@ type Variant = {
   linkedinPost?: string;
   facebookPost?: string;
 };
+type LocationSuggestion = {
+  type:
+    | "federalState"
+    | "governmentRegion"
+    | "district"
+    | "municipalAssociation"
+    | "municipality"
+    | "locality";
+  zip: string;
+  name: string;
+  label: string;
+  region: string;
+};
+
 type ObjectTemplate = {
   id: string;
   name: string;
@@ -665,6 +679,10 @@ const [templateName, setTemplateName] = useState("");
 const [objectTemplates, setObjectTemplates] = useState<ObjectTemplate[]>([]);
 const [postalCode, setPostalCode] = useState("");
 const [showPostalSuggestions, setShowPostalSuggestions] = useState(false);
+const [
+  germanyLocationSuggestions,
+  setGermanyLocationSuggestions,
+] = useState<LocationSuggestion[]>([]);
 const [showExtraHighlights, setShowExtraHighlights] = useState(false);
 const highlightsInputRef = useRef<HTMLInputElement>(null);
 const getDashboardStorageMarket = (): InseratAiMarket => {
@@ -1951,11 +1969,101 @@ const localizedExtraHighlightSuggestions =
     localizeGermanyDashboardTerm
   );
 
+/* DE_GEO_LOCATION_SEARCH_FINAL */
+useEffect(() => {
+  if (
+    market !== "DE"
+  ) {
+    setGermanyLocationSuggestions([]);
+    return;
+  }
+
+  const query =
+    location.trim();
+
+  if (query.length < 2) {
+    setGermanyLocationSuggestions([]);
+    return;
+  }
+
+  const controller =
+    new AbortController();
+
+  const timer =
+    window.setTimeout(
+      async () => {
+        try {
+          const params =
+            new URLSearchParams({
+              market: "DE",
+              q: query,
+            });
+
+          const response =
+            await fetch(
+              `/api/location-suggestions?${params.toString()}`,
+              {
+                signal:
+                  controller.signal,
+                cache: "no-store",
+              }
+            );
+
+          if (!response.ok) {
+            setGermanyLocationSuggestions([]);
+            return;
+          }
+
+          const data =
+            (await response.json()) as {
+              suggestions?: LocationSuggestion[];
+            };
+
+          setGermanyLocationSuggestions(
+            Array.isArray(
+              data.suggestions
+            )
+              ? data.suggestions
+                  .filter(
+                    (item) =>
+                      typeof item?.zip === "string" &&
+                      typeof item?.name === "string"
+                  )
+                  .slice(0, 8)
+              : []
+          );
+        } catch (error) {
+          if (
+            error instanceof DOMException &&
+            error.name === "AbortError"
+          ) {
+            return;
+          }
+
+          console.warn(
+            "DE ORTSSUCHE FEHLGESCHLAGEN:",
+            error
+          );
+
+          setGermanyLocationSuggestions([]);
+        }
+      },
+      250
+    );
+
+  return () => {
+    window.clearTimeout(timer);
+    controller.abort();
+  };
+}, [
+  market,
+  location,
+]);
+
 const allLocationSuggestions: string[] = Array.from(
   new Set([
     ...locationSuggestions,
     ...(
-      locale === "de" &&
       market === "DE"
         ? []
         : SWISS_LOCATIONS
@@ -1973,24 +2081,53 @@ const filteredLocationSuggestions: string[] =
         )
         .slice(0, 5)
     : [];
-const filteredPostalLocationSuggestions =
-  location.trim().length > 0 || postalCode.trim().length > 0
-    ? (
-      locale === "de" &&
-      market === "DE"
-        ? []
-        : SWISS_POSTAL_LOCATIONS
-    ).filter((item) => {
-        const searchValue = `${item.zip} ${item.name} ${item.canton}`.toLowerCase();
-        const locationValue = location.toLowerCase().trim();
-        const postalValue = postalCode.toLowerCase().trim();
+const filteredPostalLocationSuggestions:
+  LocationSuggestion[] =
+    market === "DE"
+      ? germanyLocationSuggestions
+      : (
+          location.trim().length > 0 ||
+          postalCode.trim().length > 0
+        )
+        ? SWISS_POSTAL_LOCATIONS
+            .filter((item) => {
+              const searchValue =
+                `${item.zip} ${item.name} ${item.canton}`
+                  .toLowerCase();
 
-        return (
-          searchValue.includes(locationValue) &&
-          item.zip.startsWith(postalValue)
-        );
-      }).slice(0, 8)
-    : [];
+              const locationValue =
+                location
+                  .toLowerCase()
+                  .trim();
+
+              const postalValue =
+                postalCode
+                  .toLowerCase()
+                  .trim();
+
+              return (
+                searchValue.includes(
+                  locationValue
+                ) &&
+                item.zip.startsWith(
+                  postalValue
+                )
+              );
+            })
+            .slice(0, 8)
+            .map((item) => ({
+              type:
+                "locality" as const,
+              zip:
+                item.zip,
+              name:
+                item.name,
+              label:
+                "Ort",
+              region:
+                item.canton,
+            }))
+        : [];
 
 const [socialLoading, setSocialLoading] = useState(false);
 
@@ -2066,7 +2203,6 @@ try {
       });
 
       const data = await response.json();
-      console.log("GENERATE RESPONSE:", data);
 
       if (!response.ok) {
         const requestError = Object.assign(
@@ -2993,7 +3129,6 @@ return (
     <input
   value={location}
   placeholder={
-    locale === "de" &&
     market === "DE"
       ? "Berlin"
       : "Winterthur"
@@ -3004,8 +3139,14 @@ return (
 
     setLocation(value);
 
+    /*
+     * Sobald der Nutzer den Ort manuell ändert,
+     * darf keine zuvor ausgewählte PLZ
+     * im Hintergrund erhalten bleiben.
+     */
+    setPostalCode("");
+
     if (value.trim() === "") {
-      setPostalCode("");
       setShowPostalSuggestions(false);
       return;
     }
@@ -3041,7 +3182,7 @@ return (
   >
     {filteredPostalLocationSuggestions.map((suggestion) => (
       <button
-        key={`${suggestion.zip}-${suggestion.name}-${suggestion.canton}`}
+        key={`${suggestion.type}-${suggestion.zip}-${suggestion.name}-${suggestion.region}`}
         type="button"
        onMouseDown={() => {
   setPostalCode(suggestion.zip);
@@ -3072,12 +3213,35 @@ return (
           e.currentTarget.style.color = "#f8fafc";
         }}
       >
-        <span style={{ color: "#fbbf24", fontWeight: 900 }}>
-          {suggestion.zip}
-        </span>{" "}
+        {suggestion.zip ? (
+          <>
+            <span
+              style={{
+                color: "#fbbf24",
+                fontWeight: 900,
+              }}
+            >
+              {suggestion.zip}
+            </span>{" "}
+          </>
+        ) : null}
+
         {suggestion.name}{" "}
-        <span style={{ color: "rgba(203, 213, 225, 0.72)" }}>
-          · {suggestion.canton}
+
+        <span
+          style={{
+            color:
+              "rgba(203, 213, 225, 0.72)",
+          }}
+        >
+          · {suggestion.label}
+
+          {suggestion.region ? (
+            <>
+              {" · "}
+              {suggestion.region}
+            </>
+          ) : null}
         </span>
       </button>
     ))}

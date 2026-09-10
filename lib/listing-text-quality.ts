@@ -1513,6 +1513,183 @@ export function evaluateListingQuality(
         });
       }
 
+      if (
+        locale === "de" &&
+        listingMarket === "DE"
+      ) {
+        const combinedGermanText =
+          `${title} ${text}`;
+
+        const marketResidueRules = [
+          {
+            code: "GERMAN_MARKET_CHF",
+            label: "CHF-Währung",
+            pattern: /\bCHF\b/i,
+          },
+          {
+            code: "GERMAN_MARKET_SWISS_TERM",
+            label: "Schweizer Immobilienbegriff",
+            pattern:
+              /\b(?:Aussenbereich|Aussenfläche|Aussenraum|Parkierung|Einstellhallenplatz|Gartensitzplatz|Reduit)\b/i,
+          },
+          {
+            code: "GERMAN_MARKET_SWISS_PRICE_FORMAT",
+            label: "Schweizer Preisformat",
+            pattern:
+              /\b\d{1,3}(?:'\d{3})+\b/,
+          },
+          {
+            code: "GERMAN_MARKET_HALF_ROOM_FORMAT",
+            label: "Schweizer Halbzimmer-Schreibweise",
+            pattern:
+              /\b\d+½(?:\s*-?\s*)Zimmer\b/i,
+          },
+          {
+            code: "DUPLICATE_AREA_UNIT",
+            label: "doppelte Flächeneinheit",
+            pattern:
+              /\bm²\s+m²\b/i,
+          },
+        ];
+
+        for (
+          const rule of
+          marketResidueRules
+        ) {
+          if (
+            rule.pattern.test(
+              combinedGermanText
+            )
+          ) {
+            deductScore(
+              scores,
+              index,
+              22
+            );
+
+            issues.push({
+              variantIndex: index,
+              code: rule.code,
+              message:
+                `Variante ${index + 1} enthält ${rule.label}, obwohl der Zielmarkt Deutschland ist.`,
+              severity: "error",
+            });
+          }
+        }
+
+        const structuralFactRules = [
+          {
+            label: "freistehende Bauweise",
+            claim:
+              /\bfreistehend\w*\b/i,
+            evidence:
+              /\bfreistehend\w*\b/i,
+          },
+          {
+            label: "Mehrparteien- oder Mehrfamilienhaus",
+            claim:
+              /\b(?:mehrparteienhaus|mehrfamilienhaus)\b/i,
+            evidence:
+              /\b(?:mehrparteienhaus|mehrfamilienhaus)\b/i,
+          },
+          {
+            label: "Wohnzimmer",
+            claim:
+              /\bwohnzimmer\b/i,
+            evidence:
+              /\bwohnzimmer\b/i,
+          },
+          {
+            label: "Schlafzimmer",
+            claim:
+              /\bschlafzimmer\b/i,
+            evidence:
+              /\bschlafzimmer\b/i,
+          },
+          {
+            label: "Küche oder Küchenbereich",
+            claim:
+              /\b(?:küche|kueche|küchenbereich|kuechenbereich)\b/i,
+            evidence:
+              /\b(?:küche|kueche|einbauküche|einbaukueche|küchenbereich|kuechenbereich)\b/i,
+          },
+          {
+            label: "Badezimmer",
+            claim:
+              /\b(?:badezimmer|bäder|baeder)\b/i,
+            evidence:
+              /\b(?:bad|badezimmer|bäder|baeder)\b/i,
+          },
+          {
+            label: "sofortiger Bezug",
+            claim:
+              /\b(?:sofortiger bezug|sofort beziehbar|unmittelbar beziehbar|unkomplizierter einzug)\b/i,
+            evidence:
+              /\b(?:sofort beziehbar|bezugsfrei|bezugsbereit|bezug ab|übergabe ab|uebergabe ab)\b/i,
+          },
+          {
+            label: "direkter Zugang oder direkte Verbindung",
+            claim:
+              /\b(?:direkter zugang|direkt zugänglich|direkt zugaenglich|angrenzende terrasse|terrasse.{0,35}direkt(?:er|en)? zugang|direkt.{0,35}terrasse)\b/i,
+            evidence:
+              /\b(?:direkter zugang|direktem zugang|direkter wohnungszugang|direktem wohnungszugang|direkt zugänglich|direkt zugaenglich|angrenzend)\b/i,
+          },
+          {
+            label: "städtische Infrastruktur",
+            claim:
+              /\b(?:städtische infrastruktur|staedtische infrastruktur|urbane infrastruktur)\b/i,
+            evidence:
+              /\b(?:infrastruktur|versorgung|öffentliche einrichtungen|oeffentliche einrichtungen)\b/i,
+          },
+          {
+            label: "etablierter Stadtteil oder etablierte Lage",
+            claim:
+              /\b(?:etablierter stadtteil|etablierte lage|etabliertes wohnquartier)\b/i,
+            evidence:
+              /\b(?:etablierter stadtteil|etablierte lage|etabliertes wohnquartier)\b/i,
+          },
+          {
+            label: "Ausstattungsstandard eines Baujahrs",
+            claim:
+              /\b(?:standard des baujahrs|baujahrsstandard)\b/i,
+            evidence:
+              /\bbaujahr\b/i,
+          },
+        ];
+
+        for (
+          const rule of
+          structuralFactRules
+        ) {
+          rule.claim.lastIndex = 0;
+          rule.evidence.lastIndex = 0;
+
+          if (
+            rule.claim.test(
+              normalizedVariant
+            ) &&
+            !rule.evidence.test(
+              factCorpus
+            )
+          ) {
+            deductScore(
+              scores,
+              index,
+              18
+            );
+
+            issues.push({
+              variantIndex: index,
+              code:
+                "STRUCTURAL_CLAIM_WITHOUT_EVIDENCE",
+              message:
+                `Variante ${index + 1} behauptet „${rule.label}“, obwohl diese Information nicht in den Objektdaten belegt ist.`,
+              severity: "error",
+            });
+          }
+        }
+      }
+
       const sentences =
         text
           .split(/[.!?]+/)
@@ -1664,6 +1841,31 @@ export function evaluateListingQuality(
             "OPENINGS_TOO_SIMILAR",
           message:
             `Die Einstiege der Varianten ${firstIndex + 1} und ${secondIndex + 1} sind zu ähnlich.`,
+          severity: "error",
+        });
+      }
+
+      if (
+        normalizeText(
+          first.title
+        ) ===
+        normalizeText(
+          second.title
+        )
+      ) {
+        deductScore(
+          scores,
+          secondIndex,
+          20
+        );
+
+        issues.push({
+          variantIndex:
+            secondIndex,
+          code:
+            "TITLE_DUPLICATE_EXACT",
+          message:
+            `Variante ${secondIndex + 1} verwendet exakt denselben Titel wie Variante ${firstIndex + 1}.`,
           severity: "error",
         });
       }
