@@ -2388,8 +2388,8 @@ localStorage.removeItem("inseratAiImageAnalysis");
 return (
 <WorkspaceFrame
   market={market}
-  active="dashboard"
-  title="Dashboard"
+  active="new"
+  title="Neues Inserat"
 >
 <main
   className="page dashboardPage"

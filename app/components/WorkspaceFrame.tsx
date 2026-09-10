@@ -251,7 +251,7 @@ export default function WorkspaceFrame({
       key: "dashboard" as const,
       icon: "dashboard" as const,
       label: labels.dashboard,
-      href: "/dashboard",
+      href: "/cockpit",
     },
     {
       key: "objects" as const,
