@@ -55,8 +55,11 @@ model Listing {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   projectName  String?
+  street       String?
   location     String
   postalCode   String?
+  latitude     Float?
+  longitude    Float?
   market       String?
   propertyType String
   rooms        Float?
@@ -116,7 +119,7 @@ model FloorPlan {
   calibratedDistanceMeters Float?
   calibrationData          Json?
 
-  // Für die spätere 3D-Konstruktion
+  // FÃ¼r die spÃ¤tere 3D-Konstruktion
   floorHeightMeters Float?
   analysis          Json?
   analysisVersion   String?
@@ -261,7 +264,7 @@ model Valuation {
 
   status String @default("draft")
 
-  // Bestätigte Schweizer Adresse
+  // BestÃ¤tigte Schweizer Adresse
   addressLabel String
   street       String?
   postalCode   String?

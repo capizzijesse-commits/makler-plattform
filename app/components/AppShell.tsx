@@ -27,7 +27,9 @@ export default function AppShell({
   const isCockpitDetailPage =
     /^\/cockpit\/[^/]+$/.test(
       pathname
-    );
+    );  const isMapPage =
+    pathname === "/map" ||
+    pathname.startsWith("/map/");
 
   const isWorkspacePage =
     pathname === "/cockpit" ||
@@ -36,8 +38,10 @@ export default function AppShell({
     pathname === "/dashboard/analyse" ||
     pathname.startsWith("/marketing-hub") ||
     pathname.startsWith("/finanzierung") ||
-    isCockpitDetailPage;
-  const showSupportTools = true;
+    isCockpitDetailPage ||
+    isMapPage;
+  const showSupportTools =
+    !isMapPage;
 
   return (
     <>
