@@ -278,7 +278,7 @@ async function getImageFileForAnalysis(
     );
   } catch (error) {
     console.error(
-      `PREVIEW CONVERSION ERROR â€“ BILD ${index + 1}:`,
+      `PREVIEW CONVERSION ERROR – BILD ${index + 1}:`,
       error
     );
 
@@ -331,8 +331,8 @@ async function analyzeImage() {
 
     /*
      * Maximal vier Bilder gleichzeitig analysieren.
-     * Weitere Bilder werden automatisch vom nÃ¤chsten
-     * freien Worker Ã¼bernommen.
+     * Weitere Bilder werden automatisch vom nächsten
+     * freien Worker übernommen.
      */
     const workerCount =
       Math.min(
@@ -457,7 +457,7 @@ async function analyzeImage() {
         };
       } catch (error) {
         console.error(
-          `IMAGE ANALYSIS ERROR â€“ BILD ${index + 1}:`,
+          `IMAGE ANALYSIS ERROR – BILD ${index + 1}:`,
           error
         );
 
@@ -924,12 +924,12 @@ async function uploadListingImages(listingId: string) {
       throw new Error(
         `Das Bildformat ${
           file.type || file.name
-        } wird noch nicht unterstÃ¼tzt.`
+        } wird noch nicht unterstützt.`
       );
     }
 
     /*
-     * Kleine Dateien brauchen keine zusÃ¤tzliche
+     * Kleine Dateien brauchen keine zusätzliche
      * Browser-Komprimierung.
      */
     if (
@@ -944,7 +944,7 @@ async function uploadListingImages(listingId: string) {
       "function"
     ) {
       console.warn(
-        "createImageBitmap ist auf diesem Browser nicht verfÃ¼gbar."
+        "createImageBitmap ist auf diesem Browser nicht verfügbar."
       );
 
       return file;
@@ -955,10 +955,10 @@ async function uploadListingImages(listingId: string) {
 
     try {
       /*
-       * Wichtig fÃ¼r MobilgerÃ¤te:
-       * Das Bild wird bereits wÃ¤hrend des Decodierens
+       * Wichtig für Mobilgeräte:
+       * Das Bild wird bereits während des Decodierens
        * verkleinert. Dadurch muss ein 40/50-MP-Foto
-       * nicht zuerst vollstÃ¤ndig im Browser-Speicher
+       * nicht zuerst vollständig im Browser-Speicher
        * aufgebaut werden.
        */
       bitmap =
@@ -975,7 +975,7 @@ async function uploadListingImages(listingId: string) {
         bitmap.height <= 0
       ) {
         throw new Error(
-          "Das Bild besitzt keine gÃ¼ltigen Abmessungen."
+          "Das Bild besitzt keine gültigen Abmessungen."
         );
       }
 
@@ -1412,7 +1412,7 @@ async function uploadListingImages(listingId: string) {
         index + 1
       } von ${
         selectedImages.length
-      } wird gespeichert â€¦`
+      } wird gespeichert ⬦`
     );
 
     const uploadFile =
@@ -1476,7 +1476,7 @@ if (projectName.trim().length < 3) {
     locale === "it"
       ? "Assegna prima un nome al progetto (minimo 3 caratteri)."
       : locale === "fr"
-        ? "Donnez d'abord un nom au projet (au moins 3 caractÃ¨res)."
+        ? "Donnez d'abord un nom au projet (au moins 3 caractères)."
         : locale === "en"
           ? "Please give the project a name first (at least 3 characters)."
           : "Bitte gib dem Objekt zuerst einen Namen (mindestens 3 Zeichen).",
@@ -1571,7 +1571,7 @@ if (uploadImages && selectedImages.length > 0) {
         : t("save.imageError");
 
     setSaveProgress(
-      `âœ• ${t("save.partialFailure", {
+      `✕ ${t("save.partialFailure", {
         message: imageMessage,
       })}`
     );
@@ -1596,7 +1596,7 @@ return listingId;
         ? error.message
         : t("save.genericError");
 
-   setSaveProgress(`âœ• ${message}`);
+   setSaveProgress(`✕ ${message}`);
 return null;
   } finally {
     setSavingListing(false);
@@ -1747,7 +1747,7 @@ const startSingleObjectCheckoutFromDemo =
           : t("save.paymentOpenError");
 
       setSaveProgress(
-        `âœ• ${message}`
+        `✕ ${message}`
       );
 
       notify(message, "error");
@@ -1950,12 +1950,12 @@ const localizeGermanyDashboardTerm = (
 
   const replacements: Record<string, string> = {
     "Attikawohnung": "Penthouse",
-    "Doppeleinfamilienhaus": "DoppelhaushÃ¤lfte",
-    "Bauland": "GrundstÃ¼ck",
-    "RollstuhlgÃ¤ngig": "barrierefrei",
+    "Doppeleinfamilienhaus": "Doppelhaushälfte",
+    "Bauland": "Grundstück",
+    "Rollstuhlgängig": "barrierefrei",
     "Minergie-Standard": "energieeffizient",
     "Lift": "Aufzug",
-    "Aussenparkplatz": "AuÃŸenstellplatz",
+    "Aussenparkplatz": "Außenstellplatz",
   };
 
   return replacements[value] ?? value;
@@ -2277,12 +2277,12 @@ localStorage.setItem(getTodayKey(), String(newDailyCount));
         message:
           locale === "de" &&
           market === "DE"
-            ? "Sichere jetzt dieses Inserat inklusive bis zu 5 Bildern, Standard-Bildanalyse, Social-Media-Texten und Marketing Hub fÃ¼r einmalig 9,90 â‚¬."
+            ? "Sichere jetzt dieses Inserat inklusive bis zu 5 Bildern, Standard-Bildanalyse, Social-Media-Texten und Marketing Hub für einmalig 9,90 €."
             : t("demo.limitMessage"),
         confirmLabel:
           locale === "de" &&
           market === "DE"
-            ? "FÃ¼r 9,90 â‚¬ freischalten"
+            ? "Für 9,90 € freischalten"
             : t("demo.unlock"),
         secondaryLabel:
           t("demo.compareFounder"),
@@ -2323,7 +2323,7 @@ localStorage.setItem(getTodayKey(), String(newDailyCount));
       message:
         locale === "de" &&
         market === "DE"
-          ? "Das Kopieren des vollstÃ¤ndigen Inserattexts ist nach der Freischaltung verfÃ¼gbar. Die Einzelimmobilie kostet einmalig 9,90 â‚¬."
+          ? "Das Kopieren des vollständigen Inserattexts ist nach der Freischaltung verfügbar. Die Einzelimmobilie kostet einmalig 9,90 €."
           : t("demo.copyMessage"),
       confirmLabel: t("demo.viewOffers"),
       cancelLabel: t("demo.laterShort"),
@@ -2544,7 +2544,7 @@ return (
         <p>
           {locale === "de" &&
           market === "DE"
-            ? "Erstelle in Sekunden hochwertige Immobilieninserate fÃ¼r ImmobilienScout24, immowelt und Social Media. Professionell formuliert, klar strukturiert und auf maximale Wirkung bei KÃ¤ufern ausgelegt."
+            ? "Erstelle in Sekunden hochwertige Immobilieninserate für ImmobilienScout24, immowelt und Social Media. Professionell formuliert, klar strukturiert und auf maximale Wirkung bei Käufern ausgelegt."
             : t("hero.description")}
         </p>
       </div>
@@ -2706,7 +2706,7 @@ return (
                 marginTop: "2px",
               }}
             >
-              {template.propertyType || t("templates.defaultObject")} Â·{" "}
+              {template.propertyType || t("templates.defaultObject")} ·{" "}
 {template.postalCode ? `${template.postalCode} ` : ""}
 {template.location || t("templates.withoutLocation")}
             </div>
@@ -2873,7 +2873,7 @@ return (
           onClick={() => setLivingArea(item)}
           style={quickButtonStyle}
         >
-          {item} mÂ²
+          {item} m²
         </button>
       ))}
     </div>
@@ -3009,7 +3009,7 @@ return (
       }}
     >
       {projectName.trim().length >= 3
-        ? "âœ“"
+        ? "✓"
         : locale === "it"
           ? "Obbligatorio"
           : locale === "fr"
@@ -3040,7 +3040,7 @@ return (
           : locale === "it"
             ? "es. Appartamento 4.5 locali a Winterthur"
             : locale === "fr"
-              ? "p. ex. Appartement 4.5 piÃ¨ces Ã  Winterthur"
+              ? "p. ex. Appartement 4.5 pièces à Winterthur"
               : locale === "en"
                 ? "e.g. 4.5-room apartment in Winterthur"
                 : "z. B. 4.5 Zimmer Wohnung in Winterthur"
@@ -3064,7 +3064,7 @@ return (
       onClick={() => {
         const connector =
           locale === "fr"
-            ? "Ã "
+            ? "à"
             : locale === "it"
               ? "a"
               : "in";
@@ -3105,7 +3105,7 @@ return (
           ? "Utiliser la suggestion"
           : locale === "en"
             ? "Use suggestion"
-            : "Vorschlag Ã¼bernehmen"}
+            : "Vorschlag übernehmen"}
     </button>
   </div>
 
@@ -3118,18 +3118,18 @@ return (
     }}
   >
     {locale === "it"
-      ? "Questo nome apparirÃ  in Â«I miei progettiÂ»."
+      ? "Questo nome apparirà in «I miei progetti»."
       : locale === "fr"
-        ? "Ce nom apparaÃ®tra dans Â«Mes projetsÂ»."
+        ? "Ce nom apparaîtra dans «Mes projets»."
         : locale === "en"
-          ? "This name will appear under â€œMy projectsâ€."
-          : "Dieser Name erscheint spÃ¤ter unter Â«Meine ObjekteÂ»."}
+          ? "This name will appear under “My projects”."
+          : "Dieser Name erscheint später unter «Meine Objekte»."}
   </div>
 </div>
 <Field
   label={
     market === "DE"
-      ? "StraÃŸe / Hausnummer"
+      ? "Straße / Hausnummer"
       : "Strasse / Hausnummer"
   }
 >
@@ -3137,7 +3137,7 @@ return (
     value={street}
     placeholder={
       market === "DE"
-        ? "z. B. FriedrichstraÃŸe 100"
+        ? "z. B. Friedrichstraße 100"
         : "z. B. Bahnhofstrasse 20"
     }
     className="input bg-transparent text-white placeholder-gray-400/60"
@@ -3284,11 +3284,11 @@ return (
               "rgba(203, 213, 225, 0.72)",
           }}
         >
-          Â· {suggestion.label}
+          · {suggestion.label}
 
           {suggestion.region ? (
             <>
-              {" Â· "}
+              {" · "}
               {suggestion.region}
             </>
           ) : null}
@@ -3367,7 +3367,7 @@ return (
     value={price}
     placeholder={
       market === "DE"
-        ? "650.000 â‚¬"
+        ? "650.000 €"
         : t("placeholders.price")
     }
     onChange={(e) => setPrice(e.target.value)}
@@ -3414,7 +3414,7 @@ return (
       ðŸ“· {
         locale === "de" &&
         market === "DE"
-          ? "Bilder fÃ¼r die 9,90-â‚¬-Einzelimmobilie vorbereiten"
+          ? "Bilder für die 9,90-€-Einzelimmobilie vorbereiten"
           : t("images.singleObjectTitle")
       }
     </div>
@@ -3497,30 +3497,30 @@ return (
             analysisProgressIndex !== null
               ? analysisProgressIndex + 1
               : 1
-          } von ${imagePreviews.length} wird analysiert â€¦`
+          } von ${imagePreviews.length} wird analysiert ⬦`
         : locale === "it"
           ? `ðŸ” Analisi dell'immagine ${
               analysisProgressIndex !== null
                 ? analysisProgressIndex + 1
                 : 1
-            } di ${imagePreviews.length} â€¦`
+            } di ${imagePreviews.length} ⬦`
           : locale === "fr"
             ? `ðŸ” Analyse de l'image ${
                 analysisProgressIndex !== null
                   ? analysisProgressIndex + 1
                   : 1
-              } sur ${imagePreviews.length} â€¦`
+              } sur ${imagePreviews.length} ⬦`
             : `ðŸ” Analysing image ${
                 analysisProgressIndex !== null
                   ? analysisProgressIndex + 1
                   : 1
-              } of ${imagePreviews.length} â€¦`
+              } of ${imagePreviews.length} ⬦`
       : locale === "de"
         ? "ðŸ” Fotoanalyse starten"
         : locale === "it"
           ? "ðŸ” Avvia analisi delle foto"
           : locale === "fr"
-            ? "ðŸ” Lancer lâ€™analyse des photos"
+            ? "🔍 Lancer l’analyse des photos"
             : "ðŸ” Start photo analysis"}
   </button>
 
@@ -3563,7 +3563,7 @@ return (
               aria-label={t("images.remove", { index: index + 1 })}
               className="dashboardImageRemove absolute right-2 top-2 z-10 rounded-full bg-slate-950/80 px-2 py-1 text-xs font-black text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              âœ•
+              ✕
             </button>
 
             <img
@@ -3662,13 +3662,13 @@ return (
       marginTop: "14px",
       padding: "12px 14px",
       borderRadius: "12px",
-      border: saveProgress.startsWith("âœ•")
+      border: saveProgress.startsWith("✕")
         ? "1px solid rgba(248, 113, 113, 0.5)"
         : "1px solid rgba(52, 211, 153, 0.45)",
-      background: saveProgress.startsWith("âœ•")
+      background: saveProgress.startsWith("✕")
         ? "rgba(127, 29, 29, 0.25)"
         : "rgba(6, 78, 59, 0.3)",
-      color: saveProgress.startsWith("âœ•")
+      color: saveProgress.startsWith("✕")
         ? "#fecaca"
         : "#a7f3d0",
       fontSize: "13px",
@@ -3695,7 +3695,7 @@ return (
         border: "none",
       }}
     >
-      {loading ? t("generate.loading") : `âœ¨ ${t("generate.button")}`}
+      {loading ? t("generate.loading") : `✨ ${t("generate.button")}`}
     </button>
 
  <button
@@ -4789,8 +4789,8 @@ return (
 
 
         /*
-         * PrimÃ¤re Aktionsbuttons klarer
-         * und auf gleicher HÃ¶he.
+         * Primäre Aktionsbuttons klarer
+         * und auf gleicher Höhe.
          */
 
         .dashboardPage .primaryActionRow {
@@ -4817,7 +4817,7 @@ return (
 
 
         /*
-         * SekundÃ¤re Tools kompakt.
+         * Sekundäre Tools kompakt.
          */
 
         .dashboardPage .secondaryActions {
@@ -4888,7 +4888,7 @@ return (
         /*
          * Keine helle Umrandung mehr.
          * Der Workspace wird eine ruhige,
-         * zusammenhÃ¤ngende Inserat-AI-FlÃ¤che.
+         * zusammenhängende Inserat-AI-Fläche.
          */
 
         .dashboardPage.page {
@@ -4922,7 +4922,7 @@ return (
 
 
         /*
-         * Ã„usseren "Kasten im Kasten"-Effekt entfernen.
+         * Äusseren "Kasten im Kasten"-Effekt entfernen.
          */
 
         .dashboardPage .shell {
@@ -5011,7 +5011,7 @@ return (
 
         /*
          * Kleine Karten ebenfalls etwas weicher,
-         * aber nicht Ã¼bertrieben rund.
+         * aber nicht übertrieben rund.
          */
 
         .dashboardPage .topStats > *,
