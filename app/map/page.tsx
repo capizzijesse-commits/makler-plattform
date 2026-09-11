@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import {
@@ -10,10 +10,18 @@ import {
 
 import {
   Map as MapLibreMap,
+  Marker,
   NavigationControl,
   ScaleControl,
+  setWorkerUrl,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+
+setWorkerUrl(
+  "/maplibre/maplibre-gl-worker.mjs"
+);
+
+import RoutePlanner from "./RoutePlanner";
 
 import {
   getInseratAiMarketFromHostname,
@@ -23,8 +31,11 @@ import {
 type MapListing = {
   id: string;
   projectName?: string | null;
+  street?: string | null;
   location: string;
   postalCode?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   market?: string | null;
   propertyType: string;
   rooms?: number | null;
@@ -64,6 +75,232 @@ const MARKET_VIEW = {
   },
 } as const;
 
+function applyInseratAiMapTheme(
+  map: MapLibreMap
+) {
+  const layers =
+    map.getStyle().layers ??
+    [];
+
+  for (const layer of layers) {
+    const id =
+      layer.id.toLowerCase();
+
+    const sourceLayer =
+      "source-layer" in layer &&
+      typeof layer["source-layer"] === "string"
+        ? layer["source-layer"].toLowerCase()
+        : "";
+
+    try {
+      if (
+        layer.type ===
+        "background"
+      ) {
+        map.setPaintProperty(
+          layer.id,
+          "background-color",
+          "#f4f1e9"
+        );
+
+        continue;
+      }
+
+      if (
+        layer.type === "fill" &&
+        sourceLayer === "water"
+      ) {
+        map.setPaintProperty(
+          layer.id,
+          "fill-color",
+          "#c7e0e9"
+        );
+
+        continue;
+      }
+
+      if (
+        layer.type === "fill" &&
+        (
+          sourceLayer === "forest" ||
+          sourceLayer === "wood" ||
+          sourceLayer === "grass" ||
+          sourceLayer === "vegetation"
+        )
+      ) {
+        map.setPaintProperty(
+          layer.id,
+          "fill-color",
+          "#dce8d6"
+        );
+
+        continue;
+      }
+
+      if (
+        layer.type === "fill" &&
+        sourceLayer === "building"
+      ) {
+        map.setPaintProperty(
+          layer.id,
+          "fill-color",
+          "#ddd6ca"
+        );
+
+        continue;
+      }
+
+      if (
+        layer.type === "line" &&
+        sourceLayer === "road"
+      ) {
+        if (
+          /motorway|trunk/.test(
+            id
+          )
+        ) {
+          map.setPaintProperty(
+            layer.id,
+            "line-color",
+            "#e3aa16"
+          );
+        }
+        else if (
+          /casing|outline/.test(
+            id
+          )
+        ) {
+          map.setPaintProperty(
+            layer.id,
+            "line-color",
+            "#cbd0d6"
+          );
+        }
+        else {
+          map.setPaintProperty(
+            layer.id,
+            "line-color",
+            "#ffffff"
+          );
+        }
+
+        continue;
+      }
+
+      if (
+        layer.type === "symbol"
+      ) {
+        map.setPaintProperty(
+          layer.id,
+          "text-color",
+          "#17263c"
+        );
+
+        map.setPaintProperty(
+          layer.id,
+          "text-halo-color",
+          "#ffffff"
+        );
+
+        map.setPaintProperty(
+          layer.id,
+          "text-halo-width",
+          1.5
+        );
+      }
+    }
+    catch {
+      /*
+       * Einzelne Spezial-Layer können
+       * andere Paint-Eigenschaften haben.
+       * Diese bleiben unverändert.
+       */
+    }
+  }
+}
+
+function createInseratAiStreetStyle(
+  key: string
+) {
+  const safeKey =
+    encodeURIComponent(
+      key
+    );
+
+  return {
+    version: 8 as const,
+
+    name:
+      "Inserat AI Maps Street V1",
+
+    sources: {
+      "inserat-ai-street-raster": {
+        type:
+          "raster" as const,
+
+        tiles: [
+          `https://api.maptiler.com/maps/streets-v4/256/{z}/{x}/{y}@2x.png?key=${safeKey}`,
+        ],
+
+        tileSize:
+          256,
+
+        minzoom:
+          0,
+
+        maxzoom:
+          22,
+
+        attribution:
+          "© MapTiler © OpenStreetMap contributors",
+      },
+    },
+
+    layers: [
+      {
+        id:
+          "inserat-ai-street-background",
+
+        type:
+          "background" as const,
+
+        paint: {
+          "background-color":
+            "#f4f1e9",
+        },
+      },
+
+      {
+        id:
+          "inserat-ai-street-raster",
+
+        type:
+          "raster" as const,
+
+        source:
+          "inserat-ai-street-raster",
+
+        minzoom:
+          0,
+
+        maxzoom:
+          22,
+
+        paint: {
+          "raster-opacity":
+            1,
+
+          "raster-saturation":
+            -0.08,
+
+          "raster-contrast":
+            0.04,
+        },
+      },
+    ],
+  };
+}
+
 export default function InseratAiMapPage() {
   const mapContainerRef =
     useRef<HTMLDivElement | null>(
@@ -72,6 +309,14 @@ export default function InseratAiMapPage() {
 
   const mapRef =
     useRef<MapLibreMap | null>(
+      null
+    );
+
+  const [
+    mapInstance,
+    setMapInstance,
+  ] =
+    useState<MapLibreMap | null>(
       null
     );
 
@@ -94,6 +339,54 @@ export default function InseratAiMapPage() {
     setSearch,
   ] =
     useState("");
+
+  const [
+    addressSearchLoading,
+    setAddressSearchLoading,
+  ] =
+    useState(false);
+
+  const [
+    addressSearchError,
+    setAddressSearchError,
+  ] =
+    useState("");
+
+  const addressSearchMarkerRef =
+    useRef<Marker | null>(
+      null
+    );
+
+  /*
+   * INSERAT_AI_ADDRESS_TARGET_V1
+   * Beim Leeren der Suche verschwindet
+   * der externe Zielmarker wieder.
+   */
+  useEffect(() => {
+    if (search.trim()) {
+      return;
+    }
+
+    addressSearchMarkerRef
+      .current
+      ?.remove();
+
+    addressSearchMarkerRef.current =
+      null;
+  }, [
+    search,
+  ]);
+
+  useEffect(() => {
+    return () => {
+      addressSearchMarkerRef
+        .current
+        ?.remove();
+
+      addressSearchMarkerRef.current =
+        null;
+    };
+  }, []);
 
   const [
     loading,
@@ -175,7 +468,11 @@ export default function InseratAiMapPage() {
           mapContainerRef.current,
 
         style:
-          "/maps/inserat-ai-light.json",
+          mapTilerKey
+            ? createInseratAiStreetStyle(
+                mapTilerKey
+              )
+            : "https://tiles.openfreemap.org/styles/liberty",
 
         center:
           initial.center,
@@ -287,6 +584,10 @@ export default function InseratAiMapPage() {
     mapRef.current =
       map;
 
+    setMapInstance(
+      map
+    );
+
     return () => {
       map.remove();
       mapRef.current = null;
@@ -344,11 +645,24 @@ export default function InseratAiMapPage() {
     ) {
       map.once(
         "style.load",
-        restoreCamera
+        () => {
+          applyInseratAiMapTheme(
+            map
+          );
+
+          restoreCamera();
+        }
       );
 
+      const mapStyle =
+        mapTilerKey
+          ? createInseratAiStreetStyle(
+              mapTilerKey
+            )
+          : "https://tiles.openfreemap.org/styles/liberty";
+
       map.setStyle(
-        "/maps/inserat-ai-light.json",
+        mapStyle,
         {
           diff: false,
         }
@@ -1148,6 +1462,939 @@ export default function InseratAiMapPage() {
     ).format(price);
   }
 
+  /*
+   * INSERAT_AI_REAL_PRICE_PINS_V1
+   */
+  useEffect(() => {
+    const map =
+      mapInstance;
+
+    if (!map) {
+      return;
+    }
+
+    const markers:
+      Marker[] = [];
+
+    for (
+      const listing of
+        visibleListings
+    ) {
+      const latitude =
+        listing.latitude;
+
+      const longitude =
+        listing.longitude;
+
+      if (
+        typeof latitude !==
+          "number" ||
+        typeof longitude !==
+          "number" ||
+        !Number.isFinite(
+          latitude
+        ) ||
+        !Number.isFinite(
+          longitude
+        )
+      ) {
+        continue;
+      }
+
+      const root =
+        document.createElement(
+          "button"
+        );
+
+      root.type =
+        "button";
+
+      root.title =
+        listing.projectName ||
+        listing.location;
+
+      root.setAttribute(
+        "aria-label",
+        listing.projectName ||
+          listing.location
+      );
+
+      Object.assign(
+        root.style,
+        {
+          appearance:
+            "none",
+          border:
+            "0",
+          background:
+            "transparent",
+          padding:
+            "0",
+          margin:
+            "0",
+          cursor:
+            "pointer",
+          display:
+            "flex",
+          flexDirection:
+            "column",
+          alignItems:
+            "center",
+        }
+      );
+
+      const bubble =
+        document.createElement(
+          "span"
+        );
+
+      bubble.textContent =
+        typeof listing.price ===
+        "number"
+          ? new Intl.NumberFormat(
+              locale,
+              {
+                style:
+                  "currency",
+                currency,
+                maximumFractionDigits:
+                  0,
+              }
+            ).format(
+              listing.price
+            )
+          : "Preis offen";
+
+      Object.assign(
+        bubble.style,
+        {
+          display:
+            "block",
+          padding:
+            "8px 11px",
+          border:
+            "2px solid #0b1f3a",
+          borderRadius:
+            "999px",
+          background:
+            "#f4b31b",
+          color:
+            "#071426",
+          fontSize:
+            "12px",
+          fontWeight:
+            "900",
+          lineHeight:
+            "1",
+          whiteSpace:
+            "nowrap",
+          boxShadow:
+            "0 8px 22px rgba(7,20,38,0.30)",
+        }
+      );
+
+      const pointer =
+        document.createElement(
+          "span"
+        );
+
+      Object.assign(
+        pointer.style,
+        {
+          display:
+            "block",
+          width:
+            "0",
+          height:
+            "0",
+          marginTop:
+            "-1px",
+          borderLeft:
+            "7px solid transparent",
+          borderRight:
+            "7px solid transparent",
+          borderTop:
+            "10px solid #0b1f3a",
+        }
+      );
+
+      root.append(
+        bubble,
+        pointer
+      );
+
+      root.addEventListener(
+        "click",
+        (event) => {
+          event.stopPropagation();
+
+          map.flyTo({
+            center: [
+              longitude,
+              latitude,
+            ],
+            zoom:
+              Math.max(
+                map.getZoom(),
+                16
+              ),
+            duration:
+              900,
+            essential:
+              true,
+          });
+        }
+      );
+
+      const marker =
+        new Marker({
+          element:
+            root,
+          anchor:
+            "bottom",
+        })
+          .setLngLat([
+            longitude,
+            latitude,
+          ])
+          .addTo(
+            map
+          );
+
+      markers.push(
+        marker
+      );
+    }
+
+    return () => {
+      for (
+        const marker of
+          markers
+      ) {
+        marker.remove();
+      }
+    };
+  }, [
+    mapInstance,
+    visibleListings,
+    locale,
+    currency,
+  ]);
+
+  /*
+   * INSERAT_AI_ADDRESS_SEARCH_V1
+   */
+  async function searchAddressOnMap() {
+    const query =
+      search.trim();
+
+    const map =
+      mapInstance;
+
+    if (
+      !query ||
+      !map ||
+      addressSearchLoading
+    ) {
+      return;
+    }
+
+    /*
+     * Wenn der Filter genau ein
+     * positioniertes eigenes Objekt
+     * ergibt, fokussieren wir dieses
+     * statt extern zu geocodieren.
+     */
+    const positionedListings =
+      visibleListings.filter(
+        (listing) =>
+          typeof listing.latitude ===
+            "number" &&
+          typeof listing.longitude ===
+            "number" &&
+          Number.isFinite(
+            listing.latitude
+          ) &&
+          Number.isFinite(
+            listing.longitude
+          )
+      );
+
+    if (
+      positionedListings.length === 1
+    ) {
+      setAddressSearchError("");
+
+      addressSearchMarkerRef
+        .current
+        ?.remove();
+
+      addressSearchMarkerRef.current =
+        null;
+
+      focusListingOnMap(
+        positionedListings[0]
+      );
+
+      return;
+    }
+
+    if (!mapTilerKey) {
+      setAddressSearchError(
+        "Die Adresssuche ist momentan nicht verfügbar."
+      );
+
+      return;
+    }
+
+    setAddressSearchLoading(true);
+    setAddressSearchError("");
+
+    try {
+      const params =
+        new URLSearchParams({
+          key:
+            mapTilerKey,
+
+          country:
+            market === "DE"
+              ? "de"
+              : "ch",
+
+          language:
+            "de",
+
+          limit:
+            "5",
+        });
+
+      const response =
+        await fetch(
+          `https://api.maptiler.com/geocoding/${encodeURIComponent(
+            query
+          )}.json?${params.toString()}`,
+          {
+            headers: {
+              Accept:
+                "application/json",
+            },
+
+            cache:
+              "no-store",
+          }
+        );
+
+      if (!response.ok) {
+        throw new Error(
+          `MapTiler ${response.status}`
+        );
+      }
+
+      const data =
+        (await response.json()) as {
+          features?: Array<{
+            place_name?: string;
+            text?: string;
+
+            center?: [
+              number,
+              number
+            ];
+
+            geometry?: {
+              coordinates?: [
+                number,
+                number
+              ];
+            };
+          }>;
+        };
+
+      const feature =
+        data.features?.find(
+          (item) => {
+            const coordinates =
+              item.center ??
+              item.geometry
+                ?.coordinates;
+
+            return (
+              Array.isArray(
+                coordinates
+              ) &&
+              typeof coordinates[0] ===
+                "number" &&
+              typeof coordinates[1] ===
+                "number"
+            );
+          }
+        );
+
+      const coordinates =
+        feature?.center ??
+        feature?.geometry
+          ?.coordinates;
+
+      const longitude =
+        coordinates?.[0];
+
+      const latitude =
+        coordinates?.[1];
+
+      if (
+        typeof longitude !==
+          "number" ||
+        typeof latitude !==
+          "number" ||
+        !Number.isFinite(
+          longitude
+        ) ||
+        !Number.isFinite(
+          latitude
+        )
+      ) {
+        setAddressSearchError(
+          market === "DE"
+            ? "Adresse in Deutschland nicht gefunden."
+            : "Adresse in der Schweiz nicht gefunden."
+        );
+
+        return;
+      }
+
+      addressSearchMarkerRef
+        .current
+        ?.remove();
+
+      const targetRoot =
+        document.createElement(
+          "div"
+        );
+
+      targetRoot.setAttribute(
+        "aria-label",
+        "Inserat AI Suchziel"
+      );
+
+      Object.assign(
+        targetRoot.style,
+        {
+          display:
+            "flex",
+
+          flexDirection:
+            "column",
+
+          alignItems:
+            "center",
+
+          pointerEvents:
+            "none",
+
+          filter:
+            "drop-shadow(0 8px 15px rgba(7,20,38,0.28))",
+        }
+      );
+
+      /*
+       * INSERAT_AI_AI_BEACON_V1
+       * Premium-Tech Polish
+       */
+      targetRoot.style.filter =
+        "drop-shadow(0 5px 9px rgba(7,20,38,0.16))";
+
+      const beacon =
+        document.createElement(
+          "div"
+        );
+
+      Object.assign(
+        beacon.style,
+        {
+          position:
+            "relative",
+
+          width:
+            "52px",
+
+          height:
+            "62px",
+
+          display:
+            "flex",
+
+          justifyContent:
+            "center",
+
+          alignItems:
+            "flex-start",
+        }
+      );
+
+
+      /*
+       * Feiner holografischer Außenring
+       */
+      const pulseRing =
+        document.createElement(
+          "div"
+        );
+
+      Object.assign(
+        pulseRing.style,
+        {
+          position:
+            "absolute",
+
+          top:
+            "4px",
+
+          left:
+            "7px",
+
+          width:
+            "38px",
+
+          height:
+            "38px",
+
+          borderRadius:
+            "50%",
+
+          border:
+            "1.5px solid rgba(56,189,248,0.48)",
+
+          boxShadow:
+            "0 0 9px rgba(56,189,248,0.30)",
+
+          boxSizing:
+            "border-box",
+        }
+      );
+
+      pulseRing.animate(
+        [
+          {
+            transform:
+              "scale(0.90)",
+
+            opacity:
+              0.62,
+          },
+
+          {
+            transform:
+              "scale(1.18)",
+
+            opacity:
+              0,
+          },
+        ],
+        {
+          duration:
+            2100,
+
+          iterations:
+            Infinity,
+
+          easing:
+            "ease-out",
+        }
+      );
+
+
+      /*
+       * Dunkler Tech-Ring
+       */
+      const techRing =
+        document.createElement(
+          "div"
+        );
+
+      Object.assign(
+        techRing.style,
+        {
+          position:
+            "absolute",
+
+          top:
+            "8px",
+
+          left:
+            "11px",
+
+          width:
+            "30px",
+
+          height:
+            "30px",
+
+          borderRadius:
+            "50%",
+
+          border:
+            "2px solid #071426",
+
+          background:
+            "radial-gradient(circle at 50% 48%, rgba(244,179,27,0.18) 0%, rgba(7,20,38,0.97) 66%)",
+
+          boxShadow:
+            "0 0 0 1px rgba(56,189,248,0.20), 0 5px 12px rgba(7,20,38,0.20)",
+
+          boxSizing:
+            "border-box",
+        }
+      );
+
+
+      /*
+       * Präziser Goldkern
+       */
+      const core =
+        document.createElement(
+          "div"
+        );
+
+      Object.assign(
+        core.style,
+        {
+          position:
+            "absolute",
+
+          top:
+            "17px",
+
+          left:
+            "20px",
+
+          width:
+            "12px",
+
+          height:
+            "12px",
+
+          borderRadius:
+            "50%",
+
+          background:
+            "#f4b31b",
+
+          border:
+            "2px solid #071426",
+
+          boxShadow:
+            "0 0 6px rgba(244,179,27,0.90), 0 0 12px rgba(244,179,27,0.42)",
+
+          boxSizing:
+            "border-box",
+        }
+      );
+
+      core.animate(
+        [
+          {
+            transform:
+              "scale(0.96)",
+          },
+
+          {
+            transform:
+              "scale(1.06)",
+          },
+
+          {
+            transform:
+              "scale(0.96)",
+          },
+        ],
+        {
+          duration:
+            1750,
+
+          iterations:
+            Infinity,
+
+          easing:
+            "ease-in-out",
+        }
+      );
+
+
+      /*
+       * Dünne Lichtverbindung
+       */
+      const stem =
+        document.createElement(
+          "div"
+        );
+
+      Object.assign(
+        stem.style,
+        {
+          position:
+            "absolute",
+
+          top:
+            "36px",
+
+          left:
+            "24.5px",
+
+          width:
+            "3px",
+
+          height:
+            "11px",
+
+          borderRadius:
+            "999px",
+
+          background:
+            "linear-gradient(180deg, rgba(56,189,248,0.90) 0%, #f4b31b 100%)",
+
+          boxShadow:
+            "0 0 5px rgba(56,189,248,0.35)",
+        }
+      );
+
+
+      /*
+       * Schmale Zielspitze
+       */
+      const tip =
+        document.createElement(
+          "div"
+        );
+
+      Object.assign(
+        tip.style,
+        {
+          position:
+            "absolute",
+
+          bottom:
+            "4px",
+
+          left:
+            "19px",
+
+          width:
+            "14px",
+
+          height:
+            "14px",
+
+          background:
+            "#f4b31b",
+
+          borderRight:
+            "2px solid #071426",
+
+          borderBottom:
+            "2px solid #071426",
+
+          transform:
+            "rotate(45deg)",
+
+          borderRadius:
+            "1px",
+
+          boxSizing:
+            "border-box",
+        }
+      );
+
+
+      /*
+       * Exakter Kartenpunkt
+       */
+      const targetPoint =
+        document.createElement(
+          "div"
+        );
+
+      Object.assign(
+        targetPoint.style,
+        {
+          position:
+            "absolute",
+
+          bottom:
+            "-1px",
+
+          left:
+            "23px",
+
+          width:
+            "6px",
+
+          height:
+            "6px",
+
+          borderRadius:
+            "50%",
+
+          background:
+            "#38bdf8",
+
+          border:
+            "1.5px solid #071426",
+
+          boxSizing:
+            "border-box",
+
+          boxShadow:
+            "0 0 6px rgba(56,189,248,0.70)",
+        }
+      );
+
+      beacon.append(
+        pulseRing,
+        techRing,
+        core,
+        stem,
+        tip,
+        targetPoint
+      );
+
+      targetRoot.append(
+        beacon
+      );
+
+      beacon.animate(
+        [
+          {
+            transform:
+              "translateY(-7px) scale(0.82)",
+
+            opacity:
+              0,
+          },
+
+          {
+            transform:
+              "translateY(1px) scale(1.03)",
+
+            opacity:
+              1,
+          },
+
+          {
+            transform:
+              "translateY(0) scale(1)",
+
+            opacity:
+              1,
+          },
+        ],
+        {
+          duration:
+            430,
+
+          easing:
+            "cubic-bezier(.2,.8,.2,1)",
+
+          fill:
+            "both",
+        }
+      );
+
+      addressSearchMarkerRef.current =
+        new Marker({
+          element:
+            targetRoot,
+
+          anchor:
+            "bottom",
+        })
+          .setLngLat([
+            longitude,
+            latitude,
+          ])
+          .addTo(
+            map
+          );
+
+      map.flyTo({
+        center: [
+          longitude,
+          latitude,
+        ],
+
+        zoom:
+          16,
+
+        duration:
+          1000,
+
+        essential:
+          true,
+      });
+    }
+    catch (error) {
+      console.error(
+        "[map/address-search]",
+        error
+      );
+
+      setAddressSearchError(
+        "Die Adresse konnte gerade nicht gesucht werden."
+      );
+    }
+    finally {
+      setAddressSearchLoading(false);
+    }
+  }
+
+
+  /*
+   * INSERAT_AI_LISTING_FOCUS_V1
+   */
+  function focusListingOnMap(
+    listing: MapListing
+  ) {
+    const map =
+      mapInstance;
+
+    if (!map) {
+      return;
+    }
+
+    const latitude =
+      listing.latitude;
+
+    const longitude =
+      listing.longitude;
+
+    if (
+      typeof latitude !== "number" ||
+      typeof longitude !== "number" ||
+      !Number.isFinite(latitude) ||
+      !Number.isFinite(longitude)
+    ) {
+      return;
+    }
+
+    map.flyTo({
+      center: [
+        longitude,
+        latitude,
+      ],
+
+      zoom:
+        Math.max(
+          map.getZoom(),
+          16
+        ),
+
+      duration:
+        900,
+
+      essential:
+        true,
+    });
+  }
+
   return (
     <main className="iaMapPage">
       <div
@@ -1280,6 +2527,10 @@ export default function InseratAiMapPage() {
         </button>
       </div>
 
+      <RoutePlanner
+        map={mapInstance}
+      />
+
       <div className="iaMapDebug">
         {mapDebug}
       </div>
@@ -1326,7 +2577,16 @@ export default function InseratAiMapPage() {
           </div>
         </div>
 
-        <label className="iaMapSearch">
+        <form
+          className="iaMapSearch"
+          onSubmit={(
+            event
+          ) => {
+            event.preventDefault();
+
+            void searchAddressOnMap();
+          }}
+        >
           <svg
             viewBox="0 0 24 24"
             aria-hidden="true"
@@ -1343,15 +2603,47 @@ export default function InseratAiMapPage() {
             value={search}
             onChange={(
               event
-            ) =>
+            ) => {
               setSearch(
                 event.target
                   .value
-              )
-            }
-            placeholder="Objekt oder Ort suchen"
+              );
+
+              if (
+                addressSearchError
+              ) {
+                setAddressSearchError(
+                  ""
+                );
+              }
+            }}
+            placeholder="Objekt oder Adresse suchen"
+            aria-label="Objekt oder Adresse suchen"
           />
-        </label>
+
+          <button
+            type="submit"
+            disabled={
+              addressSearchLoading ||
+              !search.trim()
+            }
+            title="Auf Karte suchen"
+            aria-label="Auf Karte suchen"
+          >
+            {addressSearchLoading
+              ? "…"
+              : "→"}
+          </button>
+        </form>
+
+        {addressSearchError && (
+          <div
+            className="iaMapSearchError"
+            role="status"
+          >
+            {addressSearchError}
+          </div>
+        )}
 
         <div className="iaMapList">
           {loading && (
@@ -1406,6 +2698,18 @@ export default function InseratAiMapPage() {
                     listing.id
                   }
                   className="iaMapListingCard"
+                  onClick={() =>
+                    focusListingOnMap(
+                      listing
+                    )
+                  }
+                  style={{
+                    cursor:
+                      typeof listing.latitude === "number" &&
+                      typeof listing.longitude === "number"
+                        ? "pointer"
+                        : "default",
+                  }}
                 >
                   <div className="iaMapListingTop">
                     <div>
@@ -1422,7 +2726,10 @@ export default function InseratAiMapPage() {
                     </div>
 
                     <div className="iaMapPinPending">
-                      PIN
+                      {typeof listing.latitude === "number" &&
+                      typeof listing.longitude === "number"
+                        ? "MAP"
+                        : "PIN"}
                     </div>
                   </div>
 
@@ -1738,6 +3045,7 @@ export default function InseratAiMapPage() {
         }
 
         .iaMapDebug {
+          display: none;
           position: absolute;
           z-index: 30;
           right: 24px;
@@ -1878,6 +3186,43 @@ export default function InseratAiMapPage() {
           color: #10203a;
           font: inherit;
           font-size: 13px;
+        }
+
+        .iaMapSearch button {
+          width: 30px;
+          height: 30px;
+          flex: 0 0 auto;
+          display: grid;
+          place-items: center;
+          border: 0;
+          border-radius: 9px;
+          background: #0b1f3a;
+          color: #f4b31b;
+          font-size: 17px;
+          font-weight: 900;
+          cursor: pointer;
+          transition:
+            transform 160ms ease,
+            opacity 160ms ease;
+        }
+
+        .iaMapSearch button:hover:not(:disabled) {
+          transform:
+            translateX(2px);
+        }
+
+        .iaMapSearch button:disabled {
+          opacity: 0.42;
+          cursor: default;
+        }
+
+        .iaMapSearchError {
+          margin:
+            7px 4px 0;
+          color: #b42318;
+          font-size: 11px;
+          font-weight: 700;
+          line-height: 1.35;
         }
 
         .iaMapList {

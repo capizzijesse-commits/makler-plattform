@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/session";
 import { normalizeUserPlan } from "@/lib/plans";
+import { resolveListingAddress } from "@/lib/listing-location";
 
 export const runtime = "nodejs";
 
@@ -146,6 +147,16 @@ export async function POST(request: NextRequest) {
         ? body.market
         : null;
 
+    const street =
+      optionalText(
+        body.street
+      );
+
+    const postalCode =
+      optionalText(
+        body.postalCode
+      );
+
     const location =
       typeof body.location === "string" ? body.location.trim() : "";
 
@@ -192,6 +203,20 @@ export async function POST(request: NextRequest) {
 
     const price = optionalNumber(body.price);
 
+    const resolvedLocation =
+      street &&
+      postalCode &&
+      listingMarket
+        ? await resolveListingAddress({
+            market:
+              listingMarket,
+            street,
+            postalCode,
+            city:
+              location,
+          })
+        : null;
+
     const userPlan = normalizeUserPlan(user.plan);
     const usesSingleObjectPayment =
       userPlan === "free";
@@ -207,8 +232,23 @@ export async function POST(request: NextRequest) {
           : "included",
         projectName,
         market: listingMarket,
+
+        street,
+
         location,
-        postalCode: optionalText(body.postalCode),
+
+        postalCode,
+
+        latitude:
+          resolvedLocation
+            ?.latitude ??
+          null,
+
+        longitude:
+          resolvedLocation
+            ?.longitude ??
+          null,
+
         propertyType,
         rooms: optionalNumber(body.rooms),
         livingArea: optionalNumber(body.livingArea),
