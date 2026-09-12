@@ -48,6 +48,7 @@ type ListingImage = {
 
 type Listing = {
   id: string;
+  countryCode?: string | null;
   location: string;
   postalCode: string | null;
   propertyType: string;
@@ -619,18 +620,41 @@ async function deleteListingImage(imageId: string) {
   }
 }
   function formatPrice(price: number | null) {
-    if (price === null) return "Preis nicht angegeben";
+    if (price === null) {
+      return "Preis nicht angegeben";
+    }
+
+    const objectCountryCode =
+      listing?.countryCode
+        ?.trim()
+        .toUpperCase();
+
+    const currency =
+      objectCountryCode === "CH"
+        ? "CHF"
+        : objectCountryCode === "DE" ||
+          objectCountryCode === "AT"
+        ? "EUR"
+        : market === "DE"
+        ? "EUR"
+        : "CHF";
+
+    const locale =
+      objectCountryCode === "CH"
+        ? "de-CH"
+        : objectCountryCode === "AT"
+        ? "de-AT"
+        : objectCountryCode === "DE"
+        ? "de-DE"
+        : market === "DE"
+        ? "de-DE"
+        : "de-CH";
 
     return new Intl.NumberFormat(
-      market === "DE"
-        ? "de-DE"
-        : "de-CH",
+      locale,
       {
         style: "currency",
-        currency:
-          market === "DE"
-            ? "EUR"
-            : "CHF",
+        currency,
         maximumFractionDigits: 0,
       }
     ).format(price);
