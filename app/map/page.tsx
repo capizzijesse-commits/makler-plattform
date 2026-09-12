@@ -3261,15 +3261,15 @@ export default function InseratAiMapPage() {
 
           <div>
             <strong>
-              Maps V1
+              Global Maps
             </strong>
 
             <p>
-              Exakte
-              Objektpositionen
-              verbinden wir als
-              Nächstes mit echten
-              Koordinaten.
+              Echte
+              Objektpositionen,
+              weltweite Suche
+              und Routing direkt
+              auf der Karte.
             </p>
           </div>
         </div>
