@@ -223,6 +223,8 @@ export async function POST(request: NextRequest) {
 
             market:
               listingMarket,
+
+
             street,
             postalCode,
             city:
@@ -245,6 +247,9 @@ export async function POST(request: NextRequest) {
           : "included",
         projectName,
         market: listingMarket,
+
+        countryCode:
+          listingCountryCode,
 
         street,
 

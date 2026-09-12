@@ -20,6 +20,13 @@ import {
   getInseratAiMarketFromHostname,
   type InseratAiMarket,
 } from "@/lib/inserat-ai-market";
+
+import {
+  INSERAT_AI_COUNTRIES,
+  getInseratAiCountryConfig,
+  isInseratAiCountryCode,
+  type InseratAiCountryCode,
+} from "@/lib/inserat-ai-country";
 import {
   SWISS_LOCATIONS,
   SWISS_POSTAL_LOCATIONS,
@@ -52,6 +59,7 @@ type ObjectTemplate = {
   name: string;
   location: string;
   postalCode?: string;
+  countryCode?: InseratAiCountryCode;
   propertyType: string;
   rooms: string;
   livingArea: string;
@@ -679,6 +687,18 @@ const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
 const [templateName, setTemplateName] = useState("");
 const [objectTemplates, setObjectTemplates] = useState<ObjectTemplate[]>([]);
 const [postalCode, setPostalCode] = useState("");
+const [
+  countryCode,
+  setCountryCode,
+] =
+  useState<InseratAiCountryCode>(
+    "CH"
+  );
+
+const countryConfig =
+  getInseratAiCountryConfig(
+    countryCode
+  );
 const [showPostalSuggestions, setShowPostalSuggestions] = useState(false);
 const [
   germanyLocationSuggestions,
@@ -754,6 +774,10 @@ useEffect(() => {
   const savedForm = localStorage.getItem(getFormStorageKey());
 
   if (!savedForm) {
+    setCountryCode(
+      getDashboardStorageMarket()
+    );
+
     setFormLoaded(true);
     return;
   }
@@ -770,6 +794,21 @@ useEffect(() => {
     setStyleText(data.styleText || "");
     setHighlights(data.highlights || "");
     setPostalCode(data.postalCode || "");
+
+    if (
+      isInseratAiCountryCode(
+        data.countryCode
+      )
+    ) {
+      setCountryCode(
+        data.countryCode
+      );
+    }
+    else {
+      setCountryCode(
+        getDashboardStorageMarket()
+      );
+    }
   } catch {
     localStorage.removeItem(getFormStorageKey());
   } finally {
@@ -784,6 +823,7 @@ useEffect(() => {
   projectName,
   location,
   postalCode,
+  countryCode,
   propertyType,
   rooms,
   livingArea,
@@ -798,6 +838,7 @@ useEffect(() => {
   projectName,
 location,
 postalCode,
+countryCode,
 propertyType,
   rooms,
   livingArea,
@@ -870,6 +911,7 @@ const saveObjectTemplate = () => {
   name: cleanName,
   location,
   postalCode,
+  countryCode,
   propertyType,
   rooms,
   livingArea,
@@ -1502,6 +1544,7 @@ if (!location.trim() || !propertyType.trim()) {
       body: JSON.stringify({
         projectName: projectName.trim(),
         market,
+        countryCode,
         street,
         location,
         postalCode,
@@ -1819,6 +1862,14 @@ const loadObjectTemplate = (template: ObjectTemplate) => {
   setProjectName("");
   setLocation(template.location);
   setPostalCode(template.postalCode || "");
+
+  if (
+    template.countryCode
+  ) {
+    setCountryCode(
+      template.countryCode
+    );
+  }
   setPropertyType(template.propertyType);
   setRooms(template.rooms);
   setLivingArea(template.livingArea);
@@ -1943,7 +1994,7 @@ const localizeGermanyDashboardTerm = (
 ): string => {
   if (
     locale !== "de" ||
-    market !== "DE"
+    countryCode !== "DE"
   ) {
     return value;
   }
@@ -1974,7 +2025,7 @@ const localizedExtraHighlightSuggestions =
 /* DE_GEO_LOCATION_SEARCH_FINAL */
 useEffect(() => {
   if (
-    market !== "DE"
+    countryCode !== "DE"
   ) {
     setGermanyLocationSuggestions([]);
     return;
@@ -2058,7 +2109,7 @@ useEffect(() => {
     controller.abort();
   };
 }, [
-  market,
+  countryCode,
   location,
 ]);
 
@@ -2066,9 +2117,9 @@ const allLocationSuggestions: string[] = Array.from(
   new Set([
     ...locationSuggestions,
     ...(
-      market === "DE"
-        ? []
-        : SWISS_LOCATIONS
+      countryCode === "CH"
+        ? SWISS_LOCATIONS
+        : []
     ),
   ])
 );
@@ -2085,12 +2136,13 @@ const filteredLocationSuggestions: string[] =
     : [];
 const filteredPostalLocationSuggestions:
   LocationSuggestion[] =
-    market === "DE"
+    countryCode === "DE"
       ? germanyLocationSuggestions
-      : (
-          location.trim().length > 0 ||
-          postalCode.trim().length > 0
-        )
+      : countryCode === "CH" &&
+          (
+            location.trim().length > 0 ||
+            postalCode.trim().length > 0
+          )
         ? SWISS_POSTAL_LOCATIONS
             .filter((item) => {
               const searchValue =
@@ -2191,6 +2243,7 @@ try {
     locale === "de"
       ? market
       : "CH",
+  countryCode,
   location,
   rooms,
   livingArea,
@@ -3035,7 +3088,7 @@ return (
       aria-required="true"
       placeholder={
         locale === "de" &&
-        market === "DE"
+        countryCode === "DE"
           ? "z. B. 4.5-Zimmer-Wohnung in Berlin"
           : locale === "it"
             ? "es. Appartamento 4.5 locali a Winterthur"
@@ -3126,19 +3179,107 @@ return (
           : "Dieser Name erscheint später unter «Meine Objekte»."}
   </div>
 </div>
+{/* INSERAT_AI_COUNTRY_SELECTOR_V1 */}
+<div
+  style={{
+    gridColumn: "1 / -1",
+  }}
+>
+<Field label="Land">
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns:
+        "repeat(3, minmax(0, 1fr))",
+      gap: "8px",
+    }}
+  >
+    {INSERAT_AI_COUNTRIES.map(
+      (country) => {
+        const active =
+          countryCode ===
+          country.code;
+
+        return (
+          <button
+            key={country.code}
+            type="button"
+            onClick={() => {
+              setCountryCode(
+                country.code
+              );
+
+              setStreet("");
+              setPostalCode("");
+              setLocation("");
+              setGermanyLocationSuggestions(
+                []
+              );
+              setShowPostalSuggestions(
+                false
+              );
+            }}
+            style={{
+              minHeight:
+                "46px",
+              display:
+                "flex",
+              alignItems:
+                "center",
+              justifyContent:
+                "center",
+              gap:
+                "7px",
+              border:
+                active
+                  ? "1px solid rgba(251,191,36,0.72)"
+                  : "1px solid rgba(255,255,255,0.12)",
+              borderRadius:
+                "12px",
+              background:
+                active
+                  ? "rgba(251,191,36,0.12)"
+                  : "rgba(255,255,255,0.04)",
+              color:
+                active
+                  ? "#fbbf24"
+                  : "#e2e8f0",
+              fontWeight:
+                850,
+              fontSize:
+                "13px",
+              whiteSpace:
+                "nowrap",
+              padding:
+                "0 12px",
+              cursor:
+                "pointer",
+            }}
+          >
+            <span>
+              {country.flag}
+            </span>
+
+            <span>
+              {country.label}
+            </span>
+          </button>
+        );
+      }
+    )}
+  </div>
+</Field>
+</div>
+
 <Field
   label={
-    market === "DE"
-      ? "Straße / Hausnummer"
-      : "Strasse / Hausnummer"
+    countryConfig.streetLabel
   }
 >
   <input
     value={street}
     placeholder={
-      market === "DE"
-        ? "z. B. Friedrichstraße 100"
-        : "z. B. Bahnhofstrasse 20"
+      countryConfig.streetPlaceholder
     }
     className="input bg-transparent text-white placeholder-gray-400/60"
     onChange={(event) =>
@@ -3155,9 +3296,7 @@ return (
     value={postalCode}
     inputMode="numeric"
     placeholder={
-      market === "DE"
-        ? "10117"
-        : "8001"
+      countryConfig.postalCodePlaceholder
     }
     className="input bg-transparent text-white placeholder-gray-400/60"
     onChange={(event) => {
@@ -3170,9 +3309,8 @@ return (
       setPostalCode(
         digits.slice(
           0,
-          market === "DE"
-            ? 5
-            : 4
+          countryConfig
+            .postalCodeLength
         )
       );
     }}
@@ -3184,9 +3322,7 @@ return (
     <input
   value={location}
   placeholder={
-    market === "DE"
-      ? "Berlin"
-      : "Winterthur"
+    countryConfig.cityPlaceholder
   }
   className="input bg-transparent text-white placeholder-gray-400/60"
   onChange={(e) => {
