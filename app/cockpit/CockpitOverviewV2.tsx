@@ -661,10 +661,10 @@ export default function CockpitOverviewV2({
   const navItems: Array<{
     key:
       | "today"
-      | "objects"
       | "connect"
       | "maps"
-      | "marketing";
+      | "marketing"
+      | "finance";
     icon: SidebarIconName;
     label: string;
     href: string;
@@ -678,18 +678,6 @@ export default function CockpitOverviewV2({
       active: true,
     },
     {
-      key: "objects",
-      icon: "objects",
-      label: labels.objects,
-      href: "#v2-objects",
-    },
-    {
-      key: "connect",
-      icon: "connect",
-      label: "Connect",
-      href: "/cockpit#connect",
-    },
-    {
       key: "maps",
       icon: "maps",
       label: "Maps",
@@ -700,6 +688,12 @@ export default function CockpitOverviewV2({
       icon: "marketing",
       label: labels.marketing,
       href: "/marketing-hub",
+    },
+    {
+      key: "finance",
+      icon: "finance",
+      label: labels.finance,
+      href: "/finanzierung",
     },
   ];
 
@@ -729,6 +723,45 @@ export default function CockpitOverviewV2({
           </span>
         </Link>
 
+        <Link
+          href="/dashboard"
+          className="v2DashboardBack"
+          aria-label="Zurück zum Dashboard"
+          style={{
+            display: "flex",
+            minHeight: 38,
+            alignItems: "center",
+            gap: 8,
+            margin: "0 4px 14px",
+            padding: "0 10px",
+            border:
+              "1px solid rgba(103,232,249,.14)",
+            borderRadius: 9,
+            background:
+              "rgba(15,42,71,.42)",
+            color: "#b8c8d9",
+            fontSize: 11,
+            fontWeight: 700,
+            textDecoration: "none",
+          }}
+        >
+          <span
+            aria-hidden="true"
+            style={{
+              color: "#fbbf24",
+              fontSize: 17,
+              fontWeight: 900,
+              lineHeight: 1,
+            }}
+          >
+            ←
+          </span>
+
+          <span>
+            Dashboard
+          </span>
+        </Link>
+
         <div className="v2NavSectionLabel">
           ARBEITSBEREICH
         </div>
@@ -738,19 +771,22 @@ export default function CockpitOverviewV2({
             <Link
               key={item.key}
               href={item.href}
-              onClick={
-                item.key === "connect"
-                  ? (event) => {
-                      event.preventDefault();
+              onClick={(event) => {
+                if (
+                  item.key === "connect"
+                ) {
+                  event.preventDefault();
 
-                      window.dispatchEvent(
-                        new Event(
-                          "inserat-ai:open-chat"
-                        )
-                      );
-                    }
-                  : undefined
-              }
+                  window.dispatchEvent(
+                    new Event(
+                      "inserat-ai:open-chat"
+                    )
+                  );
+
+                  return;
+                }
+
+              }}
               className={
                 item.active
                   ? "v2NavItem active"

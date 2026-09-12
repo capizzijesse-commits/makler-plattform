@@ -308,7 +308,7 @@ export default function SupportActionDock() {
         aria-label={
           isDockOpen
             ? "Inserat-AI Menü schließen"
-            : "Inserat-AI Chat und Hilfe öffnen"
+            : "Inserat-AI Connect öffnen"
         }
       >
         <span
@@ -350,7 +350,7 @@ export default function SupportActionDock() {
         <span className="supportLauncherText">
           {isDockOpen
             ? "Schließen"
-            : "Inserat-AI"}
+            : "Inserat-AI Connect"}
         </span>
       </button>
 
@@ -739,7 +739,7 @@ export default function SupportActionDock() {
           position: relative;
 
           display: flex;
-          width: 148px;
+          width: 196px;
           height: 56px;
 
           align-items: center;
@@ -895,13 +895,13 @@ export default function SupportActionDock() {
         }
 
         .supportLauncherText {
-          overflow: hidden;
+          overflow: visible;
 
           font-size: 11px;
           font-weight: 950;
 
           text-overflow:
-            ellipsis;
+            clip;
 
           white-space: nowrap;
         }

@@ -8,6 +8,7 @@ import Footer from "@/app/components/Footer";
 import WhatsAppButton from "@/app/components/WhatsAppButton";
 import GuideAssistant from "@/app/components/GuideAssistant";
 import MaklerCommunicationHub from "@/app/components/MaklerCommunicationHub";
+import GlobalWorkspaceLauncher from "@/app/components/GlobalWorkspaceLauncher";
 import SupportActionDock from "@/app/components/SupportActionDock";
 import FeedbackButton from "@/components/FeedbackButton";
 
@@ -53,13 +54,19 @@ export default function AppShell({
         <Footer />
       ) : null}
 
+      {isWorkspacePage ? (
+        <>
+          <GlobalWorkspaceLauncher />
+          <MaklerCommunicationHub />
+        </>
+      ) : null}
+
       {showSupportTools ? (
         <>
           <WhatsAppButton />
           <FeedbackButton />
           <GuideAssistant />
           <SupportActionDock />
-          <MaklerCommunicationHub />
         </>
       ) : null}
     </>

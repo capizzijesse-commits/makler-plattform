@@ -17,6 +17,7 @@ type WorkspaceSection =
   | "images"
   | "social"
   | "marketing"
+  | "workspace"
   | "finance"
   | "settings";
 
@@ -27,6 +28,7 @@ type WorkspaceIconName =
   | "images"
   | "social"
   | "marketing"
+  | "workspace"
   | "finance"
   | "settings"
   | "help";
@@ -121,6 +123,39 @@ function WorkspaceIcon({
           />
           <path d="m8 11 7.8-4" />
           <path d="m8 13 7.8 4" />
+        </>
+      )}
+
+      {name === "workspace" && (
+        <>
+          <rect
+            x="4"
+            y="4"
+            width="6"
+            height="6"
+            rx="1.4"
+          />
+          <rect
+            x="14"
+            y="4"
+            width="6"
+            height="6"
+            rx="1.4"
+          />
+          <rect
+            x="4"
+            y="14"
+            width="6"
+            height="6"
+            rx="1.4"
+          />
+          <rect
+            x="14"
+            y="14"
+            width="6"
+            height="6"
+            rx="1.4"
+          />
         </>
       )}
 
@@ -282,16 +317,10 @@ export default function WorkspaceFrame({
         : "/dashboard/social-media",
     },
     {
-      key: "marketing" as const,
-      icon: "marketing" as const,
-      label: labels.marketing,
-      href: "/marketing-hub",
-    },
-    {
-      key: "finance" as const,
-      icon: "finance" as const,
-      label: labels.finance,
-      href: "/finanzierung",
+      key: "workspace" as const,
+      icon: "workspace" as const,
+      label: "Workspace",
+      href: "#workspace",
     },
   ];
 
@@ -332,6 +361,19 @@ export default function WorkspaceFrame({
               <Link
                 key={item.key}
                 href={item.href}
+                onClick={
+                  item.key === "workspace"
+                    ? (event) => {
+                        event.preventDefault();
+
+                        window.dispatchEvent(
+                          new Event(
+                            "inserat-ai:open-workspace"
+                          )
+                        );
+                      }
+                    : undefined
+                }
                 className={
                   active === item.key
                     ? "iaNavItem active"
@@ -347,6 +389,20 @@ export default function WorkspaceFrame({
                 <span>
                   {item.label}
                 </span>
+
+                {item.key === "workspace" ? (
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      marginLeft: "auto",
+                      color: "#67e8f9",
+                      fontSize: "18px",
+                      lineHeight: 1,
+                    }}
+                  >
+                    ›
+                  </span>
+                ) : null}
               </Link>
             )
           )}
