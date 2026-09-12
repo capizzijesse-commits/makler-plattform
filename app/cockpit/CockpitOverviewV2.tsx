@@ -98,6 +98,8 @@ function getInitials(
 type SidebarIconName =
   | "dashboard"
   | "objects"
+  | "connect"
+  | "maps"
   | "new"
   | "images"
   | "social"
@@ -160,6 +162,31 @@ function SidebarIcon({
           <circle cx="18" cy="18" r="2.2" />
           <path d="m8 11 7.8-4" />
           <path d="m8 13 7.8 4" />
+        </>
+      )}
+
+      {name === "connect" && (
+        <>
+          <circle
+            cx="8"
+            cy="8"
+            r="2.5"
+          />
+          <circle
+            cx="16"
+            cy="8"
+            r="2.5"
+          />
+          <path d="M3.5 18c.5-3.2 2.2-5 4.5-5s4 1.8 4.5 5" />
+          <path d="M11.5 18c.5-3.2 2.2-5 4.5-5s4 1.8 4.5 5" />
+        </>
+      )}
+
+      {name === "maps" && (
+        <>
+          <path d="m4 6 5-2 6 2 5-2v14l-5 2-6-2-5 2Z" />
+          <path d="M9 4v14" />
+          <path d="M15 6v14" />
         </>
       )}
 
@@ -622,42 +649,57 @@ export default function CockpitOverviewV2({
             };
 
 
-  const navItems = [
+  const todayLabel =
+    locale === "it"
+      ? "Oggi"
+      : locale === "fr"
+      ? "Aujourd’hui"
+      : locale === "en"
+      ? "Today"
+      : "Heute";
+
+  const navItems: Array<{
+    key:
+      | "today"
+      | "objects"
+      | "connect"
+      | "maps"
+      | "marketing";
+    icon: SidebarIconName;
+    label: string;
+    href: string;
+    active?: boolean;
+  }> = [
     {
-      icon: "dashboard" as SidebarIconName,
-      label: labels.dashboard,
+      key: "today",
+      icon: "dashboard",
+      label: todayLabel,
       href: "/cockpit",
       active: true,
     },
     {
-      icon: "objects" as SidebarIconName,
+      key: "objects",
+      icon: "objects",
       label: labels.objects,
       href: "#v2-objects",
     },
     {
-      icon: "new" as SidebarIconName,
-      label: labels.newListing,
-      href: "/dashboard",
+      key: "connect",
+      icon: "connect",
+      label: "Connect",
+      href: "/cockpit#connect",
     },
     {
-      icon: "images" as SidebarIconName,
-      label: labels.images,
-      href: "/dashboard/analyse",
+      key: "maps",
+      icon: "maps",
+      label: "Maps",
+      href: "/map",
     },
     {
-      icon: "social" as SidebarIconName,
-      label: labels.social,
-      href: "/dashboard/social-media",
-    },
-    {
-      icon: "marketing" as SidebarIconName,
+      key: "marketing",
+      icon: "marketing",
       label: labels.marketing,
       href: "/marketing-hub",
-    },
-    {
-      icon: "finance" as SidebarIconName,
-      label: labels.finance,
-      href: "/finanzierung",
     },
   ];
 
@@ -694,8 +736,21 @@ export default function CockpitOverviewV2({
         <nav className="v2Nav">
           {navItems.map((item) => (
             <Link
-              key={item.label}
+              key={item.key}
               href={item.href}
+              onClick={
+                item.key === "connect"
+                  ? (event) => {
+                      event.preventDefault();
+
+                      window.dispatchEvent(
+                        new Event(
+                          "inserat-ai:open-chat"
+                        )
+                      );
+                    }
+                  : undefined
+              }
               className={
                 item.active
                   ? "v2NavItem active"
