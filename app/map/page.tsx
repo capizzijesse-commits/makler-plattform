@@ -37,6 +37,7 @@ type MapListing = {
   latitude?: number | null;
   longitude?: number | null;
   market?: string | null;
+  countryCode?: string | null;
   propertyType: string;
   rooms?: number | null;
   livingArea?: number | null;
@@ -50,12 +51,148 @@ type ListingsResponse = {
   error?: string;
 };
 
+
+/*
+ * INSERAT_AI_GLOBAL_MAP_RUNTIME_V2
+ *
+ * Land und Verkaufsmarkt sind getrennt.
+ */
+type MapHomeCountry =
+  | InseratAiMarket
+  | "AT";
+
+const INSERAT_AI_EURO_COUNTRIES =
+  new Set([
+    "AT",
+    "BE",
+    "HR",
+    "CY",
+    "EE",
+    "FI",
+    "FR",
+    "DE",
+    "GR",
+    "IE",
+    "IT",
+    "LV",
+    "LT",
+    "LU",
+    "MT",
+    "NL",
+    "PT",
+    "SK",
+    "SI",
+    "ES",
+  ]);
+
+function formatGlobalListingPrice(
+  listing: MapListing
+) {
+  if (
+    typeof listing.price !==
+    "number"
+  ) {
+    return "Preis offen";
+  }
+
+  const countryCode =
+    (
+      listing.countryCode ??
+      listing.market ??
+      ""
+    )
+      .trim()
+      .toUpperCase();
+
+  let currency =
+    "";
+
+  let locale =
+    "en-US";
+
+  if (countryCode === "CH") {
+    currency = "CHF";
+    locale = "de-CH";
+  }
+  else if (
+    INSERAT_AI_EURO_COUNTRIES.has(
+      countryCode
+    )
+  ) {
+    currency = "EUR";
+
+    locale =
+      countryCode === "AT"
+        ? "de-AT"
+        : countryCode === "DE"
+          ? "de-DE"
+          : countryCode === "IT"
+            ? "it-IT"
+            : countryCode === "FR"
+              ? "fr-FR"
+              : countryCode === "ES"
+                ? "es-ES"
+                : countryCode === "PT"
+                  ? "pt-PT"
+                  : "en-IE";
+  }
+  else if (countryCode === "US") {
+    currency = "USD";
+    locale = "en-US";
+  }
+  else if (countryCode === "GB") {
+    currency = "GBP";
+    locale = "en-GB";
+  }
+  else if (countryCode === "BR") {
+    currency = "BRL";
+    locale = "pt-BR";
+  }
+  else if (countryCode === "CA") {
+    currency = "CAD";
+    locale = "en-CA";
+  }
+  else if (countryCode === "AU") {
+    currency = "AUD";
+    locale = "en-AU";
+  }
+  else if (countryCode === "JP") {
+    currency = "JPY";
+    locale = "ja-JP";
+  }
+
+  if (!currency) {
+    return new Intl.NumberFormat(
+      locale,
+      {
+        maximumFractionDigits:
+          0,
+      }
+    ).format(
+      listing.price
+    );
+  }
+
+  return new Intl.NumberFormat(
+    locale,
+    {
+      style:
+        "currency",
+      currency,
+      maximumFractionDigits:
+        0,
+    }
+  ).format(
+    listing.price
+  );
+}
+
 type MapViewMode =
   | "map"
   | "satellite"
   | "hybrid";
 
-const MARKET_VIEW = {
+const COUNTRY_VIEW = {
   DE: {
     center: [10.4515, 51.1657] as [
       number,
@@ -63,6 +200,15 @@ const MARKET_VIEW = {
     ],
     zoom: 5.3,
     label: "Deutschland",
+  },
+
+  AT: {
+    center: [14.5501, 47.5162] as [
+      number,
+      number
+    ],
+    zoom: 6.6,
+    label: "Österreich",
   },
 
   CH: {
@@ -301,6 +447,262 @@ function createInseratAiStreetStyle(
   };
 }
 
+
+/*
+ * INSERAT_AI_GOLD_AMBER_STYLE_HELPERS_V2
+ *
+ * Inserat-AI Branding für Vektor-Overlays.
+ */
+const INSERAT_AI_MAP_AMBER =
+  "#F4B73F";
+
+const INSERAT_AI_MAP_AMBER_TEXT =
+  "#FFD36A";
+
+const INSERAT_AI_MAP_TEXT_HALO =
+  "rgba(5, 12, 28, 0.94)";
+
+
+/*
+ * INSERAT_AI_AMBER_PLACE_NAMES_V1
+ *
+ * Städte, Gemeinden, Dörfer und Ortsteile
+ * erhalten die Inserat-AI Amber-Farbe.
+ */
+function applyInseratAiAmberPlaceNames(
+  map: MapLibreMap
+) {
+  const layers =
+    map.getStyle().layers ??
+    [];
+
+  for (
+    const layer of layers
+  ) {
+    if (
+      layer.type !== "symbol"
+    ) {
+      continue;
+    }
+
+    const id =
+      layer.id.toLowerCase();
+
+    const sourceLayer =
+      "source-layer" in layer &&
+      typeof layer["source-layer"] === "string"
+        ? layer["source-layer"].toLowerCase()
+        : "";
+
+    const signature =
+      `${id} ${sourceLayer}`;
+
+    const isMajorPlace =
+      /city|town|municipality/.test(
+        signature
+      );
+
+    const isMinorPlace =
+      /village|place|locality|suburb|neighbour|settlement/.test(
+        signature
+      );
+
+    if (
+      !isMajorPlace &&
+      !isMinorPlace
+    ) {
+      continue;
+    }
+
+    try {
+      /*
+       * Städte / grössere Orte:
+       * deutliches Inserat-AI Gold.
+       */
+      if (
+        isMajorPlace
+      ) {
+        map.setPaintProperty(
+          layer.id,
+          "text-color",
+          "#FFE08A"
+        );
+
+        map.setPaintProperty(
+          layer.id,
+          "text-halo-color",
+          "rgba(5, 12, 28, 0.97)"
+        );
+
+        map.setPaintProperty(
+          layer.id,
+          "text-halo-width",
+          1.9
+        );
+
+        map.setPaintProperty(
+          layer.id,
+          "text-halo-blur",
+          0.15
+        );
+
+        continue;
+      }
+
+      /*
+       * Kleine Orte / Ortsteile:
+       * bewusst etwas ruhiger.
+       */
+      map.setPaintProperty(
+        layer.id,
+        "text-color",
+        "#E9B94B"
+      );
+
+      map.setPaintProperty(
+        layer.id,
+        "text-halo-color",
+        "rgba(5, 12, 28, 0.94)"
+      );
+
+      map.setPaintProperty(
+        layer.id,
+        "text-halo-width",
+        1.4
+      );
+
+      map.setPaintProperty(
+        layer.id,
+        "text-halo-blur",
+        0.2
+      );
+    }
+    catch {
+      /*
+       * Spezial-Layer ohne passende
+       * Text-Paint-Eigenschaften ignorieren.
+       */
+    }
+  }
+}
+
+function applyInseratAiAmberBranding(
+  map: MapLibreMap
+) {
+  const layers =
+    map.getStyle().layers ??
+    [];
+
+  for (
+    const layer of layers
+  ) {
+    const id =
+      layer.id.toLowerCase();
+
+    const sourceLayer =
+      "source-layer" in layer &&
+      typeof layer["source-layer"] === "string"
+        ? layer["source-layer"].toLowerCase()
+        : "";
+
+    const signature =
+      `${id} ${sourceLayer}`;
+
+    const isTransport =
+      /road|street|highway|transport|motorway|trunk|primary|secondary|tertiary|path|bridge|tunnel/.test(
+        signature
+      );
+
+    if (!isTransport) {
+      continue;
+    }
+
+    try {
+      /*
+       * Straßen, Straßenränder, Brücken,
+       * Tunnel und Nebenstraßen.
+       */
+      if (
+        layer.type === "line"
+      ) {
+        map.setPaintProperty(
+          layer.id,
+          "line-color",
+          "#F4B73F"
+        );
+
+        map.setPaintProperty(
+          layer.id,
+          "line-opacity",
+          0.94
+        );
+
+        continue;
+      }
+
+      /*
+       * Manche MapTiler-Straßen werden
+       * als Flächen statt als Linien gerendert.
+       */
+      if (
+        layer.type === "fill"
+      ) {
+        map.setPaintProperty(
+          layer.id,
+          "fill-color",
+          "#F4B73F"
+        );
+
+        map.setPaintProperty(
+          layer.id,
+          "fill-opacity",
+          0.82
+        );
+
+        continue;
+      }
+
+      /*
+       * Straßen- und Verkehrsbezeichnungen.
+       */
+      if (
+        layer.type === "symbol" &&
+        layer.layout?.["text-field"]
+      ) {
+        map.setPaintProperty(
+          layer.id,
+          "text-color",
+          "#FFD36A"
+        );
+
+        map.setPaintProperty(
+          layer.id,
+          "text-halo-color",
+          "rgba(5, 12, 28, 0.96)"
+        );
+
+        map.setPaintProperty(
+          layer.id,
+          "text-halo-width",
+          1.5
+        );
+
+        map.setPaintProperty(
+          layer.id,
+          "text-halo-blur",
+          0.15
+        );
+      }
+    }
+    catch {
+      /*
+       * Speziallayer ohne entsprechende
+       * Paint-Eigenschaft ignorieren.
+       */
+    }
+  }
+}
+
 export default function InseratAiMapPage() {
   const mapContainerRef =
     useRef<HTMLDivElement | null>(
@@ -324,7 +726,7 @@ export default function InseratAiMapPage() {
     market,
     setMarket,
   ] =
-    useState<InseratAiMarket>(
+    useState<MapHomeCountry>(
       "CH"
     );
 
@@ -422,12 +824,93 @@ export default function InseratAiMapPage() {
   ] =
     useState(false);
 
+
+  /*
+   * INSERAT_AI_GOLD_AMBER_STYLE_EFFECT_V2
+   *
+   * Hybrid bekommt Inserat-AI Gold/Amber.
+   * Satellit bleibt bewusst reine Bildansicht.
+   */
+  useEffect(() => {
+    const map =
+      mapInstance;
+
+    if (!map) {
+      return;
+    }
+
+    const applyBranding =
+      () => {
+        if (
+          mapView !== "hybrid"
+        ) {
+          return;
+        }
+
+        applyInseratAiAmberBranding(
+          map
+        );
+
+        applyInseratAiAmberPlaceNames(
+          map
+        );
+
+        map.once(
+          "idle",
+          () => {
+            applyInseratAiAmberPlaceNames(
+              map
+            );
+          }
+        );
+      };
+
+    if (
+      map.isStyleLoaded()
+    ) {
+      applyBranding();
+    }
+
+    map.on(
+      "style.load",
+      applyBranding
+    );
+
+    return () => {
+      map.off(
+        "style.load",
+        applyBranding
+      );
+    };
+  }, [
+    mapInstance,
+    mapView,
+  ]);
+
   const mapTilerKey =
     process.env
       .NEXT_PUBLIC_MAPTILER_KEY
       ?.trim() || "";
 
   useEffect(() => {
+    /*
+     * INSERAT_AI_AT_HOME_COUNTRY_V2
+     */
+    const hostname =
+      window.location.hostname
+        .toLowerCase();
+
+    if (
+      hostname === "inserat-ai.at" ||
+      hostname === "www.inserat-ai.at" ||
+      hostname.endsWith(
+        ".inserat-ai.at"
+      )
+    ) {
+      setMarket("AT");
+      return;
+    }
+
     const domainMarket =
       getInseratAiMarketFromHostname(
         window.location.hostname
@@ -445,7 +928,8 @@ export default function InseratAiMapPage() {
 
     if (
       storedMarket === "DE" ||
-      storedMarket === "CH"
+      storedMarket === "CH" ||
+      storedMarket === "AT"
     ) {
       setMarket(storedMarket);
     }
@@ -460,7 +944,7 @@ export default function InseratAiMapPage() {
     }
 
     const initial =
-      MARKET_VIEW.CH;
+      COUNTRY_VIEW.CH;
 
     const map =
       new MapLibreMap({
@@ -603,7 +1087,7 @@ export default function InseratAiMapPage() {
     }
 
     const nextView =
-      MARKET_VIEW[market];
+      COUNTRY_VIEW[market];
 
     map.easeTo({
       center:
@@ -623,21 +1107,15 @@ export default function InseratAiMapPage() {
       return;
     }
 
-    const nextView =
-      MARKET_VIEW[market];
-
+    /*
+     * INSERAT_AI_PRESERVE_CAMERA_ON_STYLE_SWITCH_V1
+     *
+     * Karte / Satellit / Hybrid behalten
+     * Position, Zoom und Blickwinkel bei.
+     */
     const restoreCamera =
       () => {
         map.resize();
-
-        map.easeTo({
-          center:
-            nextView.center,
-          zoom:
-            nextView.zoom,
-          duration:
-            700,
-        });
       };
 
     if (
@@ -696,7 +1174,6 @@ export default function InseratAiMapPage() {
   }, [
     mapView,
     mapTilerKey,
-    market,
   ]);
 
   useEffect(() => {
@@ -1397,36 +1874,58 @@ export default function InseratAiMapPage() {
       ]
     );
 
+  const countryCount =
+    useMemo(() => {
+      const countries =
+        new Set(
+          listings
+            .map(
+              (listing) =>
+                (
+                  listing.countryCode ??
+                  listing.market ??
+                  ""
+                )
+                  .trim()
+                  .toUpperCase()
+            )
+            .filter(Boolean)
+        );
+
+      return countries.size;
+    }, [
+      listings,
+    ]);
+
   const visibleListings =
     useMemo(() => {
       const query =
         search
           .trim()
-          .toLocaleLowerCase(
-            "de"
-          );
+          .toLocaleLowerCase();
 
       if (!query) {
-        return marketListings;
+        return listings;
       }
 
-      return marketListings.filter(
+      return listings.filter(
         (listing) =>
           [
             listing.projectName,
+            listing.street,
             listing.location,
             listing.postalCode,
+            listing.countryCode,
+            listing.market,
             listing.propertyType,
           ]
             .filter(Boolean)
             .join(" ")
-            .toLocaleLowerCase(
-              "de"
-            )
+            .toLocaleLowerCase()
             .includes(query)
       );
     }, [
-      marketListings,
+      listings,
       search,
     ]);
 
@@ -1549,21 +2048,9 @@ export default function InseratAiMapPage() {
         );
 
       bubble.textContent =
-        typeof listing.price ===
-        "number"
-          ? new Intl.NumberFormat(
-              locale,
-              {
-                style:
-                  "currency",
-                currency,
-                maximumFractionDigits:
-                  0,
-              }
-            ).format(
-              listing.price
-            )
-          : "Preis offen";
+        formatGlobalListingPrice(
+          listing
+        );
 
       Object.assign(
         bubble.style,
@@ -1756,11 +2243,6 @@ export default function InseratAiMapPage() {
           key:
             mapTilerKey,
 
-          country:
-            market === "DE"
-              ? "de"
-              : "ch",
-
           language:
             "de",
 
@@ -1854,9 +2336,7 @@ export default function InseratAiMapPage() {
         )
       ) {
         setAddressSearchError(
-          market === "DE"
-            ? "Adresse in Deutschland nicht gefunden."
-            : "Adresse in der Schweiz nicht gefunden."
+          "Adresse weltweit nicht gefunden."
         );
 
         return;
@@ -2433,15 +2913,7 @@ export default function InseratAiMapPage() {
 
         <div className="iaMapTopActions">
           <span className="iaMapMarketBadge">
-            {market === "DE"
-              ? "🇩🇪"
-              : "🇨🇭"}
-
-            {
-              MARKET_VIEW[
-                market
-              ].label
-            }
+            🌍 Global Maps
           </span>
 
           <Link
@@ -2555,7 +3027,7 @@ export default function InseratAiMapPage() {
           <div>
             <strong>
               {
-                marketListings.length
+                listings.length
               }
             </strong>
             <span>
@@ -2565,14 +3037,10 @@ export default function InseratAiMapPage() {
 
           <div>
             <strong>
-              {
-                MARKET_VIEW[
-                  market
-                ].label
-              }
+              {countryCount}
             </strong>
             <span>
-              Markt
+              Länder
             </span>
           </div>
         </div>
@@ -2746,8 +3214,8 @@ export default function InseratAiMapPage() {
 
                   <div className="iaMapListingFacts">
                     <span>
-                      {formatPrice(
-                        listing.price
+                      {formatGlobalListingPrice(
+                        listing
                       )}
                     </span>
 

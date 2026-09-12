@@ -61,6 +61,8 @@ model Listing {
   latitude     Float?
   longitude    Float?
   market       String?
+
+  countryCode  String?
   propertyType String
   rooms        Float?
   livingArea   Float?
@@ -93,6 +95,7 @@ model Listing {
   @@index([userId])
   @@index([userId, archivedAt])
   @@index([userId, unlockStatus])
+  @@index([countryCode])
 }
 
 model FloorPlan {

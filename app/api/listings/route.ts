@@ -147,6 +147,16 @@ export async function POST(request: NextRequest) {
         ? body.market
         : null;
 
+    const rawCountryCode =
+      typeof body.countryCode === "string"
+        ? body.countryCode.trim().toUpperCase()
+        : "";
+
+    const listingCountryCode =
+      /^[A-Z]{2}$/.test(rawCountryCode)
+        ? rawCountryCode
+        : listingMarket;
+
     const street =
       optionalText(
         body.street
@@ -206,8 +216,11 @@ export async function POST(request: NextRequest) {
     const resolvedLocation =
       street &&
       postalCode &&
-      listingMarket
+      listingCountryCode
         ? await resolveListingAddress({
+            countryCode:
+              listingCountryCode,
+
             market:
               listingMarket,
             street,
