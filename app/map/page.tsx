@@ -22,6 +22,7 @@ setWorkerUrl(
 );
 
 import RoutePlanner from "./RoutePlanner";
+import MarketPulseOverlay from "./MarketPulseOverlay";
 
 import {
   getInseratAiMarketFromHostname,
@@ -3001,6 +3002,11 @@ export default function InseratAiMapPage() {
 
       <RoutePlanner
         map={mapInstance}
+      />
+
+      <MarketPulseOverlay
+        map={mapInstance}
+        country={market}
       />
 
       <div className="iaMapDebug">

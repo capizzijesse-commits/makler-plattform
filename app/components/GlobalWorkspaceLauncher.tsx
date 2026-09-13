@@ -400,8 +400,8 @@ export default function GlobalWorkspaceLauncher() {
         .iaGlobalLauncher {
           position: fixed;
           z-index: 240;
-          top: 50%;
-          left: 228px;
+          top: 206px;
+          left: 430px;
           right: auto;
           bottom: auto;
           display: flex;
@@ -415,13 +415,15 @@ export default function GlobalWorkspaceLauncher() {
             0 12px 0 10px;
           overflow: hidden;
           transform:
-            translateY(-50%);
+            none;
           border:
             1px solid
             rgba(245,158,11,.38);
-          border-left: 0;
+          border-left:
+            1px solid
+            rgba(245,158,11,.38);
           border-radius:
-            0 16px 16px 0;
+            16px;
           background:
             linear-gradient(
               135deg,
@@ -442,7 +444,6 @@ export default function GlobalWorkspaceLauncher() {
 
         .iaGlobalLauncher:hover {
           transform:
-            translateY(-50%)
             translateX(2px);
           border-color:
             rgba(245,158,11,.68);
@@ -529,8 +530,8 @@ export default function GlobalWorkspaceLauncher() {
         .iaWorkspacePanel {
           position: fixed;
           z-index: 250;
-          top: 50%;
-          left: 246px;
+          top: 264px;
+          left: 430px;
           right: auto;
           bottom: auto;
           width:
@@ -539,7 +540,7 @@ export default function GlobalWorkspaceLauncher() {
             calc(100vh - 120px);
           overflow-y: auto;
           transform:
-            translateY(-50%);
+            none;
           border:
             1px solid
             rgba(148,163,184,.18);
