@@ -41,10 +41,38 @@ export default function GoogleAnalytics() {
   const [enabled, setEnabled] =
     useState(false);
 
-  const measurementId =
+  const fallbackMeasurementId =
     process.env
       .NEXT_PUBLIC_GA_MEASUREMENT_ID
       ?.trim() ?? "";
+
+  const swissMeasurementId =
+    process.env
+      .NEXT_PUBLIC_GA_MEASUREMENT_ID_CH
+      ?.trim() ||
+    fallbackMeasurementId;
+
+  const germanMeasurementId =
+    process.env
+      .NEXT_PUBLIC_GA_MEASUREMENT_ID_DE
+      ?.trim() ||
+    fallbackMeasurementId;
+
+  const hostname =
+    typeof window === "undefined"
+      ? ""
+      : window.location.hostname
+          .trim()
+          .toLowerCase();
+
+  const measurementId =
+    hostname === "inserat-ai.de" ||
+    hostname === "www.inserat-ai.de"
+      ? germanMeasurementId
+      : hostname === "inserat-ai.ch" ||
+          hostname === "www.inserat-ai.ch"
+        ? swissMeasurementId
+        : fallbackMeasurementId;
 
   const hasValidMeasurementId =
     /^G-[A-Z0-9]+$/i.test(
