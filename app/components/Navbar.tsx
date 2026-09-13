@@ -231,7 +231,9 @@ export default function Navbar() {
   pathname?.startsWith("/finanzierung") ||
   pathname?.startsWith("/bewertungen") ||
   pathname?.startsWith("/expose") ||
-  pathname?.startsWith("/konto");
+  pathname?.startsWith("/konto") ||
+  pathname === "/map" ||
+  pathname?.startsWith("/map/");
 
   const moduleClass = getModuleClass(pathname);
   const planLabel = getPlanLabel(userPlan);

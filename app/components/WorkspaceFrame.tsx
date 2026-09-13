@@ -17,6 +17,7 @@ type WorkspaceSection =
   | "images"
   | "social"
   | "marketing"
+  | "workspace"
   | "finance"
   | "settings";
 
@@ -27,9 +28,11 @@ type WorkspaceIconName =
   | "images"
   | "social"
   | "marketing"
+  | "workspace"
   | "finance"
   | "settings"
-  | "help";
+  | "help"
+  | "about";
 
 type WorkspaceFrameProps = {
   children: ReactNode;
@@ -124,6 +127,39 @@ function WorkspaceIcon({
         </>
       )}
 
+      {name === "workspace" && (
+        <>
+          <rect
+            x="4"
+            y="4"
+            width="6"
+            height="6"
+            rx="1.4"
+          />
+          <rect
+            x="14"
+            y="4"
+            width="6"
+            height="6"
+            rx="1.4"
+          />
+          <rect
+            x="4"
+            y="14"
+            width="6"
+            height="6"
+            rx="1.4"
+          />
+          <rect
+            x="14"
+            y="14"
+            width="6"
+            height="6"
+            rx="1.4"
+          />
+        </>
+      )}
+
       {name === "marketing" && (
         <>
           <path d="M4 20V10" />
@@ -173,6 +209,17 @@ function WorkspaceIcon({
           <path d="M12 17h.01" />
         </>
       )}
+
+      {name === "about" && (
+        <>
+          <circle
+            cx="12"
+            cy="8"
+            r="3"
+          />
+          <path d="M5 20c.8-4.3 3.1-6.5 7-6.5s6.2 2.2 7 6.5" />
+        </>
+      )}
     </svg>
   );
 }
@@ -202,6 +249,7 @@ export default function WorkspaceFrame({
           finance: "Finanziamento",
           settings: "Impostazioni",
           help: "Aiuto e supporto",
+          about: "Chi siamo",
           workspace: "AREA DI LAVORO",
           account: "ACCOUNT",
         }
@@ -216,6 +264,7 @@ export default function WorkspaceFrame({
             finance: "Financement",
             settings: "Paramètres",
             help: "Aide et support",
+            about: "À propos",
             workspace: "ESPACE DE TRAVAIL",
             account: "COMPTE",
           }
@@ -230,6 +279,7 @@ export default function WorkspaceFrame({
               finance: "Financing",
               settings: "Settings",
               help: "Help & Support",
+              about: "About us",
               workspace: "WORKSPACE",
               account: "ACCOUNT",
             }
@@ -243,6 +293,7 @@ export default function WorkspaceFrame({
               finance: "Finanzierung",
               settings: "Einstellungen",
               help: "Hilfe & Support",
+              about: "Über uns",
               workspace: "ARBEITSBEREICH",
               account: "KONTO",
             };
@@ -282,16 +333,10 @@ export default function WorkspaceFrame({
         : "/dashboard/social-media",
     },
     {
-      key: "marketing" as const,
-      icon: "marketing" as const,
-      label: labels.marketing,
-      href: "/marketing-hub",
-    },
-    {
-      key: "finance" as const,
-      icon: "finance" as const,
-      label: labels.finance,
-      href: "/finanzierung",
+      key: "workspace" as const,
+      icon: "workspace" as const,
+      label: "Workspace",
+      href: "#workspace",
     },
   ];
 
@@ -332,6 +377,19 @@ export default function WorkspaceFrame({
               <Link
                 key={item.key}
                 href={item.href}
+                onClick={
+                  item.key === "workspace"
+                    ? (event) => {
+                        event.preventDefault();
+
+                        window.dispatchEvent(
+                          new Event(
+                            "inserat-ai:open-workspace"
+                          )
+                        );
+                      }
+                    : undefined
+                }
                 className={
                   active === item.key
                     ? "iaNavItem active"
@@ -347,6 +405,20 @@ export default function WorkspaceFrame({
                 <span>
                   {item.label}
                 </span>
+
+                {item.key === "workspace" ? (
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      marginLeft: "auto",
+                      color: "#67e8f9",
+                      fontSize: "18px",
+                      lineHeight: 1,
+                    }}
+                  >
+                    ›
+                  </span>
+                ) : null}
               </Link>
             )
           )}
@@ -356,6 +428,21 @@ export default function WorkspaceFrame({
           <div className="iaNavGroupLabel">
             {labels.account}
           </div>
+
+          <Link
+            href="/ueber-uns"
+            className="iaNavItem"
+          >
+            <span className="iaNavIcon">
+              <WorkspaceIcon
+                name="about"
+              />
+            </span>
+
+            <span>
+              {labels.about}
+            </span>
+          </Link>
 
           <Link
             href="/konto"
@@ -798,7 +885,9 @@ export default function WorkspaceFrame({
           }
 
           .iaSidebarBottom {
-            display: none;
+            display: flex;
+            margin-top: 14px;
+            padding-top: 14px;
           }
 
           .iaWorkspaceTopbar {

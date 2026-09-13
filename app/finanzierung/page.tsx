@@ -44,6 +44,11 @@ export default function FinanceOverviewPage() {
   const [error, setError] =
     useState("");
 
+  const [
+    selectedListingId,
+    setSelectedListingId,
+  ] = useState("");
+
 
   useEffect(() => {
     const hostnameMarket =
@@ -153,6 +158,50 @@ export default function FinanceOverviewPage() {
       (listing) =>
         listing.market === market
     );
+
+  useEffect(() => {
+    setSelectedListingId(
+      (current) => {
+        if (
+          visibleListings.some(
+            (listing) =>
+              listing.id === current
+          )
+        ) {
+          return current;
+        }
+
+        return (
+          visibleListings[0]?.id ??
+          ""
+        );
+      }
+    );
+  }, [listings, market]);
+
+  const selectedListing =
+    visibleListings.find(
+      (listing) =>
+        listing.id ===
+        selectedListingId
+    ) ??
+    visibleListings[0] ??
+    null;
+
+  const selectedListingTitle =
+    selectedListing?.location?.trim() ||
+    selectedListing?.propertyType?.trim() ||
+    "Immobilie";
+
+  const selectedFinanceHref =
+    selectedListing
+      ? selectedListing.hasCoreAccess ===
+        false
+        ? "/cockpit/" +
+          selectedListing.id
+        : "/marketing-hub/finance/" +
+          selectedListing.id
+      : "#";
 
   function formatPrice(
     value: number | null | undefined
@@ -281,11 +330,11 @@ export default function FinanceOverviewPage() {
           <div className="financeSectionHead">
             <div>
               <span>
-                IMMOBILIEN
+                FINANZ-CONTROL-CENTER
               </span>
 
               <h2>
-                Objekt auswählen
+                Finanzierungsobjekt
               </h2>
             </div>
 
@@ -332,71 +381,287 @@ export default function FinanceOverviewPage() {
 
           {!loading &&
           !error &&
-          visibleListings.length > 0 ? (
-            <div className="financeObjectGrid">
-              {visibleListings.map(
-                (listing) => {
-                  const title =
-                    listing.location?.trim() ||
-                    listing.propertyType?.trim() ||
-                    "Immobilie";
+          selectedListing ? (
+            <div className="financeControlGrid">
+              <section className="financeSelectorCard">
+                <span className="financePanelEyebrow">
+                  OBJEKT
+                </span>
 
-                  return (
-                    <article
-                      key={listing.id}
-                      className="financeObjectCard"
-                    >
-                      <div className="financeObjectTop">
-                        <span className="financeObjectBadge">
-                          {listing.propertyType ||
-                            "Objekt"}
-                        </span>
+                <h3>
+                  Objekt auswählen
+                </h3>
 
-                        <span className="financeObjectStatus">
-                          {listing.hasCoreAccess ===
-                          false
-                            ? "Nicht freigeschaltet"
-                            : "Bereit"}
-                        </span>
-                      </div>
+                <p>
+                  Wähle die Immobilie, deren
+                  Preis- und Finanzierungsdaten
+                  du bearbeiten möchtest.
+                </p>
 
-                      <h3>
-                        {title}
-                      </h3>
+                <label className="financeSelectLabel">
+                  Immobilienobjekt
+                  <select
+                    value={
+                      selectedListing.id
+                    }
+                    onChange={(event) =>
+                      setSelectedListingId(
+                        event.target.value
+                      )
+                    }
+                    className="financeSelect"
+                  >
+                    {visibleListings.map(
+                      (listing) => {
+                        const title =
+                          listing.location?.trim() ||
+                          listing.propertyType?.trim() ||
+                          "Immobilie";
 
-                      <p className="financePrice">
-                        {formatPrice(
-                          listing.price
-                        )}
-                      </p>
+                        return (
+                          <option
+                            key={listing.id}
+                            value={listing.id}
+                          >
+                            {title}
+                            {" · "}
+                            {listing.propertyType ||
+                              "Objekt"}
+                          </option>
+                        );
+                      }
+                    )}
+                  </select>
+                </label>
 
-                      {listing.hasCoreAccess === false ? (
-                        <Link
-                          href={
-                            "/cockpit/" +
-                            listing.id
-                          }
-                          className="financeOpenButton locked"
-                        >
-                          Objekt freischalten
-                          <span>→</span>
-                        </Link>
-                      ) : (
-                        <Link
-                          href={
-                            "/marketing-hub/finance/" +
-                            listing.id
-                          }
-                          className="financeOpenButton"
-                        >
-                          Finanzierung öffnen
-                          <span>→</span>
-                        </Link>
+                <div className="financeSelectorHint">
+                  Keine zweite Objektverwaltung:
+                  Hier wählst du nur aus, womit
+                  du finanziell arbeiten willst.
+                </div>
+              </section>
+
+
+              <section className="financeSelectedCard">
+                <div className="financeSelectedHeader">
+                  <div>
+                    <span className="financePanelEyebrow">
+                      AUSGEWÄHLTES OBJEKT
+                    </span>
+
+                    <h3>
+                      {selectedListingTitle}
+                    </h3>
+
+                    <p>
+                      {selectedListing.propertyType ||
+                        "Immobilie"}
+                      {" · "}
+                      {marketName}
+                    </p>
+                  </div>
+
+                  <span
+                    className={
+                      selectedListing.hasCoreAccess ===
+                      false
+                        ? "financeAccessBadge locked"
+                        : "financeAccessBadge"
+                    }
+                  >
+                    {selectedListing.hasCoreAccess ===
+                    false
+                      ? "Nicht freigeschaltet"
+                      : "Bereit"}
+                  </span>
+                </div>
+
+
+                <div className="financeSelectedGrid">
+                  <article className="financeMetric">
+                    <small>
+                      ANGEBOTSPREIS
+                    </small>
+
+                    <strong>
+                      {formatPrice(
+                        selectedListing.price
                       )}
-                    </article>
-                  );
-                }
-              )}
+                    </strong>
+                  </article>
+
+                  <article className="financeMetric">
+                    <small>
+                      MARKT
+                    </small>
+
+                    <strong>
+                      {marketName}
+                    </strong>
+
+                    <span>
+                      {currency}
+                    </span>
+                  </article>
+
+                  <article className="financeMetric">
+                    <small>
+                      FINANZSTATUS
+                    </small>
+
+                    <strong>
+                      {selectedListing.hasCoreAccess ===
+                      false
+                        ? "Gesperrt"
+                        : "Aktiv"}
+                    </strong>
+                  </article>
+                </div>
+
+
+                <div
+                  className={
+                    selectedListing.hasCoreAccess ===
+                    false
+                      ? "financeWorkflow locked"
+                      : "financeWorkflow"
+                  }
+                >
+                  <div className="financeWorkflowStep">
+                    <span>01</span>
+
+                    <div>
+                      <strong>
+                        Preisstrategie
+                      </strong>
+
+                      <small>
+                        Angebotspreis,
+                        Preisuntergrenze &
+                        Provision
+                      </small>
+                    </div>
+                  </div>
+
+                  <div className="financeWorkflowStep">
+                    <span>02</span>
+
+                    <div>
+                      <strong>
+                        Käufer-Finanzierung
+                      </strong>
+
+                      <small>
+                        Eigenkapital &
+                        Finanzierungs-Check
+                      </small>
+                    </div>
+                  </div>
+
+                  <div className="financeWorkflowStep">
+                    <span>03</span>
+
+                    <div>
+                      <strong>
+                        Entscheidung
+                      </strong>
+
+                      <small>
+                        Finanzielle Eckdaten
+                        auf einen Blick
+                      </small>
+                    </div>
+                  </div>
+                </div>
+
+
+                {selectedListing.hasCoreAccess ===
+                false ? (
+                  <div className="financeLockedNotice">
+                    <span aria-hidden="true">
+                      🔒
+                    </span>
+
+                    <div>
+                      <strong>
+                        Nach Freischaltung verfügbar
+                      </strong>
+
+                      <small>
+                        Preisstrategie,
+                        Käufer-Finanzierung und
+                        Entscheidungsdaten werden
+                        nach der Objektfreischaltung
+                        aktiviert.
+                      </small>
+                    </div>
+                  </div>
+                ) : null}
+
+                <Link
+                  href={selectedFinanceHref}
+                  className={
+                    selectedListing.hasCoreAccess ===
+                    false
+                      ? "financeLaunchButton locked"
+                      : "financeLaunchButton"
+                  }
+                  style={{
+                    display: "flex",
+                    width: "fit-content",
+                    minHeight: 44,
+                    alignItems: "center",
+                    justifyContent:
+                      "center",
+                    gap: 14,
+                    marginTop: 16,
+                    marginLeft: "auto",
+                    padding: "0 16px",
+                    borderRadius: 13,
+                    border:
+                      selectedListing.hasCoreAccess ===
+                      false
+                        ? "1px solid rgba(245,158,11,.55)"
+                        : "1px solid rgba(5,150,105,.28)",
+                    background:
+                      selectedListing.hasCoreAccess ===
+                      false
+                        ? "linear-gradient(135deg,#fbbf24,#f59e0b)"
+                        : "linear-gradient(135deg,#047857,#0f766e)",
+                    color:
+                      selectedListing.hasCoreAccess ===
+                      false
+                        ? "#071426"
+                        : "#ffffff",
+                    fontSize: 11,
+                    fontWeight: 900,
+                    textDecoration: "none",
+                    boxShadow:
+                      selectedListing.hasCoreAccess ===
+                      false
+                        ? "0 12px 28px rgba(245,158,11,.20)"
+                        : "0 12px 28px rgba(15,118,110,.18)",
+                  }}
+                >
+                  <span>
+                    {selectedListing.hasCoreAccess ===
+                    false
+                      ? "Objekt freischalten"
+                      : "Finanz-Cockpit öffnen"}
+                  </span>
+
+                  <strong>
+                    →
+                  </strong>
+                </Link>
+
+                <p className="financeDisclaimer">
+                  Finanzierungswerte dienen
+                  der internen Orientierung
+                  und ersetzen keine
+                  individuelle Finanzberatung.
+                </p>
+              </section>
             </div>
           ) : null}
         </section>
@@ -609,6 +874,334 @@ export default function FinanceOverviewPage() {
             line-height: 1.55;
           }
 
+          .financeControlGrid {
+            display: grid;
+            grid-template-columns:
+              minmax(260px, .72fr)
+              minmax(0, 1.6fr);
+            gap: 16px;
+          }
+
+          .financeSelectorCard,
+          .financeSelectedCard {
+            border:
+              1px solid #d8e3ea;
+            border-radius: 20px;
+            background: white;
+            box-shadow:
+              0 14px 32px
+              rgba(15,23,42,.055);
+          }
+
+          .financeSelectorCard {
+            align-self: start;
+            padding: 24px;
+          }
+
+          .financeSelectedCard {
+            padding: 26px;
+          }
+
+          .financePanelEyebrow {
+            color: #0f766e;
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: .16em;
+          }
+
+          .financeSelectorCard h3,
+          .financeSelectedCard h3 {
+            margin: 7px 0 0;
+            color: #10213a;
+            font-size: 21px;
+            letter-spacing: -.02em;
+          }
+
+          .financeSelectorCard > p {
+            margin: 8px 0 22px;
+            color: #6b7e91;
+            font-size: 11px;
+            line-height: 1.6;
+          }
+
+          .financeSelectLabel {
+            display: grid;
+            gap: 7px;
+            color: #53677c;
+            font-size: 10px;
+            font-weight: 800;
+          }
+
+          .financeSelect {
+            width: 100%;
+            min-height: 48px;
+            padding: 0 38px 0 13px;
+            border:
+              1px solid #cddbe5;
+            border-radius: 12px;
+            outline: none;
+            background: #f8fbfd;
+            color: #10213a;
+            font: inherit;
+            font-size: 12px;
+            font-weight: 700;
+          }
+
+          .financeSelect:focus {
+            border-color: #0f766e;
+            box-shadow:
+              0 0 0 3px
+              rgba(15,118,110,.10);
+          }
+
+          .financeSelectorHint {
+            margin-top: 15px;
+            padding: 12px 13px;
+            border:
+              1px solid #d9efe8;
+            border-radius: 11px;
+            background: #f2fbf8;
+            color: #58766d;
+            font-size: 9px;
+            line-height: 1.55;
+          }
+
+          .financeSelectedHeader {
+            display: flex;
+            align-items: flex-start;
+            justify-content:
+              space-between;
+            gap: 18px;
+          }
+
+          .financeSelectedHeader p {
+            margin: 6px 0 0;
+            color: #718397;
+            font-size: 11px;
+          }
+
+          .financeAccessBadge {
+            flex: 0 0 auto;
+            padding: 7px 10px;
+            border-radius: 999px;
+            background: #e7f8f1;
+            color: #047857;
+            font-size: 8px;
+            font-weight: 900;
+          }
+
+          .financeAccessBadge.locked {
+            background: #f1f5f9;
+            color: #64748b;
+          }
+
+          .financeSelectedGrid {
+            display: grid;
+            grid-template-columns:
+              repeat(
+                3,
+                minmax(0,1fr)
+              );
+            gap: 10px;
+            margin-top: 22px;
+          }
+
+          .financeMetric {
+            min-height: 100px;
+            padding: 16px;
+            border:
+              1px solid #e0e8ee;
+            border-radius: 14px;
+            background:
+              linear-gradient(
+                145deg,
+                #f9fcfd,
+                #f3f8fa
+              );
+          }
+
+          .financeMetric small {
+            display: block;
+            color: #8193a5;
+            font-size: 8px;
+            font-weight: 900;
+            letter-spacing: .09em;
+          }
+
+          .financeMetric strong {
+            display: block;
+            margin-top: 9px;
+            color: #10213a;
+            font-size: 15px;
+          }
+
+          .financeMetric span {
+            display: block;
+            margin-top: 4px;
+            color: #0f766e;
+            font-size: 9px;
+            font-weight: 900;
+          }
+
+          .financeWorkflow {
+            display: grid;
+            grid-template-columns:
+              repeat(
+                3,
+                minmax(0,1fr)
+              );
+            gap: 10px;
+            margin-top: 12px;
+          }
+
+          .financeWorkflow.locked
+          .financeWorkflowStep {
+            opacity: .45;
+            filter:
+              grayscale(.18);
+            background:
+              #f8fafc;
+            border-color:
+              #e5e9ee;
+          }
+
+          .financeWorkflow.locked
+          .financeWorkflowStep > span {
+            background:
+              #eef2f6;
+            color:
+              #94a3b8;
+          }
+
+          .financeLockedNotice {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            margin-top: 14px;
+            padding: 12px 14px;
+            border:
+              1px solid
+              #e2e8f0;
+            border-radius: 12px;
+            background:
+              #f8fafc;
+            color: #64748b;
+          }
+
+          .financeLockedNotice > span {
+            display: grid;
+            width: 31px;
+            height: 31px;
+            flex: 0 0 31px;
+            place-items: center;
+            border-radius: 9px;
+            background:
+              #eef2f6;
+            font-size: 14px;
+          }
+
+          .financeLockedNotice div {
+            display: grid;
+            gap: 3px;
+          }
+
+          .financeLockedNotice strong {
+            color: #475569;
+            font-size: 10px;
+          }
+
+          .financeLockedNotice small {
+            color: #7c8b9b;
+            font-size: 8px;
+            line-height: 1.45;
+          }
+
+          .financeWorkflowStep {
+            display: flex;
+            min-height: 78px;
+            align-items: center;
+            gap: 11px;
+            padding: 13px;
+            border:
+              1px solid #e3eaf0;
+            border-radius: 13px;
+            background: white;
+          }
+
+          .financeWorkflowStep > span {
+            display: grid;
+            width: 31px;
+            height: 31px;
+            flex: 0 0 31px;
+            place-items: center;
+            border-radius: 9px;
+            background: #e5f8f1;
+            color: #047857;
+            font-size: 9px;
+            font-weight: 900;
+          }
+
+          .financeWorkflowStep div {
+            display: grid;
+            gap: 3px;
+          }
+
+          .financeWorkflowStep strong {
+            color: #183047;
+            font-size: 10px;
+          }
+
+          .financeWorkflowStep small {
+            color: #7a8da0;
+            font-size: 8px;
+            line-height: 1.4;
+          }
+
+          .financeLaunchButton {
+            display: flex;
+            min-height: 50px;
+            align-items: center;
+            justify-content:
+              space-between;
+            gap: 14px;
+            margin-top: 16px;
+            padding: 0 17px;
+            border-radius: 13px;
+            background:
+              linear-gradient(
+                135deg,
+                #047857,
+                #0f766e
+              );
+            color: white;
+            font-size: 11px;
+            font-weight: 900;
+            text-decoration: none;
+            box-shadow:
+              0 10px 24px
+              rgba(15,118,110,.17);
+          }
+
+          .financeLaunchButton.locked {
+            background:
+              linear-gradient(
+                135deg,
+                #334155,
+                #475569
+              );
+            box-shadow:
+              0 10px 24px
+              rgba(51,65,85,.14);
+          }
+
+          .financeDisclaimer {
+            margin:
+              10px 2px 0;
+            color: #8494a5;
+            font-size: 8px;
+            line-height: 1.45;
+          }
+
           .financeObjectGrid {
             display: grid;
             grid-template-columns:
@@ -743,7 +1336,10 @@ export default function FinanceOverviewPage() {
             max-width: 1000px
           ) {
             .financeIntroGrid,
-            .financeObjectGrid {
+            .financeObjectGrid,
+            .financeControlGrid,
+            .financeSelectedGrid,
+            .financeWorkflow {
               grid-template-columns:
                 1fr;
             }

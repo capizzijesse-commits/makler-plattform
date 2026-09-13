@@ -8,19 +8,22 @@ export type ListingResolvedLocation = {
   longitude: number;
 };
 
-type ListingMarket =
+type LegacyListingMarket =
   | "CH"
   | "DE";
+
+type ResolveListingAddressInput = {
+  countryCode?: string | null;
+  market?: LegacyListingMarket | null;
+  street: string;
+  postalCode: string;
+  city: string;
+};
 
 type MapTilerFeature = {
   place_name?: string;
   text?: string;
-
-  center?: [
-    number,
-    number
-  ];
-
+  center?: [number, number];
   geometry?: {
     coordinates?: number[];
   };
@@ -30,30 +33,81 @@ type MapTilerResponse = {
   features?: MapTilerFeature[];
 };
 
-function validCoordinates(
-  longitude: unknown,
-  latitude: unknown
+function normalizeCountryCode(
+  value: unknown
 ) {
-  return (
-    typeof longitude === "number" &&
-    Number.isFinite(longitude) &&
-    longitude >= -180 &&
-    longitude <= 180 &&
-    typeof latitude === "number" &&
-    Number.isFinite(latitude) &&
-    latitude >= -90 &&
-    latitude <= 90
-  );
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalized =
+    value.trim().toUpperCase();
+
+  return /^[A-Z]{2}$/.test(normalized)
+    ? normalized
+    : null;
+}
+
+function languageForCountry(
+  countryCode: string
+) {
+  if (
+    countryCode === "CH" ||
+    countryCode === "DE" ||
+    countryCode === "AT"
+  ) {
+    return "de";
+  }
+
+  if (countryCode === "IT") {
+    return "it";
+  }
+
+  if (countryCode === "FR") {
+    return "fr";
+  }
+
+  if (
+    countryCode === "ES"
+  ) {
+    return "es";
+  }
+
+  if (
+    countryCode === "PT" ||
+    countryCode === "BR"
+  ) {
+    return "pt";
+  }
+
+  return "en";
+}
+
+function appOriginForCountry(
+  countryCode: string
+) {
+  if (countryCode === "DE") {
+    return "https://inserat-ai.de";
+  }
+
+  if (countryCode === "AT") {
+    return "https://inserat-ai.at";
+  }
+
+  return "https://inserat-ai.ch";
 }
 
 export async function resolveListingAddress(
-  input: {
-    market: ListingMarket;
-    street: string;
-    postalCode: string;
-    city: string;
-  }
+  input: ResolveListingAddressInput
 ): Promise<ListingResolvedLocation | null> {
+  const countryCode =
+    normalizeCountryCode(
+      input.countryCode
+    ) ??
+    normalizeCountryCode(
+      input.market
+    );
+
   const street =
     input.street.trim();
 
@@ -64,6 +118,7 @@ export async function resolveListingAddress(
     input.city.trim();
 
   if (
+    !countryCode ||
     !street ||
     !postalCode ||
     !city
@@ -72,14 +127,14 @@ export async function resolveListingAddress(
   }
 
   try {
-    if (
-      input.market === "CH"
-    ) {
+    /*
+     * Schweiz behält geo.admin.ch.
+     */
+    if (countryCode === "CH") {
       const swiss =
         await resolveSwissAddress({
           street,
-          zip:
-            postalCode,
+          zip: postalCode,
           city,
         });
 
@@ -88,23 +143,20 @@ export async function resolveListingAddress(
       }
 
       return {
-        label:
-          swiss.label,
-
-        latitude:
-          swiss.latitude,
-
-        longitude:
-          swiss.longitude,
+        label: swiss.label,
+        latitude: swiss.latitude,
+        longitude: swiss.longitude,
       };
     }
 
+    /*
+     * Alle übrigen ISO-2 Länder
+     * nutzen den globalen Geocoder.
+     */
     const key =
-      process.env
-        .MAPTILER_API_KEY
+      process.env.MAPTILER_API_KEY
         ?.trim() ||
-      process.env
-        .NEXT_PUBLIC_MAPTILER_KEY
+      process.env.NEXT_PUBLIC_MAPTILER_KEY
         ?.trim() ||
       "";
 
@@ -112,7 +164,6 @@ export async function resolveListingAddress(
       console.warn(
         "[listing-location] MapTiler-Key fehlt."
       );
-
       return null;
     }
 
@@ -121,47 +172,47 @@ export async function resolveListingAddress(
         street,
         postalCode,
         city,
-        "Deutschland",
       ].join(" ");
 
     const params =
       new URLSearchParams({
         key,
         country:
-          "de",
-        types:
-          "address",
+          countryCode.toLowerCase(),
+        types: "address",
         language:
-          "de",
-        limit:
-          "5",
+          languageForCountry(
+            countryCode
+          ),
+        limit: "5",
       });
 
     const requestOrigin =
       process.env.NODE_ENV ===
       "development"
         ? "http://localhost:3000"
-        : input.market === "DE"
-          ? "https://inserat-ai.de"
-          : "https://inserat-ai.ch";
+        : appOriginForCountry(
+            countryCode
+          );
+
+    const url =
+      "https://api.maptiler.com/geocoding/" +
+      encodeURIComponent(query) +
+      ".json?" +
+      params.toString();
 
     const response =
       await fetch(
-        `https://api.maptiler.com/geocoding/${encodeURIComponent(
-          query
-        )}.json?${params.toString()}`,
+        url,
         {
           headers: {
             Accept:
               "application/json",
-
             Origin:
               requestOrigin,
-
             Referer:
-              `${requestOrigin}/`,
+              requestOrigin + "/",
           },
-
           cache:
             "no-store",
         }
@@ -170,9 +221,9 @@ export async function resolveListingAddress(
     if (!response.ok) {
       console.warn(
         "[listing-location] MapTiler",
+        countryCode,
         response.status
       );
-
       return null;
     }
 
@@ -197,15 +248,11 @@ export async function resolveListingAddress(
 
       if (
         typeof longitude !== "number" ||
-        !Number.isFinite(
-          longitude
-        ) ||
+        !Number.isFinite(longitude) ||
         longitude < -180 ||
         longitude > 180 ||
         typeof latitude !== "number" ||
-        !Number.isFinite(
-          latitude
-        ) ||
+        !Number.isFinite(latitude) ||
         latitude < -90 ||
         latitude > 90
       ) {
@@ -217,7 +264,6 @@ export async function resolveListingAddress(
           feature.place_name ??
           feature.text ??
           query,
-
         longitude,
         latitude,
       };

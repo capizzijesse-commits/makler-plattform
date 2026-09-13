@@ -409,13 +409,13 @@ export default function MarketSwitcher() {
         <span
           style={{
             fontSize:
-              "clamp(13px, 3.4vw, 21px)",
+              "clamp(11px, 2.7vw, 18px)",
             lineHeight:
               1,
             fontWeight:
               900,
             letterSpacing:
-              "-0.025em",
+              "-0.035em",
             whiteSpace:
               "nowrap",
           }}

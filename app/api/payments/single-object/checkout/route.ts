@@ -285,6 +285,7 @@ export async function POST(request: NextRequest) {
       },
       select: {
         id: true,
+        countryCode: true,
         unlockStatus: true,
         singleObjectPriceCents: true,
         stripeCheckoutSessionId: true,
@@ -343,10 +344,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const expectedCurrency =
-      getInseratAiCurrencyFromHeaders(
-        request.headers
-      );
+    const listingCountryCode =
+      listing.countryCode
+        ?.trim()
+        .toUpperCase();
+
+    const expectedCurrency:
+      InseratAiCurrency =
+      listingCountryCode === "CH"
+        ? "chf"
+        : listingCountryCode === "DE" ||
+          listingCountryCode === "AT"
+        ? "eur"
+        : getInseratAiCurrencyFromHeaders(
+            request.headers
+          );
 
     const stripe = getStripe();
     let claim: CheckoutClaim | null = null;

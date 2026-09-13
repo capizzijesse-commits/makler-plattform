@@ -1,4 +1,4 @@
-import type {Metadata} from "next";
+﻿import type {Metadata} from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {getLocale} from "next-intl/server";
@@ -247,10 +247,10 @@ export default async function AboutPage() {
           <div className="relative border-t border-white/10 bg-slate-950/45 p-4 sm:p-6 lg:border-l lg:border-t-0">
             <div className="overflow-hidden rounded-[24px] border border-white/10 bg-[#020817]">
               <Image
-                src="/ueber-uns-inserat-ai.png"
+                src="/ueber-uns-inserat-ai-v2.png"
                 alt={text.imageAlt}
-                width={1448}
-                height={1086}
+                width={1087}
+                height={1447}
                 priority
                 sizes="(max-width: 1024px) 100vw, 55vw"
                 className="h-auto w-full"
