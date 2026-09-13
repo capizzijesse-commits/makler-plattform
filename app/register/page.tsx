@@ -479,6 +479,15 @@ function handleRegisterFormStart() {
       setGoogleLoading(true);
       setDialogMessage("");
 
+      trackAnalyticsEvent(
+        "register_submit",
+        {
+          method: "google",
+          requested_plan:
+            requestedPlan || "none",
+        }
+      );
+
       const response = await fetch(
         "/api/auth/google",
         {
@@ -693,6 +702,15 @@ let registerErrorTracked = false;
 }
 
     setLoading(true);
+
+    trackAnalyticsEvent(
+      "register_submit",
+      {
+        method: "email",
+        requested_plan:
+          requestedPlan || "none",
+      }
+    );
 
     try {
       const response = await fetch(
