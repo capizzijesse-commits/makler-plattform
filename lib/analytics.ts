@@ -13,6 +13,25 @@ const CONSENT_STORAGE_KEY =
 
 const QUEUE_STORAGE_KEY =
   "inserat_ai_ga4_queue_v1";
+
+export const ANALYTICS_TESTER_STORAGE_KEY =
+  "inserat_ai_analytics_tester_excluded_v1";
+
+export function isAnalyticsTesterExcluded(): boolean {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  try {
+    return (
+      window.localStorage.getItem(
+        ANALYTICS_TESTER_STORAGE_KEY
+      ) === "true"
+    );
+  } catch {
+    return false;
+  }
+}
 export function isAnalyticsAllowedHost(): boolean {
   if (typeof window === "undefined") {
     return false;
@@ -35,7 +54,8 @@ export function isAnalyticsAllowedHost(): boolean {
 function hasAnalyticsConsent(): boolean {
   if (
     typeof window === "undefined" ||
-    !isAnalyticsAllowedHost()
+    !isAnalyticsAllowedHost() ||
+    isAnalyticsTesterExcluded()
   ) {
     return false;
   }
