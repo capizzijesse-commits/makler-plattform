@@ -10,6 +10,7 @@ import GuideAssistant from "@/app/components/GuideAssistant";
 import MaklerCommunicationHub from "@/app/components/MaklerCommunicationHub";
 import GlobalWorkspaceLauncher from "@/app/components/GlobalWorkspaceLauncher";
 import SupportActionDock from "@/app/components/SupportActionDock";
+import MobileAppNav from "@/app/components/MobileAppNav";
 import FeedbackButton from "@/components/FeedbackButton";
 
 type AppShellProps = {
@@ -58,16 +59,17 @@ export default function AppShell({
         <>
           <GlobalWorkspaceLauncher />
           <MaklerCommunicationHub />
+          <MobileAppNav />
         </>
       ) : null}
 
       {showSupportTools ? (
-        <>
+        <div className="iaSupportToolsShell">
           <WhatsAppButton />
           <FeedbackButton />
           <GuideAssistant />
           <SupportActionDock />
-        </>
+        </div>
       ) : null}
     </>
   );

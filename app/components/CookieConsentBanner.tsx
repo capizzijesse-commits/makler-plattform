@@ -154,6 +154,24 @@ export default function CookieConsentBanner() {
     setIsOpen(true);
   }, []);
 
+  useEffect(() => {
+    const openPrivacySettings = () => {
+      setIsOpen(true);
+    };
+
+    window.addEventListener(
+      "inserat-ai:open-privacy-settings",
+      openPrivacySettings
+    );
+
+    return () => {
+      window.removeEventListener(
+        "inserat-ai:open-privacy-settings",
+        openPrivacySettings
+      );
+    };
+  }, []);
+
   const copy = translations[locale];
 
   function acceptAnalytics() {

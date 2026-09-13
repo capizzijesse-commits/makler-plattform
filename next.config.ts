@@ -32,6 +32,8 @@ if (process.env.NODE_ENV === "production") {
 const nextConfig: NextConfig = {
   poweredByHeader: false,
 
+  devIndicators: false,
+
   allowedDevOrigins: [
     "192.168.0.18",
   ],

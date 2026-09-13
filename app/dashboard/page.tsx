@@ -5219,30 +5219,53 @@ function Field({
   );
 }
 
-function MiniStat({ title, value }: { title: string; value: string }) {
+function MiniStat({
+  title,
+  value,
+}: {
+  title: string;
+  value: string;
+}) {
   return (
     <div
       style={{
-        background: "rgba(255,255,255,0.04)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        display: "flex",
+        minWidth: 0,
+        minHeight: "96px",
+        flexDirection: "column",
+        justifyContent: "center",
+        padding: "14px 15px",
+        background:
+          "rgba(255,255,255,0.04)",
+        border:
+          "1px solid rgba(255,255,255,0.08)",
         borderRadius: "14px",
-        padding: "14px",
       }}
     >
       <div
         style={{
+          marginBottom: "7px",
+          color:
+            "rgba(203, 213, 225, 0.72)",
           fontSize: "12px",
-          color: "rgba(255,255,255,0.58)",
-          marginBottom: "6px",
+          fontWeight: 500,
+          lineHeight: 1.2,
         }}
       >
         {title}
       </div>
+
       <div
         style={{
-          fontSize: "16px",
-          fontWeight: 700,
           color: "#FFFFFF",
+          fontSize:
+            "clamp(12px, 3vw, 16px)",
+          fontWeight: 800,
+          lineHeight: 1.15,
+          letterSpacing: "-0.01em",
+          whiteSpace: "nowrap",
+          overflowWrap: "normal",
+          wordBreak: "normal",
         }}
       >
         {value}
