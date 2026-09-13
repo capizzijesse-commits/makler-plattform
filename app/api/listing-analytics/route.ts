@@ -39,10 +39,54 @@ export async function GET(
       );
     }
 
+    const requestedMarket =
+      request.nextUrl.searchParams
+        .get("market")
+        ?.trim()
+        .toUpperCase();
+
+    const market =
+      requestedMarket === "DE"
+        ? "DE"
+        : "CH";
+
     const listings =
       await prisma.listing.findMany({
         where: {
           userId: user.id,
+
+          OR:
+            market === "CH"
+              ? [
+                  {
+                    countryCode:
+                      "CH",
+                  },
+                  {
+                    countryCode:
+                      null,
+                    market:
+                      "CH",
+                  },
+                  {
+                    countryCode:
+                      null,
+                    market:
+                      null,
+                  },
+                ]
+              : [
+                  {
+                    countryCode:
+                      "DE",
+                  },
+                  {
+                    countryCode:
+                      null,
+                    market:
+                      "DE",
+                  },
+                ],
         },
         select: {
           id: true,

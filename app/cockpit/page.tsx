@@ -14,6 +14,8 @@ type Listing = {
   projectName: string | null;
   location: string;
   postalCode: string | null;
+  countryCode: string | null;
+  market: string | null;
   propertyType: string;
   rooms: number | null;
   livingArea: number | null;

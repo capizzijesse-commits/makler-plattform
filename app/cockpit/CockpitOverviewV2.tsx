@@ -26,6 +26,8 @@ type CockpitListing = {
   projectName: string | null;
   location: string;
   postalCode: string | null;
+  countryCode: string | null;
+  market: string | null;
   propertyType: string;
   rooms: number | null;
   livingArea: number | null;
@@ -303,7 +305,7 @@ export default function CockpitOverviewV2({
 
         const response =
           await fetch(
-            "/api/listing-analytics",
+            `/api/listing-analytics?market=${market}`,
             {
               method: "GET",
               cache: "no-store",
@@ -349,7 +351,7 @@ export default function CockpitOverviewV2({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [market]);
 
   const intlLocale =
     market === "DE"
@@ -420,9 +422,51 @@ export default function CockpitOverviewV2({
       .trim()
       .toLocaleLowerCase(intlLocale);
 
+  const marketListings =
+    useMemo(() => {
+      return listings.filter(
+        (listing) => {
+          const countryCode =
+            listing.countryCode
+              ?.trim()
+              .toUpperCase();
+
+          if (countryCode) {
+            return (
+              countryCode === market
+            );
+          }
+
+          /*
+           * Legacy-Objekte vor countryCode:
+           * vorhandenen Markt verwenden.
+           * Ganz alte Datensätze gelten als CH.
+           */
+          const legacyMarket =
+            listing.market
+              ?.trim()
+              .toUpperCase();
+
+          if (
+            legacyMarket === "CH" ||
+            legacyMarket === "DE"
+          ) {
+            return (
+              legacyMarket === market
+            );
+          }
+
+          return market === "CH";
+        }
+      );
+    }, [
+      listings,
+      market,
+    ]);
+
   const sortedListings =
     useMemo(() => {
-      return [...listings].sort(
+      return [...marketListings].sort(
         (first, second) =>
           new Date(
             second.updatedAt
@@ -431,7 +475,7 @@ export default function CockpitOverviewV2({
             first.updatedAt
           ).getTime()
       );
-    }, [listings]);
+    }, [marketListings]);
 
   const filteredListings =
     useMemo(() => {
@@ -467,20 +511,20 @@ export default function CockpitOverviewV2({
     ]);
 
   const generatedCount =
-    listings.filter((listing) =>
+    marketListings.filter((listing) =>
       hasGeneratedVariants(
         listing.generatedVariants
       )
     ).length;
 
   const activeCount =
-    listings.filter(
+    marketListings.filter(
       (listing) =>
         !listing.archivedAt
     ).length;
 
   const archivedCount =
-    listings.length -
+    marketListings.length -
     activeCount;
 
   const heroImage =
@@ -954,7 +998,7 @@ export default function CockpitOverviewV2({
               </span>
               <div>
                 <strong>
-                  {listings.length}
+                  {marketListings.length}
                 </strong>
                 <span>
                   {labels.totalObjects}
