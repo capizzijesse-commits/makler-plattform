@@ -8,8 +8,10 @@ import {
 } from "react";
 import {usePathname} from "next/navigation";
 import {
+  ANALYTICS_TESTER_STORAGE_KEY,
   flushAnalyticsQueue,
   isAnalyticsAllowedHost,
+  isAnalyticsTesterExcluded,
   trackAnalyticsEvent,
 } from "@/lib/analytics";
 
@@ -82,6 +84,7 @@ export default function GoogleAnalytics() {
 useEffect(() => {
   setEnabled(
     isAnalyticsAllowedHost() &&
+      !isAnalyticsTesterExcluded() &&
       window.localStorage.getItem(
         STORAGE_KEY
       ) === "accepted"
@@ -97,6 +100,7 @@ useEffect(() => {
 
     setEnabled(
       isAnalyticsAllowedHost() &&
+        !isAnalyticsTesterExcluded() &&
         choice === "accepted"
     );
   }
@@ -105,14 +109,19 @@ useEffect(() => {
     event: StorageEvent
   ) {
     if (
-      event.key !== STORAGE_KEY
+      event.key !== STORAGE_KEY &&
+      event.key !==
+        ANALYTICS_TESTER_STORAGE_KEY
     ) {
       return;
     }
 
     setEnabled(
       isAnalyticsAllowedHost() &&
-        event.newValue === "accepted"
+        !isAnalyticsTesterExcluded() &&
+        window.localStorage.getItem(
+          STORAGE_KEY
+        ) === "accepted"
     );
   }
 
