@@ -15,6 +15,10 @@ import {
   getGermanPortalListingReadinessForUser,
 } from "@/lib/portal-integrations/german-portal-listings.server";
 
+import {
+  getImmoScout24DeAccessSnapshot,
+} from "@/lib/portal-integrations/immoscout24-de-access.server";
+
 import type {
   GermanPortalId,
 } from "@/lib/portal-integrations/types";
@@ -96,6 +100,10 @@ export async function GET(
       ]);
 
 
+    const immoScout24DeAccess =
+      getImmoScout24DeAccessSnapshot();
+
+
     const byPortal =
       new Map(
         connections.map(
@@ -131,6 +139,12 @@ export async function GET(
             databaseConfigured:
               connection?.databaseConfigured ??
               false,
+
+            access:
+              portal ===
+              "immoscout24_de"
+                ? immoScout24DeAccess
+                : null,
 
             availability:
               comingSoon
