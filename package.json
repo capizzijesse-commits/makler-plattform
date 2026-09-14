@@ -11,6 +11,7 @@
   "dependencies": {
     "@next/third-parties": "^16.2.10",
     "@prisma/client": "^6.19.3",
+    "@qualipool/swissrets-json": "^3.6.0",
     "@vercel/blob": "^2.6.1",
     "csv-parse": "^6.1.0",
     "dompurify": "^3.4.12",
