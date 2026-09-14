@@ -1,4 +1,4 @@
-﻿import "server-only";
+import "server-only";
 
 import type {
   PortalConnection,
@@ -17,7 +17,9 @@ import {
 } from "./swissrets-feed.server";
 
 import type {
+  GermanPortalId,
   PortalConnectionState,
+  PortalId,
   SmgPortalId,
   SwissPortalId,
 } from "./types";
@@ -30,8 +32,10 @@ export type EffectivePortalConnectionStatus =
   | "error";
 
 
-export type PortalConnectionSnapshot = {
-  portal: SwissPortalId;
+export type PortalConnectionSnapshot<
+  TPortal extends PortalId = PortalId,
+> = {
+  portal: TPortal;
 
   provider: string | null;
   environment: string | null;
@@ -54,10 +58,27 @@ export type PortalConnectionSnapshot = {
 };
 
 
-const SUPPORTED_PORTALS: readonly SwissPortalId[] = [
+const SWISS_PORTALS: readonly SwissPortalId[] = [
   "immoscout24_ch",
   "homegate_ch",
+  "comparis_ch",
+  "flatfox_ch",
   "newhome_ch",
+];
+
+
+const GERMAN_PORTALS: readonly GermanPortalId[] = [
+  "immoscout24_de",
+  "immowelt_de",
+  "kleinanzeigen_de",
+  "wg_gesucht_de",
+  "immobilien_de",
+];
+
+
+const SUPPORTED_PORTALS: readonly PortalId[] = [
+  ...SWISS_PORTALS,
+  ...GERMAN_PORTALS,
 ];
 
 
@@ -84,9 +105,11 @@ function requireUserId(
 }
 
 
-function requirePortal(
-  portal: SwissPortalId
-): SwissPortalId {
+function requirePortal<
+  TPortal extends PortalId,
+>(
+  portal: TPortal
+): TPortal {
 
   if (
     !SUPPORTED_PORTALS.includes(
@@ -103,7 +126,7 @@ function requirePortal(
 
 
 function isSmgPortal(
-  portal: SwissPortalId
+  portal: PortalId
 ): portal is SmgPortalId {
 
   return (
@@ -138,7 +161,7 @@ function normalizeDatabaseStatus(
 
 
 function getTransportCredentialState(
-  portal: SwissPortalId
+  portal: PortalId
 ): PortalConnectionState {
 
   if (!isSmgPortal(portal)) {
@@ -151,10 +174,12 @@ function getTransportCredentialState(
 }
 
 
-function buildSnapshot(
-  portal: SwissPortalId,
+function buildSnapshot<
+  TPortal extends PortalId,
+>(
+  portal: TPortal,
   connection: PortalConnection | null
-): PortalConnectionSnapshot {
+): PortalConnectionSnapshot<TPortal> {
 
   const transportCredentialState =
     getTransportCredentialState(
@@ -233,7 +258,7 @@ function buildSnapshot(
 
 export async function getPortalConnection(
   userId: string,
-  portal: SwissPortalId
+  portal: PortalId
 ): Promise<PortalConnection | null> {
 
   const cleanUserId =
@@ -257,10 +282,12 @@ export async function getPortalConnection(
 }
 
 
-export async function getPortalConnectionSnapshot(
+export async function getPortalConnectionSnapshot<
+  TPortal extends PortalId,
+>(
   userId: string,
-  portal: SwissPortalId
-): Promise<PortalConnectionSnapshot> {
+  portal: TPortal
+): Promise<PortalConnectionSnapshot<TPortal>> {
 
   const cleanPortal =
     requirePortal(
@@ -282,7 +309,9 @@ export async function getPortalConnectionSnapshot(
 
 export async function getPortalConnectionsForUser(
   userId: string
-): Promise<PortalConnectionSnapshot[]> {
+): Promise<
+  PortalConnectionSnapshot<SwissPortalId>[]
+> {
 
   const cleanUserId =
     requireUserId(
@@ -311,7 +340,7 @@ export async function getPortalConnectionsForUser(
     );
 
 
-  return SUPPORTED_PORTALS.map(
+  return SWISS_PORTALS.map(
     (portal) =>
       buildSnapshot(
         portal,
@@ -321,6 +350,49 @@ export async function getPortalConnectionsForUser(
   );
 }
 
+
+export async function getGermanPortalConnectionsForUser(
+  userId: string
+): Promise<
+  PortalConnectionSnapshot<GermanPortalId>[]
+> {
+
+  const cleanUserId =
+    requireUserId(
+      userId
+    );
+
+  const connections =
+    await prisma.portalConnection.findMany({
+      where: {
+        userId: cleanUserId,
+      },
+    });
+
+
+  const byPortal =
+    new Map<
+      string,
+      PortalConnection
+    >(
+      connections.map(
+        (connection) => [
+          connection.portal,
+          connection,
+        ]
+      )
+    );
+
+
+  return GERMAN_PORTALS.map(
+    (portal) =>
+      buildSnapshot(
+        portal,
+        byPortal.get(portal) ??
+        null
+      )
+  );
+}
 
 export async function buildPortalFeedPreview(
   userId: string,

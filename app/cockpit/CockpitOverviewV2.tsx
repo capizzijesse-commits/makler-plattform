@@ -1535,14 +1535,15 @@ export default function CockpitOverviewV2({
               </Link>
             </div>
           </section>
-          {marketResolved &&
-          market === "CH" ? (
+          {marketResolved ? (
             <div
               style={{
                 paddingTop: 34,
               }}
             >
-              <PortalConnectionsCard />
+              <PortalConnectionsCard
+                market={market}
+              />
             </div>
           ) : null}
         </main>

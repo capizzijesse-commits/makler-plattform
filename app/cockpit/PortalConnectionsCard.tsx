@@ -13,7 +13,24 @@ import {
 type PortalId =
   | "immoscout24_ch"
   | "homegate_ch"
-  | "newhome_ch";
+  | "comparis_ch"
+  | "flatfox_ch"
+  | "newhome_ch"
+  | "immoscout24_de"
+  | "immowelt_de"
+  | "kleinanzeigen_de"
+  | "wg_gesucht_de"
+  | "immobilien_de";
+
+
+type PortalMarket =
+  | "CH"
+  | "DE";
+
+
+type PortalConnectionsCardProps = {
+  market: PortalMarket;
+};
 
 
 type PortalAvailability =
@@ -344,7 +361,9 @@ function statusDotClass(
 }
 
 
-export default function PortalConnectionsCard() {
+export default function PortalConnectionsCard({
+  market,
+}: PortalConnectionsCardProps) {
 
   const locale =
     useLocale();
@@ -360,8 +379,16 @@ export default function PortalConnectionsCard() {
   const candidateCopy =
     language === "it"
       ? {
-          swissObjects:
-            "immobili svizzeri",
+          objects:
+            market === "DE"
+              ? "immobili tedeschi"
+              : "immobili svizzeri",
+          kpiObjects:
+            "Oggetti",
+          kpiTransferable:
+            "Abilitati",
+          kpiWaiting:
+            "In attesa",
           transferable:
             "abilitati al trasferimento",
           waiting:
@@ -369,8 +396,16 @@ export default function PortalConnectionsCard() {
         }
       : language === "fr"
         ? {
-            swissObjects:
-              "biens suisses",
+            objects:
+              market === "DE"
+                ? "biens allemands"
+                : "biens suisses",
+            kpiObjects:
+              "Objets",
+            kpiTransferable:
+              "Autorisés",
+            kpiWaiting:
+              "En attente",
             transferable:
               "autorisés pour la transmission",
             waiting:
@@ -378,21 +413,43 @@ export default function PortalConnectionsCard() {
           }
         : language === "en"
           ? {
-              swissObjects:
-                "Swiss listings",
+              objects:
+                market === "DE"
+                  ? "German listings"
+                  : "Swiss listings",
+              kpiObjects:
+                "Listings",
+              kpiTransferable:
+                "Approved",
+              kpiWaiting:
+                "Waiting",
               transferable:
                 "approved for transfer",
               waiting:
                 "waiting for activation",
             }
           : {
-              swissObjects:
-                "Schweizer Objekte",
+              objects:
+                market === "DE"
+                  ? "Deutsche Objekte"
+                  : "Schweizer Objekte",
+              kpiObjects:
+                "Objekte",
+              kpiTransferable:
+                "Freigegeben",
+              kpiWaiting:
+                "Wartend",
               transferable:
                 "für Übertragung freigeschaltet",
               waiting:
                 "warten auf Freischaltung",
             };
+
+
+  const apiEndpoint =
+    market === "DE"
+      ? "/api/portal-connections/de"
+      : "/api/portal-connections";
 
 
   const [
@@ -427,6 +484,44 @@ export default function PortalConnectionsCard() {
     useState(0);
 
 
+  const [
+    portalPage,
+    setPortalPage,
+  ] =
+    useState(0);
+
+
+  const portalsPerPage =
+    3;
+
+  const portalPageCount =
+    Math.max(
+      1,
+      Math.ceil(
+        portals.length /
+          portalsPerPage
+      )
+    );
+
+  const safePortalPage =
+    Math.min(
+      portalPage,
+      portalPageCount - 1
+    );
+
+  const visiblePortals =
+    portals.slice(
+      safePortalPage *
+        portalsPerPage,
+      (
+        safePortalPage +
+        1
+      ) *
+        portalsPerPage
+    );
+
+
+
   useEffect(() => {
 
     const controller =
@@ -443,7 +538,7 @@ export default function PortalConnectionsCard() {
 
         const response =
           await fetch(
-            "/api/portal-connections",
+            apiEndpoint,
             {
               method:
                 "GET",
@@ -499,6 +594,10 @@ export default function PortalConnectionsCard() {
         setPortals(
           data.portals
         );
+
+        setPortalPage(
+          0
+        );
       }
       catch (error) {
 
@@ -537,6 +636,7 @@ export default function PortalConnectionsCard() {
       controller.abort();
     };
   }, [
+    apiEndpoint,
     reloadToken,
   ]);
 
@@ -753,15 +853,117 @@ export default function PortalConnectionsCard() {
             ) : null}
           </div>
         ) : (
-          <div
-            className="
-              grid
-              grid-cols-1
-              gap-3
-              xl:grid-cols-3
-            "
-          >
-            {portals.map(
+          <>
+            {portalPageCount > 1 ? (
+              <div
+                className="
+                  mb-4
+                  flex
+                  items-center
+                  justify-end
+                  gap-2
+                "
+              >
+                <button
+                  type="button"
+                  aria-label="Vorherige Portale"
+                  disabled={
+                    safePortalPage === 0
+                  }
+                  onClick={() =>
+                    setPortalPage(
+                      (value) =>
+                        Math.max(
+                          0,
+                          value - 1
+                        )
+                    )
+                  }
+                  className="
+                    flex
+                    h-9
+                    w-9
+                    items-center
+                    justify-center
+                    rounded-full
+                    border
+                    border-white/10
+                    bg-white/[0.035]
+                    text-lg
+                    text-white
+                    transition
+                    hover:border-amber-400/40
+                    hover:bg-amber-400/10
+                    disabled:cursor-not-allowed
+                    disabled:opacity-30
+                  "
+                >
+                  ←
+                </button>
+
+                <span
+                  className="
+                    min-w-[46px]
+                    text-center
+                    text-xs
+                    font-medium
+                    text-white/45
+                  "
+                >
+                  {safePortalPage + 1}
+                  {" / "}
+                  {portalPageCount}
+                </span>
+
+                <button
+                  type="button"
+                  aria-label="Weitere Portale"
+                  disabled={
+                    safePortalPage >=
+                    portalPageCount - 1
+                  }
+                  onClick={() =>
+                    setPortalPage(
+                      (value) =>
+                        Math.min(
+                          portalPageCount - 1,
+                          value + 1
+                        )
+                    )
+                  }
+                  className="
+                    flex
+                    h-9
+                    w-9
+                    items-center
+                    justify-center
+                    rounded-full
+                    border
+                    border-white/10
+                    bg-white/[0.035]
+                    text-lg
+                    text-white
+                    transition
+                    hover:border-amber-400/40
+                    hover:bg-amber-400/10
+                    disabled:cursor-not-allowed
+                    disabled:opacity-30
+                  "
+                >
+                  →
+                </button>
+              </div>
+            ) : null}
+
+            <div
+              className="
+                grid
+                grid-cols-1
+                gap-3
+                xl:grid-cols-3
+              "
+            >
+            {visiblePortals.map(
               (portal) => {
 
                 const comingSoon =
@@ -872,90 +1074,141 @@ export default function PortalConnectionsCard() {
                         >
                           {copy.comingSoon}
                         </p>
-                      ) : portal.candidateCount >
-                        0 ? (
-                        <div>
-                          <p
-                            className="
-                              text-2xl
-                              font-semibold
-                              tracking-tight
-                              text-white
-                            "
-                          >
-                            {
-                              portal.candidateCount
-                            }
-
-                            <span
-                              className="
-                                ml-2
-                                text-sm
-                                font-normal
-                                text-white/40
-                              "
-                            >
-                              {
-                                candidateCopy.swissObjects
-                              }
-                            </span>
-                          </p>
-
-                          <p
-                            className="
-                              mt-2
-                              text-xs
-                              text-white/50
-                            "
-                          >
-                            <strong
-                              className="
-                                text-white/75
-                              "
-                            >
-                              {
-                                portal.listingCount
-                              }
-                            </strong>
-                            {" "}
-                            {
-                              candidateCopy.transferable
-                            }
-                          </p>
-
-                          {portal.waitingForUnlockCount >
-                          0 ? (
-                            <p
-                              className="
-                                mt-2
-                                text-xs
-                                font-medium
-                                text-amber-300/80
-                              "
-                            >
-                              {
-                                portal.waitingForUnlockCount
-                              }
-                              {" "}
-                              {
-                                candidateCopy.waiting
-                              }
-                            </p>
-                          ) : null}
-                        </div>
                       ) : (
-                        <p
+                        <div
                           className="
-                            text-sm
-                            leading-6
-                            text-white/40
+                            grid
+                            grid-cols-3
+                            gap-2
                           "
                         >
-                          {copy.noObjects}
-                        </p>
+                          <div
+                            className="
+                              rounded-xl
+                              border
+                              border-white/10
+                              bg-white/[0.035]
+                              px-3
+                              py-4
+                            "
+                          >
+                            <div
+                              className="
+                                text-2xl
+                                font-bold
+                                leading-none
+                                tracking-tight
+                                text-white
+                              "
+                            >
+                              {
+                                portal.candidateCount ??
+                                0
+                              }
+                            </div>
+
+                            <div
+                              className="
+                                mt-2
+                                text-[10px]
+                                font-semibold
+                                uppercase
+                                tracking-[0.08em]
+                                text-white/45
+                              "
+                            >
+                              {
+                                candidateCopy.kpiObjects
+                              }
+                            </div>
+                          </div>
+
+
+                          <div
+                            className="
+                              rounded-xl
+                              border
+                              border-emerald-400/15
+                              bg-emerald-400/[0.035]
+                              px-3
+                              py-4
+                            "
+                          >
+                            <div
+                              className="
+                                text-2xl
+                                font-bold
+                                leading-none
+                                tracking-tight
+                                text-emerald-300
+                              "
+                            >
+                              {
+                                portal.listingCount ??
+                                0
+                              }
+                            </div>
+
+                            <div
+                              className="
+                                mt-2
+                                text-[10px]
+                                font-semibold
+                                uppercase
+                                tracking-[0.08em]
+                                text-emerald-200/55
+                              "
+                            >
+                              {
+                                candidateCopy.kpiTransferable
+                              }
+                            </div>
+                          </div>
+
+
+                          <div
+                            className="
+                              rounded-xl
+                              border
+                              border-amber-400/25
+                              bg-amber-400/[0.055]
+                              px-3
+                              py-4
+                            "
+                          >
+                            <div
+                              className="
+                                text-2xl
+                                font-bold
+                                leading-none
+                                tracking-tight
+                                text-amber-300
+                              "
+                            >
+                              {
+                                portal.waitingForUnlockCount ??
+                                0
+                              }
+                            </div>
+
+                            <div
+                              className="
+                                mt-2
+                                text-[10px]
+                                font-semibold
+                                uppercase
+                                tracking-[0.08em]
+                                text-amber-200/65
+                              "
+                            >
+                              {
+                                candidateCopy.kpiWaiting
+                              }
+                            </div>
+                          </div>
+                        </div>
                       )}
                     </div>
-
 
                     <button
                       type="button"
@@ -987,6 +1240,7 @@ export default function PortalConnectionsCard() {
               }
             )}
           </div>
+          </>
         )}
       </div>
     </section>

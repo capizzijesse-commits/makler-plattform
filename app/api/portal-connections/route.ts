@@ -43,6 +43,12 @@ const PORTAL_LABELS:
   homegate_ch:
     "Homegate",
 
+  comparis_ch:
+    "Comparis",
+
+  flatfox_ch:
+    "Flatfox",
+
   newhome_ch:
     "newhome",
 };
@@ -130,7 +136,11 @@ export async function GET(
 
           const comingSoon =
             connection.portal ===
-            "newhome_ch";
+              "comparis_ch" ||
+            connection.portal ===
+              "flatfox_ch" ||
+            connection.portal ===
+              "newhome_ch";
 
 
           return {
