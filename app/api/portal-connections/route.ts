@@ -20,6 +20,10 @@ import {
   getSmgPublishAccessSnapshot,
 } from "@/lib/portal-integrations/smg-publish-access.server";
 
+import {
+  getComparisPublishAccessSnapshot,
+} from "@/lib/portal-integrations/comparis-publish-access.server";
+
 import type {
   SwissPortalId,
 } from "@/lib/portal-integrations/types";
@@ -143,6 +147,10 @@ export async function GET(
       getSmgPublishAccessSnapshot();
 
 
+    const comparisPublishAccess =
+      getComparisPublishAccessSnapshot();
+
+
     const portals =
       connections.map(
         (connection) => {
@@ -161,6 +169,11 @@ export async function GET(
               "immoscout24_ch" ||
             connection.portal ===
               "homegate_ch";
+
+
+          const isComparisLaunchPortal =
+            connection.portal ===
+              "comparis_ch";
 
 
           const launchSafety =
@@ -189,7 +202,15 @@ export async function GET(
                             .transport !==
                           null
                         )
-                      : false,
+                      : isComparisLaunchPortal
+                        ? (
+                            comparisPublishAccess
+                              .accessConfirmed &&
+                            comparisPublishAccess
+                              .transport !==
+                            null
+                          )
+                        : false,
 
                   /*
                    * Solange kein aktueller
@@ -202,7 +223,10 @@ export async function GET(
                     isSmgLaunchPortal
                       ? smgPublishAccess
                           .adapterVerified
-                      : false,
+                      : isComparisLaunchPortal
+                        ? comparisPublishAccess
+                            .adapterVerified
+                        : false,
 
                   /*
                    * ImmoScout24/Homegate:
@@ -234,7 +258,10 @@ export async function GET(
                     isSmgLaunchPortal
                       ? smgPublishAccess
                           .productionEnabled
-                      : false,
+                      : isComparisLaunchPortal
+                        ? comparisPublishAccess
+                            .productionEnabled
+                        : false,
                 })
               : null;
 
@@ -333,17 +360,23 @@ export async function GET(
             publishAccessState:
               isSmgLaunchPortal
                 ? smgPublishAccess.state
-                : null,
+                : isComparisLaunchPortal
+                  ? comparisPublishAccess.state
+                  : null,
 
             publishTransport:
               isSmgLaunchPortal
                 ? smgPublishAccess.transport
-                : null,
+                : isComparisLaunchPortal
+                  ? comparisPublishAccess.transport
+                  : null,
 
             publishAccessReason:
               isSmgLaunchPortal
                 ? smgPublishAccess.reason
-                : null,
+                : isComparisLaunchPortal
+                  ? comparisPublishAccess.reason
+                  : null,
           };
         }
       );
