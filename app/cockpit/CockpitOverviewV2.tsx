@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import { useLocale } from "next-intl";
+import PortalConnectionsCard from "./PortalConnectionsCard";
 
 import {
   getInseratAiMarketFromHostname,
@@ -245,6 +246,12 @@ export default function CockpitOverviewV2({
   const [market, setMarket] =
     useState<InseratAiMarket>("CH");
 
+  const [
+    marketResolved,
+    setMarketResolved,
+  ] =
+    useState(false);
+
   const [searchQuery, setSearchQuery] =
     useState("");
 
@@ -272,6 +279,7 @@ export default function CockpitOverviewV2({
 
     if (domainMarket) {
       setMarket(domainMarket);
+      setMarketResolved(true);
       return;
     }
 
@@ -286,6 +294,8 @@ export default function CockpitOverviewV2({
     ) {
       setMarket(storedMarket);
     }
+
+    setMarketResolved(true);
   }, []);
 
   useEffect(() => {
@@ -1525,6 +1535,16 @@ export default function CockpitOverviewV2({
               </Link>
             </div>
           </section>
+          {marketResolved &&
+          market === "CH" ? (
+            <div
+              style={{
+                paddingTop: 34,
+              }}
+            >
+              <PortalConnectionsCard />
+            </div>
+          ) : null}
         </main>
       </div>
 

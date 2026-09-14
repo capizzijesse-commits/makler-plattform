@@ -1,4 +1,4 @@
-﻿import {
+import {
   NextRequest,
   NextResponse,
 } from "next/server";
@@ -18,6 +18,10 @@ import type {
 import {
   getAuthenticatedUser,
 } from "@/lib/session";
+
+import {
+  prisma,
+} from "@/lib/prisma";
 
 
 export const runtime =
@@ -74,6 +78,7 @@ export async function GET(
     const [
       connections,
       feed,
+      candidateListingCount,
     ] =
       await Promise.all([
         getPortalConnectionsForUser(
@@ -83,6 +88,34 @@ export async function GET(
         buildSwissRetsFeedForUser(
           user.id
         ),
+        prisma.listing.count({
+          where: {
+            userId:
+              user.id,
+
+            archivedAt:
+              null,
+
+            OR: [
+              {
+                countryCode:
+                  "CH",
+              },
+              {
+                countryCode:
+                  null,
+                market:
+                  "CH",
+              },
+              {
+                countryCode:
+                  null,
+                market:
+                  null,
+              },
+            ],
+          },
+        }),
       ]);
 
 
@@ -137,6 +170,20 @@ export async function GET(
               comingSoon
                 ? 0
                 : feed.listingCount,
+
+            candidateCount:
+              comingSoon
+                ? 0
+                : candidateListingCount,
+
+            waitingForUnlockCount:
+              comingSoon
+                ? 0
+                : Math.max(
+                    0,
+                    candidateListingCount -
+                      feed.listingCount
+                  ),
 
             validationErrorCount:
               comingSoon
