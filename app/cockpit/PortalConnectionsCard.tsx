@@ -223,6 +223,13 @@ type PortalStatus =
   | "error";
 
 
+type PortalSafetyMode =
+  | "blocked"
+  | "prepare_only"
+  | "test_only"
+  | "production_ready";
+
+
 type PortalItem = {
   portal: PortalId;
   label: string;
@@ -234,6 +241,25 @@ type PortalItem = {
   candidateCount: number;
   waitingForUnlockCount: number;
   validationErrorCount: number;
+
+  safetyMode?:
+    | PortalSafetyMode
+    | null;
+
+  canPrepare?: boolean;
+  canRunTransportTest?: boolean;
+  canPublishProduction?: boolean;
+
+  safetyReasons?: string[];
+
+  launchProvider?:
+    | "smg"
+    | "comparis"
+    | null;
+
+  launchGroup?:
+    | "ch_portal_connect_v1"
+    | null;
 };
 
 
@@ -303,13 +329,13 @@ const COPY = {
       "Verbindungsfehler",
 
     comingSoon:
-      "Demnächst verfügbar",
+      "Anbindung in Vorbereitung",
 
     connectSoon:
-      "Verbinden folgt",
+      "Verbindung wird vorbereitet",
 
     publishOff:
-      "Automatische Veröffentlichung ist noch deaktiviert.",
+      "Portal-Schnittstellen werden schrittweise freigeschaltet.",
 
     unauthorized:
       "Bitte melde dich erneut an.",
@@ -356,13 +382,13 @@ const COPY = {
       "Errore di connessione",
 
     comingSoon:
-      "Prossimamente",
+      "Integrazione in preparazione",
 
     connectSoon:
-      "Collegamento in arrivo",
+      "Collegamento in preparazione",
 
     publishOff:
-      "La pubblicazione automatica è ancora disattivata.",
+      "Le integrazioni con i portali vengono attivate gradualmente.",
 
     unauthorized:
       "Accedi nuovamente.",
@@ -409,13 +435,13 @@ const COPY = {
       "Erreur de connexion",
 
     comingSoon:
-      "Bientôt disponible",
+      "Connexion en préparation",
 
     connectSoon:
-      "Connexion à venir",
+      "Connexion en cours de préparation",
 
     publishOff:
-      "La publication automatique est encore désactivée.",
+      "Les connexions aux portails sont activées progressivement.",
 
     unauthorized:
       "Veuillez vous reconnecter.",
@@ -462,13 +488,13 @@ const COPY = {
       "Connection error",
 
     comingSoon:
-      "Coming soon",
+      "Integration in preparation",
 
     connectSoon:
-      "Connection coming soon",
+      "Connection is being prepared",
 
     publishOff:
-      "Automatic publishing is still disabled.",
+      "Portal integrations are being rolled out progressively.",
 
     unauthorized:
       "Please sign in again.",
@@ -538,6 +564,106 @@ function statusDotClass(
   return "bg-slate-500";
 }
 
+
+function portalSafetyText(
+  mode: PortalSafetyMode,
+  language: string
+): string {
+
+  const labels = {
+    de: {
+      blocked:
+        "Noch nicht freigegeben",
+      prepare_only:
+        "Vorbereitung",
+      test_only:
+        "Testbereit",
+      production_ready:
+        "Bereit",
+    },
+
+    it: {
+      blocked:
+        "Non ancora abilitato",
+      prepare_only:
+        "Preparazione",
+      test_only:
+        "Pronto per il test",
+      production_ready:
+        "Pronto",
+    },
+
+    fr: {
+      blocked:
+        "Pas encore activé",
+      prepare_only:
+        "Préparation",
+      test_only:
+        "Prêt pour le test",
+      production_ready:
+        "Prêt",
+    },
+
+    en: {
+      blocked:
+        "Not enabled yet",
+      prepare_only:
+        "Preparation",
+      test_only:
+        "Ready for testing",
+      production_ready:
+        "Ready",
+    },
+  } as const;
+
+  const normalizedLanguage =
+    language === "it" ||
+    language === "fr" ||
+    language === "en"
+      ? language
+      : "de";
+
+  return labels[
+    normalizedLanguage
+  ][mode];
+}
+
+
+function portalSafetyBadgeClass(
+  mode: PortalSafetyMode
+): string {
+
+  switch (mode) {
+
+    case "production_ready":
+      return [
+        "border-emerald-400/25",
+        "bg-emerald-400/[0.08]",
+        "text-emerald-300",
+      ].join(" ");
+
+    case "test_only":
+      return [
+        "border-sky-400/25",
+        "bg-sky-400/[0.08]",
+        "text-sky-300",
+      ].join(" ");
+
+    case "prepare_only":
+      return [
+        "border-amber-400/25",
+        "bg-amber-400/[0.08]",
+        "text-amber-200",
+      ].join(" ");
+
+    default:
+      return [
+        "border-slate-400/20",
+        "bg-slate-400/[0.06]",
+        "text-slate-300",
+      ].join(" ");
+  }
+}
 
 export default function PortalConnectionsCard({
   market,
@@ -1267,6 +1393,33 @@ export default function PortalConnectionsCard({
                           {copy.feedReady}
                         </span>
                       ) : null}
+                      {portal.launchGroup ===
+                        "ch_portal_connect_v1" &&
+                      portal.safetyMode ? (
+                        <span
+                          className={`
+                            rounded-full
+                            border
+                            px-2.5
+                            py-1
+                            text-[10px]
+                            font-semibold
+                            ${portalSafetyBadgeClass(
+                              portal.safetyMode
+                            )}
+                          `}
+                          title={
+                            portal.safetyReasons?.
+                              join(" ") ||
+                            undefined
+                          }
+                        >
+                          {portalSafetyText(
+                            portal.safetyMode,
+                            language
+                          )}
+                        </span>
+                      ) : null}
                     </div>
 
 
@@ -1277,15 +1430,11 @@ export default function PortalConnectionsCard({
                       "
                     >
                       {comingSoon ? (
-                        <p
+                        <div
                           className="
-                            text-sm
-                            leading-6
-                            text-white/40
+                            min-h-[56px]
                           "
-                        >
-                          {copy.comingSoon}
-                        </p>
+                        />
                       ) : (
                         <div
                           className="

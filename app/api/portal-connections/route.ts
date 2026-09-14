@@ -11,6 +11,15 @@ import {
   buildSwissRetsFeedForUser,
 } from "@/lib/portal-integrations/swissrets-feed.server";
 
+import {
+  evaluateChPortalLaunchReadiness,
+  isChLaunchPortal,
+} from "@/lib/portal-integrations/ch-portal-launch-readiness.server";
+
+import {
+  getSmgPublishAccessSnapshot,
+} from "@/lib/portal-integrations/smg-publish-access.server";
+
 import type {
   SwissPortalId,
 } from "@/lib/portal-integrations/types";
@@ -130,6 +139,10 @@ export async function GET(
       feed.listingCount > 0;
 
 
+    const smgPublishAccess =
+      getSmgPublishAccessSnapshot();
+
+
     const portals =
       connections.map(
         (connection) => {
@@ -141,6 +154,89 @@ export async function GET(
               "flatfox_ch" ||
             connection.portal ===
               "newhome_ch";
+
+
+          const isSmgLaunchPortal =
+            connection.portal ===
+              "immoscout24_ch" ||
+            connection.portal ===
+              "homegate_ch";
+
+
+          const launchSafety =
+            isChLaunchPortal(
+              connection.portal
+            )
+              ? evaluateChPortalLaunchReadiness({
+                  portal:
+                    connection.portal,
+
+                  connectionStatus:
+                    connection.status,
+
+                  environment:
+                    connection.environment ===
+                    "production"
+                      ? "production"
+                      : "test",
+
+                  transportConfigured:
+                    isSmgLaunchPortal
+                      ? (
+                          smgPublishAccess
+                            .accessConfirmed &&
+                          smgPublishAccess
+                            .transport !==
+                          null
+                        )
+                      : false,
+
+                  /*
+                   * Solange kein aktueller
+                   * Portal-Test erfolgreich
+                   * abgeschlossen wurde,
+                   * bleibt der Adapter bewusst
+                   * unverifiziert.
+                   */
+                  adapterVerified:
+                    isSmgLaunchPortal
+                      ? smgPublishAccess
+                          .adapterVerified
+                      : false,
+
+                  /*
+                   * ImmoScout24/Homegate:
+                   * bestehender SwissRETS-Core.
+                   *
+                   * Comparis bekommt erst dann
+                   * feedValid=true, wenn sein
+                   * eigener aktueller Adapter
+                   * implementiert ist.
+                   */
+                  feedValid:
+                    connection.portal ===
+                    "comparis_ch"
+                      ? false
+                      : feed.valid,
+
+                  validationErrorCount:
+                    connection.portal ===
+                    "comparis_ch"
+                      ? 0
+                      : feed
+                          .validationErrors
+                          .length,
+
+                  /*
+                   * Harte Produktionssperre.
+                   */
+                  explicitPublishEnabled:
+                    isSmgLaunchPortal
+                      ? smgPublishAccess
+                          .productionEnabled
+                      : false,
+                })
+              : null;
 
 
           return {
@@ -199,6 +295,55 @@ export async function GET(
               comingSoon
                 ? 0
                 : feed.validationErrors.length,
+
+            safetyMode:
+              launchSafety?.mode ??
+              null,
+
+            canPrepare:
+              launchSafety?.
+                canPrepare ??
+              false,
+
+            canRunTransportTest:
+              launchSafety?.
+                canRunTransportTest ??
+              false,
+
+            canPublishProduction:
+              launchSafety?.
+                canPublishProduction ??
+              false,
+
+            safetyReasons:
+              launchSafety?.
+                reasons ??
+              [],
+
+            launchProvider:
+              launchSafety?.
+                provider ??
+              null,
+
+            launchGroup:
+              launchSafety?.
+                launchGroup ??
+              null,
+
+            publishAccessState:
+              isSmgLaunchPortal
+                ? smgPublishAccess.state
+                : null,
+
+            publishTransport:
+              isSmgLaunchPortal
+                ? smgPublishAccess.transport
+                : null,
+
+            publishAccessReason:
+              isSmgLaunchPortal
+                ? smgPublishAccess.reason
+                : null,
           };
         }
       );
