@@ -88,6 +88,122 @@ const SMG_PORTALS: readonly SmgPortalId[] = [
 ];
 
 
+export type SwissLaunchPortalConnectionId =
+  | "immoscout24_ch"
+  | "homegate_ch"
+  | "comparis_ch";
+
+
+export type PortalConnectionEnvironment =
+  | "test"
+  | "production";
+
+
+export type ConfigureSwissLaunchPortalConnectionInput = {
+  userId: string;
+
+  portal:
+    SwissLaunchPortalConnectionId;
+
+  environment:
+    PortalConnectionEnvironment;
+
+  externalOwnerId?:
+    | string
+    | null;
+
+  externalUserId?:
+    | string
+    | null;
+};
+
+
+function requireSwissLaunchPortal(
+  portal:
+    SwissLaunchPortalConnectionId
+): SwissLaunchPortalConnectionId {
+
+  if (
+    portal !== "immoscout24_ch" &&
+    portal !== "homegate_ch" &&
+    portal !== "comparis_ch"
+  ) {
+    throw new Error(
+      `Nicht unterstütztes CH-Launch-Portal: ${portal}`
+    );
+  }
+
+  return portal;
+}
+
+
+function requirePortalEnvironment(
+  environment:
+    PortalConnectionEnvironment
+): PortalConnectionEnvironment {
+
+  if (
+    environment !== "test" &&
+    environment !== "production"
+  ) {
+    throw new Error(
+      `Ungültige Portal-Umgebung: ${environment}`
+    );
+  }
+
+  return environment;
+}
+
+
+function getSwissLaunchProvider(
+  portal:
+    SwissLaunchPortalConnectionId
+): "smg" | "comparis" {
+
+  return (
+    portal === "comparis_ch"
+      ? "comparis"
+      : "smg"
+  );
+}
+
+
+function normalizeOptionalExternalId(
+  value:
+    | string
+    | null
+    | undefined,
+  fieldName: string
+):
+  | string
+  | null
+  | undefined {
+
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (value === null) {
+    return null;
+  }
+
+  const clean =
+    value.trim();
+
+  if (!clean) {
+    return null;
+  }
+
+  if (clean.length > 255) {
+    throw new Error(
+      `${fieldName} ist zu lang.`
+    );
+  }
+
+  return clean;
+}
+
+
 function requireUserId(
   userId: string
 ): string {
@@ -253,6 +369,128 @@ function buildSnapshot<
       connection?.updatedAt ??
       null,
   };
+}
+
+
+export async function configureSwissLaunchPortalConnection(
+  input:
+    ConfigureSwissLaunchPortalConnectionInput
+): Promise<
+  PortalConnectionSnapshot<SwissLaunchPortalConnectionId>
+> {
+
+  const userId =
+    requireUserId(
+      input.userId
+    );
+
+
+  const portal =
+    requireSwissLaunchPortal(
+      input.portal
+    );
+
+
+  const environment =
+    requirePortalEnvironment(
+      input.environment
+    );
+
+
+  const provider =
+    getSwissLaunchProvider(
+      portal
+    );
+
+
+  const externalOwnerId =
+    normalizeOptionalExternalId(
+      input.externalOwnerId,
+      "externalOwnerId"
+    );
+
+
+  const externalUserId =
+    normalizeOptionalExternalId(
+      input.externalUserId,
+      "externalUserId"
+    );
+
+
+  /*
+   * Dieser Pfad speichert ausschliesslich
+   * nicht geheime Verbindungs-Metadaten.
+   *
+   * Keine Passwörter, Client Secrets,
+   * Access Tokens oder API Keys.
+   *
+   * Browser-/Setup-Konfiguration darf
+   * niemals "verified" setzen.
+   *
+   * Jede Änderung setzt den Status bewusst
+   * auf "configured" und verwirft eine
+   * frühere Verifikation.
+   */
+  const connection =
+    await prisma.portalConnection.upsert({
+      where: {
+        userId_portal: {
+          userId,
+          portal,
+        },
+      },
+
+      create: {
+        userId,
+        provider,
+        portal,
+        environment,
+
+        status:
+          "configured",
+
+        externalOwnerId:
+          externalOwnerId ??
+          null,
+
+        externalUserId:
+          externalUserId ??
+          null,
+      },
+
+      update: {
+        provider,
+        environment,
+
+        status:
+          "configured",
+
+        lastVerifiedAt:
+          null,
+
+        ...(
+          externalOwnerId !== undefined
+            ? {
+                externalOwnerId,
+              }
+            : {}
+        ),
+
+        ...(
+          externalUserId !== undefined
+            ? {
+                externalUserId,
+              }
+            : {}
+        ),
+      },
+    });
+
+
+  return buildSnapshot(
+    portal,
+    connection
+  );
 }
 
 
