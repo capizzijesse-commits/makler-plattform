@@ -230,6 +230,12 @@ type PortalSafetyMode =
   | "production_ready";
 
 
+type PortalPublishAccessState =
+  | "access_required"
+  | "access_confirmed"
+  | "adapter_verified";
+
+
 type PortalItem = {
   portal: PortalId;
   label: string;
@@ -255,6 +261,18 @@ type PortalItem = {
   launchProvider?:
     | "smg"
     | "comparis"
+    | null;
+
+  publishAccessState?:
+    | PortalPublishAccessState
+    | null;
+
+  publishTransport?:
+    | string
+    | null;
+
+  publishAccessReason?:
+    | string
     | null;
 
   launchGroup?:
@@ -562,6 +580,114 @@ function statusDotClass(
   }
 
   return "bg-slate-500";
+}
+
+
+function portalAccessStatusText(
+  portal: PortalItem,
+  language: string
+): string | null {
+
+  if (
+    !portal.publishAccessState ||
+    !portal.launchProvider
+  ) {
+    return null;
+  }
+
+
+  const provider =
+    portal.launchProvider ===
+    "comparis"
+      ? "Comparis"
+      : "SMG";
+
+
+  const labels = {
+    de: {
+      access_required:
+        `${provider}-Partnerzugang erforderlich`,
+
+      access_confirmed:
+        `${provider}-Zugang bestätigt · Adapterprüfung offen`,
+
+      adapter_verified:
+        `${provider}-Adapter verifiziert`,
+    },
+
+    it: {
+      access_required:
+        `Accesso partner ${provider} richiesto`,
+
+      access_confirmed:
+        `Accesso ${provider} confermato · verifica adattatore aperta`,
+
+      adapter_verified:
+        `Adattatore ${provider} verificato`,
+    },
+
+    fr: {
+      access_required:
+        `Accès partenaire ${provider} requis`,
+
+      access_confirmed:
+        `Accès ${provider} confirmé · vérification de l’adaptateur en attente`,
+
+      adapter_verified:
+        `Adaptateur ${provider} vérifié`,
+    },
+
+    en: {
+      access_required:
+        `${provider} partner access required`,
+
+      access_confirmed:
+        `${provider} access confirmed · adapter verification pending`,
+
+      adapter_verified:
+        `${provider} adapter verified`,
+    },
+  } as const;
+
+
+  return labels[
+    normalizeLanguage(
+      language
+    )
+  ][
+    portal.publishAccessState
+  ];
+}
+
+
+function portalAccessBadgeClass(
+  state: PortalPublishAccessState
+): string {
+
+  switch (state) {
+
+    case "adapter_verified":
+      return [
+        "border-emerald-400/25",
+        "bg-emerald-400/[0.08]",
+        "text-emerald-300",
+      ].join(" ");
+
+    case "access_confirmed":
+      return [
+        "border-sky-400/25",
+        "bg-sky-400/[0.08]",
+        "text-sky-300",
+      ].join(" ");
+
+    case "access_required":
+    default:
+      return [
+        "border-amber-400/25",
+        "bg-amber-400/[0.08]",
+        "text-amber-200",
+      ].join(" ");
+  }
 }
 
 
@@ -1373,7 +1499,74 @@ export default function PortalConnectionsCard({
                             )
                           }
                         </div>
+
+                        {portal.launchGroup ===
+                          "ch_portal_connect_v1" &&
+                        portal.publishAccessState ? (
+                          <div
+                            className={`
+                              mt-2
+                              inline-flex
+                              max-w-full
+                              items-start
+                              gap-1.5
+                              rounded-lg
+                              border
+                              px-2
+                              py-1
+                              text-[10px]
+                              font-semibold
+                              leading-snug
+                              ${portalAccessBadgeClass(
+                                portal.publishAccessState
+                              )}
+                            `}
+                            title={
+                              portal.publishAccessReason ||
+                              undefined
+                            }
+                          >
+                            <svg
+                              aria-hidden="true"
+                              viewBox="0 0 24 24"
+                              className="
+                                mt-[1px]
+                                h-3
+                                w-3
+                                shrink-0
+                              "
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.8"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <circle
+                                cx="8"
+                                cy="15"
+                                r="3"
+                              />
+                              <path
+                                d="M10.3 12.7 20 3"
+                              />
+                              <path
+                                d="m15 8 2 2"
+                              />
+                              <path
+                                d="m17.5 5.5 2 2"
+                              />
+                            </svg>
+
+                            <span>
+                              {portalAccessStatusText(
+                                portal,
+                                language
+                              )}
+                            </span>
+                          </div>
+                        ) : null}
                       </div>
+
 
                       {!comingSoon &&
                       portal.feedReady ? (
