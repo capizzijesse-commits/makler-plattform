@@ -41,11 +41,167 @@ model User {
   passwordResetExpires     DateTime?
   passwordResetRequestedAt DateTime?
 
-  listings   Listing[]
-  sessions   Session[]
-  valuations Valuation[]
+  listings                                                                Listing[]
+  sessions                                                                Session[]
+  valuations                                                              Valuation[]
+  portalConnections                                                       PortalConnection[]
+  MaklerChatBlock_MaklerChatBlock_blockedUserIdToUser                     MaklerChatBlock[]          @relation("MaklerChatBlock_blockedUserIdToUser")
+  MaklerChatBlock_MaklerChatBlock_blockerUserIdToUser                     MaklerChatBlock[]          @relation("MaklerChatBlock_blockerUserIdToUser")
+  MaklerChatBranding                                                      MaklerChatBranding?
+  MaklerChatContactRequest_MaklerChatContactRequest_requesterUserIdToUser MaklerChatContactRequest[] @relation("MaklerChatContactRequest_requesterUserIdToUser")
+  MaklerChatContactRequest_MaklerChatContactRequest_targetUserIdToUser    MaklerChatContactRequest[] @relation("MaklerChatContactRequest_targetUserIdToUser")
 
   createdAt DateTime @default(now())
+}
+
+model MaklerChatBlock {
+  blockerUserId                            String
+  blockedUserId                            String
+  createdAt                                DateTime @default(now())
+  User_MaklerChatBlock_blockedUserIdToUser User     @relation("MaklerChatBlock_blockedUserIdToUser", fields: [blockedUserId], references: [id], onDelete: Cascade)
+  User_MaklerChatBlock_blockerUserIdToUser User     @relation("MaklerChatBlock_blockerUserIdToUser", fields: [blockerUserId], references: [id], onDelete: Cascade)
+
+  @@id([blockerUserId, blockedUserId])
+  @@index([blockedUserId])
+}
+
+model MaklerChatBranding {
+  userId     String   @id
+  brandColor String   @default("#F59E0B")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MaklerChatContactRequest {
+  id                                                  String                  @id
+  requesterUserId                                     String
+  targetUserId                                        String
+  pairKey                                             String
+  initialMessage                                      String?
+  status                                              String                  @default("PENDING")
+  countryCode                                         String                  @default("CH")
+  languageCode                                        String                  @default("de")
+  conversationId                                      String?
+  createdAt                                           DateTime                @default(now())
+  updatedAt                                           DateTime                @default(now())
+  respondedAt                                         DateTime?
+  MaklerChatConversation                              MaklerChatConversation? @relation(fields: [conversationId], references: [id])
+  User_MaklerChatContactRequest_requesterUserIdToUser User                    @relation("MaklerChatContactRequest_requesterUserIdToUser", fields: [requesterUserId], references: [id], onDelete: Cascade)
+  User_MaklerChatContactRequest_targetUserIdToUser    User                    @relation("MaklerChatContactRequest_targetUserIdToUser", fields: [targetUserId], references: [id], onDelete: Cascade)
+
+  @@index([requesterUserId, status, createdAt], map: "MaklerChatContactRequest_requester_status_createdAt_idx")
+  @@index([targetUserId, status, createdAt], map: "MaklerChatContactRequest_target_status_createdAt_idx")
+}
+
+model MaklerChatConversation {
+  id                       String                     @id
+  kind                     String                     @default("AI")
+  title                    String?
+  market                   String                     @default("CH")
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @default(now())
+  visibility               String                     @default("PRIVATE")
+  countryCode              String                     @default("CH")
+  languageCode             String                     @default("de")
+  directKey                String?                    @unique
+  MaklerChatContactRequest MaklerChatContactRequest[]
+  MaklerChatMessage        MaklerChatMessage[]
+  MaklerChatParticipant    MaklerChatParticipant[]
+
+  @@index([kind, updatedAt])
+  @@index([visibility, countryCode, updatedAt], map: "MaklerChatConversation_visibility_countryCode_idx")
+}
+
+model MaklerChatMessage {
+  id                     String                 @id
+  conversationId         String
+  senderUserId           String?
+  senderType             String
+  content                String
+  createdAt              DateTime               @default(now())
+  MaklerChatConversation MaklerChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
+
+model MaklerChatParticipant {
+  conversationId         String
+  userId                 String
+  role                   String                 @default("MEMBER")
+  joinedAt               DateTime               @default(now())
+  lastReadAt             DateTime               @default(now())
+  participantType        String                 @default("USER")
+  MaklerChatConversation MaklerChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@id([conversationId, userId])
+  @@index([userId, conversationId])
+  @@index([userId])
+}
+
+model PublicGuideQuestionLog {
+  id        String   @id
+  market    String
+  pagePath  String?
+  question  String
+  answer    String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([market, createdAt])
+}
+
+model PortalConnection {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /**
+   * Beispiel:
+   * provider = "smg"
+   * portal   = "immoscout24_ch"
+   * portal   = "homegate_ch"
+   */
+  provider String
+  portal   String
+
+  /**
+   * test | production
+   */
+  environment String @default("test")
+
+  /**
+   * Externe IDs dürfen gespeichert
+   * werden. Keine Passwörter,
+   * Client Secrets oder Access Tokens.
+   */
+  externalOwnerId String?
+  externalUserId  String?
+
+  /**
+   * not_configured
+   * configured
+   * verified
+   * error
+   */
+  status String @default("not_configured")
+
+  /**
+   * Woher Credentials kommen,
+   * z.B. "env" für unseren Testzugang
+   * oder später "vault".
+   */
+  credentialSource String?
+
+  lastVerifiedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, portal])
+  @@index([userId])
+  @@index([provider, portal])
 }
 
 model Listing {
@@ -54,13 +210,13 @@ model Listing {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  projectName  String?
-  street       String?
-  location     String
-  postalCode   String?
-  latitude     Float?
-  longitude    Float?
-  market       String?
+  projectName String?
+  street      String?
+  location    String
+  postalCode  String?
+  latitude    Float?
+  longitude   Float?
+  market      String?
 
   countryCode  String?
   propertyType String
