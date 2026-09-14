@@ -4,7 +4,13 @@ import {
 } from "next/server";
 
 import {
+  configureSwissLaunchPortalConnection,
   getPortalConnectionsForUser,
+} from "@/lib/portal-integrations/portal-connection.server";
+
+import type {
+  PortalConnectionEnvironment,
+  SwissLaunchPortalConnectionId,
 } from "@/lib/portal-integrations/portal-connection.server";
 
 import {
@@ -42,6 +48,203 @@ export const runtime =
 
 export const dynamic =
   "force-dynamic";
+
+
+type PortalConfigRequest = {
+  portal:
+    SwissLaunchPortalConnectionId;
+
+  environment:
+    PortalConnectionEnvironment;
+
+  externalOwnerId?:
+    | string
+    | null;
+
+  externalUserId?:
+    | string
+    | null;
+};
+
+
+const PORTAL_CONFIG_ALLOWED_FIELDS =
+  new Set([
+    "portal",
+    "environment",
+    "externalOwnerId",
+    "externalUserId",
+  ]);
+
+
+function isSameOriginMutation(
+  request: NextRequest
+): boolean {
+
+  const origin =
+    request.headers.get(
+      "origin"
+    );
+
+
+  /*
+   * Mutierende Browser-Requests müssen
+   * eine Origin mitsenden.
+   *
+   * Fehlt sie, bleiben wir bewusst
+   * fail-closed.
+   */
+  if (!origin) {
+    return false;
+  }
+
+
+  try {
+
+    const requestOrigin =
+      new URL(
+        origin
+      ).origin;
+
+
+    return (
+      requestOrigin ===
+      request.nextUrl.origin
+    );
+  }
+  catch {
+
+    return false;
+  }
+}
+
+
+function isRecord(
+  value: unknown
+): value is Record<string, unknown> {
+
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value)
+  );
+}
+
+
+function parseOptionalExternalId(
+  body: Record<string, unknown>,
+  key:
+    | "externalOwnerId"
+    | "externalUserId"
+):
+  | string
+  | null
+  | undefined {
+
+  const value =
+    body[key];
+
+
+  if (value === undefined) {
+    return undefined;
+  }
+
+
+  if (value === null) {
+    return null;
+  }
+
+
+  if (typeof value !== "string") {
+    throw new Error(
+      "INVALID_EXTERNAL_ID"
+    );
+  }
+
+
+  if (value.length > 255) {
+    throw new Error(
+      "EXTERNAL_ID_TOO_LONG"
+    );
+  }
+
+
+  return value;
+}
+
+
+function parsePortalConfigRequest(
+  value: unknown
+): PortalConfigRequest {
+
+  if (!isRecord(value)) {
+    throw new Error(
+      "INVALID_BODY"
+    );
+  }
+
+
+  const unsupportedField =
+    Object.keys(value).some(
+      (key) =>
+        !PORTAL_CONFIG_ALLOWED_FIELDS.has(
+          key
+        )
+    );
+
+
+  if (unsupportedField) {
+    throw new Error(
+      "UNSUPPORTED_FIELD"
+    );
+  }
+
+
+  const portal =
+    value.portal;
+
+
+  if (
+    portal !== "immoscout24_ch" &&
+    portal !== "homegate_ch" &&
+    portal !== "comparis_ch"
+  ) {
+    throw new Error(
+      "INVALID_PORTAL"
+    );
+  }
+
+
+  const environment =
+    value.environment;
+
+
+  if (
+    environment !== "test" &&
+    environment !== "production"
+  ) {
+    throw new Error(
+      "INVALID_ENVIRONMENT"
+    );
+  }
+
+
+  return {
+    portal,
+    environment,
+
+    externalOwnerId:
+      parseOptionalExternalId(
+        value,
+        "externalOwnerId"
+      ),
+
+    externalUserId:
+      parseOptionalExternalId(
+        value,
+        "externalUserId"
+      ),
+  };
+}
 
 
 const PORTAL_LABELS:
@@ -278,6 +481,9 @@ export async function GET(
             status:
               connection.status,
 
+            environment:
+              connection.environment,
+
             databaseConfigured:
               connection.databaseConfigured,
 
@@ -416,6 +622,178 @@ export async function GET(
 
         error:
           "PORTAL_CONNECTIONS_FAILED",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
+}
+
+export async function PATCH(
+  request: NextRequest
+): Promise<NextResponse> {
+
+  try {
+
+    if (
+      !isSameOriginMutation(
+        request
+      )
+    ) {
+
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "INVALID_REQUEST_ORIGIN",
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+
+
+    const user =
+      await getAuthenticatedUser(
+        request
+      );
+
+
+    if (!user) {
+
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "UNAUTHORIZED",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+
+    let rawBody: unknown;
+
+
+    try {
+
+      rawBody =
+        await request.json();
+    }
+    catch {
+
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "INVALID_JSON",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+
+    let input:
+      PortalConfigRequest;
+
+
+    try {
+
+      input =
+        parsePortalConfigRequest(
+          rawBody
+        );
+    }
+    catch {
+
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "INVALID_PORTAL_CONFIGURATION",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+
+    const connection =
+      await configureSwissLaunchPortalConnection({
+        userId:
+          user.id,
+
+        portal:
+          input.portal,
+
+        environment:
+          input.environment,
+
+        externalOwnerId:
+          input.externalOwnerId,
+
+        externalUserId:
+          input.externalUserId,
+      });
+
+
+    return NextResponse.json({
+      success: true,
+
+      connection: {
+        portal:
+          connection.portal,
+
+        provider:
+          connection.provider,
+
+        environment:
+          connection.environment,
+
+        status:
+          connection.status,
+
+        databaseConfigured:
+          connection.databaseConfigured,
+
+        externalOwnerId:
+          connection.externalOwnerId,
+
+        externalUserId:
+          connection.externalUserId,
+
+        lastVerifiedAt:
+          connection.lastVerifiedAt,
+      },
+
+      /*
+       * Konfiguration ist niemals
+       * gleichbedeutend mit Publishing.
+       */
+      publishEnabled:
+        false,
+    });
+  }
+  catch (error) {
+
+    console.error(
+      "[portal-connections] PATCH failed",
+      error
+    );
+
+
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          "PORTAL_CONNECTION_CONFIG_FAILED",
       },
       {
         status: 500,
