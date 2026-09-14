@@ -33,6 +33,184 @@ type PortalConnectionsCardProps = {
 };
 
 
+type PortalTheme = {
+  accent: string;
+  soft: string;
+  border: string;
+  topBar: string;
+};
+
+
+const PORTAL_THEMES:
+  Record<
+    PortalId,
+    PortalTheme
+  > = {
+
+  /*
+   * SCHWEIZ
+   */
+  immoscout24_ch: {
+    accent:
+      "#F5A623",
+
+    soft:
+      "rgba(245, 166, 35, 0.075)",
+
+    border:
+      "rgba(245, 166, 35, 0.28)",
+
+    topBar:
+      "linear-gradient(90deg, #F5A623, #FFD166)",
+  },
+
+  homegate_ch: {
+    accent:
+      "#FF4D8D",
+
+    soft:
+      "rgba(255, 77, 141, 0.055)",
+
+    border:
+      "rgba(255, 77, 141, 0.24)",
+
+    /*
+     * Aktuelles Homegate Branding:
+     * Pink / Purple / Magenta /
+     * Blue / Orange.
+     */
+    topBar:
+      "linear-gradient(90deg, #FF4D8D 0%, #8B5CF6 25%, #D946EF 50%, #3B82F6 75%, #F59E0B 100%)",
+  },
+
+  comparis_ch: {
+    accent:
+      "#66CC02",
+
+    soft:
+      "rgba(102, 204, 2, 0.055)",
+
+    border:
+      "rgba(102, 204, 2, 0.24)",
+
+    topBar:
+      "linear-gradient(90deg, #017B4F, #66CC02)",
+  },
+
+  flatfox_ch: {
+    accent:
+      "#8B5CF6",
+
+    soft:
+      "rgba(139, 92, 246, 0.055)",
+
+    border:
+      "rgba(139, 92, 246, 0.24)",
+
+    topBar:
+      "linear-gradient(90deg, #7C3AED, #A78BFA)",
+  },
+
+  newhome_ch: {
+    accent:
+      "#63D5C5",
+
+    soft:
+      "rgba(99, 213, 197, 0.06)",
+
+    border:
+      "rgba(99, 213, 197, 0.25)",
+
+    topBar:
+      "linear-gradient(90deg, #63D5C5, #A7F3D0)",
+  },
+
+
+  /*
+   * DEUTSCHLAND
+   */
+  immoscout24_de: {
+    accent:
+      "#F5A623",
+
+    soft:
+      "rgba(245, 166, 35, 0.075)",
+
+    border:
+      "rgba(245, 166, 35, 0.28)",
+
+    topBar:
+      "linear-gradient(90deg, #F5A623, #FFD166)",
+  },
+
+  immowelt_de: {
+    accent:
+      "#EC4899",
+
+    soft:
+      "rgba(236, 72, 153, 0.055)",
+
+    border:
+      "rgba(236, 72, 153, 0.24)",
+
+    topBar:
+      "linear-gradient(90deg, #DB2777, #F472B6)",
+  },
+
+  kleinanzeigen_de: {
+    accent:
+      "#B7FF5A",
+
+    soft:
+      "rgba(183, 255, 90, 0.055)",
+
+    border:
+      "rgba(183, 255, 90, 0.24)",
+
+    topBar:
+      "linear-gradient(90deg, #8FE843, #C7FF76)",
+  },
+
+  wg_gesucht_de: {
+    accent:
+      "#34D399",
+
+    soft:
+      "rgba(52, 211, 153, 0.05)",
+
+    border:
+      "rgba(52, 211, 153, 0.23)",
+
+    topBar:
+      "linear-gradient(90deg, #16A34A, #4ADE80)",
+  },
+
+  immobilien_de: {
+    accent:
+      "#60A5FA",
+
+    soft:
+      "rgba(96, 165, 250, 0.055)",
+
+    border:
+      "rgba(96, 165, 250, 0.24)",
+
+    topBar:
+      "linear-gradient(90deg, #2563EB, #60A5FA)",
+  },
+};
+
+
+function getPortalTheme(
+  portal: PortalId
+): PortalTheme {
+
+  return PORTAL_THEMES[
+    portal
+  ];
+}
+
+
 type PortalAvailability =
   | "available"
   | "coming_soon";
@@ -970,6 +1148,11 @@ export default function PortalConnectionsCard({
                   portal.availability ===
                   "coming_soon";
 
+                const theme =
+                  getPortalTheme(
+                    portal.portal
+                  );
+
                 return (
                   <article
                     key={
@@ -981,11 +1164,37 @@ export default function PortalConnectionsCard({
                       flex-col
                       rounded-2xl
                       border
-                      border-white/8
                       bg-white/[0.025]
                       p-4
                       sm:p-5
                     "
+                    style={{
+                      borderColor:
+                        theme.border,
+
+                      backgroundColor:
+                        "rgba(255,255,255,0.025)",
+
+                      backgroundImage: `
+                        ${theme.topBar},
+                        linear-gradient(
+                          180deg,
+                          ${theme.soft} 0%,
+                          rgba(255,255,255,0) 46%
+                        )
+                      `,
+
+                      backgroundSize:
+                        "100% 3px, 100% 100%",
+
+                      backgroundRepeat:
+                        "no-repeat",
+
+                      boxShadow: `
+                        inset 0 1px 0 rgba(255,255,255,0.035),
+                        0 12px 32px rgba(0,0,0,0.10)
+                      `,
+                    }}
                   >
                     <div
                       className="
@@ -1000,8 +1209,11 @@ export default function PortalConnectionsCard({
                           className="
                             text-base
                             font-semibold
-                            text-white
                           "
+                          style={{
+                            color:
+                              theme.accent,
+                          }}
                         >
                           {
                             portal.label
@@ -1086,11 +1298,16 @@ export default function PortalConnectionsCard({
                             className="
                               rounded-xl
                               border
-                              border-white/10
-                              bg-white/[0.035]
                               px-3
                               py-4
                             "
+                            style={{
+                              borderColor:
+                                theme.border,
+
+                              backgroundColor:
+                                theme.soft,
+                            }}
                           >
                             <div
                               className="
@@ -1098,8 +1315,11 @@ export default function PortalConnectionsCard({
                                 font-bold
                                 leading-none
                                 tracking-tight
-                                text-white
                               "
+                              style={{
+                                color:
+                                  theme.accent,
+                              }}
                             >
                               {
                                 portal.candidateCount ??
