@@ -240,6 +240,12 @@ type PortalItem = {
   portal: PortalId;
   label: string;
   status: PortalStatus;
+
+  environment?:
+    | "test"
+    | "production"
+    | null;
+
   databaseConfigured: boolean;
   availability: PortalAvailability;
   feedReady: boolean;
@@ -293,6 +299,29 @@ type PortalApiResponse = {
   };
 
   portals?: PortalItem[];
+
+  error?: string;
+};
+
+
+type PortalConfigApiResponse = {
+  success?: boolean;
+
+  publishEnabled?: boolean;
+
+  connection?: {
+    portal?: PortalId;
+
+    environment?:
+      | "test"
+      | "production"
+      | null;
+
+    status?: PortalStatus;
+
+    databaseConfigured?:
+      boolean;
+  };
 
   error?: string;
 };
@@ -352,6 +381,18 @@ const COPY = {
     connectSoon:
       "Verbindung wird vorbereitet",
 
+    prepareTest:
+      "Test-Konfiguration vorbereiten",
+
+    preparingTest:
+      "Wird vorbereitet …",
+
+    testPrepared:
+      "Test-Konfiguration vorbereitet",
+
+    setupFailed:
+      "Test-Konfiguration konnte nicht gespeichert werden.",
+
     publishOff:
       "Portal-Schnittstellen werden schrittweise freigeschaltet.",
 
@@ -404,6 +445,18 @@ const COPY = {
 
     connectSoon:
       "Collegamento in preparazione",
+
+    prepareTest:
+      "Prepara configurazione di test",
+
+    preparingTest:
+      "Preparazione …",
+
+    testPrepared:
+      "Configurazione di test pronta",
+
+    setupFailed:
+      "Impossibile salvare la configurazione di test.",
 
     publishOff:
       "Le integrazioni con i portali vengono attivate gradualmente.",
@@ -458,6 +511,18 @@ const COPY = {
     connectSoon:
       "Connexion en cours de préparation",
 
+    prepareTest:
+      "Préparer la configuration de test",
+
+    preparingTest:
+      "Préparation …",
+
+    testPrepared:
+      "Configuration de test prête",
+
+    setupFailed:
+      "La configuration de test n’a pas pu être enregistrée.",
+
     publishOff:
       "Les connexions aux portails sont activées progressivement.",
 
@@ -510,6 +575,18 @@ const COPY = {
 
     connectSoon:
       "Connection is being prepared",
+
+    prepareTest:
+      "Prepare test configuration",
+
+    preparingTest:
+      "Preparing …",
+
+    testPrepared:
+      "Test configuration prepared",
+
+    setupFailed:
+      "The test configuration could not be saved.",
 
     publishOff:
       "Portal integrations are being rolled out progressively.",
@@ -921,6 +998,24 @@ export default function PortalConnectionsCard({
     useState(0);
 
 
+  const [
+    savingPortal,
+    setSavingPortal,
+  ] =
+    useState<PortalId | null>(
+      null
+    );
+
+
+  const [
+    portalActionError,
+    setPortalActionError,
+  ] =
+    useState<PortalId | null>(
+      null
+    );
+
+
   const portalsPerPage =
     3;
 
@@ -1069,6 +1164,119 @@ export default function PortalConnectionsCard({
     apiEndpoint,
     reloadToken,
   ]);
+
+
+  async function prepareSwissPortalTestConnection(
+    portal:
+      | "immoscout24_ch"
+      | "homegate_ch"
+  ): Promise<void> {
+
+    if (
+      market !== "CH" ||
+      savingPortal !== null
+    ) {
+      return;
+    }
+
+
+    try {
+
+      setSavingPortal(
+        portal
+      );
+
+      setPortalActionError(
+        null
+      );
+
+
+      const response =
+        await fetch(
+          "/api/portal-connections",
+          {
+            method:
+              "PATCH",
+
+            credentials:
+              "include",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body:
+              JSON.stringify({
+                portal,
+                environment:
+                  "test",
+              }),
+          }
+        );
+
+
+      const data =
+        await response.json() as
+          PortalConfigApiResponse;
+
+
+      if (
+        response.status ===
+        401
+      ) {
+
+        setErrorKind(
+          "unauthorized"
+        );
+
+        return;
+      }
+
+
+      if (
+        !response.ok ||
+        data.success !== true ||
+        data.publishEnabled !== false ||
+        data.connection?.portal !==
+          portal ||
+        data.connection?.environment !==
+          "test" ||
+        data.connection?.status !==
+          "configured" ||
+        data.connection?.
+          databaseConfigured !==
+          true
+      ) {
+        throw new Error(
+          "Portal test configuration failed."
+        );
+      }
+
+
+      setReloadToken(
+        (value) =>
+          value + 1
+      );
+    }
+    catch (error) {
+
+      console.error(
+        "Portal test setup failed:",
+        error
+      );
+
+      setPortalActionError(
+        portal
+      );
+    }
+    finally {
+
+      setSavingPortal(
+        null
+      );
+    }
+  }
 
 
   function portalStatusText(
@@ -1404,6 +1612,34 @@ export default function PortalConnectionsCard({
                   getPortalTheme(
                     portal.portal
                   );
+
+
+                const swissSetupPortal =
+                  portal.portal ===
+                    "immoscout24_ch" ||
+                  portal.portal ===
+                    "homegate_ch";
+
+
+                const isSaving =
+                  savingPortal ===
+                  portal.portal;
+
+
+                const testConfigurationPrepared =
+                  market === "CH" &&
+                  swissSetupPortal &&
+                  portal.databaseConfigured &&
+                  portal.environment ===
+                    "test";
+
+
+                const canPrepareTestConfiguration =
+                  market === "CH" &&
+                  swissSetupPortal &&
+                  !comingSoon &&
+                  !portal.databaseConfigured;
+
 
                 return (
                   <article
@@ -1774,29 +2010,85 @@ export default function PortalConnectionsCard({
 
                     <button
                       type="button"
-                      disabled
-                      title={
-                        copy.connectSoon
+                      disabled={
+                        !canPrepareTestConfiguration ||
+                        isSaving
                       }
-                      className="
+                      onClick={() => {
+
+                        if (
+                          portal.portal ===
+                            "immoscout24_ch" ||
+                          portal.portal ===
+                            "homegate_ch"
+                        ) {
+                          void prepareSwissPortalTestConnection(
+                            portal.portal
+                          );
+                        }
+                      }}
+                      title={
+                        testConfigurationPrepared
+                          ? copy.testPrepared
+                          : canPrepareTestConfiguration
+                            ? copy.prepareTest
+                            : comingSoon
+                              ? copy.comingSoon
+                              : copy.connectSoon
+                      }
+                      className={`
                         mt-5
                         w-full
-                        cursor-not-allowed
                         rounded-xl
                         border
-                        border-white/8
-                        bg-white/[0.035]
                         px-4
                         py-2.5
                         text-sm
                         font-medium
-                        text-white/35
-                      "
+                        transition
+                        ${
+                          canPrepareTestConfiguration &&
+                          !isSaving
+                            ? `
+                              cursor-pointer
+                              border-amber-400/30
+                              bg-amber-400/[0.08]
+                              text-amber-100
+                              hover:bg-amber-400/[0.13]
+                            `
+                            : `
+                              cursor-not-allowed
+                              border-white/8
+                              bg-white/[0.035]
+                              text-white/35
+                            `
+                        }
+                      `}
                     >
-                      {comingSoon
-                        ? copy.comingSoon
-                        : copy.connectSoon}
+                      {isSaving
+                        ? copy.preparingTest
+                        : testConfigurationPrepared
+                          ? copy.testPrepared
+                          : canPrepareTestConfiguration
+                            ? copy.prepareTest
+                            : comingSoon
+                              ? copy.comingSoon
+                              : copy.connectSoon}
                     </button>
+
+                    {portalActionError ===
+                    portal.portal ? (
+                      <p
+                        className="
+                          mt-2
+                          text-center
+                          text-xs
+                          text-red-300
+                        "
+                      >
+                        {copy.setupFailed}
+                      </p>
+                    ) : null}
                   </article>
                 );
               }
