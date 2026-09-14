@@ -8,6 +8,7 @@ import {
 } from "@/lib/session";
 
 import {
+  configureGermanLaunchPortalConnection,
   getGermanPortalConnectionsForUser,
 } from "@/lib/portal-integrations/portal-connection.server";
 
@@ -59,6 +60,37 @@ const LABELS: Record<
   immobilien_de:
     "Immobilien.de",
 };
+
+
+function isSameOriginMutation(
+  request: NextRequest
+): boolean {
+
+  const origin =
+    request.headers.get(
+      "origin"
+    );
+
+  if (!origin) {
+    return false;
+  }
+
+  try {
+
+    const requestOrigin =
+      new URL(
+        origin
+      ).origin;
+
+    return (
+      requestOrigin ===
+      request.nextUrl.origin
+    );
+  }
+  catch {
+    return false;
+  }
+}
 
 
 export async function GET(
@@ -136,6 +168,10 @@ export async function GET(
               connection?.status ??
               "not_configured",
 
+            environment:
+              connection?.environment ??
+              null,
+
             databaseConfigured:
               connection?.databaseConfigured ??
               false,
@@ -209,6 +245,227 @@ export async function GET(
       },
       {
         status: 500,
+      }
+    );
+  }
+}
+
+export async function PATCH(
+  request: NextRequest
+) {
+
+  /*
+   * Mutationen werden ausschliesslich
+   * vom gleichen Origin akzeptiert.
+   */
+  if (
+    !isSameOriginMutation(
+      request
+    )
+  ) {
+
+    return NextResponse.json(
+      {
+        success:
+          false,
+
+        error:
+          "INVALID_REQUEST_ORIGIN",
+      },
+      {
+        status:
+          403,
+      }
+    );
+  }
+
+
+  try {
+
+    const user =
+      await getAuthenticatedUser(
+        request
+      );
+
+    if (!user) {
+
+      return NextResponse.json(
+        {
+          success:
+            false,
+
+          error:
+            "UNAUTHORIZED",
+        },
+        {
+          status:
+            401,
+        }
+      );
+    }
+
+
+    let rawBody:
+      unknown;
+
+    try {
+
+      rawBody =
+        await request.json();
+    }
+    catch {
+
+      return NextResponse.json(
+        {
+          success:
+            false,
+
+          error:
+            "INVALID_PORTAL_CONFIGURATION",
+        },
+        {
+          status:
+            400,
+        }
+      );
+    }
+
+
+    if (
+      !rawBody ||
+      typeof rawBody !==
+        "object" ||
+      Array.isArray(
+        rawBody
+      )
+    ) {
+
+      return NextResponse.json(
+        {
+          success:
+            false,
+
+          error:
+            "INVALID_PORTAL_CONFIGURATION",
+        },
+        {
+          status:
+            400,
+        }
+      );
+    }
+
+
+    const body =
+      rawBody as
+        Record<string, unknown>;
+
+
+    const allowedKeys =
+      new Set([
+        "portal",
+        "environment",
+      ]);
+
+
+    const hasUnexpectedKey =
+      Object.keys(
+        body
+      ).some(
+        (key) =>
+          !allowedKeys.has(
+            key
+          )
+      );
+
+
+    if (
+      hasUnexpectedKey ||
+      body.portal !==
+        "immoscout24_de" ||
+      body.environment !==
+        "test"
+    ) {
+
+      return NextResponse.json(
+        {
+          success:
+            false,
+
+          error:
+            "INVALID_PORTAL_CONFIGURATION",
+        },
+        {
+          status:
+            400,
+        }
+      );
+    }
+
+
+    const connection =
+      await configureGermanLaunchPortalConnection({
+        userId:
+          user.id,
+
+        portal:
+          "immoscout24_de",
+
+        environment:
+          "test",
+      });
+
+
+    return NextResponse.json({
+      success:
+        true,
+
+      connection: {
+        portal:
+          connection.portal,
+
+        provider:
+          connection.provider,
+
+        environment:
+          connection.environment,
+
+        status:
+          connection.status,
+
+        databaseConfigured:
+          connection.databaseConfigured,
+
+        lastVerifiedAt:
+          connection.lastVerifiedAt,
+      },
+
+      /*
+       * Dieser Setup-Pfad aktiviert
+       * niemals Publishing.
+       */
+      publishEnabled:
+        false,
+    });
+  }
+  catch (error) {
+
+    console.error(
+      "German portal configuration failed:",
+      error
+    );
+
+    return NextResponse.json(
+      {
+        success:
+          false,
+
+        error:
+          "PORTAL_CONFIGURATION_DE_FAILED",
+      },
+      {
+        status:
+          500,
       }
     );
   }

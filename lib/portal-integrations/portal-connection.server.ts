@@ -118,6 +118,40 @@ export type ConfigureSwissLaunchPortalConnectionInput = {
 };
 
 
+export type GermanLaunchPortalConnectionId =
+  "immoscout24_de";
+
+
+export type ConfigureGermanLaunchPortalConnectionInput = {
+  userId:
+    string;
+
+  portal:
+    GermanLaunchPortalConnectionId;
+
+  environment:
+    PortalConnectionEnvironment;
+};
+
+
+function requireGermanLaunchPortal(
+  portal:
+    GermanLaunchPortalConnectionId
+): GermanLaunchPortalConnectionId {
+
+  if (
+    portal !==
+    "immoscout24_de"
+  ) {
+    throw new Error(
+      `Nicht unterstütztes DE-Launch-Portal: ${portal}`
+    );
+  }
+
+  return portal;
+}
+
+
 function requireSwissLaunchPortal(
   portal:
     SwissLaunchPortalConnectionId
@@ -483,6 +517,86 @@ export async function configureSwissLaunchPortalConnection(
               }
             : {}
         ),
+      },
+    });
+
+
+  return buildSnapshot(
+    portal,
+    connection
+  );
+}
+
+
+export async function configureGermanLaunchPortalConnection(
+  input:
+    ConfigureGermanLaunchPortalConnectionInput
+): Promise<
+  PortalConnectionSnapshot<GermanLaunchPortalConnectionId>
+> {
+
+  const userId =
+    requireUserId(
+      input.userId
+    );
+
+
+  const portal =
+    requireGermanLaunchPortal(
+      input.portal
+    );
+
+
+  const environment =
+    requirePortalEnvironment(
+      input.environment
+    );
+
+
+  /*
+   * DE Setup V1 speichert ausschliesslich
+   * nicht geheime Verbindungs-Metadaten.
+   *
+   * Keine Consumer Secrets,
+   * OAuth Tokens, Passwörter oder API Keys.
+   *
+   * Dieser Setup-Pfad kann niemals
+   * "verified" setzen.
+   */
+  const connection =
+    await prisma.portalConnection.upsert({
+      where: {
+        userId_portal: {
+          userId,
+          portal,
+        },
+      },
+
+      create: {
+        userId,
+
+        provider:
+          "immoscout24",
+
+        portal,
+
+        environment,
+
+        status:
+          "configured",
+      },
+
+      update: {
+        provider:
+          "immoscout24",
+
+        environment,
+
+        status:
+          "configured",
+
+        lastVerifiedAt:
+          null,
       },
     });
 
