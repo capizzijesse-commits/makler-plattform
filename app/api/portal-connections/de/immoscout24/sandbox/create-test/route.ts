@@ -486,7 +486,7 @@ export async function POST(
 
 
     const access =
-      getImmoScout24DeSandboxAccess(
+      await getImmoScout24DeSandboxAccess(
         user.id
       );
 

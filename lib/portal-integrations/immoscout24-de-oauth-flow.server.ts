@@ -1,3 +1,7 @@
+import {
+  getPortalOAuthCredential,
+} from "@/lib/portal-integrations/portal-credential-store.server";
+
 import "server-only";
 
 import {
@@ -314,11 +318,13 @@ export function setImmoScout24DeSandboxAccess(
 }
 
 
-export function getImmoScout24DeSandboxAccess(
+export async function getImmoScout24DeSandboxAccess(
   userIdValue: string
 ):
-  ImmoScout24DeSandboxAccess
-  | null {
+  Promise<
+    ImmoScout24DeSandboxAccess |
+    null
+  > {
 
   const userId =
     userIdValue.trim();
@@ -327,29 +333,62 @@ export function getImmoScout24DeSandboxAccess(
     return null;
   }
 
-  const access =
+
+  const cached =
     sandboxAccessStore.get(
       userId
     );
 
-  if (!access) {
-    return null;
-  }
 
   if (
-    access.expiresAt <=
-    Date.now()
+    cached &&
+    cached.expiresAt >
+      Date.now()
   ) {
+
+    return cached;
+  }
+
+
+  if (cached) {
+
     sandboxAccessStore.delete(
       userId
     );
+  }
 
+
+  const persisted =
+    await getPortalOAuthCredential({
+      userId,
+
+      portal:
+        "immoscout24_de",
+
+      environment:
+        "sandbox",
+    });
+
+
+  if (!persisted) {
     return null;
   }
 
-  return access;
-}
 
+  /*
+   * Entschluesselten Token nur
+   * serverseitig im RAM cachen.
+   */
+  return setImmoScout24DeSandboxAccess({
+    userId,
+
+    accessToken:
+      persisted.accessToken,
+
+    accessTokenSecret:
+      persisted.accessTokenSecret,
+  });
+}
 
 export function clearImmoScout24DeSandboxAccess(
   userIdValue: string

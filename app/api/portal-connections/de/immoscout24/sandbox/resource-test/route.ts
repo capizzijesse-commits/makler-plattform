@@ -202,7 +202,7 @@ export async function GET(
 
 
     const access =
-      getImmoScout24DeSandboxAccess(
+      await getImmoScout24DeSandboxAccess(
         user.id
       );
 

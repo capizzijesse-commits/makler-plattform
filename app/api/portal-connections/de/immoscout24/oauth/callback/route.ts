@@ -18,6 +18,10 @@ import {
 } from "@/lib/portal-integrations/immoscout24-de-oauth-flow.server";
 
 
+import {
+  savePortalOAuthCredential,
+} from "@/lib/portal-integrations/portal-credential-store.server";
+
 export const runtime =
   "nodejs";
 
@@ -283,15 +287,36 @@ export async function GET(
 
 
     /*
-     * V1 Sandbox:
+     * V2 Sandbox:
      *
-     * Tokens bleiben nur kurzfristig
-     * im serverseitigen Arbeitsspeicher.
+     * OAuth Access wird AES-256-GCM
+     * verschluesselt persistent gespeichert.
      *
-     * Kein Prisma.
+     * RAM bleibt nur kurzfristiger Cache.
      * Kein Browser-Token.
      * Kein Publishing.
      */
+    await savePortalOAuthCredential({
+      userId:
+        user.id,
+
+      provider:
+        "immoscout24",
+
+      portal:
+        "immoscout24_de",
+
+      environment:
+        "sandbox",
+
+      accessToken:
+        access.accessToken,
+
+      accessTokenSecret:
+        access.accessTokenSecret,
+    });
+
+
     setImmoScout24DeSandboxAccess({
       userId:
         user.id,
@@ -315,6 +340,11 @@ export async function GET(
         oauthHandshake:
           "completed",
 
+        persistentAccessStored:
+          true,
+
+        credentialStorage:
+          "encrypted_database",
         temporaryAccessStored:
           true,
 
