@@ -1166,14 +1166,32 @@ export default function PortalConnectionsCard({
   ]);
 
 
-  async function prepareSwissPortalTestConnection(
+  async function preparePortalTestConnection(
     portal:
       | "immoscout24_ch"
       | "homegate_ch"
+      | "immoscout24_de"
   ): Promise<void> {
 
+    const validPortalForMarket =
+      (
+        market === "CH" &&
+        (
+          portal ===
+            "immoscout24_ch" ||
+          portal ===
+            "homegate_ch"
+        )
+      ) ||
+      (
+        market === "DE" &&
+        portal ===
+          "immoscout24_de"
+      );
+
+
     if (
-      market !== "CH" ||
+      !validPortalForMarket ||
       savingPortal !== null
     ) {
       return;
@@ -1193,7 +1211,7 @@ export default function PortalConnectionsCard({
 
       const response =
         await fetch(
-          "/api/portal-connections",
+          apiEndpoint,
           {
             method:
               "PATCH",
@@ -1621,22 +1639,36 @@ export default function PortalConnectionsCard({
                     "homegate_ch";
 
 
+                const germanSetupPortal =
+                  portal.portal ===
+                    "immoscout24_de";
+
+
+                const setupPortalForMarket =
+                  (
+                    market === "CH" &&
+                    swissSetupPortal
+                  ) ||
+                  (
+                    market === "DE" &&
+                    germanSetupPortal
+                  );
+
+
                 const isSaving =
                   savingPortal ===
                   portal.portal;
 
 
                 const testConfigurationPrepared =
-                  market === "CH" &&
-                  swissSetupPortal &&
+                  setupPortalForMarket &&
                   portal.databaseConfigured &&
                   portal.environment ===
                     "test";
 
 
                 const canPrepareTestConfiguration =
-                  market === "CH" &&
-                  swissSetupPortal &&
+                  setupPortalForMarket &&
                   !comingSoon &&
                   !portal.databaseConfigured;
 
@@ -2020,9 +2052,11 @@ export default function PortalConnectionsCard({
                           portal.portal ===
                             "immoscout24_ch" ||
                           portal.portal ===
-                            "homegate_ch"
+                            "homegate_ch" ||
+                          portal.portal ===
+                            "immoscout24_de"
                         ) {
-                          void prepareSwissPortalTestConnection(
+                          void preparePortalTestConnection(
                             portal.portal
                           );
                         }
