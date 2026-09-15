@@ -796,6 +796,39 @@ export async function POST(
 
     if (!publish.ok) {
 
+      /*
+       * Nur strukturierte, nicht geheime
+       * ImmoScout24-Fehlerdaten zurückgeben.
+       *
+       * Niemals Raw XML, OAuth Tokens
+       * oder Secrets an den Browser senden.
+       */
+      const upstreamMessageCode =
+        extractTag(
+          publish.raw,
+          "messageCode"
+        );
+
+      const upstreamMessage =
+        extractTag(
+          publish.raw,
+          "message"
+        );
+
+      const sanitizedUpstreamMessage =
+        upstreamMessage
+          ?.replace(
+            /\s+/g,
+            " "
+          )
+          .trim()
+          .slice(
+            0,
+            300
+          ) ??
+        null;
+
+
       return NextResponse.json(
         {
           success:
@@ -807,6 +840,11 @@ export async function POST(
           upstreamStatus:
             publish.statusCode,
 
+          upstreamMessageCode,
+
+          upstreamMessage:
+            sanitizedUpstreamMessage,
+
           publishRequestSent:
             true,
 
@@ -814,6 +852,9 @@ export async function POST(
             false,
 
           databaseModified:
+            false,
+
+          rawResponseReturned:
             false,
 
           productionEnabled:
