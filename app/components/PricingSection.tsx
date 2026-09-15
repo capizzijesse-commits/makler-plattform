@@ -106,8 +106,12 @@ export default function PricingSection({
     },
     {
       id: "pro",
-      name: "Pro",
-      label: t("plans.pro.label"),
+      name: isGermany
+        ? "Vollautomatisierung"
+        : "Pro",
+      label: isGermany
+        ? "IN VORBEREITUNG · FÜR EINZELNE MAKLER"
+        : t("plans.pro.label"),
       price: isGermany
         ? "79,90 €"
         : "79.90 CHF",
@@ -115,25 +119,48 @@ export default function PricingSection({
         ? "pro Monat"
         : t("plans.pro.cadence"),
       text: isGermany
-        ? "Für Makler mit erweiterten KI-, Home-Staging- und Automatisierungsfunktionen."
+        ? "Für einzelne Immobilienmakler. 1 Benutzer inklusive."
         : t("plans.pro.description"),
       button: isGermany
-        ? "Pro starten"
+        ? "In Vorbereitung"
         : t("plans.pro.button"),
       href: "#preise",
       highlighted: false,
-      features: [
-        t("plans.pro.features.founder"),
-        t("plans.pro.features.images"),
-        t("plans.pro.features.staging"),
-        t("plans.pro.features.tour"),
-        t("plans.pro.features.marketingHub"),
-        t("plans.pro.features.analysis"),
-        t("plans.pro.features.parallel"),
-        t("plans.pro.features.development"),
-      ],
+      features: isGermany
+        ? [
+            "Alles aus Founder",
+            "Bis zu 10 Objektbilder pro Immobilie",
+            "Virtuelles Home Staging",
+            "Erweiterte Bildanalyse",
+            "Marketing Hub",
+          ]
+        : [
+            t("plans.pro.features.founder"),
+            t("plans.pro.features.images"),
+            t("plans.pro.features.staging"),
+            t("plans.pro.features.tour"),
+            t("plans.pro.features.marketingHub"),
+            t("plans.pro.features.analysis"),
+            t("plans.pro.features.parallel"),
+            t("plans.pro.features.development"),
+          ],
     },
   ];
+
+  const germanyProUpcomingFeatures = [
+    {
+      name: "3D-Video-Tour mit KI-Stimmen",
+      status: "IN ENTWICKLUNG",
+    },
+    {
+      name: "Mehrere Inserate gleichzeitig",
+      status: "IN VORBEREITUNG",
+    },
+    {
+      name: "Publishing-Center",
+      status: "IM AUFBAU",
+    },
+  ] as const;
 
   const visiblePlans = isGermany
     ? plans.filter(
@@ -500,6 +527,38 @@ export default function PricingSection({
                 ))}
               </ul>
 
+              {isGermany &&
+              plan.id === "pro" ? (
+                <div className="planUpcoming">
+                  <div className="planUpcomingTitle">
+                    Weitere Funktionen
+                  </div>
+
+                  <ul className="planUpcomingList">
+                    {germanyProUpcomingFeatures.map(
+                      (feature) => (
+                        <li key={feature.name}>
+                          <span
+                            className="planUpcomingMarker"
+                            aria-hidden="true"
+                          >
+                            {"\u25CB"}
+                          </span>
+
+                          <span className="planUpcomingName">
+                            {feature.name}
+                          </span>
+
+                          <span className="planUpcomingStatus">
+                            {feature.status}
+                          </span>
+                        </li>
+                      )
+                    )}
+                  </ul>
+                </div>
+              ) : null}
+
               {plan.id === "founder" ? (
                 <button
                   type="button"
@@ -531,28 +590,19 @@ export default function PricingSection({
                 isGermany ? (
                   <button
                     type="button"
-                    onClick={() =>
-                      startSubscriptionCheckout(
-                        "pro"
-                      )
-                    }
-                    disabled={checkoutLoading}
+                    disabled
                     className="planButton"
                     style={{
                       border: 0,
-                      cursor: checkoutLoading
-                        ? "wait"
-                        : "pointer",
-                      opacity: 1,
+                      cursor: "not-allowed",
+                      opacity: 0.68,
                       font: "inherit",
                     }}
                   >
-                    {checkoutLoading
-                      ? "Checkout wird geöffnet …"
-                      : plan.button}
+                    {plan.button}
 
                     <span aria-hidden="true">
-                      {"\u2192"}
+                      {"\u{1F512}"}
                     </span>
                   </button>
                 ) : (
@@ -636,21 +686,22 @@ export default function PricingSection({
             <>
               <div>
                 <span className="agencyLabel">
-                  FÜR WACHSENDE TEAMS
+                  FÜR AGENTUREN & TEAMS
                 </span>
 
-                <strong>Pro & Agency</strong>
+                <strong>Agency & Teams</strong>
 
                 <p>
-                  Mehr Automatisierung und
-                  Premium-Funktionen für größere
-                  Immobilien-Teams.
+                  Bis zu 5 Benutzer inklusive.
+                  Größere Teams mit bis zu 10 Benutzern:
+                  199,90 € / Monat. Über 10 Benutzer:
+                  individuelles Angebot.
                 </p>
               </div>
 
               <div className="agencyStatus">
-                <span>ab 79,90 € / Monat</span>
-                <strong>In Vorbereitung</strong>
+                <span>149,90 € / Monat</span>
+                <strong>Bis zu 5 Benutzer</strong>
               </div>
             </>
           ) : (
@@ -1008,6 +1059,63 @@ export default function PricingSection({
         .planFeatures li > span:first-child {
           color: #f59e0b;
           font-weight: 950;
+        }
+
+        .planUpcoming {
+          margin: 4px 0 24px;
+          padding-top: 18px;
+          border-top: 1px solid rgba(148, 163, 184, 0.22);
+        }
+
+        .planUpcomingTitle {
+          margin-bottom: 11px;
+          color: #64748b;
+          font-size: 11px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+
+        .planUpcomingList {
+          display: grid;
+          gap: 9px;
+          margin: 0;
+          padding: 0;
+          list-style: none;
+        }
+
+        .planUpcomingList li {
+          display: grid;
+          grid-template-columns:
+            auto
+            minmax(0, 1fr)
+            auto;
+          align-items: center;
+          gap: 9px;
+          color: #475569;
+          font-size: 13px;
+          line-height: 1.4;
+        }
+
+        .planUpcomingMarker {
+          color: #94a3b8;
+          font-weight: 900;
+        }
+
+        .planUpcomingName {
+          min-width: 0;
+        }
+
+        .planUpcomingStatus {
+          padding: 4px 8px;
+          border: 1px solid rgba(148, 163, 184, 0.3);
+          border-radius: 999px;
+          background: #f8fafc;
+          color: #475569;
+          font-size: 9px;
+          font-weight: 900;
+          letter-spacing: 0.05em;
+          white-space: nowrap;
         }
 
         .planButton {
