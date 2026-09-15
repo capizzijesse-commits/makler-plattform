@@ -45,6 +45,7 @@ model User {
   sessions                                                                Session[]
   valuations                                                              Valuation[]
   portalConnections                                                       PortalConnection[]
+  portalCredentials PortalCredential[]
   MaklerChatBlock_MaklerChatBlock_blockedUserIdToUser                     MaklerChatBlock[]          @relation("MaklerChatBlock_blockedUserIdToUser")
   MaklerChatBlock_MaklerChatBlock_blockerUserIdToUser                     MaklerChatBlock[]          @relation("MaklerChatBlock_blockerUserIdToUser")
   MaklerChatBranding                                                      MaklerChatBranding?
@@ -202,6 +203,48 @@ model PortalConnection {
   @@unique([userId, portal])
   @@index([userId])
   @@index([provider, portal])
+}
+
+model PortalCredential {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /**
+   * Portal-spezifische Zuordnung.
+   * Beispiel:
+   * provider = "immoscout24"
+   * portal   = "immoscout24_de"
+   */
+  provider String
+  portal   String
+
+  /**
+   * sandbox | test | production
+   *
+   * Environment ist Teil des Unique Keys,
+   * damit Test- und Production-Credentials
+   * niemals denselben Datensatz verwenden.
+   */
+  environment String
+
+  /**
+   * Ausschliesslich AES-256-GCM verschluesselter
+   * Payload.
+   *
+   * Niemals Access Token oder Token Secret
+   * im Klartext speichern.
+   */
+  encryptedPayload String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, portal, environment])
+  @@index([userId])
+  @@index([provider, portal])
+  @@index([portal, environment])
 }
 
 model Listing {
