@@ -143,15 +143,38 @@ export function createImmoScout24DeOAuthClient():
   const config =
     getImmoScout24DeOAuthConfig();
 
-  return new OAuth(
-    config.requestTokenUrl,
-    config.accessTokenUrl,
-    config.consumerKey,
-    config.consumerSecret,
-    "1.0A",
-    config.callbackUrl,
-    "HMAC-SHA1"
-  );
+  const client =
+    new OAuth(
+      config.requestTokenUrl,
+      config.accessTokenUrl,
+      config.consumerKey,
+      config.consumerSecret,
+      "1.0",
+      config.callbackUrl,
+      "HMAC-SHA1"
+    );
+
+  /*
+   * ImmoScout24 dokumentiert sowohl
+   * Request-Token als auch Access-Token
+   * als GET Requests.
+   *
+   * node-oauth verwendet standardmässig
+   * POST und muss deshalb explizit
+   * umgestellt werden.
+   */
+  client.setClientOptions({
+    requestTokenHttpMethod:
+      "GET",
+
+    accessTokenHttpMethod:
+      "GET",
+
+    followRedirects:
+      true,
+  });
+
+  return client;
 }
 
 
