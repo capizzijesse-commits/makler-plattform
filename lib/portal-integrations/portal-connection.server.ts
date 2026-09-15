@@ -122,6 +122,7 @@ export type GermanLaunchPortalConnectionId =
   | "immoscout24_de"
   | "immowelt_de"
   | "kleinanzeigen_de"
+  | "wg_gesucht_de"
   | "immobilien_de";
 
 
@@ -150,6 +151,8 @@ function requireGermanLaunchPortal(
     portal !==
       "kleinanzeigen_de" &&
     portal !==
+      "wg_gesucht_de" &&
+    portal !==
       "immobilien_de"
   ) {
     throw new Error(
@@ -164,7 +167,7 @@ function requireGermanLaunchPortal(
 function getGermanLaunchProvider(
   portal:
     GermanLaunchPortalConnectionId
-): "immoscout24" | "immowelt" | "kleinanzeigen" | "immobilien_de" {
+): "immoscout24" | "immowelt" | "kleinanzeigen" | "wg_gesucht" | "immobilien_de" {
 
   switch (portal) {
 
@@ -176,6 +179,9 @@ function getGermanLaunchProvider(
 
     case "kleinanzeigen_de":
       return "kleinanzeigen";
+
+    case "wg_gesucht_de":
+      return "wg_gesucht";
 
     case "immobilien_de":
       return "immobilien_de";

@@ -1173,6 +1173,7 @@ export default function PortalConnectionsCard({
       | "immoscout24_de"
     | "immowelt_de"
     | "kleinanzeigen_de"
+    | "wg_gesucht_de"
     | "immobilien_de"
   ): Promise<void> {
 
@@ -1650,6 +1651,8 @@ export default function PortalConnectionsCard({
                   portal.portal ===
                     "kleinanzeigen_de" ||
                   portal.portal ===
+                    "wg_gesucht_de" ||
+                  portal.portal ===
                     "immobilien_de";
 
 
@@ -2068,6 +2071,8 @@ export default function PortalConnectionsCard({
                             "immowelt_de" ||
                           portal.portal ===
                             "kleinanzeigen_de" ||
+                          portal.portal ===
+                            "wg_gesucht_de" ||
                           portal.portal ===
                             "immobilien_de"
                         ) {

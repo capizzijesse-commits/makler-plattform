@@ -32,6 +32,10 @@ import {
   getImmobilienDeAccessSnapshot,
 } from "@/lib/portal-integrations/immobilien-de-access.server";
 
+import {
+  getWgGesuchtDeAccessSnapshot,
+} from "@/lib/portal-integrations/wg-gesucht-de-access.server";
+
 import type {
   GermanPortalId,
 } from "@/lib/portal-integrations/types";
@@ -156,6 +160,9 @@ export async function GET(
     const immobilienDeAccess =
       getImmobilienDeAccessSnapshot();
 
+    const wgGesuchtDeAccess =
+      getWgGesuchtDeAccessSnapshot();
+
 
     const byPortal =
       new Map(
@@ -182,6 +189,8 @@ export async function GET(
               "immowelt_de" &&
             portal !==
               "kleinanzeigen_de" &&
+            portal !==
+              "wg_gesucht_de" &&
             portal !==
               "immobilien_de";
 
@@ -214,9 +223,12 @@ export async function GET(
                       "kleinanzeigen_de"
                     ? kleinanzeigenDeAccess
                     : portal ===
-                        "immobilien_de"
-                      ? immobilienDeAccess
-                      : null,
+                        "wg_gesucht_de"
+                      ? wgGesuchtDeAccess
+                      : portal ===
+                          "immobilien_de"
+                        ? immobilienDeAccess
+                        : null,
 
             availability:
               comingSoon
@@ -423,6 +435,8 @@ export async function PATCH(
       body.portal ===
         "kleinanzeigen_de" ||
       body.portal ===
+        "wg_gesucht_de" ||
+      body.portal ===
         "immobilien_de";
 
 
@@ -454,6 +468,7 @@ export async function PATCH(
         | "immoscout24_de"
         | "immowelt_de"
         | "kleinanzeigen_de"
+        | "wg_gesucht_de"
         | "immobilien_de";
 
 
