@@ -1171,6 +1171,7 @@ export default function PortalConnectionsCard({
       | "immoscout24_ch"
       | "homegate_ch"
       | "immoscout24_de"
+    | "immowelt_de"
   ): Promise<void> {
 
     const validPortalForMarket =
@@ -1641,7 +1642,9 @@ export default function PortalConnectionsCard({
 
                 const germanSetupPortal =
                   portal.portal ===
-                    "immoscout24_de";
+                    "immoscout24_de" ||
+                  portal.portal ===
+                    "immowelt_de";
 
 
                 const setupPortalForMarket =
@@ -2054,7 +2057,9 @@ export default function PortalConnectionsCard({
                           portal.portal ===
                             "homegate_ch" ||
                           portal.portal ===
-                            "immoscout24_de"
+                            "immoscout24_de" ||
+                          portal.portal ===
+                            "immowelt_de"
                         ) {
                           void preparePortalTestConnection(
                             portal.portal

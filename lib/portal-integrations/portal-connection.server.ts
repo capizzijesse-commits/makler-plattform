@@ -119,7 +119,8 @@ export type ConfigureSwissLaunchPortalConnectionInput = {
 
 
 export type GermanLaunchPortalConnectionId =
-  "immoscout24_de";
+  | "immoscout24_de"
+  | "immowelt_de";
 
 
 export type ConfigureGermanLaunchPortalConnectionInput = {
@@ -141,7 +142,9 @@ function requireGermanLaunchPortal(
 
   if (
     portal !==
-    "immoscout24_de"
+      "immoscout24_de" &&
+    portal !==
+      "immowelt_de"
   ) {
     throw new Error(
       `Nicht unterstütztes DE-Launch-Portal: ${portal}`
@@ -151,6 +154,19 @@ function requireGermanLaunchPortal(
   return portal;
 }
 
+
+function getGermanLaunchProvider(
+  portal:
+    GermanLaunchPortalConnectionId
+): "immoscout24" | "immowelt" {
+
+  return (
+    portal ===
+      "immowelt_de"
+      ? "immowelt"
+      : "immoscout24"
+  );
+}
 
 function requireSwissLaunchPortal(
   portal:
@@ -551,6 +567,10 @@ export async function configureGermanLaunchPortalConnection(
     requirePortalEnvironment(
       input.environment
     );
+  const provider =
+    getGermanLaunchProvider(
+      portal
+    );
 
 
   /*
@@ -575,8 +595,7 @@ export async function configureGermanLaunchPortalConnection(
       create: {
         userId,
 
-        provider:
-          "immoscout24",
+        provider,
 
         portal,
 
@@ -587,8 +606,7 @@ export async function configureGermanLaunchPortalConnection(
       },
 
       update: {
-        provider:
-          "immoscout24",
+        provider,
 
         environment,
 

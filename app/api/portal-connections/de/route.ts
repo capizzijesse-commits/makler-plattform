@@ -20,6 +20,10 @@ import {
   getImmoScout24DeAccessSnapshot,
 } from "@/lib/portal-integrations/immoscout24-de-access.server";
 
+import {
+  getImmoweltDeAccessSnapshot,
+} from "@/lib/portal-integrations/immowelt-de-access.server";
+
 import type {
   GermanPortalId,
 } from "@/lib/portal-integrations/types";
@@ -135,6 +139,9 @@ export async function GET(
     const immoScout24DeAccess =
       getImmoScout24DeAccessSnapshot();
 
+    const immoweltDeAccess =
+      getImmoweltDeAccessSnapshot();
+
 
     const byPortal =
       new Map(
@@ -156,7 +163,9 @@ export async function GET(
 
           const comingSoon =
             portal !==
-              "immoscout24_de";
+              "immoscout24_de" &&
+            portal !==
+              "immowelt_de";
 
           return {
             portal,
@@ -180,7 +189,10 @@ export async function GET(
               portal ===
               "immoscout24_de"
                 ? immoScout24DeAccess
-                : null,
+                : portal ===
+                    "immowelt_de"
+                  ? immoweltDeAccess
+                  : null,
 
             availability:
               comingSoon
@@ -379,10 +391,16 @@ export async function PATCH(
       );
 
 
+    const supportedPortal =
+      body.portal ===
+        "immoscout24_de" ||
+      body.portal ===
+        "immowelt_de";
+
+
     if (
       hasUnexpectedKey ||
-      body.portal !==
-        "immoscout24_de" ||
+      !supportedPortal ||
       body.environment !==
         "test"
     ) {
@@ -403,13 +421,18 @@ export async function PATCH(
     }
 
 
+    const portal =
+      body.portal as
+        | "immoscout24_de"
+        | "immowelt_de";
+
+
     const connection =
       await configureGermanLaunchPortalConnection({
         userId:
           user.id,
 
-        portal:
-          "immoscout24_de",
+        portal,
 
         environment:
           "test",
