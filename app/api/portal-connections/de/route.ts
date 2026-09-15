@@ -28,6 +28,10 @@ import {
   getKleinanzeigenDeAccessSnapshot,
 } from "@/lib/portal-integrations/kleinanzeigen-de-access.server";
 
+import {
+  getImmobilienDeAccessSnapshot,
+} from "@/lib/portal-integrations/immobilien-de-access.server";
+
 import type {
   GermanPortalId,
 } from "@/lib/portal-integrations/types";
@@ -149,6 +153,9 @@ export async function GET(
     const kleinanzeigenDeAccess =
       getKleinanzeigenDeAccessSnapshot();
 
+    const immobilienDeAccess =
+      getImmobilienDeAccessSnapshot();
+
 
     const byPortal =
       new Map(
@@ -174,7 +181,9 @@ export async function GET(
             portal !==
               "immowelt_de" &&
             portal !==
-              "kleinanzeigen_de";
+              "kleinanzeigen_de" &&
+            portal !==
+              "immobilien_de";
 
           return {
             portal,
@@ -204,7 +213,10 @@ export async function GET(
                   : portal ===
                       "kleinanzeigen_de"
                     ? kleinanzeigenDeAccess
-                    : null,
+                    : portal ===
+                        "immobilien_de"
+                      ? immobilienDeAccess
+                      : null,
 
             availability:
               comingSoon
@@ -409,7 +421,9 @@ export async function PATCH(
       body.portal ===
         "immowelt_de" ||
       body.portal ===
-        "kleinanzeigen_de";
+        "kleinanzeigen_de" ||
+      body.portal ===
+        "immobilien_de";
 
 
     if (
@@ -439,7 +453,8 @@ export async function PATCH(
       body.portal as
         | "immoscout24_de"
         | "immowelt_de"
-        | "kleinanzeigen_de";
+        | "kleinanzeigen_de"
+        | "immobilien_de";
 
 
     const connection =

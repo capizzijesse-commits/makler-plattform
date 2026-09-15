@@ -121,7 +121,8 @@ export type ConfigureSwissLaunchPortalConnectionInput = {
 export type GermanLaunchPortalConnectionId =
   | "immoscout24_de"
   | "immowelt_de"
-  | "kleinanzeigen_de";
+  | "kleinanzeigen_de"
+  | "immobilien_de";
 
 
 export type ConfigureGermanLaunchPortalConnectionInput = {
@@ -147,7 +148,9 @@ function requireGermanLaunchPortal(
     portal !==
       "immowelt_de" &&
     portal !==
-      "kleinanzeigen_de"
+      "kleinanzeigen_de" &&
+    portal !==
+      "immobilien_de"
   ) {
     throw new Error(
       `Nicht unterstütztes DE-Launch-Portal: ${portal}`
@@ -161,7 +164,7 @@ function requireGermanLaunchPortal(
 function getGermanLaunchProvider(
   portal:
     GermanLaunchPortalConnectionId
-): "immoscout24" | "immowelt" | "kleinanzeigen" {
+): "immoscout24" | "immowelt" | "kleinanzeigen" | "immobilien_de" {
 
   switch (portal) {
 
@@ -173,6 +176,9 @@ function getGermanLaunchProvider(
 
     case "kleinanzeigen_de":
       return "kleinanzeigen";
+
+    case "immobilien_de":
+      return "immobilien_de";
   }
 }
 

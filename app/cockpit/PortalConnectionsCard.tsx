@@ -1173,6 +1173,7 @@ export default function PortalConnectionsCard({
       | "immoscout24_de"
     | "immowelt_de"
     | "kleinanzeigen_de"
+    | "immobilien_de"
   ): Promise<void> {
 
     const validPortalForMarket =
@@ -1647,7 +1648,9 @@ export default function PortalConnectionsCard({
                   portal.portal ===
                     "immowelt_de" ||
                   portal.portal ===
-                    "kleinanzeigen_de";
+                    "kleinanzeigen_de" ||
+                  portal.portal ===
+                    "immobilien_de";
 
 
                 const setupPortalForMarket =
@@ -2064,7 +2067,9 @@ export default function PortalConnectionsCard({
                           portal.portal ===
                             "immowelt_de" ||
                           portal.portal ===
-                            "kleinanzeigen_de"
+                            "kleinanzeigen_de" ||
+                          portal.portal ===
+                            "immobilien_de"
                         ) {
                           void preparePortalTestConnection(
                             portal.portal
