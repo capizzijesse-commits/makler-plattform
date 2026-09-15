@@ -137,7 +137,12 @@ export function getImmoScout24DeOAuthConfig():
 }
 
 
-export function createImmoScout24DeOAuthClient():
+export function createImmoScout24DeOAuthClient(
+  options?: {
+    accept?:
+      string;
+  }
+):
   OAuth {
 
   const config =
@@ -151,7 +156,20 @@ export function createImmoScout24DeOAuthClient():
       config.consumerSecret,
       "1.0",
       config.callbackUrl,
-      "HMAC-SHA1"
+      "HMAC-SHA1",
+      undefined,
+      options?.accept
+        ? {
+            Accept:
+              options.accept,
+
+            Connection:
+              "close",
+
+            "User-Agent":
+              "Inserat-AI",
+          }
+        : undefined
     );
 
   /*

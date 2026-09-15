@@ -141,7 +141,10 @@ function oauthGet(
   Promise<OAuthResult> {
 
   const client =
-    createImmoScout24DeOAuthClient();
+    createImmoScout24DeOAuthClient({
+      accept:
+        "application/xml",
+    });
 
   return new Promise(
     (
@@ -222,7 +225,10 @@ function oauthPost(
   Promise<OAuthResult> {
 
   const client =
-    createImmoScout24DeOAuthClient();
+    createImmoScout24DeOAuthClient({
+      accept:
+        "application/xml",
+    });
 
   return new Promise(
     (
