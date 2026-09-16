@@ -584,6 +584,169 @@ export async function cancelSocialPublishJob(
 }
 
 
+const SOCIAL_PUBLISH_LOCK_TTL_MS =
+  10 * 60_000;
+
+
+export async function recoverStaleSocialPublishJobs(
+  input?: {
+    now?:
+      Date;
+
+    lockTtlMs?:
+      number;
+  }
+) {
+
+  const now =
+    input?.now ??
+    new Date();
+
+  const requestedLockTtlMs =
+    input?.lockTtlMs ??
+    SOCIAL_PUBLISH_LOCK_TTL_MS;
+
+  const lockTtlMs =
+    Math.max(
+      60_000,
+      Math.min(
+        requestedLockTtlMs,
+        60 * 60_000
+      )
+    );
+
+  const staleBefore =
+    new Date(
+      now.getTime() -
+      lockTtlMs
+    );
+
+
+  /*
+   * Versuchslimit noch nicht erreicht:
+   * abgestürzten Job freigeben und
+   * sofort wieder retry-fähig machen.
+   */
+  const retryable =
+    await prisma.socialPublishJob.updateMany({
+      where: {
+        status:
+          "processing",
+
+        attemptCount: {
+          lt:
+            prisma.socialPublishJob.fields.maxAttempts,
+        },
+
+        OR: [
+          {
+            lockedAt: {
+              lte:
+                staleBefore,
+            },
+          },
+
+          {
+            lockedAt:
+              null,
+          },
+        ],
+      },
+
+      data: {
+        status:
+          "failed",
+
+        failedAt:
+          now,
+
+        errorCode:
+          "WORKER_LOCK_STALE",
+
+        errorMessage:
+          "Worker lock expired before the publish job completed.",
+
+        nextAttemptAt:
+          now,
+
+        lockedAt:
+          null,
+
+        lockedBy:
+          null,
+      },
+    });
+
+
+  /*
+   * Versuchslimit bereits erreicht:
+   * terminal failed, kein weiterer Retry.
+   */
+  const exhausted =
+    await prisma.socialPublishJob.updateMany({
+      where: {
+        status:
+          "processing",
+
+        attemptCount: {
+          gte:
+            prisma.socialPublishJob.fields.maxAttempts,
+        },
+
+        OR: [
+          {
+            lockedAt: {
+              lte:
+                staleBefore,
+            },
+          },
+
+          {
+            lockedAt:
+              null,
+          },
+        ],
+      },
+
+      data: {
+        status:
+          "failed",
+
+        failedAt:
+          now,
+
+        errorCode:
+          "WORKER_LOCK_STALE",
+
+        errorMessage:
+          "Worker lock expired after the maximum publish attempts were reached.",
+
+        nextAttemptAt:
+          null,
+
+        lockedAt:
+          null,
+
+        lockedBy:
+          null,
+      },
+    });
+
+
+  return {
+    retryable:
+      retryable.count,
+
+    exhausted:
+      exhausted.count,
+
+    total:
+      retryable.count +
+      exhausted.count,
+  };
+}
+
+
 export async function claimDueSocialPublishJobs(
   input: {
     workerId:
@@ -616,6 +779,15 @@ export async function claimDueSocialPublishJobs(
         25
       )
     );
+
+
+  /*
+   * Vor jedem Claim verwaiste
+   * processing-Locks freigeben.
+   */
+  await recoverStaleSocialPublishJobs({
+    now,
+  });
 
 
   const candidates =
@@ -968,7 +1140,10 @@ export async function markSocialPublishJobFailed(
 
 
   if (!job) {
-    return null;
+    return {
+      count:
+        0,
+    };
   }
 
 
@@ -977,10 +1152,31 @@ export async function markSocialPublishJobFailed(
     job.maxAttempts;
 
 
-  return prisma.socialPublishJob.update({
+  /*
+   * Ownership auch beim finalen Update
+   * nochmals atomar prüfen.
+   *
+   * Falls zwischen Read und Write bereits
+   * eine Stale-Lock-Recovery stattgefunden
+   * hat, darf der alte Worker den Job nicht
+   * mehr verändern.
+   */
+  return prisma.socialPublishJob.updateMany({
     where: {
       id:
         job.id,
+
+      status:
+        "processing",
+
+      lockedBy:
+        workerId,
+
+      attemptCount:
+        job.attemptCount,
+
+      maxAttempts:
+        job.maxAttempts,
     },
 
     data: {

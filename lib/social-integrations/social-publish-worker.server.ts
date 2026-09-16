@@ -366,25 +366,54 @@ export async function runSocialPublishWorker(
         );
 
 
+      /*
+       * Retry immer ab dem tatsächlichen
+       * Fehlerzeitpunkt berechnen, nicht
+       * ab Worker-Start.
+       */
       const retryAt =
         retryAtForJob(
           job,
-          now
+          new Date()
         );
 
 
-      await markSocialPublishJobFailed({
-        jobId:
-          job.id,
+      const failureResult =
+        await markSocialPublishJobFailed({
+          jobId:
+            job.id,
 
-        workerId,
+          workerId,
 
-        errorCode,
+          errorCode,
 
-        errorMessage,
+          errorMessage,
 
-        retryAt,
-      });
+          retryAt,
+        });
+
+
+      if (
+        failureResult.count !==
+        1
+      ) {
+
+        failed +=
+          1;
+
+        results.push({
+          jobId:
+            job.id,
+
+          status:
+            "failed",
+
+          errorCode:
+            "WORKER_LOCK_LOST",
+        });
+
+        continue;
+      }
 
 
       failed +=
