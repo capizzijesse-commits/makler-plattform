@@ -10,6 +10,7 @@ import {
 
 import MetaConnectionCard from "./MetaConnectionCard";
 import ReconciliationAlertCard from "./ReconciliationAlertCard";
+import PublishingCenterStatusCard from "./PublishingCenterStatusCard";
 
 type PlatformName = "Instagram" | "Facebook" | "LinkedIn" | "X" | "WhatsApp" | "TikTok";
 
@@ -768,6 +769,8 @@ return (
         </div>
 
    <MetaConnectionCard />
+
+   <PublishingCenterStatusCard />
 
    <ReconciliationAlertCard />
 
