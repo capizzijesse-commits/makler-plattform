@@ -135,6 +135,17 @@ export type ConfigureGermanLaunchPortalConnectionInput = {
 
   environment:
     PortalConnectionEnvironment;
+
+  /*
+   * Für immowelt_de:
+   * echte OpenImmo Anbieter-ID.
+   *
+   * Kein Secret und keine
+   * Transport-Credential.
+   */
+  externalOwnerId?:
+    | string
+    | null;
 };
 
 
@@ -594,6 +605,24 @@ export async function configureGermanLaunchPortalConnection(
 
 
   /*
+   * externalOwnerId ist im deutschen
+   * Setup aktuell ausschließlich für
+   * immowelt_de freigegeben.
+   *
+   * Dort entspricht es der echten
+   * OpenImmo openimmo_anid.
+   */
+  const externalOwnerId =
+    portal ===
+      "immowelt_de"
+      ? normalizeOptionalExternalId(
+          input.externalOwnerId,
+          "externalOwnerId"
+        )
+      : undefined;
+
+
+  /*
    * DE Setup V1 speichert ausschliesslich
    * nicht geheime Verbindungs-Metadaten.
    *
@@ -623,6 +652,10 @@ export async function configureGermanLaunchPortalConnection(
 
         status:
           "configured",
+
+        externalOwnerId:
+          externalOwnerId ??
+          null,
       },
 
       update: {
@@ -635,6 +668,14 @@ export async function configureGermanLaunchPortalConnection(
 
         lastVerifiedAt:
           null,
+
+        ...(
+          externalOwnerId !== undefined
+            ? {
+                externalOwnerId,
+              }
+            : {}
+        ),
       },
     });
 

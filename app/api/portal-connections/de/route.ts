@@ -212,6 +212,10 @@ export async function GET(
               connection?.databaseConfigured ??
               false,
 
+            externalOwnerId:
+              connection?.externalOwnerId ??
+              null,
+
             access:
               portal ===
               "immoscout24_de"
@@ -413,6 +417,7 @@ export async function PATCH(
       new Set([
         "portal",
         "environment",
+        "externalOwnerId",
       ]);
 
 
@@ -440,9 +445,31 @@ export async function PATCH(
         "immobilien_de";
 
 
+    const hasExternalOwnerId =
+      Object.prototype.hasOwnProperty.call(
+        body,
+        "externalOwnerId"
+      );
+
+
+    const externalOwnerIdValid =
+      !hasExternalOwnerId ||
+      (
+        body.portal ===
+          "immowelt_de" &&
+        (
+          body.externalOwnerId ===
+            null ||
+          typeof body.externalOwnerId ===
+            "string"
+        )
+      );
+
+
     if (
       hasUnexpectedKey ||
       !supportedPortal ||
+      !externalOwnerIdValid ||
       body.environment !==
         "test"
     ) {
@@ -481,6 +508,17 @@ export async function PATCH(
 
         environment:
           "test",
+
+        externalOwnerId:
+          portal ===
+            "immowelt_de"
+            ? (
+                body.externalOwnerId as
+                  | string
+                  | null
+                  | undefined
+              )
+            : undefined,
       });
 
 
@@ -503,6 +541,9 @@ export async function PATCH(
 
         databaseConfigured:
           connection.databaseConfigured,
+
+        externalOwnerId:
+          connection.externalOwnerId,
 
         lastVerifiedAt:
           connection.lastVerifiedAt,

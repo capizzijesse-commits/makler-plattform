@@ -247,6 +247,11 @@ type PortalItem = {
     | null;
 
   databaseConfigured: boolean;
+
+  externalOwnerId?:
+    | string
+    | null;
+
   availability: PortalAvailability;
   feedReady: boolean;
   listingCount: number;
@@ -321,6 +326,10 @@ type PortalConfigApiResponse = {
 
     databaseConfigured?:
       boolean;
+
+    externalOwnerId?:
+      | string
+      | null;
   };
 
   error?: string;
@@ -1016,6 +1025,13 @@ export default function PortalConnectionsCard({
     );
 
 
+  const [
+    immoweltOpenImmoAnid,
+    setImmoweltOpenImmoAnid,
+  ] =
+    useState("");
+
+
   const portalsPerPage =
     3;
 
@@ -1120,6 +1136,22 @@ export default function PortalConnectionsCard({
           data.portals
         );
 
+
+        const immoweltPortal =
+          data.portals.find(
+            (portal) =>
+              portal.portal ===
+                "immowelt_de"
+          );
+
+
+        setImmoweltOpenImmoAnid(
+          immoweltPortal
+            ?.externalOwnerId ??
+          ""
+        );
+
+
         setPortalPage(
           0
         );
@@ -1174,7 +1206,10 @@ export default function PortalConnectionsCard({
     | "immowelt_de"
     | "kleinanzeigen_de"
     | "wg_gesucht_de"
-    | "immobilien_de"
+    | "immobilien_de",
+    externalOwnerId?:
+      | string
+      | null
   ): Promise<void> {
 
     const validPortalForMarket =
@@ -1189,8 +1224,18 @@ export default function PortalConnectionsCard({
       ) ||
       (
         market === "DE" &&
-        portal ===
-          "immoscout24_de"
+        (
+          portal ===
+            "immoscout24_de" ||
+          portal ===
+            "immowelt_de" ||
+          portal ===
+            "kleinanzeigen_de" ||
+          portal ===
+            "wg_gesucht_de" ||
+          portal ===
+            "immobilien_de"
+        )
       );
 
 
@@ -1231,8 +1276,20 @@ export default function PortalConnectionsCard({
             body:
               JSON.stringify({
                 portal,
+
                 environment:
                   "test",
+
+                ...(
+                  portal ===
+                    "immowelt_de"
+                    ? {
+                        externalOwnerId:
+                          externalOwnerId ??
+                          null,
+                      }
+                    : {}
+                ),
               }),
           }
         );
@@ -1276,6 +1333,18 @@ export default function PortalConnectionsCard({
       }
 
 
+      if (
+        portal ===
+          "immowelt_de"
+      ) {
+        setImmoweltOpenImmoAnid(
+          data.connection
+            ?.externalOwnerId ??
+          ""
+        );
+      }
+
+
       setReloadToken(
         (value) =>
           value + 1
@@ -1311,6 +1380,28 @@ export default function PortalConnectionsCard({
     ) {
       return copy.comingSoon;
     }
+
+
+    if (
+      portal.portal ===
+        "immowelt_de" &&
+      !portal.externalOwnerId?.trim()
+    ) {
+      if (language === "it") {
+        return "ID fornitore mancante";
+      }
+
+      if (language === "fr") {
+        return "ID fournisseur manquant";
+      }
+
+      if (language === "en") {
+        return "Provider ID missing";
+      }
+
+      return "Anbieter-ID fehlt";
+    }
+
 
     if (
       portal.status ===
@@ -1672,17 +1763,70 @@ export default function PortalConnectionsCard({
                   portal.portal;
 
 
+                const isImmoweltDe =
+                  portal.portal ===
+                    "immowelt_de";
+
+
+                const storedImmoweltAnid =
+                  isImmoweltDe
+                    ? (
+                        portal.externalOwnerId
+                          ?.trim() ??
+                        ""
+                      )
+                    : "";
+
+
+                const draftImmoweltAnid =
+                  isImmoweltDe
+                    ? immoweltOpenImmoAnid.trim()
+                    : "";
+
+
+                const immoweltAnidConfigured =
+                  !isImmoweltDe ||
+                  storedImmoweltAnid.length >
+                    0;
+
+
+                const immoweltAnidMissing =
+                  isImmoweltDe &&
+                  draftImmoweltAnid.length ===
+                    0;
+
+
+                const immoweltAnidNeedsSave =
+                  isImmoweltDe &&
+                  draftImmoweltAnid.length >
+                    0 &&
+                  draftImmoweltAnid !==
+                    storedImmoweltAnid;
+
+
                 const testConfigurationPrepared =
                   setupPortalForMarket &&
                   portal.databaseConfigured &&
                   portal.environment ===
-                    "test";
+                    "test" &&
+                  immoweltAnidConfigured;
 
 
                 const canPrepareTestConfiguration =
                   setupPortalForMarket &&
                   !comingSoon &&
-                  !portal.databaseConfigured;
+                  (
+                    isImmoweltDe
+                      ? (
+                          draftImmoweltAnid.length >
+                            0 &&
+                          (
+                            !portal.databaseConfigured ||
+                            immoweltAnidNeedsSave
+                          )
+                        )
+                      : !portal.databaseConfigured
+                  );
 
 
                 return (
@@ -2052,6 +2196,84 @@ export default function PortalConnectionsCard({
                       )}
                     </div>
 
+
+                    {isImmoweltDe ? (
+                      <div
+                        className="
+                          mt-4
+                          rounded-xl
+                          border
+                          border-white/10
+                          bg-black/10
+                          p-3
+                        "
+                      >
+                        <label
+                          htmlFor="immowelt-openimmo-anid"
+                          className="
+                            block
+                            text-xs
+                            font-semibold
+                            text-white/75
+                          "
+                        >
+                          OpenImmo Anbieter-ID
+                        </label>
+
+                        <input
+                          id="immowelt-openimmo-anid"
+                          type="text"
+                          value={
+                            immoweltOpenImmoAnid
+                          }
+                          maxLength={255}
+                          disabled={
+                            isSaving
+                          }
+                          onChange={(event) => {
+                            setImmoweltOpenImmoAnid(
+                              event.target.value
+                            );
+                          }}
+                          placeholder={
+                            language === "de"
+                              ? "Von immowelt bereitgestellte Anbieter-ID"
+                              : "Provider ID supplied by immowelt"
+                          }
+                          className="
+                            mt-2
+                            w-full
+                            rounded-lg
+                            border
+                            border-white/10
+                            bg-black/20
+                            px-3
+                            py-2
+                            text-sm
+                            text-white
+                            outline-none
+                            transition
+                            placeholder:text-white/30
+                            focus:border-pink-400/50
+                          "
+                        />
+
+                        <p
+                          className="
+                            mt-2
+                            text-[11px]
+                            leading-relaxed
+                            text-white/40
+                          "
+                        >
+                          {language === "de"
+                            ? "Nur die echte OpenImmo-Anbieter-ID verwenden. Keine Zugangsdaten oder Passwörter."
+                            : "Use only the real OpenImmo provider ID. Do not enter credentials or passwords."}
+                        </p>
+                      </div>
+                    ) : null}
+
+
                     <button
                       type="button"
                       disabled={
@@ -2077,18 +2299,38 @@ export default function PortalConnectionsCard({
                             "immobilien_de"
                         ) {
                           void preparePortalTestConnection(
-                            portal.portal
+                            portal.portal,
+                            portal.portal ===
+                              "immowelt_de"
+                              ? immoweltOpenImmoAnid
+                              : undefined
                           );
                         }
                       }}
                       title={
-                        testConfigurationPrepared
-                          ? copy.testPrepared
-                          : canPrepareTestConfiguration
-                            ? copy.prepareTest
-                            : comingSoon
-                              ? copy.comingSoon
-                              : copy.connectSoon
+                        immoweltAnidMissing
+                          ? (
+                              language === "it"
+                                ? "ID fornitore richiesta"
+                                : language === "fr"
+                                  ? "ID fournisseur requis"
+                                  : language === "en"
+                                    ? "Provider ID required"
+                                    : "Anbieter-ID erforderlich"
+                            )
+                          : immoweltAnidNeedsSave
+                            ? (
+                                language === "de"
+                                  ? "OpenImmo Anbieter-ID speichern"
+                                  : "Save OpenImmo provider ID"
+                              )
+                            : testConfigurationPrepared
+                              ? copy.testPrepared
+                              : canPrepareTestConfiguration
+                                ? copy.prepareTest
+                                : comingSoon
+                                  ? copy.comingSoon
+                                  : copy.connectSoon
                       }
                       className={`
                         mt-5
@@ -2120,14 +2362,38 @@ export default function PortalConnectionsCard({
                       `}
                     >
                       {isSaving
-                        ? copy.preparingTest
-                        : testConfigurationPrepared
-                          ? copy.testPrepared
-                          : canPrepareTestConfiguration
-                            ? copy.prepareTest
-                            : comingSoon
-                              ? copy.comingSoon
-                              : copy.connectSoon}
+                        ? (
+                            immoweltAnidNeedsSave
+                              ? (
+                                  language === "de"
+                                    ? "Anbieter-ID wird gespeichert ..."
+                                    : "Saving provider ID ..."
+                                )
+                              : copy.preparingTest
+                          )
+                        : immoweltAnidMissing
+                          ? (
+                              language === "it"
+                                ? "ID fornitore richiesta"
+                                : language === "fr"
+                                  ? "ID fournisseur requis"
+                                  : language === "en"
+                                    ? "Provider ID required"
+                                    : "Anbieter-ID erforderlich"
+                            )
+                          : immoweltAnidNeedsSave
+                            ? (
+                                language === "de"
+                                  ? "Anbieter-ID speichern"
+                                  : "Save provider ID"
+                              )
+                            : testConfigurationPrepared
+                              ? copy.testPrepared
+                              : canPrepareTestConfiguration
+                                ? copy.prepareTest
+                                : comingSoon
+                                  ? copy.comingSoon
+                                  : copy.connectSoon}
                     </button>
 
                     {portalActionError ===
