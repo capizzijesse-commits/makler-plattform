@@ -475,6 +475,23 @@ model SocialPublishJob {
   lockedBy String?
 
   /**
+   * Dauerhafter Provider-Operationszustand.
+   *
+   * Beispiel Instagram:
+   * providerOperationType  = "instagram_reel_container"
+   * providerOperationId    = Meta Container ID
+   * providerOperationState = "container_created"
+   *
+   * Damit kann ein Retry eine bereits
+   * gestartete Provider-Operation fortsetzen,
+   * statt blind eine zweite zu erzeugen.
+   */
+  providerOperationId        String?
+  providerOperationType      String?
+  providerOperationState     String?
+  providerOperationUpdatedAt DateTime?
+
+  /**
    * Provider-Ergebnis.
    */
   externalPostId  String?
@@ -495,6 +512,7 @@ model SocialPublishJob {
   @@index([status, scheduledFor])
   @@index([status, nextAttemptAt])
   @@index([provider, channel, status])
+  @@index([provider, providerOperationState])
 }
 
 model Listing {

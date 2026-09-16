@@ -584,6 +584,93 @@ export async function cancelSocialPublishJob(
 }
 
 
+export async function setSocialPublishProviderOperation(
+  input: {
+    jobId:
+      string;
+
+    workerId:
+      string;
+
+    operationId?:
+      string |
+      null;
+
+    operationType?:
+      string |
+      null;
+
+    operationState:
+      string;
+
+    updatedAt?:
+      Date;
+  }
+) {
+
+  const jobId =
+    requiredText(
+      input.jobId,
+      "Job ID"
+    );
+
+  const workerId =
+    requiredText(
+      input.workerId,
+      "Worker ID"
+    );
+
+  const operationState =
+    requiredText(
+      input.operationState,
+      "Provider operation state"
+    );
+
+
+  return prisma.socialPublishJob.updateMany({
+    where: {
+      id:
+        jobId,
+
+      status:
+        "processing",
+
+      lockedBy:
+        workerId,
+    },
+
+    data: {
+      ...(input.operationId !==
+      undefined
+        ? {
+            providerOperationId:
+              optionalText(
+                input.operationId
+              ),
+          }
+        : {}),
+
+      ...(input.operationType !==
+      undefined
+        ? {
+            providerOperationType:
+              optionalText(
+                input.operationType
+              ),
+          }
+        : {}),
+
+      providerOperationState:
+        operationState,
+
+      providerOperationUpdatedAt:
+        input.updatedAt ??
+        new Date(),
+    },
+  });
+}
+
+
 const SOCIAL_PUBLISH_LOCK_TTL_MS =
   10 * 60_000;
 
