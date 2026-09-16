@@ -978,3 +978,106 @@ export async function markSocialPublishJobFailed(
     },
   });
 }
+
+
+export async function getSocialPublishJobByIdempotencyKey(
+  input: {
+    userId:
+      string;
+
+    idempotencyKey:
+      string;
+  }
+) {
+
+  const userId =
+    requiredText(
+      input.userId,
+      "User ID"
+    );
+
+  const idempotencyKey =
+    requiredText(
+      input.idempotencyKey,
+      "Idempotency key"
+    );
+
+
+  return prisma.socialPublishJob.findFirst({
+    where: {
+      userId,
+      idempotencyKey,
+    },
+
+    select: {
+      id:
+        true,
+
+      listingId:
+        true,
+
+      connectionId:
+        true,
+
+      provider:
+        true,
+
+      channel:
+        true,
+
+      environment:
+        true,
+
+      externalAccountId:
+        true,
+
+      caption:
+        true,
+
+      mediaPayload:
+        true,
+
+      status:
+        true,
+
+      scheduledFor:
+        true,
+
+      attemptCount:
+        true,
+
+      maxAttempts:
+        true,
+
+      nextAttemptAt:
+        true,
+
+      lastAttemptAt:
+        true,
+
+      externalPostId:
+        true,
+
+      externalPostUrl:
+        true,
+
+      publishedAt:
+        true,
+
+      failedAt:
+        true,
+
+      errorCode:
+        true,
+
+      errorMessage:
+        true,
+
+      createdAt:
+        true,
+
+      updatedAt:
+        true,
+    },
+  });
+}
