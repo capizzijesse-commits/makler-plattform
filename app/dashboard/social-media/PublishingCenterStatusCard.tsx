@@ -54,6 +54,24 @@ type JobsResponse = {
   error?: string;
 };
 
+type SocialConnectionSnapshot = {
+  provider: string;
+  channel: string;
+  environment: string;
+  status: string;
+};
+
+type ConnectionsResponse = {
+  success: boolean;
+  connections?: SocialConnectionSnapshot[];
+  integrations?: {
+    meta?: {
+      configured: boolean;
+    };
+  };
+  error?: string;
+};
+
 function channelLabel(
   channel: string
 ) {
@@ -252,6 +270,32 @@ export default function PublishingCenterStatusCard() {
       "all"
     );
 
+  const [
+    connections,
+    setConnections,
+  ] =
+    useState<
+      SocialConnectionSnapshot[]
+    >(
+      []
+    );
+
+  const [
+    metaConfigured,
+    setMetaConfigured,
+  ] =
+    useState(
+      false
+    );
+
+  const [
+    connectionsLoaded,
+    setConnectionsLoaded,
+  ] =
+    useState(
+      false
+    );
+
   const loadJobs =
     useCallback(
       async () => {
@@ -341,13 +385,109 @@ export default function PublishingCenterStatusCard() {
       []
     );
 
+  const loadConnections =
+    useCallback(
+      async () => {
+
+        setConnectionsLoaded(
+          false
+        );
+
+        try {
+
+          const response =
+            await fetch(
+              "/api/social-connections?environment=test",
+              {
+                method:
+                  "GET",
+
+                credentials:
+                  "include",
+
+                cache:
+                  "no-store",
+              }
+            );
+
+          if (
+            response.status ===
+            401
+          ) {
+
+            window.location.href =
+              "/login";
+
+            return;
+          }
+
+          const data =
+            (
+              await response.json()
+            ) as
+              ConnectionsResponse;
+
+          if (
+            !response.ok ||
+            !data.success
+          ) {
+
+            throw new Error(
+              data.error ||
+              "SOCIAL_CONNECTION_STATUS_FAILED"
+            );
+          }
+
+          setConnections(
+            data.connections ??
+            []
+          );
+
+          setMetaConfigured(
+            Boolean(
+              data.integrations
+                ?.meta
+                ?.configured
+            )
+          );
+        }
+        catch (
+          readinessError
+        ) {
+
+          console.error(
+            "PUBLISHING READINESS:",
+            readinessError
+          );
+
+          setConnections(
+            []
+          );
+
+          setMetaConfigured(
+            false
+          );
+        }
+        finally {
+
+          setConnectionsLoaded(
+            true
+          );
+        }
+      },
+      []
+    );
+
+
   useEffect(
     () => {
 
       void loadJobs();
+      void loadConnections();
     },
     [
       loadJobs,
+      loadConnections,
     ]
   );
 
@@ -414,6 +554,36 @@ export default function PublishingCenterStatusCard() {
       ]
     );
 
+  const facebookConnectionCount =
+    useMemo(
+      () =>
+        connections.filter(
+          connection =>
+            connection.provider ===
+              "meta" &&
+            connection.channel ===
+              "facebook_page"
+        ).length,
+      [
+        connections,
+      ]
+    );
+
+  const instagramConnectionCount =
+    useMemo(
+      () =>
+        connections.filter(
+          connection =>
+            connection.provider ===
+              "meta" &&
+            connection.channel ===
+              "instagram_business"
+        ).length,
+      [
+        connections,
+      ]
+    );
+
   const automationActive =
     Boolean(
       capabilities
@@ -456,6 +626,110 @@ export default function PublishingCenterStatusCard() {
               : "○ Automatisierung sicher aus"}
           </div>
 
+        </div>
+
+      </div>
+
+
+      <div className="border-b border-white/10 p-5 sm:p-7">
+
+        <div className="mb-4">
+          <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-500">
+            Betriebsmodus & Bereitschaft
+          </p>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+            <p className="text-xs font-black uppercase text-slate-500">
+              Modus
+            </p>
+
+            <p className="mt-2 text-lg font-black text-white">
+              {
+                automationActive
+                  ? "Automatisiert"
+                  : "Manuell"
+              }
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              {
+                automationActive
+                  ? "Queue und externes Publishing aktiv"
+                  : "Keine automatische Veröffentlichung"
+              }
+            </p>
+          </div>
+
+
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+            <p className="text-xs font-black uppercase text-slate-500">
+              Meta OAuth
+            </p>
+
+            <p className="mt-2 text-lg font-black text-white">
+              {
+                !connectionsLoaded
+                  ? "Prüfe..."
+                  : metaConfigured
+                    ? "Bereit"
+                    : "Nicht konfiguriert"
+              }
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              Facebook + Instagram
+            </p>
+          </div>
+
+
+          <div className="rounded-2xl border border-blue-400/20 bg-blue-400/[0.05] p-4">
+            <p className="text-xs font-black uppercase text-blue-300">
+              Facebook
+            </p>
+
+            <p className="mt-2 text-lg font-black text-white">
+              {
+                !connectionsLoaded
+                  ? "Prüfe..."
+                  : facebookConnectionCount > 0
+                    ? facebookConnectionCount + " verbunden"
+                    : "Nicht verbunden"
+              }
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              Test-Verbindungen
+            </p>
+          </div>
+
+
+          <div className="rounded-2xl border border-fuchsia-400/20 bg-fuchsia-400/[0.05] p-4">
+            <p className="text-xs font-black uppercase text-fuchsia-300">
+              Instagram
+            </p>
+
+            <p className="mt-2 text-lg font-black text-white">
+              {
+                !connectionsLoaded
+                  ? "Prüfe..."
+                  : instagramConnectionCount > 0
+                    ? instagramConnectionCount + " verbunden"
+                    : "Nicht verbunden"
+              }
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              Business-Konten
+            </p>
+          </div>
+
+        </div>
+
+        <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.025] px-4 py-3 text-xs text-slate-500">
+          LinkedIn und TikTok bleiben aktuell im manuellen Veröffentlichungsmodus.
         </div>
 
       </div>
@@ -523,8 +797,10 @@ export default function PublishingCenterStatusCard() {
           <button
             type="button"
             onClick={
-              () =>
-                void loadJobs()
+              () => {
+                void loadJobs();
+                void loadConnections();
+              }
             }
             disabled={
               loading
