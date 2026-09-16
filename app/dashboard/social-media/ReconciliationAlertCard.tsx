@@ -39,6 +39,11 @@ type ReconciliationJob = {
 };
 
 
+type ReconciliationResolution =
+  | "confirmed_published"
+  | "confirmed_not_published";
+
+
 type ReconciliationResponse = {
   success:
     boolean;
@@ -160,6 +165,30 @@ export default function ReconciliationAlertCard() {
     );
 
 
+  const [
+    resolvingJobId,
+    setResolvingJobId,
+  ] =
+    useState<
+      string |
+      null
+    >(
+      null
+    );
+
+
+  const [
+    resolutionError,
+    setResolutionError,
+  ] =
+    useState<
+      string |
+      null
+    >(
+      null
+    );
+
+
   useEffect(
     () => {
 
@@ -197,24 +226,6 @@ export default function ReconciliationAlertCard() {
 
             window.location.href =
               "/login";
-
-            return;
-          }
-
-
-          /*
-           * Publishing Center ist Pro+.
-           * Für nicht berechtigte Pläne
-           * wird die Box einfach nicht gezeigt.
-           */
-          if (
-            response.status ===
-            403
-          ) {
-
-            setJobs(
-              []
-            );
 
             return;
           }
@@ -288,6 +299,158 @@ export default function ReconciliationAlertCard() {
     },
     []
   );
+
+
+  async function resolveJob(
+    job:
+      ReconciliationJob,
+    resolution:
+      ReconciliationResolution
+  ) {
+
+    if (
+      resolvingJobId !==
+      null
+    ) {
+      return;
+    }
+
+
+    const confirmedPublished =
+      resolution ===
+      "confirmed_published";
+
+
+    const confirmationText =
+      confirmedPublished
+        ? "Bestätige nur, wenn du direkt auf der Social-Plattform geprüft hast, dass dieser Post bereits veröffentlicht wurde. Inserat-AI sendet dabei nichts erneut."
+        : "Bestätige nur, wenn du direkt auf der Social-Plattform geprüft hast, dass dieser Post NICHT veröffentlicht wurde. Der alte Job bleibt gestoppt und wird nicht automatisch erneut gesendet.";
+
+
+    if (
+      !window.confirm(
+        confirmationText
+      )
+    ) {
+      return;
+    }
+
+
+    setResolvingJobId(
+      job.id
+    );
+
+    setResolutionError(
+      null
+    );
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/api/social-publish-jobs/reconciliation/resolve",
+          {
+            method:
+              "POST",
+
+            credentials:
+              "include",
+
+            cache:
+              "no-store",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body:
+              JSON.stringify({
+                jobId:
+                  job.id,
+
+                resolution,
+
+                confirmed:
+                  true,
+              }),
+          }
+        );
+
+
+      if (
+        response.status ===
+        401
+      ) {
+
+        window.location.href =
+          "/login";
+
+        return;
+      }
+
+
+      const data =
+        (
+          await response.json()
+        ) as {
+          success?:
+            boolean;
+
+          error?:
+            string;
+        };
+
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+
+        throw new Error(
+          data.error ||
+          "RECONCILIATION_RESOLUTION_FAILED"
+        );
+      }
+
+
+      /*
+       * Der Job befindet sich danach nicht mehr
+       * in reconciliation_required und darf
+       * deshalb aus der offenen Warnliste
+       * verschwinden.
+       */
+      setJobs(
+        currentJobs =>
+          currentJobs.filter(
+            currentJob =>
+              currentJob.id !==
+              job.id
+          )
+      );
+    }
+    catch (
+      error
+    ) {
+
+      console.error(
+        "SOCIAL RECONCILIATION RESOLUTION:",
+        error
+      );
+
+
+      setResolutionError(
+        "Die manuelle Prüfung konnte nicht gespeichert werden. Bitte erneut prüfen und später nochmals versuchen."
+      );
+    }
+    finally {
+
+      setResolvingJobId(
+        null
+      );
+    }
+  }
 
 
   if (
@@ -404,11 +567,53 @@ export default function ReconciliationAlertCard() {
                     reconciliation_required
                   </span>
                 </div>
+
+
+                <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                  <button
+                    type="button"
+                    disabled={resolvingJobId !== null}
+                    onClick={() => {
+                      void resolveJob(
+                        job,
+                        "confirmed_published"
+                      );
+                    }}
+                    className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-2.5 text-sm font-black text-emerald-200 transition hover:bg-emerald-400/20 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {resolvingJobId === job.id
+                      ? "Wird gespeichert …"
+                      : "Bereits veröffentlicht"}
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={resolvingJobId !== null}
+                    onClick={() => {
+                      void resolveJob(
+                        job,
+                        "confirmed_not_published"
+                      );
+                    }}
+                    className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-amber-300/30 bg-amber-400/10 px-4 py-2.5 text-sm font-black text-amber-100 transition hover:bg-amber-400/20 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {resolvingJobId === job.id
+                      ? "Wird gespeichert …"
+                      : "Nicht veröffentlicht"}
+                  </button>
+                </div>
               </article>
             );
           }
         )}
       </div>
+
+
+      {resolutionError ? (
+        <div className="mt-4 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-bold text-red-200">
+          {resolutionError}
+        </div>
+      ) : null}
 
 
       <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-xs leading-5 text-slate-300">

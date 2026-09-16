@@ -633,6 +633,258 @@ export async function listSocialPublishJobsRequiringReconciliation(
 }
 
 
+export type SocialPublishReconciliationResolution =
+  | "confirmed_published"
+  | "confirmed_not_published";
+
+
+export async function resolveSocialPublishReconciliation(
+  input: {
+    userId:
+      string;
+
+    jobId:
+      string;
+
+    resolution:
+      SocialPublishReconciliationResolution;
+
+    resolvedAt?:
+      Date;
+  }
+) {
+
+  const userId =
+    requiredText(
+      input.userId,
+      "User ID"
+    );
+
+  const jobId =
+    requiredText(
+      input.jobId,
+      "Job ID"
+    );
+
+  const resolution =
+    input.resolution;
+
+  if (
+    resolution !==
+      "confirmed_published" &&
+    resolution !==
+      "confirmed_not_published"
+  ) {
+
+    throw new Error(
+      "Invalid reconciliation resolution."
+    );
+  }
+
+
+  const resolvedAt =
+    input.resolvedAt ??
+    new Date();
+
+
+  if (
+    Number.isNaN(
+      resolvedAt.getTime()
+    )
+  ) {
+
+    throw new Error(
+      "Resolution date is invalid."
+    );
+  }
+
+
+  /*
+   * Nur ein tatsächlich quarantinierter,
+   * bereits freigegebener Job darf manuell
+   * aufgelöst werden.
+   *
+   * Wichtig:
+   * - userId schützt fremde Jobs.
+   * - failed schützt gegen Parallelzustände.
+   * - reconciliation_required verhindert
+   *   doppeltes Auflösen.
+   * - nextAttemptAt=null verhindert,
+   *   dass ein noch retry-fähiger Job
+   *   versehentlich manuell überschrieben wird.
+   * - kein Worker-Lock darf aktiv sein.
+   */
+  const result =
+    await prisma.socialPublishJob.updateMany({
+      where: {
+        id:
+          jobId,
+
+        userId,
+
+        status:
+          "failed",
+
+        providerOperationState:
+          "reconciliation_required",
+
+        nextAttemptAt:
+          null,
+
+        lockedAt:
+          null,
+
+        lockedBy:
+          null,
+      },
+
+      data:
+        resolution ===
+        "confirmed_published"
+          ? {
+              status:
+                "published",
+
+              publishedAt:
+                resolvedAt,
+
+              failedAt:
+                null,
+
+              errorCode:
+                null,
+
+              errorMessage:
+                null,
+
+              nextAttemptAt:
+                null,
+
+              lockedAt:
+                null,
+
+              lockedBy:
+                null,
+
+              providerOperationState:
+                "reconciled_published",
+
+              providerOperationUpdatedAt:
+                resolvedAt,
+            }
+          : {
+              status:
+                "failed",
+
+              publishedAt:
+                null,
+
+              failedAt:
+                resolvedAt,
+
+              errorCode:
+                "MANUALLY_RECONCILED_NOT_PUBLISHED",
+
+              errorMessage:
+                "User confirmed that the provider operation did not result in a published post.",
+
+              nextAttemptAt:
+                null,
+
+              lockedAt:
+                null,
+
+              lockedBy:
+                null,
+
+              providerOperationState:
+                "reconciled_not_published",
+
+              providerOperationUpdatedAt:
+                resolvedAt,
+            },
+    });
+
+
+  if (
+    result.count !==
+    1
+  ) {
+
+    return null;
+  }
+
+
+  return prisma.socialPublishJob.findFirst({
+    where: {
+      id:
+        jobId,
+
+      userId,
+    },
+
+    select: {
+      id:
+        true,
+
+      provider:
+        true,
+
+      channel:
+        true,
+
+      environment:
+        true,
+
+      status:
+        true,
+
+      externalPostId:
+        true,
+
+      externalPostUrl:
+        true,
+
+      publishedAt:
+        true,
+
+      failedAt:
+        true,
+
+      errorCode:
+        true,
+
+      errorMessage:
+        true,
+
+      nextAttemptAt:
+        true,
+
+      lockedAt:
+        true,
+
+      lockedBy:
+        true,
+
+      providerOperationId:
+        true,
+
+      providerOperationType:
+        true,
+
+      providerOperationState:
+        true,
+
+      providerOperationUpdatedAt:
+        true,
+
+      updatedAt:
+        true,
+    },
+  });
+}
+
+
 export async function cancelSocialPublishJob(
   input: {
     userId:
