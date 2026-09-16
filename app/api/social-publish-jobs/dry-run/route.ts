@@ -35,6 +35,11 @@ import {
   isMetaOAuthConfigured,
 } from "@/lib/social-integrations/meta-oauth.server";
 
+import {
+  buildLinkedInTextShareDryRun,
+  type LinkedInTextShareDryRun,
+} from "@/lib/social-integrations/linkedin-publish-dry-run.server";
+
 
 export const runtime =
   "nodejs";
@@ -594,6 +599,11 @@ export async function POST(
   let channelImplemented =
     false;
 
+  let linkedInDryRun:
+    LinkedInTextShareDryRun |
+    null =
+      null;
+
 
   if (
     connection.provider ===
@@ -676,6 +686,103 @@ export async function POST(
 
     mediaReason =
       "FACEBOOK_PUBLISH_NOT_IMPLEMENTED";
+  }
+  else if (
+    connection.provider ===
+      "linkedin" &&
+    connection.channel ===
+      "linkedin"
+  ) {
+
+    /*
+     * LinkedIn Dry Run V1:
+     * Nur Payload vorbereiten.
+     *
+     * KEIN fetch().
+     * KEIN LinkedIn POST.
+     * KEIN DB Write.
+     */
+    channelImplemented =
+      true;
+
+
+    credentialSubjectId =
+      connection.externalAccountId;
+
+
+    credentialPresent =
+      await hasSocialOAuthCredential({
+        userId:
+          user.id,
+
+        provider:
+          "linkedin",
+
+        externalSubjectId:
+          connection.externalAccountId,
+
+        environment,
+      });
+
+
+    const mediaPayloadPresent =
+      body.mediaPayload !==
+        undefined &&
+      body.mediaPayload !==
+        null &&
+      (
+        !Array.isArray(
+          body.mediaPayload
+        ) ||
+        body.mediaPayload.length >
+          0
+      );
+
+
+    if (
+      mediaPayloadPresent
+    ) {
+
+      mediaValid =
+        false;
+
+      mediaReason =
+        "LINKEDIN_TEXT_ONLY_V1";
+    }
+    else {
+
+      try {
+
+        linkedInDryRun =
+          buildLinkedInTextShareDryRun({
+            oidcSubject:
+              connection.externalAccountId,
+
+            caption,
+          });
+
+
+        mediaValid =
+          true;
+
+        mediaReason =
+          null;
+      }
+      catch (
+        error
+      ) {
+
+        mediaValid =
+          false;
+
+        mediaReason =
+          error instanceof Error &&
+          error.message ===
+            "LINKEDIN_CAPTION_TOO_LONG"
+            ? "LINKEDIN_CAPTION_TOO_LONG"
+            : "LINKEDIN_DRY_RUN_INVALID";
+      }
+    }
   }
   else {
 
@@ -782,6 +889,48 @@ export async function POST(
         reason:
           mediaReason,
       },
+
+      linkedin:
+        linkedInDryRun
+          ? {
+              endpoint:
+                linkedInDryRun.endpoint,
+
+              method:
+                linkedInDryRun.method,
+
+              textOnly:
+                true,
+
+              captionLength:
+                linkedInDryRun.captionLength,
+
+              authorUrnPresent:
+                Boolean(
+                  linkedInDryRun
+                    .body
+                    .author
+                ),
+
+              authorUrnFormatValid:
+                linkedInDryRun
+                  .body
+                  .author
+                  .startsWith(
+                    "urn:li:person:"
+                  ),
+
+              authorIdentitySource:
+                linkedInDryRun
+                  .authorIdentitySource,
+
+              payloadPrepared:
+                true,
+
+              livePostAttempted:
+                false,
+            }
+          : null,
 
       meta: {
         oauthConfigured:
