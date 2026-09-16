@@ -9,6 +9,7 @@ import {
 
 import {
   exchangeMetaAuthorizationCode,
+  exchangeMetaLongLivedUserToken,
   getMetaManagedPages,
   getMetaOAuthConfig,
 } from "@/lib/social-integrations/meta-oauth.server";
@@ -241,7 +242,7 @@ export async function GET(
       });
 
 
-    const token =
+    const shortLivedToken =
       await exchangeMetaAuthorizationCode({
         config,
 
@@ -252,12 +253,41 @@ export async function GET(
       });
 
 
+    const longLivedToken =
+      await exchangeMetaLongLivedUserToken({
+        config,
+
+        accessToken:
+          shortLivedToken.accessToken,
+      });
+
+
+    if (
+      !longLivedToken.expiresIn ||
+      longLivedToken.expiresIn <=
+        0
+    ) {
+
+      throw new Error(
+        "Meta long-lived token expiry is missing."
+      );
+    }
+
+
+    const expiresAt =
+      new Date(
+        Date.now() +
+        longLivedToken.expiresIn *
+          1000
+      ).toISOString();
+
+
     const pages =
       await getMetaManagedPages({
         config,
 
         userAccessToken:
-          token.accessToken,
+          longLivedToken.accessToken,
       });
 
 
@@ -291,6 +321,8 @@ export async function GET(
 
         tokenType:
           "Bearer",
+
+        expiresAt,
       });
 
 

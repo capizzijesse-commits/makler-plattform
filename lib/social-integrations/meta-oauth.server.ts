@@ -503,6 +503,157 @@ export async function exchangeMetaAuthorizationCode(
 }
 
 
+export async function exchangeMetaLongLivedUserToken(
+  input: {
+    config:
+      MetaOAuthConfig;
+
+    accessToken:
+      string;
+  }
+):
+  Promise<
+    MetaOAuthToken
+  > {
+
+  const accessToken =
+    cleanText(
+      input.accessToken,
+      "Meta access token"
+    );
+
+
+  const url =
+    new URL(
+      `https://graph.facebook.com/${input.config.graphVersion}/oauth/access_token`
+    );
+
+
+  url.searchParams.set(
+    "grant_type",
+    "fb_exchange_token"
+  );
+
+  url.searchParams.set(
+    "client_id",
+    input.config.appId
+  );
+
+  url.searchParams.set(
+    "client_secret",
+    input.config.appSecret
+  );
+
+  url.searchParams.set(
+    "fb_exchange_token",
+    accessToken
+  );
+
+
+  const response =
+    await fetch(
+      url,
+      {
+        method:
+          "GET",
+
+        cache:
+          "no-store",
+
+        headers: {
+          Accept:
+            "application/json",
+        },
+      }
+    );
+
+
+  const payload:
+    unknown =
+    await response.json();
+
+
+  if (
+    !response.ok
+  ) {
+
+    throw new Error(
+      providerErrorMessage(
+        payload
+      )
+    );
+  }
+
+
+  if (
+    !payload ||
+    typeof payload !==
+      "object" ||
+    Array.isArray(
+      payload
+    )
+  ) {
+
+    throw new Error(
+      "Meta returned an invalid long-lived token response."
+    );
+  }
+
+
+  const record =
+    payload as
+      Record<
+        string,
+        unknown
+      >;
+
+
+  const longLivedAccessToken =
+    cleanText(
+      record.access_token,
+      "Meta long-lived access token"
+    );
+
+
+  const tokenType =
+    typeof record.token_type ===
+      "string"
+      ? record.token_type.trim() ||
+        undefined
+      : undefined;
+
+
+  const expiresIn =
+    typeof record.expires_in ===
+      "number" &&
+    Number.isFinite(
+      record.expires_in
+    ) &&
+    record.expires_in >
+      0
+      ? record.expires_in
+      : undefined;
+
+
+  if (!expiresIn) {
+
+    throw new Error(
+      "Meta long-lived token response does not contain a valid expires_in."
+    );
+  }
+
+
+  return {
+    accessToken:
+      longLivedAccessToken,
+
+    tokenType,
+
+    expiresIn,
+  };
+}
+
+
 type RawManagedPage = {
   id?:
     unknown;
