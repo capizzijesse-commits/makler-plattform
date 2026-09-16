@@ -6,6 +6,10 @@ import {
   markSocialPublishJobPublished,
 } from "@/lib/social-integrations/social-publish-job-store.server";
 
+import {
+  markSocialConnectionPublished,
+} from "@/lib/social-integrations/social-connection-store.server";
+
 
 export type SocialPublishWorkerJob = Awaited<
   ReturnType<
@@ -363,6 +367,53 @@ export async function runSocialPublishWorker(
               "WORKER_LOCK_LOST",
           }
         );
+      }
+
+
+      /*
+       * Der Provider-Post ist an diesem Punkt
+       * bereits dauerhaft als published gespeichert.
+       *
+       * lastPublishedAt ist nur Connection-Metadaten.
+       * Ein Fehler hier darf deshalb NIEMALS den
+       * veröffentlichten Job auf failed setzen oder
+       * einen Retry auslösen.
+       */
+      if (
+        job.connectionId
+      ) {
+
+        try {
+
+          const connectionResult =
+            await markSocialConnectionPublished({
+              userId:
+                job.userId,
+
+              id:
+                job.connectionId,
+            });
+
+
+          if (!connectionResult) {
+
+            console.warn(
+              "[social-publish-worker] published connection no longer exists",
+              job.connectionId
+            );
+          }
+        }
+        catch (
+          connectionError
+        ) {
+
+          console.error(
+            "[social-publish-worker] connection publish marker failed",
+            connectionError instanceof Error
+              ? connectionError.message
+              : "unknown error"
+          );
+        }
       }
 
 
