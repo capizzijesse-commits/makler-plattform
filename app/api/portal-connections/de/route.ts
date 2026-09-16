@@ -455,8 +455,12 @@ export async function PATCH(
     const externalOwnerIdValid =
       !hasExternalOwnerId ||
       (
-        body.portal ===
-          "immowelt_de" &&
+        (
+          body.portal ===
+            "immowelt_de" ||
+          body.portal ===
+            "kleinanzeigen_de"
+        ) &&
         (
           body.externalOwnerId ===
             null ||
@@ -511,7 +515,9 @@ export async function PATCH(
 
         externalOwnerId:
           portal ===
-            "immowelt_de"
+            "immowelt_de" ||
+          portal ===
+            "kleinanzeigen_de"
             ? (
                 body.externalOwnerId as
                   | string

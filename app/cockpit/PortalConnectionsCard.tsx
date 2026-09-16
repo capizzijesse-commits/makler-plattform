@@ -1032,6 +1032,13 @@ export default function PortalConnectionsCard({
     useState("");
 
 
+  const [
+    kleinanzeigenOpenImmoAnid,
+    setKleinanzeigenOpenImmoAnid,
+  ] =
+    useState("");
+
+
   const portalsPerPage =
     3;
 
@@ -1147,6 +1154,21 @@ export default function PortalConnectionsCard({
 
         setImmoweltOpenImmoAnid(
           immoweltPortal
+            ?.externalOwnerId ??
+          ""
+        );
+
+
+        const kleinanzeigenPortal =
+          data.portals.find(
+            (portal) =>
+              portal.portal ===
+                "kleinanzeigen_de"
+          );
+
+
+        setKleinanzeigenOpenImmoAnid(
+          kleinanzeigenPortal
             ?.externalOwnerId ??
           ""
         );
@@ -1345,6 +1367,18 @@ export default function PortalConnectionsCard({
       }
 
 
+      if (
+        portal ===
+          "kleinanzeigen_de"
+      ) {
+        setKleinanzeigenOpenImmoAnid(
+          data.connection
+            ?.externalOwnerId ??
+          ""
+        );
+      }
+
+
       setReloadToken(
         (value) =>
           value + 1
@@ -1383,8 +1417,12 @@ export default function PortalConnectionsCard({
 
 
     if (
-      portal.portal ===
-        "immowelt_de" &&
+      (
+        portal.portal ===
+          "immowelt_de" ||
+        portal.portal ===
+          "kleinanzeigen_de"
+      ) &&
       !portal.externalOwnerId?.trim()
     ) {
       if (language === "it") {
@@ -1768,8 +1806,18 @@ export default function PortalConnectionsCard({
                     "immowelt_de";
 
 
-                const storedImmoweltAnid =
-                  isImmoweltDe
+                const isKleinanzeigenDe =
+                  portal.portal ===
+                    "kleinanzeigen_de";
+
+
+                const requiresOpenImmoProviderId =
+                  isImmoweltDe ||
+                  isKleinanzeigenDe;
+
+
+                const storedOpenImmoAnid =
+                  requiresOpenImmoProviderId
                     ? (
                         portal.externalOwnerId
                           ?.trim() ??
@@ -1778,30 +1826,32 @@ export default function PortalConnectionsCard({
                     : "";
 
 
-                const draftImmoweltAnid =
+                const draftOpenImmoAnid =
                   isImmoweltDe
                     ? immoweltOpenImmoAnid.trim()
-                    : "";
+                    : isKleinanzeigenDe
+                      ? kleinanzeigenOpenImmoAnid.trim()
+                      : "";
 
 
-                const immoweltAnidConfigured =
-                  !isImmoweltDe ||
-                  storedImmoweltAnid.length >
+                const openImmoAnidConfigured =
+                  !requiresOpenImmoProviderId ||
+                  storedOpenImmoAnid.length >
                     0;
 
 
-                const immoweltAnidMissing =
-                  isImmoweltDe &&
-                  draftImmoweltAnid.length ===
+                const openImmoAnidMissing =
+                  requiresOpenImmoProviderId &&
+                  draftOpenImmoAnid.length ===
                     0;
 
 
-                const immoweltAnidNeedsSave =
-                  isImmoweltDe &&
-                  draftImmoweltAnid.length >
+                const openImmoAnidNeedsSave =
+                  requiresOpenImmoProviderId &&
+                  draftOpenImmoAnid.length >
                     0 &&
-                  draftImmoweltAnid !==
-                    storedImmoweltAnid;
+                  draftOpenImmoAnid !==
+                    storedOpenImmoAnid;
 
 
                 const testConfigurationPrepared =
@@ -1809,20 +1859,20 @@ export default function PortalConnectionsCard({
                   portal.databaseConfigured &&
                   portal.environment ===
                     "test" &&
-                  immoweltAnidConfigured;
+                  openImmoAnidConfigured;
 
 
                 const canPrepareTestConfiguration =
                   setupPortalForMarket &&
                   !comingSoon &&
                   (
-                    isImmoweltDe
+                    requiresOpenImmoProviderId
                       ? (
-                          draftImmoweltAnid.length >
+                          draftOpenImmoAnid.length >
                             0 &&
                           (
                             !portal.databaseConfigured ||
-                            immoweltAnidNeedsSave
+                            openImmoAnidNeedsSave
                           )
                         )
                       : !portal.databaseConfigured
@@ -2197,7 +2247,7 @@ export default function PortalConnectionsCard({
                     </div>
 
 
-                    {isImmoweltDe ? (
+                    {requiresOpenImmoProviderId ? (
                       <div
                         className="
                           mt-4
@@ -2209,7 +2259,7 @@ export default function PortalConnectionsCard({
                         "
                       >
                         <label
-                          htmlFor="immowelt-openimmo-anid"
+                          htmlFor={`openimmo-anid-${portal.portal}`}
                           className="
                             block
                             text-xs
@@ -2221,24 +2271,41 @@ export default function PortalConnectionsCard({
                         </label>
 
                         <input
-                          id="immowelt-openimmo-anid"
+                          id={`openimmo-anid-${portal.portal}`}
                           type="text"
                           value={
-                            immoweltOpenImmoAnid
+                            isImmoweltDe
+                              ? immoweltOpenImmoAnid
+                              : kleinanzeigenOpenImmoAnid
                           }
                           maxLength={255}
                           disabled={
                             isSaving
                           }
                           onChange={(event) => {
-                            setImmoweltOpenImmoAnid(
+                            if (isImmoweltDe) {
+                              setImmoweltOpenImmoAnid(
+                                event.target.value
+                              );
+                              return;
+                            }
+
+                            setKleinanzeigenOpenImmoAnid(
                               event.target.value
                             );
                           }}
                           placeholder={
                             language === "de"
-                              ? "Von immowelt bereitgestellte Anbieter-ID"
-                              : "Provider ID supplied by immowelt"
+                              ? (
+                                  isImmoweltDe
+                                    ? "Von immowelt bereitgestellte Anbieter-ID"
+                                    : "Von Kleinanzeigen bereitgestellte Anbieter-ID"
+                                )
+                              : (
+                                  isImmoweltDe
+                                    ? "Provider ID supplied by immowelt"
+                                    : "Provider ID supplied by Kleinanzeigen"
+                                )
                           }
                           className="
                             mt-2
@@ -2303,12 +2370,15 @@ export default function PortalConnectionsCard({
                             portal.portal ===
                               "immowelt_de"
                               ? immoweltOpenImmoAnid
-                              : undefined
+                              : portal.portal ===
+                                  "kleinanzeigen_de"
+                                ? kleinanzeigenOpenImmoAnid
+                                : undefined
                           );
                         }
                       }}
                       title={
-                        immoweltAnidMissing
+                        openImmoAnidMissing
                           ? (
                               language === "it"
                                 ? "ID fornitore richiesta"
@@ -2318,7 +2388,7 @@ export default function PortalConnectionsCard({
                                     ? "Provider ID required"
                                     : "Anbieter-ID erforderlich"
                             )
-                          : immoweltAnidNeedsSave
+                          : openImmoAnidNeedsSave
                             ? (
                                 language === "de"
                                   ? "OpenImmo Anbieter-ID speichern"
@@ -2363,7 +2433,7 @@ export default function PortalConnectionsCard({
                     >
                       {isSaving
                         ? (
-                            immoweltAnidNeedsSave
+                            openImmoAnidNeedsSave
                               ? (
                                   language === "de"
                                     ? "Anbieter-ID wird gespeichert ..."
@@ -2371,7 +2441,7 @@ export default function PortalConnectionsCard({
                                 )
                               : copy.preparingTest
                           )
-                        : immoweltAnidMissing
+                        : openImmoAnidMissing
                           ? (
                               language === "it"
                                 ? "ID fornitore richiesta"
@@ -2381,7 +2451,7 @@ export default function PortalConnectionsCard({
                                     ? "Provider ID required"
                                     : "Anbieter-ID erforderlich"
                             )
-                          : immoweltAnidNeedsSave
+                          : openImmoAnidNeedsSave
                             ? (
                                 language === "de"
                                   ? "Anbieter-ID speichern"

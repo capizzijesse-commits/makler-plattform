@@ -137,8 +137,10 @@ export type ConfigureGermanLaunchPortalConnectionInput = {
     PortalConnectionEnvironment;
 
   /*
-   * Für immowelt_de:
-   * echte OpenImmo Anbieter-ID.
+   * Für immowelt_de und
+   * kleinanzeigen_de:
+   * echte, vom Portal bereitgestellte
+   * OpenImmo Anbieter-ID.
    *
    * Kein Secret und keine
    * Transport-Credential.
@@ -606,15 +608,22 @@ export async function configureGermanLaunchPortalConnection(
 
   /*
    * externalOwnerId ist im deutschen
-   * Setup aktuell ausschließlich für
-   * immowelt_de freigegeben.
+   * Setup für OpenImmo-Portale nur
+   * dann freigegeben, wenn das Portal
+   * eine echte Anbieter-ID liefert.
    *
-   * Dort entspricht es der echten
-   * OpenImmo openimmo_anid.
+   * Aktuell:
+   * - immowelt_de
+   * - kleinanzeigen_de
+   *
+   * Keine ID wird von Inserat-AI
+   * selbst erzeugt.
    */
   const externalOwnerId =
     portal ===
-      "immowelt_de"
+      "immowelt_de" ||
+    portal ===
+      "kleinanzeigen_de"
       ? normalizeOptionalExternalId(
           input.externalOwnerId,
           "externalOwnerId"
