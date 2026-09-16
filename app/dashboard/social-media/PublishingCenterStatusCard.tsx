@@ -16,6 +16,17 @@ type JobStatus =
   | "failed"
   | "cancelled";
 
+type ChannelFilter =
+  | "all"
+  | "instagram_business"
+  | "facebook_page"
+  | "linkedin"
+  | "tiktok";
+
+type StatusFilter =
+  | "all"
+  | JobStatus;
+
 type PublishJob = {
   id: string;
   channel: string;
@@ -225,6 +236,22 @@ export default function PublishingCenterStatusCard() {
       null
     );
 
+  const [
+    channelFilter,
+    setChannelFilter,
+  ] =
+    useState<ChannelFilter>(
+      "all"
+    );
+
+  const [
+    statusFilter,
+    setStatusFilter,
+  ] =
+    useState<StatusFilter>(
+      "all"
+    );
+
   const loadJobs =
     useCallback(
       async () => {
@@ -362,6 +389,31 @@ export default function PublishingCenterStatusCard() {
       ]
     );
 
+  const filteredJobs =
+    useMemo(
+      () =>
+        jobs.filter(
+          job =>
+            (
+              channelFilter ===
+                "all" ||
+              job.channel ===
+                channelFilter
+            ) &&
+            (
+              statusFilter ===
+                "all" ||
+              job.status ===
+                statusFilter
+            )
+        ),
+      [
+        jobs,
+        channelFilter,
+        statusFilter,
+      ]
+    );
+
   const automationActive =
     Boolean(
       capabilities
@@ -487,6 +539,102 @@ export default function PublishingCenterStatusCard() {
         </div>
 
 
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+
+          <label className="grid gap-2">
+            <span className="text-xs font-black uppercase tracking-wide text-slate-500">
+              Plattform
+            </span>
+
+            <select
+              value={
+                channelFilter
+              }
+              onChange={
+                event =>
+                  setChannelFilter(
+                    event.target.value as ChannelFilter
+                  )
+              }
+              className="rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-sm font-bold text-white outline-none transition focus:border-amber-400/50"
+            >
+              <option value="all">
+                Alle Plattformen
+              </option>
+
+              <option value="instagram_business">
+                Instagram
+              </option>
+
+              <option value="facebook_page">
+                Facebook
+              </option>
+
+              <option value="linkedin">
+                LinkedIn
+              </option>
+
+              <option value="tiktok">
+                TikTok
+              </option>
+            </select>
+          </label>
+
+
+          <label className="grid gap-2">
+            <span className="text-xs font-black uppercase tracking-wide text-slate-500">
+              Status
+            </span>
+
+            <select
+              value={
+                statusFilter
+              }
+              onChange={
+                event =>
+                  setStatusFilter(
+                    event.target.value as StatusFilter
+                  )
+              }
+              className="rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-sm font-bold text-white outline-none transition focus:border-amber-400/50"
+            >
+              <option value="all">
+                Alle Status
+              </option>
+
+              <option value="draft">
+                Entwurf
+              </option>
+
+              <option value="scheduled">
+                Geplant
+              </option>
+
+              <option value="queued">
+                Warteschlange
+              </option>
+
+              <option value="processing">
+                Läuft
+              </option>
+
+              <option value="published">
+                Veröffentlicht
+              </option>
+
+              <option value="failed">
+                Fehlgeschlagen
+              </option>
+
+              <option value="cancelled">
+                Abgebrochen
+              </option>
+            </select>
+          </label>
+
+        </div>
+
+
         {error && (
           <div className="mt-4 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm font-bold text-red-200">
             {error}
@@ -513,11 +661,31 @@ export default function PublishingCenterStatusCard() {
         )}
 
 
-        {jobs.length >
+        {!loading &&
+        !error &&
+        jobs.length >
+          0 &&
+        filteredJobs.length ===
+          0 && (
+          <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+
+            <p className="font-black text-white">
+              Keine Treffer für diesen Filter
+            </p>
+
+            <p className="mt-2 text-sm text-slate-400">
+              Ändere Plattform oder Status, um andere Publishing-Jobs anzuzeigen.
+            </p>
+
+          </div>
+        )}
+
+
+        {filteredJobs.length >
           0 && (
           <div className="mt-5 grid gap-3">
 
-            {jobs.map(
+            {filteredJobs.map(
               job => (
                 <article
                   key={
