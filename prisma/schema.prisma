@@ -48,6 +48,7 @@ model User {
   portalCredentials                                                       PortalCredential[]
   socialConnections                                                       SocialConnection[]
   socialCredentials                                                       SocialCredential[]
+  socialPublishJobs                                                       SocialPublishJob[]
   MaklerChatBlock_MaklerChatBlock_blockedUserIdToUser                     MaklerChatBlock[]          @relation("MaklerChatBlock_blockedUserIdToUser")
   MaklerChatBlock_MaklerChatBlock_blockerUserIdToUser                     MaklerChatBlock[]          @relation("MaklerChatBlock_blockerUserIdToUser")
   MaklerChatBranding                                                      MaklerChatBranding?
@@ -314,6 +315,8 @@ model SocialConnection {
   lastVerifiedAt  DateTime?
   lastPublishedAt DateTime?
 
+  publishJobs SocialPublishJob[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -368,6 +371,132 @@ model SocialCredential {
   @@index([provider, environment])
 }
 
+model SocialPublishJob {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /**
+   * Optionaler Bezug zum ursprünglichen Inserat.
+   * Der Job bleibt erhalten, selbst wenn
+   * das Inserat später gelöscht wird.
+   */
+  listingId String?
+  listing   Listing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+
+  /**
+   * Optionaler Bezug zur aktuell
+   * verbundenen SocialConnection.
+   * SetNull bewahrt den Veröffentlichungs-
+   * Verlauf, wenn eine Verbindung entfernt wird.
+   */
+  connectionId String?
+  connection   SocialConnection? @relation(fields: [connectionId], references: [id], onDelete: SetNull)
+
+  /**
+   * Snapshot des Ziels.
+   * meta | linkedin | tiktok
+   */
+  provider String
+
+  /**
+   * facebook_page
+   * instagram_business
+   * linkedin
+   * tiktok
+   */
+  channel String
+
+  /**
+   * test | production
+   */
+  environment String @default("test")
+
+  /**
+   * Zielkonto zum Zeitpunkt der
+   * Job-Erstellung.
+   */
+  externalAccountId String
+
+  /**
+   * Inhalt, der tatsächlich veröffentlicht
+   * werden soll.
+   */
+  caption String
+
+  /**
+   * Provider-unabhängiger Media-Snapshot.
+   * Beispiel:
+   * [
+   * {
+   * "type": "image",
+   * "url": "https://..."
+   * }
+   * ]
+   * Keine Access Tokens oder Secrets.
+   */
+  mediaPayload Json?
+
+  /**
+   * draft
+   * scheduled
+   * queued
+   * processing
+   * published
+   * failed
+   * cancelled
+   */
+  status String @default("draft")
+
+  /**
+   * null = sofort / manuell queued
+   */
+  scheduledFor DateTime?
+
+  /**
+   * Verhindert doppelte Veröffentlichungen
+   * bei Retry, Reload oder Doppel-Klick.
+   */
+  idempotencyKey String @unique
+
+  /**
+   * Worker / Retry State
+   */
+  attemptCount  Int       @default(0)
+  maxAttempts   Int       @default(3)
+  nextAttemptAt DateTime?
+  lastAttemptAt DateTime?
+
+  /**
+   * Kurzer Lock für parallele Worker.
+   */
+  lockedAt DateTime?
+  lockedBy String?
+
+  /**
+   * Provider-Ergebnis.
+   */
+  externalPostId  String?
+  externalPostUrl String?
+
+  publishedAt DateTime?
+  failedAt    DateTime?
+
+  errorCode    String?
+  errorMessage String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status, createdAt])
+  @@index([connectionId, status])
+  @@index([listingId])
+  @@index([status, scheduledFor])
+  @@index([status, nextAttemptAt])
+  @@index([provider, channel, status])
+}
+
 model Listing {
   id String @id @default(cuid())
 
@@ -411,6 +540,7 @@ model Listing {
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   listingViewEvents ListingViewEvent[]
+  socialPublishJobs SocialPublishJob[]
 
   @@index([userId])
   @@index([userId, archivedAt])
