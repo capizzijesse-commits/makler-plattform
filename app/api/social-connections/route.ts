@@ -12,6 +12,10 @@ import {
   type SocialEnvironment,
 } from "@/lib/social-integrations/social-connection-store.server";
 
+import {
+  isMetaOAuthConfigured,
+} from "@/lib/social-integrations/meta-oauth.server";
+
 
 export const runtime =
   "nodejs";
@@ -126,13 +130,20 @@ export async function GET(
 
       capabilities: {
         oauth:
-          false,
+          isMetaOAuthConfigured(),
 
         scheduling:
           false,
 
         publishing:
           false,
+      },
+
+      integrations: {
+        meta: {
+          configured:
+            isMetaOAuthConfigured(),
+        },
       },
     })
   );
