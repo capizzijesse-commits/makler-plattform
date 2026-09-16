@@ -603,6 +603,10 @@ export async function setSocialPublishProviderOperation(
     operationState:
       string;
 
+    externalPostId?:
+      string |
+      null;
+
     updatedAt?:
       Date;
   }
@@ -656,6 +660,16 @@ export async function setSocialPublishProviderOperation(
             providerOperationType:
               optionalText(
                 input.operationType
+              ),
+          }
+        : {}),
+
+      ...(input.externalPostId !==
+      undefined
+        ? {
+            externalPostId:
+              optionalText(
+                input.externalPostId
               ),
           }
         : {}),

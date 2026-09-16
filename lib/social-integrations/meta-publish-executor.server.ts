@@ -13,6 +13,10 @@ import {
   getSocialOAuthCredential,
 } from "@/lib/social-integrations/social-credential-store.server";
 
+import {
+  setSocialPublishProviderOperation,
+} from "@/lib/social-integrations/social-publish-job-store.server";
+
 
 type MetaMediaItem = {
   type:
@@ -872,29 +876,228 @@ export async function executeMetaPublishJob(
     requiredGraphVersion();
 
 
-  const containerId =
-    await createInstagramReelContainer({
-      graphVersion,
-
-      instagramAccountId:
-        connection
-          .externalAccountId,
-
-      accessToken:
-        credential
-          .accessToken,
-
-      videoUrl:
-        media.url,
-
-      caption:
-        job.caption,
-
-      shareToFeed:
-        media.shareToFeed,
-    });
+  /*
+   * Der Executor läuft nur für einen
+   * aktuell geclaimten processing-Job.
+   * lockedBy ist damit unsere Ownership-ID
+   * für alle dauerhaften Provider-Schritte.
+   */
+  const workerId =
+    requiredString(
+      job.lockedBy,
+      "META_WORKER_LOCK_MISSING"
+    );
 
 
+  const operationType =
+    "instagram_reel_container";
+
+
+  const existingOperationId =
+    typeof job.providerOperationId ===
+      "string"
+      ? job.providerOperationId.trim()
+      : "";
+
+
+  const existingOperationType =
+    typeof job.providerOperationType ===
+      "string"
+      ? job.providerOperationType.trim()
+      : "";
+
+
+  const existingOperationState =
+    typeof job.providerOperationState ===
+      "string"
+      ? job.providerOperationState.trim()
+      : "";
+
+
+  /*
+   * Gespeicherten Provider-State zuerst
+   * vollständig validieren.
+   *
+   * Erst danach dürfen Resume-Abkürzungen
+   * ausgeführt werden.
+   */
+  if (
+    !existingOperationId &&
+    (
+      existingOperationType ||
+      existingOperationState
+    )
+  ) {
+
+    throw metaError(
+      "META_IG_OPERATION_STATE_INCOMPLETE",
+      "Stored Instagram provider operation state is incomplete."
+    );
+  }
+
+
+  if (
+    existingOperationId &&
+    existingOperationType !==
+      operationType
+  ) {
+
+    throw metaError(
+      "META_IG_OPERATION_TYPE_MISMATCH",
+      "Stored provider operation does not belong to the Instagram Reel flow."
+    );
+  }
+
+
+  if (
+    existingOperationId &&
+    !existingOperationState
+  ) {
+
+    throw metaError(
+      "META_IG_OPERATION_STATE_INCOMPLETE",
+      "Stored Instagram provider operation has no operation state."
+    );
+  }
+
+
+  const knownOperationStates =
+    new Set([
+      "container_created",
+      "container_ready",
+      "publish_requested",
+      "media_published",
+    ]);
+
+
+  if (
+    existingOperationId &&
+    !knownOperationStates.has(
+      existingOperationState
+    )
+  ) {
+
+    throw metaError(
+      "META_IG_OPERATION_STATE_UNKNOWN",
+      "Stored Instagram provider operation state is unknown."
+    );
+  }
+
+
+  /*
+   * Provider-Publish wurde bereits sicher
+   * gespeichert, aber der Worker ist vor
+   * dem finalen Queue-Update abgestürzt.
+   *
+   * Kein zweiter Meta-Aufruf.
+   */
+  if (
+    existingOperationState ===
+    "media_published"
+  ) {
+
+    const existingMediaId =
+      requiredString(
+        job.externalPostId,
+        "META_IG_MEDIA_ID_MISSING_AFTER_PUBLISH"
+      );
+
+
+    return {
+      externalPostId:
+        existingMediaId,
+
+      externalPostUrl:
+        job.externalPostUrl,
+    };
+  }
+
+
+  /*
+   * Publish wurde bereits angefordert.
+   * Ohne sicher gespeicherte Media-ID
+   * publizieren wir NICHT blind erneut.
+   */
+  if (
+    existingOperationState ===
+    "publish_requested"
+  ) {
+
+    throw metaError(
+      "META_IG_PUBLISH_RESULT_AMBIGUOUS",
+      "Instagram publish result is ambiguous and requires reconciliation."
+    );
+  }
+
+
+  let containerId =
+    existingOperationId;
+
+
+  /*
+   * Nur wenn noch KEIN dauerhafter
+   * Container existiert, erstellen wir
+   * einen neuen.
+   */
+  if (!containerId) {
+
+    containerId =
+      await createInstagramReelContainer({
+        graphVersion,
+
+        instagramAccountId:
+          connection
+            .externalAccountId,
+
+        accessToken:
+          credential
+            .accessToken,
+
+        videoUrl:
+          media.url,
+
+        caption:
+          job.caption,
+
+        shareToFeed:
+          media.shareToFeed,
+      });
+
+
+    const createdState =
+      await setSocialPublishProviderOperation({
+        jobId:
+          job.id,
+
+        workerId,
+
+        operationId:
+          containerId,
+
+        operationType,
+
+        operationState:
+          "container_created",
+      });
+
+
+    if (
+      createdState.count !==
+      1
+    ) {
+
+      throw metaError(
+        "WORKER_LOCK_LOST",
+        "Worker lost ownership while saving the Instagram container."
+      );
+    }
+  }
+
+
+  /*
+   * Bei einem Retry mit vorhandener
+   * Container-ID landen wir direkt hier.
+   */
   await waitForInstagramContainer({
     graphVersion,
 
@@ -904,6 +1107,72 @@ export async function executeMetaPublishJob(
       credential
         .accessToken,
   });
+
+
+  const readyState =
+    await setSocialPublishProviderOperation({
+      jobId:
+        job.id,
+
+      workerId,
+
+      operationId:
+        containerId,
+
+      operationType,
+
+      operationState:
+        "container_ready",
+    });
+
+
+  if (
+    readyState.count !==
+    1
+  ) {
+
+    throw metaError(
+      "WORKER_LOCK_LOST",
+      "Worker lost ownership while saving the ready Instagram container."
+    );
+  }
+
+
+  /*
+   * Publish-Intent VOR dem externen
+   * media_publish Call dauerhaft sichern.
+   *
+   * Wenn der Prozess danach an einer
+   * ungünstigen Stelle stirbt, wird der
+   * Retry nicht blind doppelt publizieren.
+   */
+  const publishIntent =
+    await setSocialPublishProviderOperation({
+      jobId:
+        job.id,
+
+      workerId,
+
+      operationId:
+        containerId,
+
+      operationType,
+
+      operationState:
+        "publish_requested",
+    });
+
+
+  if (
+    publishIntent.count !==
+    1
+  ) {
+
+    throw metaError(
+      "WORKER_LOCK_LOST",
+      "Worker lost ownership before Instagram publishing."
+    );
+  }
 
 
   const mediaId =
@@ -919,7 +1188,44 @@ export async function executeMetaPublishJob(
       accessToken:
         credential
           .accessToken,
-  });
+    });
+
+
+  /*
+   * Provider-Ergebnis sofort persistieren,
+   * bevor der Worker später den gesamten
+   * Queue-Job auf published setzt.
+   */
+  const publishedState =
+    await setSocialPublishProviderOperation({
+      jobId:
+        job.id,
+
+      workerId,
+
+      operationId:
+        containerId,
+
+      operationType,
+
+      operationState:
+        "media_published",
+
+      externalPostId:
+        mediaId,
+    });
+
+
+  if (
+    publishedState.count !==
+    1
+  ) {
+
+    throw metaError(
+      "WORKER_LOCK_LOST",
+      "Worker lost ownership while saving the Instagram publish result."
+    );
+  }
 
 
   return {
