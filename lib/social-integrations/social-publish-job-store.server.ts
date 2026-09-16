@@ -522,6 +522,117 @@ export async function listSocialPublishJobs(
 }
 
 
+export async function listSocialPublishJobsRequiringReconciliation(
+  input: {
+    userId:
+      string;
+
+    limit?:
+      number;
+  }
+) {
+
+  const userId =
+    requiredText(
+      input.userId,
+      "User ID"
+    );
+
+  const limit =
+    Math.max(
+      1,
+      Math.min(
+        input.limit ??
+          50,
+        100
+      )
+    );
+
+
+  return prisma.socialPublishJob.findMany({
+    where: {
+      userId,
+
+      providerOperationState:
+        "reconciliation_required",
+    },
+
+    orderBy: {
+      updatedAt:
+        "desc",
+    },
+
+    take:
+      limit,
+
+    select: {
+      id:
+        true,
+
+      listingId:
+        true,
+
+      connectionId:
+        true,
+
+      provider:
+        true,
+
+      channel:
+        true,
+
+      environment:
+        true,
+
+      externalAccountId:
+        true,
+
+      caption:
+        true,
+
+      status:
+        true,
+
+      attemptCount:
+        true,
+
+      maxAttempts:
+        true,
+
+      externalPostId:
+        true,
+
+      externalPostUrl:
+        true,
+
+      errorCode:
+        true,
+
+      errorMessage:
+        true,
+
+      providerOperationId:
+        true,
+
+      providerOperationType:
+        true,
+
+      providerOperationState:
+        true,
+
+      providerOperationUpdatedAt:
+        true,
+
+      createdAt:
+        true,
+
+      updatedAt:
+        true,
+    },
+  });
+}
+
+
 export async function cancelSocialPublishJob(
   input: {
     userId:
