@@ -11,7 +11,7 @@ import {
 import MetaConnectionCard from "./MetaConnectionCard";
 import ReconciliationAlertCard from "./ReconciliationAlertCard";
 
-type PlatformName = "Instagram" | "Facebook" | "LinkedIn" | "X" | "WhatsApp";
+type PlatformName = "Instagram" | "Facebook" | "LinkedIn" | "X" | "WhatsApp" | "TikTok";
 
 type SocialVariant = {
   title: string;
@@ -43,7 +43,7 @@ type ListingResponse = {
   error?: string;
 };
 
-const PLATFORM_NAMES: PlatformName[] = ["WhatsApp", "Instagram", "Facebook", "LinkedIn", "X"];
+const PLATFORM_NAMES: PlatformName[] = ["WhatsApp", "Instagram", "Facebook", "LinkedIn", "X", "TikTok"];
 
 export default function SocialMediaPage() {
   const [market, setMarket] =
@@ -101,6 +101,7 @@ const [sourceListingId, setSourceListingId] = useState<string | null>(
     LinkedIn: 0,
     X: 0,
     WhatsApp: 0,
+    TikTok: 0,
   });
 
   const [
@@ -121,6 +122,7 @@ const [sourceListingId, setSourceListingId] = useState<string | null>(
     LinkedIn: 0,
     X: 0,
     WhatsApp: 0,
+    TikTok: 0,
   });
 useEffect(() => {
   const savedAnalysis = localStorage.getItem("inseratAiImageAnalysis");
@@ -250,6 +252,7 @@ setSourceListingId(listingId);
     if (value.includes("facebook")) return "Facebook";
     if (value.includes("linkedin")) return "LinkedIn";
     if (value.includes("x variante") || value.includes("twitter")) return "X";
+    if (value.includes("tiktok")) return "TikTok";
     if (value.includes("whatsapp")) return "WhatsApp";
 
     return null;
@@ -261,6 +264,7 @@ setSourceListingId(listingId);
     if (platform === "LinkedIn") return "LinkedIn öffnen";
     if (platform === "X") return "X öffnen";
     if (platform === "WhatsApp") return "WhatsApp öffnen";
+    if (platform === "TikTok") return "TikTok öffnen";
 
     return "Plattform öffnen";
   }
@@ -271,6 +275,7 @@ setSourceListingId(listingId);
     if (platform === "LinkedIn") return "💼";
     if (platform === "X") return "𝕏";
     if (platform === "WhatsApp") return "💬";
+    if (platform === "TikTok") return "♪";
 
     return "🔗";
   }
@@ -293,6 +298,10 @@ setSourceListingId(listingId);
 
   if (platform === "WhatsApp") {
     return `${baseClass} border-green-300/50 bg-gradient-to-r from-green-600 to-emerald-500 shadow-green-500/25 hover:from-green-500 hover:to-emerald-400 hover:shadow-green-500/35`;
+  }
+
+  if (platform === "TikTok") {
+    return `${baseClass} border-cyan-300/30 bg-gradient-to-r from-slate-950 via-slate-900 to-rose-950 shadow-black/25 hover:from-slate-900 hover:to-rose-900`;
   }
 
   if (platform === "X") {
@@ -329,6 +338,10 @@ setSourceListingId(listingId);
       return `${base} border-sky-300/40 bg-gradient-to-r from-sky-700 to-blue-600 text-white`;
     }
 
+    if (platform === "TikTok") {
+      return `${base} border-cyan-300/30 bg-gradient-to-r from-slate-950 via-slate-900 to-rose-950 text-white`;
+    }
+
     return `${base} border-white/30 bg-slate-950 text-white`;
   }
 
@@ -338,6 +351,7 @@ setSourceListingId(listingId);
     if (platform === "LinkedIn") return "https://www.linkedin.com/";
     if (platform === "X") return "https://x.com/";
     if (platform === "WhatsApp") return "https://web.whatsapp.com/";
+    if (platform === "TikTok") return "https://www.tiktok.com/";
 
     return "#";
   }
@@ -740,7 +754,7 @@ return (
 
             <p className="mt-3 max-w-2xl text-slate-300">
               Erstelle fertige Immobilien-Posts für Instagram, Facebook,
-              LinkedIn und X – inklusive Objektbild, Text, Hashtags und direkter Teilen-Funktion.
+              LinkedIn, X, WhatsApp und TikTok – inklusive Objektbild, Text, Hashtags und direkter Teilen-Funktion.
             </p>
           </div>
 
@@ -975,7 +989,7 @@ return (
   Wähle Plattform, Textvariante und Objektbild. Inserat-AI passt den Post automatisch an den jeweiligen Kanal an.
 </p>
 
-<div className="mt-5 inline-flex w-fit rounded-full border border-amber-400/40 bg-amber-400/10 px-4 py-2 text-sm font-black text-amber-200">              5 Plattformen
+<div className="mt-5 inline-flex w-fit rounded-full border border-amber-400/40 bg-amber-400/10 px-4 py-2 text-sm font-black text-amber-200">              6 Plattformen
             </div>
 
             {variants.length === 0 ? (
@@ -984,7 +998,7 @@ return (
                 </p>
 
 <p className="mt-4 text-sm leading-7 text-slate-300">                  Klicke links auf Generieren. Danach erscheinen Instagram,
-                  Facebook, LinkedIn und X mit je 3 Varianten.
+                  Facebook, LinkedIn, X, WhatsApp und TikTok mit je 3 Varianten.
                 </p>
               </div>
             ) : (
@@ -1128,7 +1142,7 @@ className="rounded-3xl border border-amber-400/30 bg-gradient-to-br from-white/[
           Plattform wählen
         </p>
 
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
           {PLATFORM_NAMES.map(
             (platformOption) => {
               const isActive =

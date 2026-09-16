@@ -208,6 +208,18 @@ Eine professionelle Präsentation hilft dabei, die Qualität einer Immobilie sch
   text: `✨ Objekt im Fokus: ${propertyType} in ${location} mit ca. ${livingArea} m², ${rooms} Zimmern und starken Highlights. Wer ein Zuhause mit Qualität und Ausstrahlung sucht, sollte dieses Angebot genauer ansehen. #Immobilien #Wohnen #${tag}`,
 },
     {
+      title: "TikTok Variante 1",
+      text: `🎬 ${rooms}-Zimmer-${propertyType} in ${location}: ca. ${livingArea} m² Wohnfläche. ${highlights ? "Genannte Merkmale: " + highlights + "." : ""} Alle wichtigen Eckdaten kompakt im Überblick. Mehr Informationen oder Besichtigung anfragen. #Immobilien #${tag} #RealEstate`,
+    },
+    {
+      title: "TikTok Variante 2",
+      text: `🏡 ${propertyType} in ${location}. ${rooms} Zimmer und ca. ${livingArea} m² Wohnfläche. ${highlights ? "Weitere Angaben: " + highlights + "." : ""} Interesse? Unterlagen anfordern oder Kontakt aufnehmen. #Immobilien #${tag} #Property`,
+    },
+    {
+      title: "TikTok Variante 3",
+      text: `📍 ${location}: ${propertyType} mit ${rooms} Zimmern und ca. ${livingArea} m² Wohnfläche. ${priceLine} ${highlights ? "Merkmale laut Angaben: " + highlights + "." : ""} Mehr erfahren und Besichtigung anfragen. #Immobilien #${tag} #RealEstate`,
+    },
+    {
       title: "WhatsApp Variante 1",
       text: `Hallo, ich habe eine ${rooms}-Zimmer-${propertyType} in ${location} mit ca. ${livingArea} m² Wohnfläche. ${highlights ? "Zu den angegebenen Merkmalen gehören " + highlights + "." : ""} Bei Interesse sende ich gerne weitere Informationen.`,
     },
@@ -651,6 +663,20 @@ export async function POST(request: NextRequest) {
 
       {
         platform:
+          "TikTok",
+
+        lengthRule:
+          "220 bis 450 Zeichen inklusive Hashtags",
+
+        hashtagRule:
+          "3 bis 5 gezielte Hashtags",
+
+        styleRule:
+          "TikTok-first: kurzer Hook und sofort konkrete Objektdaten. Schreibe caption-tauglich, dynamisch und leicht scannbar, aber ohne künstliche Begeisterung. Nutze kurze Sätze oder Zeilen, maximal 2 passende Emojis und nur belegte Fakten. Keine Trends, Sounds oder viralen Behauptungen erfinden.",
+      },
+
+      {
+        platform:
           "WhatsApp",
 
         lengthRule:
@@ -860,7 +886,7 @@ export async function POST(request: NextRequest) {
 
         "- Die drei Varianten dürfen weder denselben Einstieg noch denselben CTA kopieren.",
 
-        "- WhatsApp, Instagram, Facebook, LinkedIn und X müssen erkennbar unterschiedlich klingen.",
+        "- WhatsApp, Instagram, Facebook, LinkedIn, X und TikTok müssen erkennbar unterschiedlich klingen.",
 
         "- LinkedIn darf niemals mit Entdecken Sie beginnen und soll keine Konsumenten-Werbesprache verwenden.",
 
@@ -1126,7 +1152,7 @@ export async function POST(request: NextRequest) {
 
 
     /*
-     * Alle fünf Plattformen starten gleichzeitig.
+     * Alle sechs Plattformen starten gleichzeitig.
      */
     const platformResults =
       await Promise.all(
@@ -1152,11 +1178,11 @@ export async function POST(request: NextRequest) {
 
     /*
      * Sicherheitsnetz:
-     * Die bestehende UI erwartet 15 Varianten.
+     * Die bestehende UI erwartet 18 Varianten.
      */
     if (
       variants.length !==
-      15
+      18
     ) {
       console.error(
         "[generate-social] Ungültige Gesamtzahl:",
