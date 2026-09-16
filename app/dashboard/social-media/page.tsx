@@ -9,6 +9,7 @@ import {
 } from "@/lib/inserat-ai-market";
 
 import MetaConnectionCard from "./MetaConnectionCard";
+import LinkedInConnectionCard from "./LinkedInConnectionCard";
 import ReconciliationAlertCard from "./ReconciliationAlertCard";
 import PublishingCenterStatusCard from "./PublishingCenterStatusCard";
 
@@ -769,6 +770,8 @@ return (
         </div>
 
    <MetaConnectionCard />
+
+   <LinkedInConnectionCard />
 
    <PublishingCenterStatusCard />
 
