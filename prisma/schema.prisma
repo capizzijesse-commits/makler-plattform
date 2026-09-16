@@ -45,7 +45,278 @@ model User {
   sessions   Session[]
   valuations Valuation[]
 
+  socialConnections SocialConnection[]
+  socialCredentials SocialCredential[]
+  socialPublishJobs SocialPublishJob[]
+
   createdAt DateTime @default(now())
+}
+
+model SocialConnection {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /**
+   * meta | linkedin | tiktok
+   */
+  provider String
+
+  /**
+   * facebook_page
+   * instagram_business
+   * linkedin
+   * tiktok
+   */
+  channel String
+
+  /**
+   * test | production
+   * Social-Automation startet bewusst
+   * zuerst im Testmodus.
+   */
+  environment String @default("test")
+
+  /**
+   * ID des externen Social-Accounts.
+   * Beispiele:
+   * - Facebook Page ID
+   * - Instagram Business Account ID
+   * - LinkedIn Account ID
+   * - TikTok Account ID
+   */
+  externalAccountId String
+
+  /**
+   * Optionaler übergeordneter Account.
+   * Bei Instagram kann dies später
+   * beispielsweise die verbundene
+   * Facebook Page sein.
+   */
+  externalParentId String?
+
+  displayName String?
+  username    String?
+
+  /**
+   * configured
+   * verified
+   * expired
+   * revoked
+   * error
+   */
+  status String @default("configured")
+
+  /**
+   * Sensible Tokens gehören NICHT hier hinein.
+   * Credentials werden separat und
+   * verschlüsselt in SocialCredential
+   * gespeichert.
+   */
+  credentialSource String?
+
+  lastVerifiedAt  DateTime?
+  lastPublishedAt DateTime?
+
+  publishJobs SocialPublishJob[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, provider, channel, externalAccountId, environment])
+  @@index([userId])
+  @@index([provider, channel])
+  @@index([externalAccountId])
+  @@index([status])
+}
+
+model SocialCredential {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /**
+   * meta | linkedin | tiktok
+   */
+  provider String
+
+  /**
+   * test | production
+   */
+  environment String @default("test")
+
+  /**
+   * Externe Identität, zu welcher
+   * dieses OAuth-Credential gehört.
+   * Damit bleiben später auch mehrere
+   * Social-Identitäten pro Inserat-AI-
+   * Benutzer technisch möglich.
+   */
+  externalSubjectId String
+
+  /**
+   * Ausschliesslich verschlüsselter
+   * OAuth-Payload.
+   * Access Tokens, Refresh Tokens,
+   * Ablaufzeiten und Scopes dürfen
+   * niemals im Klartext gespeichert
+   * werden.
+   */
+  encryptedPayload String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, provider, externalSubjectId, environment])
+  @@index([userId])
+  @@index([provider])
+  @@index([provider, environment])
+}
+
+model SocialPublishJob {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /**
+   * Optionaler Bezug zum ursprünglichen Inserat.
+   * Der Job bleibt erhalten, selbst wenn
+   * das Inserat später gelöscht wird.
+   */
+  listingId String?
+  listing   Listing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+
+  /**
+   * Optionaler Bezug zur aktuell
+   * verbundenen SocialConnection.
+   * SetNull bewahrt den Veröffentlichungs-
+   * Verlauf, wenn eine Verbindung entfernt wird.
+   */
+  connectionId String?
+  connection   SocialConnection? @relation(fields: [connectionId], references: [id], onDelete: SetNull)
+
+  /**
+   * Snapshot des Ziels.
+   * meta | linkedin | tiktok
+   */
+  provider String
+
+  /**
+   * facebook_page
+   * instagram_business
+   * linkedin
+   * tiktok
+   */
+  channel String
+
+  /**
+   * test | production
+   */
+  environment String @default("test")
+
+  /**
+   * Zielkonto zum Zeitpunkt der
+   * Job-Erstellung.
+   */
+  externalAccountId String
+
+  /**
+   * Inhalt, der tatsächlich veröffentlicht
+   * werden soll.
+   */
+  caption String
+
+  /**
+   * Provider-unabhängiger Media-Snapshot.
+   * Beispiel:
+   * [
+   * {
+   * "type": "image",
+   * "url": "https://..."
+   * }
+   * ]
+   * Keine Access Tokens oder Secrets.
+   */
+  mediaPayload Json?
+
+  /**
+   * draft
+   * scheduled
+   * queued
+   * processing
+   * published
+   * failed
+   * cancelled
+   */
+  status String @default("draft")
+
+  /**
+   * null = sofort / manuell queued
+   */
+  scheduledFor DateTime?
+
+  /**
+   * Verhindert doppelte Veröffentlichungen
+   * bei Retry, Reload oder Doppel-Klick.
+   */
+  idempotencyKey String @unique
+
+  /**
+   * Worker / Retry State
+   */
+  attemptCount  Int       @default(0)
+  maxAttempts   Int       @default(3)
+  nextAttemptAt DateTime?
+  lastAttemptAt DateTime?
+
+  /**
+   * Kurzer Lock für parallele Worker.
+   */
+  lockedAt DateTime?
+  lockedBy String?
+
+  /**
+   * Dauerhafter Provider-Operationszustand.
+   *
+   * Beispiel Instagram:
+   * providerOperationType  = "instagram_reel_container"
+   * providerOperationId    = Meta Container ID
+   * providerOperationState = "container_created"
+   *
+   * Damit kann ein Retry eine bereits
+   * gestartete Provider-Operation fortsetzen,
+   * statt blind eine zweite zu erzeugen.
+   */
+  providerOperationId        String?
+  providerOperationType      String?
+  providerOperationState     String?
+  providerOperationUpdatedAt DateTime?
+
+  /**
+   * Provider-Ergebnis.
+   */
+  externalPostId  String?
+  externalPostUrl String?
+
+  publishedAt DateTime?
+  failedAt    DateTime?
+
+  errorCode    String?
+  errorMessage String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status, createdAt])
+  @@index([connectionId, status])
+  @@index([listingId])
+  @@index([status, scheduledFor])
+  @@index([status, nextAttemptAt])
+  @@index([provider, channel, status])
+  @@index([provider, providerOperationState])
 }
 
 model Listing {
@@ -91,6 +362,8 @@ model Listing {
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   listingViewEvents ListingViewEvent[]
+
+  socialPublishJobs SocialPublishJob[]
 
   @@index([userId])
   @@index([userId, archivedAt])
