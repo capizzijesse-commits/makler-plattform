@@ -629,9 +629,22 @@ export async function claimDueSocialPublishJobs(
           ],
         },
 
+        /*
+         * Jeder Job besitzt sein eigenes Retry-Limit.
+         * Keine fest verdrahtete 3 mehr.
+         */
         attemptCount: {
           lt:
-            3,
+            prisma.socialPublishJob.fields.maxAttempts,
+        },
+
+        /*
+         * null bedeutet:
+         * aktuell kein weiterer Versuch geplant.
+         */
+        nextAttemptAt: {
+          lte:
+            now,
         },
 
         AND: [
@@ -646,22 +659,6 @@ export async function claimDueSocialPublishJobs(
 
               {
                 scheduledFor:
-                  null,
-              },
-            ],
-          },
-
-          {
-            OR: [
-              {
-                nextAttemptAt: {
-                  lte:
-                    now,
-                },
-              },
-
-              {
-                nextAttemptAt:
                   null,
               },
             ],
@@ -720,6 +717,39 @@ export async function claimDueSocialPublishJobs(
               "failed",
             ],
           },
+
+          /*
+           * Zwischen Candidate-Select und Lock
+           * nochmals alle kritischen Bedingungen
+           * atomar prüfen.
+           */
+          attemptCount: {
+            lt:
+              prisma.socialPublishJob.fields.maxAttempts,
+          },
+
+          nextAttemptAt: {
+            lte:
+              now,
+          },
+
+          AND: [
+            {
+              OR: [
+                {
+                  scheduledFor: {
+                    lte:
+                      now,
+                  },
+                },
+
+                {
+                  scheduledFor:
+                    null,
+                },
+              ],
+            },
+          ],
         },
 
         data: {
