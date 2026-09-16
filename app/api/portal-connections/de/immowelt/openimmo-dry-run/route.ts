@@ -19,6 +19,10 @@ import {
   buildImmoweltDeOpenImmoCandidate,
 } from "@/lib/portal-integrations/immowelt-de-openimmo-candidate.server";
 
+import {
+  buildImmoweltDeOpenImmoXmlV1,
+} from "@/lib/portal-integrations/immowelt-de-openimmo-xml.server";
+
 
 export const runtime =
   "nodejs";
@@ -146,6 +150,22 @@ export async function GET(
         },
 
         include: {
+          user: {
+            select: {
+              name:
+                true,
+
+              email:
+                true,
+
+              company:
+                true,
+
+              phone:
+                true,
+            },
+          },
+
           finance:
             true,
 
@@ -220,6 +240,59 @@ export async function GET(
       );
 
 
+    /*
+     * Read-only Portal-Metadaten.
+     *
+     * Für immowelt_de wird
+     * externalOwnerId ausschließlich
+     * als explizit konfigurierte
+     * OpenImmo Anbieter-ID verwendet.
+     *
+     * Wir generieren niemals selbst
+     * eine openimmo_anid.
+     */
+    const immoweltConnection =
+      await prisma.portalConnection.findUnique({
+        where: {
+          userId_portal: {
+            userId:
+              user.id,
+
+            portal:
+              "immowelt_de",
+          },
+        },
+      });
+
+
+    const openImmoXml =
+      buildImmoweltDeOpenImmoXmlV1({
+        candidate,
+
+        updatedAt:
+          listing.updatedAt,
+
+        provider: {
+          company:
+            listing.user.company,
+
+          openImmoAnid:
+            immoweltConnection
+              ?.externalOwnerId ??
+            null,
+
+          contactName:
+            listing.user.name,
+
+          contactEmail:
+            listing.user.email,
+
+          contactPhone:
+            listing.user.phone,
+        },
+      });
+
+
     const transferEligible =
       listing.unlockStatus ===
         "paid" ||
@@ -249,6 +322,53 @@ export async function GET(
         candidate.ready,
 
       candidate,
+
+      /*
+       * Rein lokale OpenImmo-
+       * Generierung.
+       *
+       * Kein Transport und keine
+       * Aussage über ein bestätigtes
+       * immowelt Partnerprofil.
+       */
+      localXmlGenerationOnly:
+        true,
+
+      openImmoAnidConfigured:
+        Boolean(
+          immoweltConnection
+            ?.externalOwnerId
+            ?.trim()
+        ),
+
+      openImmoAnidSource:
+        immoweltConnection
+          ?.externalOwnerId
+          ?.trim()
+          ? "portal_connection_external_owner_id"
+          : "missing",
+
+      xmlBuildReady:
+        openImmoXml.ready,
+
+      xmlGenerated:
+        openImmoXml.xml !==
+        null,
+
+      xmlStandard:
+        openImmoXml.standard,
+
+      xmlVersion:
+        openImmoXml.xmlVersion,
+
+      xmlStandardRelease:
+        openImmoXml.standardRelease,
+
+      xmlErrors:
+        openImmoXml.errors,
+
+      xml:
+        openImmoXml.xml,
 
       /*
        * Diese Flags bleiben bewusst
