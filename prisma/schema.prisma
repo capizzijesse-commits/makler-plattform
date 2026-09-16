@@ -45,7 +45,9 @@ model User {
   sessions                                                                Session[]
   valuations                                                              Valuation[]
   portalConnections                                                       PortalConnection[]
-  portalCredentials PortalCredential[]
+  portalCredentials                                                       PortalCredential[]
+  socialConnections                                                       SocialConnection[]
+  socialCredentials                                                       SocialCredential[]
   MaklerChatBlock_MaklerChatBlock_blockedUserIdToUser                     MaklerChatBlock[]          @relation("MaklerChatBlock_blockedUserIdToUser")
   MaklerChatBlock_MaklerChatBlock_blockerUserIdToUser                     MaklerChatBlock[]          @relation("MaklerChatBlock_blockerUserIdToUser")
   MaklerChatBranding                                                      MaklerChatBranding?
@@ -222,7 +224,6 @@ model PortalCredential {
 
   /**
    * sandbox | test | production
-   *
    * Environment ist Teil des Unique Keys,
    * damit Test- und Production-Credentials
    * niemals denselben Datensatz verwenden.
@@ -232,7 +233,6 @@ model PortalCredential {
   /**
    * Ausschliesslich AES-256-GCM verschluesselter
    * Payload.
-   *
    * Niemals Access Token oder Token Secret
    * im Klartext speichern.
    */
@@ -245,6 +245,127 @@ model PortalCredential {
   @@index([userId])
   @@index([provider, portal])
   @@index([portal, environment])
+}
+
+model SocialConnection {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /**
+   * meta | linkedin | tiktok
+   */
+  provider String
+
+  /**
+   * facebook_page
+   * instagram_business
+   * linkedin
+   * tiktok
+   */
+  channel String
+
+  /**
+   * test | production
+   * Social-Automation startet bewusst
+   * zuerst im Testmodus.
+   */
+  environment String @default("test")
+
+  /**
+   * ID des externen Social-Accounts.
+   * Beispiele:
+   * - Facebook Page ID
+   * - Instagram Business Account ID
+   * - LinkedIn Account ID
+   * - TikTok Account ID
+   */
+  externalAccountId String
+
+  /**
+   * Optionaler übergeordneter Account.
+   * Bei Instagram kann dies später
+   * beispielsweise die verbundene
+   * Facebook Page sein.
+   */
+  externalParentId String?
+
+  displayName String?
+  username    String?
+
+  /**
+   * configured
+   * verified
+   * expired
+   * revoked
+   * error
+   */
+  status String @default("configured")
+
+  /**
+   * Sensible Tokens gehören NICHT hier hinein.
+   * Credentials werden separat und
+   * verschlüsselt in SocialCredential
+   * gespeichert.
+   */
+  credentialSource String?
+
+  lastVerifiedAt  DateTime?
+  lastPublishedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, provider, channel, externalAccountId, environment])
+  @@index([userId])
+  @@index([provider, channel])
+  @@index([externalAccountId])
+  @@index([status])
+}
+
+model SocialCredential {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /**
+   * meta | linkedin | tiktok
+   */
+  provider String
+
+  /**
+   * test | production
+   */
+  environment String @default("test")
+
+  /**
+   * Externe Identität, zu welcher
+   * dieses OAuth-Credential gehört.
+   * Damit bleiben später auch mehrere
+   * Social-Identitäten pro Inserat-AI-
+   * Benutzer technisch möglich.
+   */
+  externalSubjectId String
+
+  /**
+   * Ausschliesslich verschlüsselter
+   * OAuth-Payload.
+   * Access Tokens, Refresh Tokens,
+   * Ablaufzeiten und Scopes dürfen
+   * niemals im Klartext gespeichert
+   * werden.
+   */
+  encryptedPayload String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, provider, externalSubjectId, environment])
+  @@index([userId])
+  @@index([provider])
+  @@index([provider, environment])
 }
 
 model Listing {
