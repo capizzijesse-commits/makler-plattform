@@ -966,6 +966,7 @@ export async function executeMetaPublishJob(
       "container_created",
       "container_ready",
       "publish_requested",
+      "reconciliation_required",
       "media_published",
     ]);
 
@@ -1014,18 +1015,70 @@ export async function executeMetaPublishJob(
 
 
   /*
-   * Publish wurde bereits angefordert.
-   * Ohne sicher gespeicherte Media-ID
-   * publizieren wir NICHT blind erneut.
+   * Dieser Job wurde bereits als
+   * reconciliation_required quarantiniert.
+   *
+   * Niemals automatisch nochmals publishen.
+   */
+  if (
+    existingOperationState ===
+    "reconciliation_required"
+  ) {
+
+    throw metaError(
+      "META_IG_RECONCILIATION_REQUIRED",
+      "Instagram publish result requires reconciliation before another publish attempt."
+    );
+  }
+
+
+  /*
+   * publish_requested bedeutet:
+   *
+   * Wir wissen nicht sicher, ob Meta den
+   * Publish bereits ausgeführt hat.
+   *
+   * Deshalb Zustand dauerhaft in
+   * reconciliation_required überführen
+   * und NICHT erneut media_publish aufrufen.
    */
   if (
     existingOperationState ===
     "publish_requested"
   ) {
 
+    const reconciliationState =
+      await setSocialPublishProviderOperation({
+        jobId:
+          job.id,
+
+        workerId,
+
+        operationId:
+          existingOperationId,
+
+        operationType,
+
+        operationState:
+          "reconciliation_required",
+      });
+
+
+    if (
+      reconciliationState.count !==
+      1
+    ) {
+
+      throw metaError(
+        "WORKER_LOCK_LOST",
+        "Worker lost ownership while quarantining an ambiguous Instagram publish."
+      );
+    }
+
+
     throw metaError(
-      "META_IG_PUBLISH_RESULT_AMBIGUOUS",
-      "Instagram publish result is ambiguous and requires reconciliation."
+      "META_IG_RECONCILIATION_REQUIRED",
+      "Instagram publish result requires reconciliation before another publish attempt."
     );
   }
 

@@ -196,6 +196,30 @@ function retryAtForJob(
 }
 
 
+const NON_RETRYABLE_SOCIAL_PUBLISH_ERROR_CODES =
+  new Set([
+    "META_IG_RECONCILIATION_REQUIRED",
+    "META_IG_PUBLISH_RESULT_AMBIGUOUS",
+    "META_IG_OPERATION_STATE_INCOMPLETE",
+    "META_IG_OPERATION_TYPE_MISMATCH",
+    "META_IG_OPERATION_STATE_UNKNOWN",
+    "META_IG_MEDIA_ID_MISSING_AFTER_PUBLISH",
+  ]);
+
+
+function isNonRetryableSocialPublishErrorCode(
+  errorCode:
+    string
+):
+  boolean {
+
+  return NON_RETRYABLE_SOCIAL_PUBLISH_ERROR_CODES
+    .has(
+      errorCode
+    );
+}
+
+
 export async function runSocialPublishWorker(
   input: {
     workerId:
@@ -372,10 +396,14 @@ export async function runSocialPublishWorker(
        * ab Worker-Start.
        */
       const retryAt =
-        retryAtForJob(
-          job,
-          new Date()
-        );
+        isNonRetryableSocialPublishErrorCode(
+          errorCode
+        )
+          ? null
+          : retryAtForJob(
+              job,
+              new Date()
+            );
 
 
       const failureResult =
