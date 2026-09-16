@@ -9,6 +9,10 @@ import {
   type SocialPublishExecutor,
 } from "@/lib/social-integrations/social-publish-worker.server";
 
+import {
+  inspectSocialPublishActivationGuard,
+} from "@/lib/social-integrations/social-publish-activation-guard.server";
+
 
 function enabled(
   name:
@@ -101,6 +105,43 @@ export async function runSocialPublishTrigger(
   }
 
 
+  const activationGuard =
+    await inspectSocialPublishActivationGuard({
+      now:
+        input.now,
+    });
+
+
+  if (
+    !activationGuard.ready
+  ) {
+
+    return {
+      enabled:
+        false,
+
+      gates,
+
+      activationGuard,
+
+      workerId:
+        null,
+
+      claimed:
+        0,
+
+      published:
+        0,
+
+      failed:
+        0,
+
+      results:
+        [],
+    };
+  }
+
+
   const suppliedWorkerId =
     input.workerId
       ?.trim() ||
@@ -131,6 +172,8 @@ export async function runSocialPublishTrigger(
     ...result,
 
     gates,
+
+    activationGuard,
 
     workerId,
   };
