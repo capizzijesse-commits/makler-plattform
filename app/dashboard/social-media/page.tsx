@@ -9,6 +9,7 @@ import {
 } from "@/lib/inserat-ai-market";
 
 import MetaConnectionCard from "./MetaConnectionCard";
+import ReconciliationAlertCard from "./ReconciliationAlertCard";
 
 type PlatformName = "Instagram" | "Facebook" | "LinkedIn" | "X" | "WhatsApp";
 
@@ -753,6 +754,8 @@ return (
         </div>
 
    <MetaConnectionCard />
+
+   <ReconciliationAlertCard />
 
           <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
  <section className="socialFormScroll flex h-[760px] min-h-[760px] flex-col overflow-y-scroll rounded-[20px] border border-white/10 bg-white/[0.07] p-6 pr-3 shadow-2xl backdrop-blur">

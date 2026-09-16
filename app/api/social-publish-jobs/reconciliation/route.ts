@@ -8,10 +8,6 @@ import {
 } from "@/lib/session";
 
 import {
-  getPlanCapabilities,
-} from "@/lib/plans";
-
-import {
   listSocialPublishJobsRequiringReconciliation,
 } from "@/lib/social-integrations/social-publish-job-store.server";
 
@@ -63,35 +59,6 @@ export async function GET(
         {
           status:
             401,
-        }
-      )
-    );
-  }
-
-
-  const capabilities =
-    getPlanCapabilities(
-      user.plan
-    );
-
-
-  if (
-    !capabilities
-      .canUsePublishingCenter
-  ) {
-
-    return noStore(
-      NextResponse.json(
-        {
-          success:
-            false,
-
-          error:
-            "PRO_REQUIRED",
-        },
-        {
-          status:
-            403,
         }
       )
     );
