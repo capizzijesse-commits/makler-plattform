@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   useCallback,
@@ -21,7 +21,8 @@ type ChannelFilter =
   | "instagram_business"
   | "facebook_page"
   | "linkedin"
-  | "tiktok";
+  | "tiktok"
+  | "x";
 
 type StatusFilter =
   | "all"
@@ -98,6 +99,13 @@ function channelLabel(
 
   if (
     channel ===
+    "x"
+  ) {
+    return "X";
+  }
+
+  if (
+    channel ===
     "tiktok"
   ) {
     return "TikTok";
@@ -124,10 +132,10 @@ function statusLabel(
         "Warteschlange",
 
       processing:
-        "Läuft",
+        "LÃ¤uft",
 
       published:
-        "Veröffentlicht",
+        "VerÃ¶ffentlicht",
 
       failed:
         "Fehlgeschlagen",
@@ -183,7 +191,7 @@ function formatDate(
     null
 ) {
   if (!value) {
-    return "—";
+    return "â€”";
   }
 
   const date =
@@ -196,7 +204,7 @@ function formatDate(
       date.getTime()
     )
   ) {
-    return "—";
+    return "â€”";
   }
 
   return new Intl.DateTimeFormat(
@@ -479,7 +487,75 @@ export default function PublishingCenterStatusCard() {
     );
 
 
+
+
   useEffect(
+    () => {
+
+      const params =
+        new URLSearchParams(
+          window.location.search
+        );
+
+      const x =
+        params.get(
+          "x"
+        );
+
+      if (!x) {
+        return;
+      }
+
+      if (
+        x === "connected"
+      ) {
+        setError(
+          null
+        );
+
+        void loadConnections();
+      }
+      else if (
+        x === "cancelled"
+      ) {
+        setError(
+          "Die X-Verbindung wurde abgebrochen."
+        );
+      }
+      else if (
+        x === "error"
+      ) {
+        setError(
+          "Die X-Verbindung konnte nicht abgeschlossen werden."
+        );
+      }
+
+      params.delete(
+        "x"
+      );
+
+      params.delete(
+        "code"
+      );
+
+      const query =
+        params.toString();
+
+      window.history.replaceState(
+        {},
+        "",
+        window.location.pathname +
+          (
+            query
+              ? `?${query}`
+              : ""
+          )
+      );
+    },
+    []
+  );
+
+useEffect(
     () => {
 
       void loadJobs();
@@ -584,6 +660,14 @@ export default function PublishingCenterStatusCard() {
       ]
     );
 
+  const xConnectionCount =
+    connections.filter(
+      connection =>
+        connection.provider === "x" &&
+        connection.channel === "x" &&
+        connection.status === "verified"
+    ).length;
+
   const automationActive =
     Boolean(
       capabilities
@@ -592,6 +676,82 @@ export default function PublishingCenterStatusCard() {
         ?.externalPublishing
     );
 
+
+  async function startXOAuth() {
+
+    try {
+
+      setError(
+        null
+      );
+
+      const response =
+        await fetch(
+          "/api/social-connections/x/oauth/start",
+          {
+            method:
+              "POST",
+
+            credentials:
+              "include",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+          }
+        );
+
+      if (
+        response.status ===
+        401
+      ) {
+        window.location.href =
+          "/login";
+
+        return;
+      }
+
+      const data =
+        await response.json() as {
+          success?:
+            boolean;
+
+          authorizeUrl?:
+            string;
+
+          error?:
+            string;
+        };
+
+      if (
+        !response.ok ||
+        !data.success ||
+        !data.authorizeUrl
+      ) {
+        throw new Error(
+          data.error ||
+          "X_OAUTH_START_FAILED"
+        );
+      }
+
+      window.location.href =
+        data.authorizeUrl;
+    }
+    catch (
+      oauthError
+    ) {
+
+      console.error(
+        "X OAUTH START:",
+        oauthError
+      );
+
+      setError(
+        "X konnte nicht verbunden werden. Bitte Konfiguration prüfen und erneut versuchen."
+      );
+    }
+  }
   return (
     <section className="mb-8 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#071a2f] via-slate-950 to-slate-900 shadow-2xl">
 
@@ -605,7 +765,7 @@ export default function PublishingCenterStatusCard() {
             </p>
 
             <h2 className="mt-2 text-2xl font-black text-white">
-              Veröffentlichungsstatus
+              VerÃ¶ffentlichungsstatus
             </h2>
 
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
@@ -622,8 +782,8 @@ export default function PublishingCenterStatusCard() {
             }
           >
             {automationActive
-              ? "● Automatisierung aktiv"
-              : "○ Automatisierung sicher aus"}
+              ? "â— Automatisierung aktiv"
+              : "â—‹ Automatisierung sicher aus"}
           </div>
 
         </div>
@@ -658,7 +818,7 @@ export default function PublishingCenterStatusCard() {
               {
                 automationActive
                   ? "Queue und externes Publishing aktiv"
-                  : "Keine automatische Veröffentlichung"
+                  : "Keine automatische VerÃ¶ffentlichung"
               }
             </p>
           </div>
@@ -672,7 +832,7 @@ export default function PublishingCenterStatusCard() {
             <p className="mt-2 text-lg font-black text-white">
               {
                 !connectionsLoaded
-                  ? "Prüfe..."
+                  ? "PrÃ¼fe..."
                   : metaConfigured
                     ? "Bereit"
                     : "Nicht konfiguriert"
@@ -693,7 +853,7 @@ export default function PublishingCenterStatusCard() {
             <p className="mt-2 text-lg font-black text-white">
               {
                 !connectionsLoaded
-                  ? "Prüfe..."
+                  ? "PrÃ¼fe..."
                   : facebookConnectionCount > 0
                     ? facebookConnectionCount + " verbunden"
                     : "Nicht verbunden"
@@ -714,7 +874,7 @@ export default function PublishingCenterStatusCard() {
             <p className="mt-2 text-lg font-black text-white">
               {
                 !connectionsLoaded
-                  ? "Prüfe..."
+                  ? "PrÃ¼fe..."
                   : instagramConnectionCount > 0
                     ? instagramConnectionCount + " verbunden"
                     : "Nicht verbunden"
@@ -728,8 +888,57 @@ export default function PublishingCenterStatusCard() {
 
         </div>
 
-        <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.025] px-4 py-3 text-xs text-slate-500">
-          LinkedIn und TikTok bleiben aktuell im manuellen Veröffentlichungsmodus.
+
+
+        <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+            <div>
+              <p className="text-xs font-black uppercase tracking-wide text-slate-400">
+                X
+              </p>
+
+              <p className="mt-2 text-lg font-black text-white">
+                {
+                  !connectionsLoaded
+                    ? "Prüfe..."
+                    : xConnectionCount > 0
+                      ? "Verbunden"
+                      : "Nicht verbunden"
+                }
+              </p>
+
+              <p className="mt-1 text-xs text-slate-500">
+                OAuth 2.0 · PKCE · automatischer Token-Refresh
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={
+                () => {
+                  void startXOAuth();
+                }
+              }
+              disabled={
+                !connectionsLoaded ||
+                xConnectionCount > 0
+              }
+              className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.06] px-4 py-2.5 text-sm font-black text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {
+                xConnectionCount > 0
+                  ? "X verbunden"
+                  : "Mit X verbinden"
+              }
+            </button>
+
+          </div>
+
+        </div>
+<div className="mt-4 rounded-xl border border-white/10 bg-white/[0.025] px-4 py-3 text-xs text-slate-500">
+          LinkedIn und TikTok bleiben aktuell im manuellen VerÃ¶ffentlichungsmodus.
         </div>
 
       </div>
@@ -759,7 +968,7 @@ export default function PublishingCenterStatusCard() {
 
         <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.05] p-4">
           <p className="text-xs font-black uppercase text-emerald-300">
-            Veröffentlicht
+            VerÃ¶ffentlicht
           </p>
 
           <p className="mt-2 text-3xl font-black text-white">
@@ -790,7 +999,7 @@ export default function PublishingCenterStatusCard() {
             </p>
 
             <p className="mt-1 text-xs text-slate-500">
-              Maximal 10 Einträge
+              Maximal 10 EintrÃ¤ge
             </p>
           </div>
 
@@ -808,7 +1017,7 @@ export default function PublishingCenterStatusCard() {
             className="rounded-xl border border-white/10 bg-white/[0.05] px-4 py-2.5 text-sm font-black text-slate-200 transition hover:bg-white/10 disabled:opacity-50"
           >
             {loading
-              ? "Prüfe..."
+              ? "PrÃ¼fe..."
               : "Status aktualisieren"}
           </button>
 
@@ -853,6 +1062,10 @@ export default function PublishingCenterStatusCard() {
               <option value="tiktok">
                 TikTok
               </option>
+
+              <option value="x">
+                X
+              </option>
             </select>
           </label>
 
@@ -891,11 +1104,11 @@ export default function PublishingCenterStatusCard() {
               </option>
 
               <option value="processing">
-                Läuft
+                LÃ¤uft
               </option>
 
               <option value="published">
-                Veröffentlicht
+                VerÃ¶ffentlicht
               </option>
 
               <option value="failed">
@@ -946,11 +1159,11 @@ export default function PublishingCenterStatusCard() {
           <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-5">
 
             <p className="font-black text-white">
-              Keine Treffer für diesen Filter
+              Keine Treffer fÃ¼r diesen Filter
             </p>
 
             <p className="mt-2 text-sm text-slate-400">
-              Ändere Plattform oder Status, um andere Publishing-Jobs anzuzeigen.
+              Ã„ndere Plattform oder Status, um andere Publishing-Jobs anzuzeigen.
             </p>
 
           </div>
@@ -1033,7 +1246,7 @@ export default function PublishingCenterStatusCard() {
                     </span>
 
                     <span>
-                      Veröffentlicht:{" "}
+                      VerÃ¶ffentlicht:{" "}
                       <strong className="text-slate-300">
                         {
                           formatDate(
@@ -1062,7 +1275,7 @@ export default function PublishingCenterStatusCard() {
                       rel="noreferrer"
                       className="mt-3 inline-flex text-xs font-black text-cyan-300 hover:text-cyan-200"
                     >
-                      Veröffentlichten Post öffnen →
+                      VerÃ¶ffentlichten Post Ã¶ffnen â†’
                     </a>
                   )}
 
