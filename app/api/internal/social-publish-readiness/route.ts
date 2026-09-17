@@ -11,6 +11,10 @@ import {
   inspectSocialPublishReadiness,
 } from "@/lib/social-integrations/social-publish-readiness.server";
 
+import {
+  inspectLinkedInPublishReadiness,
+} from "@/lib/social-integrations/linkedin-publish-readiness.server";
+
 
 export const runtime =
   "nodejs";
@@ -173,8 +177,14 @@ export async function GET(
 
   try {
 
-    const readiness =
-      await inspectSocialPublishReadiness();
+    const [
+      readiness,
+      linkedInReadiness,
+    ] =
+      await Promise.all([
+        inspectSocialPublishReadiness(),
+        inspectLinkedInPublishReadiness(),
+      ]);
 
 
     return noStore(
@@ -183,6 +193,8 @@ export async function GET(
           true,
 
         readiness,
+
+        linkedInReadiness,
       })
     );
   }
