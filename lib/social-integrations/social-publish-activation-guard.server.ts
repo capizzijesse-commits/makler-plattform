@@ -12,6 +12,11 @@ import {
   prisma,
 } from "@/lib/prisma";
 
+import {
+  isSocialPublishProviderEnabled,
+  isSocialPublishTargetEnabled,
+} from "@/lib/social-integrations/social-publish-provider-gates.server";
+
 
 const SOCIAL_PUBLISH_LOCK_TTL_MS =
   10 * 60_000;
@@ -378,8 +383,9 @@ export async function inspectSocialPublishActivationGuard(
 
 
     if (
-      job.provider !==
-      "meta"
+      !isSocialPublishProviderEnabled(
+        job.provider
+      )
     ) {
 
       blockers.push({
@@ -390,11 +396,11 @@ export async function inspectSocialPublishActivationGuard(
           "PROVIDER_NOT_ENABLED",
       });
     }
-
-
-    if (
-      job.channel !==
-      "instagram_business"
+    else if (
+      !isSocialPublishTargetEnabled(
+        job.provider,
+        job.channel
+      )
     ) {
 
       blockers.push({

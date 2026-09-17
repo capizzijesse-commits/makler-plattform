@@ -12,6 +12,11 @@ import {
   prisma,
 } from "@/lib/prisma";
 
+import {
+  enabledSocialPublishTargets,
+  isSocialPublishTargetEnabled,
+} from "@/lib/social-integrations/social-publish-provider-gates.server";
+
 
 export type SocialPublishJobStatus =
   | "draft"
@@ -243,6 +248,19 @@ export async function createSocialPublishJob(
 
     throw new Error(
       "Social connection is not verified."
+    );
+  }
+
+
+  if (
+    !isSocialPublishTargetEnabled(
+      connection.provider,
+      connection.channel
+    )
+  ) {
+
+    throw new Error(
+      "Social provider publishing is disabled."
     );
   }
 
@@ -1245,6 +1263,30 @@ export async function claimDueSocialPublishJobs(
     );
 
 
+  const enabledTargets =
+    enabledSocialPublishTargets();
+
+
+  if (
+    enabledTargets.length ===
+    0
+  ) {
+    return [];
+  }
+
+
+  const enabledTargetWhere =
+    enabledTargets.map(
+      target => ({
+        provider:
+          target.provider,
+
+        channel:
+          target.channel,
+      })
+    );
+
+
   /*
    * Vor jedem Claim verwaiste
    * processing-Locks freigeben.
@@ -1257,6 +1299,9 @@ export async function claimDueSocialPublishJobs(
   const candidates =
     await prisma.socialPublishJob.findMany({
       where: {
+        OR:
+          enabledTargetWhere,
+
         status: {
           in: [
             "scheduled",
@@ -1342,6 +1387,9 @@ export async function claimDueSocialPublishJobs(
         where: {
           id:
             candidate.id,
+
+          OR:
+            enabledTargetWhere,
 
           lockedAt:
             null,

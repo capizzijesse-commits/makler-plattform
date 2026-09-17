@@ -344,6 +344,29 @@ function storeErrorResponse(
 
   if (
     message ===
+    "Social provider publishing is disabled."
+  ) {
+
+    return noStore(
+      NextResponse.json(
+        {
+          success:
+            false,
+
+          error:
+            "SOCIAL_PROVIDER_PUBLISHING_DISABLED",
+        },
+        {
+          status:
+            503,
+        }
+      )
+    );
+  }
+
+
+  if (
+    message ===
     "Listing was not found."
   ) {
 

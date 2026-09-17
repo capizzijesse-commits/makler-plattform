@@ -13,6 +13,11 @@ import {
   inspectSocialPublishActivationGuard,
 } from "@/lib/social-integrations/social-publish-activation-guard.server";
 
+import {
+  isLinkedInPublishingEnabled,
+  isMetaPublishingEnabled,
+} from "@/lib/social-integrations/social-publish-provider-gates.server";
+
 
 function enabled(
   name:
@@ -43,9 +48,10 @@ export function getSocialPublishTriggerGates() {
       ),
 
     metaPublishingEnabled:
-      enabled(
-        "META_PUBLISHING_ENABLED"
-      ),
+      isMetaPublishingEnabled(),
+
+    linkedInPublishingEnabled:
+      isLinkedInPublishingEnabled(),
   };
 }
 
@@ -78,7 +84,10 @@ export async function runSocialPublishTrigger(
   if (
     !gates.queueEnabled ||
     !gates.workerEnabled ||
-    !gates.metaPublishingEnabled
+    (
+      !gates.metaPublishingEnabled &&
+      !gates.linkedInPublishingEnabled
+    )
   ) {
 
     return {
