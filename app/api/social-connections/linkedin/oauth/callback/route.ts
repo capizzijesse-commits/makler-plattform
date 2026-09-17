@@ -23,6 +23,7 @@ import {
 } from "@/lib/social-integrations/social-credential-store.server";
 
 import {
+  listSocialConnections,
   saveSocialConnection,
 } from "@/lib/social-integrations/social-connection-store.server";
 
@@ -325,33 +326,82 @@ export async function GET(
     });
 
 
-    await saveSocialConnection({
-      userId:
-        user.id,
+    const savedConnection =
+      await saveSocialConnection({
+        userId:
+          user.id,
 
-      provider:
-        "linkedin",
+        provider:
+          "linkedin",
 
-      channel:
-        "linkedin",
+        channel:
+          "linkedin",
 
-      externalAccountId:
-        userInfo.sub,
+        externalAccountId:
+          userInfo.sub,
 
-      environment:
-        config.environment,
+        environment:
+          config.environment,
 
-      displayName,
+        displayName,
 
-      status:
-        "verified",
+        status:
+          "verified",
 
-      credentialSource:
-        "oauth",
+        credentialSource:
+          "oauth",
 
-      lastVerifiedAt:
-        new Date(),
-    });
+        lastVerifiedAt:
+          new Date(),
+      });
+
+
+    const verifiedConnections =
+      await listSocialConnections({
+        userId:
+          user.id,
+
+        environment:
+          config.environment,
+      });
+
+
+    const verifiedConnection =
+      verifiedConnections.find(
+        connection =>
+          connection.id ===
+            savedConnection.id &&
+          connection.provider ===
+            "linkedin" &&
+          connection.channel ===
+            "linkedin" &&
+          connection.environment ===
+            config.environment &&
+          connection.status ===
+            "verified"
+      );
+
+
+    if (!verifiedConnection) {
+      throw new Error(
+        "LinkedIn connection was not readable after database write."
+      );
+    }
+
+
+    console.info(
+      "[linkedin-oauth] connection verified",
+      {
+        connectionId:
+          verifiedConnection.id,
+
+        environment:
+          verifiedConnection.environment,
+
+        status:
+          verifiedConnection.status,
+      }
+    );
 
 
     return redirectToSocial(
