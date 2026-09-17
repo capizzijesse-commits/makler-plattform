@@ -224,6 +224,16 @@ export async function executeLinkedInPublishJob(
     );
   }
 
+  if (
+    job.environment !== "production" ||
+    connection.environment !== "production"
+  ) {
+    throw linkedInError(
+      "LINKEDIN_ENVIRONMENT_NOT_PRODUCTION",
+      "LinkedIn live publishing requires a production connection and job."
+    );
+  }
+
   if (connection.status !== "verified") {
     throw linkedInError(
       "LINKEDIN_CONNECTION_NOT_VERIFIED",
@@ -311,8 +321,9 @@ export async function executeLinkedInPublishJob(
   }
 
   if (
-    credential.scopes &&
-    !credential.scopes.includes("w_member_social")
+    !credential.scopes?.includes(
+      "w_member_social"
+    )
   ) {
     throw linkedInError(
       "LINKEDIN_SCOPE_MISSING",

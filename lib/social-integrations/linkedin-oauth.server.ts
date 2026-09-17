@@ -95,7 +95,9 @@ function getEnvironment():
 
 function resolveRedirectUri(
   requestOrigin:
-    string
+    string,
+  environment:
+    LinkedInSocialEnvironment
 ):
   string {
 
@@ -122,6 +124,15 @@ function resolveRedirectUri(
     );
   }
 
+  if (
+    environment === "production" &&
+    url.protocol !== "https:"
+  ) {
+    throw new Error(
+      "LinkedIn production OAuth redirect URI must use https."
+    );
+  }
+
   return url.toString();
 }
 
@@ -133,6 +144,9 @@ export function getLinkedInOAuthConfig(
   }
 ):
   LinkedInOAuthConfig {
+
+  const environment =
+    getEnvironment();
 
   return {
     clientId:
@@ -147,11 +161,12 @@ export function getLinkedInOAuthConfig(
 
     redirectUri:
       resolveRedirectUri(
-        input.requestOrigin
+        input.requestOrigin,
+        environment
       ),
 
     environment:
-      getEnvironment(),
+      environment,
   };
 }
 
@@ -169,7 +184,13 @@ export function isLinkedInOAuthConfigured():
       "LINKEDIN_CLIENT_SECRET"
     );
 
-    getEnvironment();
+    const environment =
+      getEnvironment();
+
+    resolveRedirectUri(
+      "http://localhost",
+      environment
+    );
 
     return true;
   }
@@ -488,6 +509,9 @@ export async function exchangeLinkedInAuthorizationCode(
     await fetch(
       "https://www.linkedin.com/oauth/v2/accessToken",
       {
+        signal:
+          AbortSignal.timeout(20_000),
+
         method:
           "POST",
 
@@ -658,6 +682,9 @@ export async function getLinkedInUserInfo(
     await fetch(
       "https://api.linkedin.com/v2/userinfo",
       {
+        signal:
+          AbortSignal.timeout(20_000),
+
         method:
           "GET",
 

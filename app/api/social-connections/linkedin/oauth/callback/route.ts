@@ -270,11 +270,24 @@ export async function GET(
 
 
     const scopes =
-      token.scopes?.length
-        ? token.scopes
-        : Array.from(
-            LINKEDIN_REQUIRED_SCOPES
-          );
+      token.scopes ??
+      [];
+
+
+    const missingScopes =
+      LINKEDIN_REQUIRED_SCOPES.filter(
+        scope =>
+          !scopes.includes(
+            scope
+          )
+      );
+
+
+    if (missingScopes.length) {
+      throw new Error(
+        "LinkedIn did not grant all required OAuth scopes."
+      );
+    }
 
 
     const displayName =
