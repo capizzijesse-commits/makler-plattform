@@ -7,6 +7,9 @@ import {
 import {
   executeLinkedInPublishJob,
 } from "@/lib/social-integrations/linkedin-publish-executor.server";
+import {
+  executeXPublishJob,
+} from "@/lib/social-integrations/x-publish-executor.server";
 
 import type {
   SocialPublishExecutionResult,
@@ -41,7 +44,8 @@ export function isSocialPublishProviderImplemented(
 
   return (
     provider === "meta" ||
-    provider === "linkedin"
+    provider === "linkedin" ||
+    provider === "x"
   );
 }
 
@@ -70,6 +74,13 @@ export async function executeSocialPublishJob(
       return executeLinkedInPublishJob(
         job
       );
+
+    case "x":
+
+      return executeXPublishJob(
+        job
+      );
+
 
 
     case "tiktok":

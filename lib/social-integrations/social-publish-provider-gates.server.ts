@@ -4,11 +4,13 @@
 export type EnabledSocialPublishTarget = {
   provider:
     "meta" |
-    "linkedin";
+    "linkedin" |
+    "x";
 
   channel:
     "instagram_business" |
-    "linkedin";
+    "linkedin" |
+    "x";
 };
 
 
@@ -41,6 +43,14 @@ export function isLinkedInPublishingEnabled():
 
   return enabled(
     "LINKEDIN_PUBLISHING_ENABLED"
+  );
+}
+
+export function isXPublishingEnabled():
+  boolean {
+
+  return enabled(
+    "X_PUBLISHING_ENABLED"
   );
 }
 
@@ -77,6 +87,19 @@ export function enabledSocialPublishTargets():
         "linkedin",
     });
   }
+
+  if (
+    isXPublishingEnabled()
+  ) {
+    targets.push({
+      provider:
+        "x",
+
+      channel:
+        "x",
+    });
+  }
+
 
 
   return targets;

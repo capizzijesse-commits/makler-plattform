@@ -19,6 +19,9 @@ import {
 import {
   isLinkedInOAuthConfigured,
 } from "@/lib/social-integrations/linkedin-oauth.server";
+import {
+  isXOAuthConfigured,
+} from "@/lib/social-integrations/x-oauth.server";
 
 
 export const runtime =
@@ -152,6 +155,10 @@ export async function GET(
         linkedin: {
           configured:
             isLinkedInOAuthConfigured(),
+        },
+        x: {
+          configured:
+            isXOAuthConfigured(),
         },
       },
     })

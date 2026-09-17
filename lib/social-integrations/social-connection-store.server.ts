@@ -8,14 +8,16 @@ import {
 export type SocialProvider =
   | "meta"
   | "linkedin"
-  | "tiktok";
+  | "tiktok"
+  | "x";
 
 
 export type SocialChannel =
   | "facebook_page"
   | "instagram_business"
   | "linkedin"
-  | "tiktok";
+  | "tiktok"
+  | "x";
 
 
 export type SocialEnvironment =
@@ -144,15 +146,18 @@ function assertProviderChannel(
     (
       provider === "tiktok" &&
       channel === "tiktok"
+    ) ||
+    (
+      provider === "x" &&
+      channel === "x"
     );
 
   if (!valid) {
     throw new Error(
-      `Invalid social provider/channel combination: ${provider}/${channel}`
+      `Unsupported social provider/channel combination: ${provider}/${channel}`
     );
   }
 }
-
 
 function normalizeKey(
   input:

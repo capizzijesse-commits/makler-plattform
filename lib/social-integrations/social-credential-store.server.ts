@@ -14,7 +14,8 @@ import {
 export type SocialCredentialProvider =
   | "meta"
   | "linkedin"
-  | "tiktok";
+  | "tiktok"
+  | "x";
 
 
 export type SocialCredentialEnvironment =
