@@ -147,7 +147,7 @@ export default function LinkedInConnectionCard() {
 
           const response =
             await fetch(
-              "/api/social-connections?environment=test",
+              "/api/social-connections",
               {
                 method:
                   "GET",
