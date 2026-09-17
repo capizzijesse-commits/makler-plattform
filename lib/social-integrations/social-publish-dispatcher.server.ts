@@ -8,10 +8,6 @@ import {
   executeLinkedInPublishJob,
 } from "@/lib/social-integrations/linkedin-publish-executor.server";
 
-import {
-  isSocialPublishProviderEnabled,
-} from "@/lib/social-integrations/social-publish-provider-gates.server";
-
 import type {
   SocialPublishExecutionResult,
   SocialPublishWorkerJob,
@@ -43,8 +39,9 @@ export function isSocialPublishProviderImplemented(
 ):
   boolean {
 
-  return isSocialPublishProviderEnabled(
-    provider
+  return (
+    provider === "meta" ||
+    provider === "linkedin"
   );
 }
 
