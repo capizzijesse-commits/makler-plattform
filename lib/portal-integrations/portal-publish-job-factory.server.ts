@@ -219,6 +219,9 @@ export async function createGermanPortalPublishJobFromListing(
         id:
           true,
 
+        createdAt:
+          true,
+
         updatedAt:
           true,
 
@@ -232,6 +235,12 @@ export async function createGermanPortalPublishJobFromListing(
           true,
 
         postalCode:
+          true,
+
+        latitude:
+          true,
+
+        longitude:
           true,
 
         countryCode:
@@ -261,6 +270,28 @@ export async function createGermanPortalPublishJobFromListing(
         generatedVariants:
           true,
 
+        locationDescription:
+          true,
+
+        finance: {
+          select: {
+            marketingType:
+              true,
+
+            askingPrice:
+              true,
+
+            netRentMonthly:
+              true,
+
+            additionalCostsMonthly:
+              true,
+
+            heatingCostsMonthly:
+              true,
+          },
+        },
+
         unlockStatus:
           true,
 
@@ -287,6 +318,9 @@ export async function createGermanPortalPublishJobFromListing(
               true,
 
             fileName:
+              true,
+
+            mimeType:
               true,
           },
         },
@@ -438,6 +472,9 @@ export async function createGermanPortalPublishJobFromListing(
       id:
         listing.id,
 
+      createdAt:
+        listing.createdAt.toISOString(),
+
       updatedAt:
         listing.updatedAt.toISOString(),
 
@@ -452,6 +489,12 @@ export async function createGermanPortalPublishJobFromListing(
 
       postalCode:
         listing.postalCode,
+
+      latitude:
+        listing.latitude,
+
+      longitude:
+        listing.longitude,
 
       countryCode:
         listing.countryCode,
@@ -480,6 +523,34 @@ export async function createGermanPortalPublishJobFromListing(
       generatedVariants:
         listing.generatedVariants,
 
+      locationDescription:
+        listing.locationDescription,
+
+      finance:
+        listing.finance
+          ? {
+              marketingType:
+                listing.finance
+                  .marketingType,
+
+              askingPrice:
+                listing.finance
+                  .askingPrice,
+
+              netRentMonthly:
+                listing.finance
+                  .netRentMonthly,
+
+              additionalCostsMonthly:
+                listing.finance
+                  .additionalCostsMonthly,
+
+              heatingCostsMonthly:
+                listing.finance
+                  .heatingCostsMonthly,
+            }
+          : null,
+
       images:
         listing.images.map(
           (
@@ -496,6 +567,9 @@ export async function createGermanPortalPublishJobFromListing(
 
             fileName:
               image.fileName,
+
+            mimeType:
+              image.mimeType,
           })
         ),
     },
