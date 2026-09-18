@@ -10,6 +10,11 @@ import {
   type KleinanzeigenDeOpenImmoProvider,
 } from "@/lib/portal-integrations/kleinanzeigen-de-transport-foundation.server";
 
+import {
+  buildImmoweltDeLocalTransferArtifactV1,
+  type ImmoweltDeOpenImmoProvider,
+} from "@/lib/portal-integrations/immowelt-de-transport-foundation.server";
+
 
 function dispatcherError(
   code:
@@ -53,6 +58,9 @@ export function isPortalPublishTransportImplemented(
 export type PortalPublishDryRunOptions = {
   kleinanzeigenProvider:
     KleinanzeigenDeOpenImmoProvider;
+
+  immoweltProvider?:
+    ImmoweltDeOpenImmoProvider;
 };
 
 
@@ -151,8 +159,95 @@ export async function executePortalPublishJobDryRun(
     }
 
 
+    case "immowelt_de": {
+
+      /*
+       * Immowelt Dry-Run bleibt strikt
+       * im Test-Environment.
+       *
+       * Kein FTP.
+       * Kein Netzwerk.
+       * Kein Production Publishing.
+       */
+      if (
+        job.environment !==
+        "test"
+      ) {
+
+        throw dispatcherError(
+          "PORTAL_PRODUCTION_NOT_ENABLED",
+          "Immowelt DE Dry-Run ist ausschließlich im Testmodus erlaubt."
+        );
+      }
+
+
+      const provider =
+        input.immoweltProvider;
+
+
+      if (!provider) {
+
+        throw dispatcherError(
+          "PORTAL_DRY_RUN_PROVIDER_MISSING",
+          "Immowelt OpenImmo Provider-Konfiguration fehlt für den Dry-Run."
+        );
+      }
+
+
+      const artifact =
+        buildImmoweltDeLocalTransferArtifactV1({
+          job,
+
+          provider,
+        });
+
+
+      return {
+        resultSnapshot: {
+          dryRun:
+            true,
+
+          portal:
+            artifact.portal,
+
+          environment:
+            artifact.environment,
+
+          action:
+            artifact.action,
+
+          mode:
+            artifact.mode,
+
+          networkAttempted:
+            artifact.networkAttempted,
+
+          productionEnabled:
+            artifact.productionEnabled,
+
+          listingId:
+            artifact.listingId,
+
+          standard:
+            artifact.standard,
+
+          standardRelease:
+            artifact.standardRelease,
+
+          xmlVersion:
+            artifact.xmlVersion,
+
+          fileName:
+            artifact.fileName,
+
+          sha256:
+            artifact.sha256,
+        },
+      };
+    }
+
+
     case "immoscout24_de":
-    case "immowelt_de":
     case "wg_gesucht_de":
     case "immobilien_de":
     case "immoscout24_ch":
