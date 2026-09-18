@@ -222,7 +222,7 @@
         "label": "PREMIUM MARKETING",
         "cadence": "per month",
         "description": "For professionals who also use AI image features, video tours and premium automations.",
-        "button": "Pro in preparation",
+        "button": "Pro – in development",
         "features": {
           "founder": "Everything included in Founder",
           "images": "Up to 10 property images per property",
@@ -230,7 +230,10 @@
           "tour": "3D video tour with AI voices",
           "analysis": "Advanced image analysis",
           "parallel": "3 listings simultaneously = 9 variants",
-          "development": "Publishing center and secret marketing – in development",
+          "automation": "Full automation – in development",
+          "portals": "Property portal integrations – in development",
+          "socialAutomation": "Social media automation – in development",
+          "publishing": "Publishing center – in development",
           "marketingHub": "Marketing Hub with 3D video tour and premium marketing"
         }
       }

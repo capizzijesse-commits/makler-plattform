@@ -222,7 +222,7 @@
         "label": "MARKETING PREMIUM",
         "cadence": "al mese",
         "description": "Per professionisti che utilizzano anche funzioni AI per le immagini, video tour e automazioni premium.",
-        "button": "Pro in preparazione",
+        "button": "Pro – in sviluppo",
         "features": {
           "founder": "Tutto ciò che include Founder",
           "images": "Fino a 10 immagini per immobile",
@@ -230,7 +230,10 @@
           "tour": "Video tour 3D con voci AI",
           "analysis": "Analisi avanzata delle immagini",
           "parallel": "3 annunci contemporaneamente = 9 varianti",
-          "development": "Centro pubblicazioni e marketing riservato – in sviluppo",
+          "automation": "Automazione completa – in sviluppo",
+          "portals": "Collegamenti ai portali immobiliari – in sviluppo",
+          "socialAutomation": "Automazione dei social media – in sviluppo",
+          "publishing": "Centro pubblicazioni – in sviluppo",
           "marketingHub": "Marketing Hub con tour video 3D e marketing premium"
         }
       }

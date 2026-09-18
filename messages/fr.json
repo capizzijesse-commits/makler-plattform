@@ -222,7 +222,7 @@
         "label": "COMMERCIALISATION PREMIUM",
         "cadence": "par mois",
         "description": "Pour les professionnels qui utilisent également les fonctions AI d’image, les visites vidéo et les automatisations premium.",
-        "button": "Pro en préparation",
+        "button": "Pro – en développement",
         "features": {
           "founder": "Tout ce qui est inclus dans Founder",
           "images": "Jusqu’à 10 photos par bien",
@@ -230,7 +230,10 @@
           "tour": "Visite vidéo 3D avec voix AI",
           "analysis": "Analyse d’images avancée",
           "parallel": "3 annonces simultanément = 9 variantes",
-          "development": "Centre de publication et marketing confidentiel – en développement",
+          "automation": "Automatisation complète – en développement",
+          "portals": "Connexions aux portails immobiliers – en développement",
+          "socialAutomation": "Automatisation des réseaux sociaux – en développement",
+          "publishing": "Centre de publication – en développement",
           "marketingHub": "Marketing Hub avec visite vidéo 3D et commercialisation premium"
         }
       }

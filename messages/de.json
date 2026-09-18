@@ -221,8 +221,8 @@
       "pro": {
         "label": "PREMIUM-VERMARKTUNG",
         "cadence": "pro Monat",
-        "description": "Für Makler, die zusätzlich AI-Bildfunktionen, Video-Touren und Premium-Automatisierungen einsetzen.",
-        "button": "Pro in Vorbereitung",
+        "description": "Für Makler mit erweiterten KI-Funktionen, Home Staging, Video-Touren und schrittweise aktivierter Automatisierung.",
+        "button": "Pro – in Umsetzung",
         "features": {
           "founder": "Alles aus Founder",
           "images": "Bis zu 10 Objektbilder pro Immobilie",
@@ -230,7 +230,10 @@
           "tour": "3D-Video-Tour mit AI-Stimmen",
           "analysis": "Erweiterte Bildanalyse",
           "parallel": "3 Inserate gleichzeitig = 9 Varianten",
-          "development": "Publishing-Center und Secret Marketing – in Entwicklung",
+          "automation": "Vollautomatisierung – in Umsetzung",
+          "portals": "Immobilienportal-Anbindungen – in Umsetzung",
+          "socialAutomation": "Social-Media-Automatisierung – in Umsetzung",
+          "publishing": "Publishing-Center – in Umsetzung",
           "marketingHub": "Marketing Hub mit 3D-Video-Tour und Premium-Vermarktung"
         }
       }

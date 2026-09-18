@@ -130,7 +130,10 @@ export default function PricingSection({
         t("plans.pro.features.marketingHub"),
         t("plans.pro.features.analysis"),
         t("plans.pro.features.parallel"),
-        t("plans.pro.features.development"),
+        t("plans.pro.features.automation"),
+        t("plans.pro.features.portals"),
+        t("plans.pro.features.socialAutomation"),
+        t("plans.pro.features.publishing"),
       ],
     },
   ];
