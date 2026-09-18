@@ -883,12 +883,20 @@ export async function recoverStalePortalPublishJobs(
 
     lockTtlMs?:
       number;
+
+    environment?:
+      string;
   }
 ) {
 
   const now =
     input?.now ??
     new Date();
+
+  const environment =
+    optionalText(
+      input?.environment
+    );
 
   const requestedLockTtlMs =
     input?.lockTtlMs ??
@@ -923,6 +931,12 @@ export async function recoverStalePortalPublishJobs(
       where: {
         status:
           "processing",
+
+        ...(environment
+          ? {
+              environment,
+            }
+          : {}),
 
         OR: [
           {
@@ -994,6 +1008,12 @@ export async function recoverStalePortalPublishJobs(
         status:
           "processing",
 
+        ...(environment
+          ? {
+              environment,
+            }
+          : {}),
+
         providerOperationId:
           null,
 
@@ -1049,6 +1069,12 @@ export async function recoverStalePortalPublishJobs(
       where: {
         status:
           "processing",
+
+        ...(environment
+          ? {
+              environment,
+            }
+          : {}),
 
         providerOperationId:
           null,
@@ -1128,6 +1154,9 @@ export async function claimDuePortalPublishJobs(
 
     now?:
       Date;
+
+    environment?:
+      string;
   }
 ) {
 
@@ -1140,6 +1169,11 @@ export async function claimDuePortalPublishJobs(
   const now =
     input.now ??
     new Date();
+
+  const environment =
+    optionalText(
+      input.environment
+    );
 
   const limit =
     Math.max(
@@ -1154,12 +1188,22 @@ export async function claimDuePortalPublishJobs(
 
   await recoverStalePortalPublishJobs({
     now,
+
+    environment:
+      environment ??
+      undefined,
   });
 
 
   const candidates =
     await prisma.portalPublishJob.findMany({
       where: {
+        ...(environment
+          ? {
+              environment,
+            }
+          : {}),
+
         status: {
           in: [
             "scheduled",
@@ -1317,6 +1361,12 @@ export async function claimDuePortalPublishJobs(
 
   return prisma.portalPublishJob.findMany({
     where: {
+      ...(environment
+        ? {
+            environment,
+          }
+        : {}),
+
       id: {
         in:
           claimed,

@@ -198,6 +198,9 @@ export async function runPortalPublishWorker(
 
     now?:
       Date;
+
+    environment?:
+      string;
   }
 ):
   Promise<
@@ -249,6 +252,9 @@ export async function runPortalPublishWorker(
         input.limit,
 
       now,
+
+      environment:
+        input.environment,
     });
 
 
