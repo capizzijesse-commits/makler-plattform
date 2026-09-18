@@ -223,6 +223,10 @@
         "button": "Pro – in Umsetzung",
         "features": {
           "founder": "Alles aus Founder",
+          "marketingMulti": "Zentrale Vermarktungssteuerung für mehrere Immobilien",
+          "cockpitMulti": "Mehrere Objekte übersichtlich im Makler-Cockpit verwalten",
+          "imageManagement": "Bildanalyse mit integrierter Bildverwaltung",
+          "storage": "Zentrale Speicherung von Objekten, Texten und Bildern",
           "images": "Bis zu 10 Objektbilder pro Immobilie",
           "staging": "Virtuelles Home Staging",
           "tour": "3D-Video-Tour mit AI-Stimmen",

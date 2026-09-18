@@ -225,6 +225,10 @@
         "button": "Pro – en développement",
         "features": {
           "founder": "Tout ce qui est inclus dans Founder",
+          "marketingMulti": "Gestion centralisée du marketing pour plusieurs biens",
+          "cockpitMulti": "Gestion claire de plusieurs biens dans le cockpit courtier",
+          "imageManagement": "Analyse d’images avec gestion intégrée",
+          "storage": "Stockage centralisé des biens, textes et images",
           "images": "Jusqu’à 10 photos par bien",
           "staging": "Home staging virtuel",
           "tour": "Visite vidéo 3D avec voix AI",

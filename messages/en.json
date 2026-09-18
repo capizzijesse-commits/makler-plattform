@@ -225,6 +225,10 @@
         "button": "Pro – in development",
         "features": {
           "founder": "Everything included in Founder",
+          "marketingMulti": "Central marketing management for multiple properties",
+          "cockpitMulti": "Manage multiple properties clearly in the broker cockpit",
+          "imageManagement": "Image analysis with integrated image management",
+          "storage": "Central storage for properties, texts and images",
           "images": "Up to 10 property images per property",
           "staging": "Virtual home staging",
           "tour": "3D video tour with AI voices",

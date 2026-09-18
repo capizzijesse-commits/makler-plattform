@@ -125,6 +125,10 @@ export default function PricingSection({
       features: [
         t("plans.pro.features.founder"),
         t("plans.pro.features.images"),
+        t("plans.pro.features.marketingMulti"),
+        t("plans.pro.features.cockpitMulti"),
+        t("plans.pro.features.imageManagement"),
+        t("plans.pro.features.storage"),
         t("plans.pro.features.analysis"),
         t("plans.pro.features.portals"),
         t("plans.pro.features.socialAutomation"),

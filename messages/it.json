@@ -225,6 +225,10 @@
         "button": "Pro – in sviluppo",
         "features": {
           "founder": "Tutto ciò che include Founder",
+          "marketingMulti": "Gestione centralizzata del marketing per più immobili",
+          "cockpitMulti": "Gestione chiara di più immobili nel cockpit agente",
+          "imageManagement": "Analisi immagini con gestione integrata",
+          "storage": "Archiviazione centralizzata di immobili, testi e immagini",
           "images": "Fino a 10 immagini per immobile",
           "staging": "Home staging virtuale",
           "tour": "Video tour 3D con voci AI",
