@@ -31,8 +31,24 @@ type PortalJob = {
   environment: string;
   action: string;
   status: string;
+
+  attemptCount: number;
+  maxAttempts: number;
+
+  nextAttemptAt?: string | null;
+  lastAttemptAt?: string | null;
+
+  providerOperationState?: string | null;
+  providerOperationUpdatedAt?: string | null;
+
   errorCode?: string | null;
   errorMessage?: string | null;
+
+  completedAt?: string | null;
+  failedAt?: string | null;
+
+  externalPublicationUrl?: string | null;
+
   createdAt: string;
   updatedAt: string;
 };
@@ -92,6 +108,127 @@ function getStatusLabel(
   }
 }
 
+
+function formatPortalDate(
+  value:
+    string |
+    null |
+    undefined
+):
+  string {
+
+  if (!value) {
+    return "–";
+  }
+
+  const date =
+    new Date(
+      value
+    );
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return "–";
+  }
+
+  return new Intl.DateTimeFormat(
+    "de-DE",
+    {
+      dateStyle:
+        "short",
+
+      timeStyle:
+        "short",
+    }
+  ).format(
+    date
+  );
+}
+
+
+function getProviderStateLabel(
+  state:
+    string |
+    null |
+    undefined
+):
+  string {
+
+  switch (state) {
+
+    case "reconciliation_required":
+      return "Manuelle Prüfung erforderlich";
+
+    case "reconciled_succeeded":
+      return "Manuell bestätigt";
+
+    case "reconciled_not_applied":
+      return "Nicht angewendet bestätigt";
+
+    case "completed":
+      return "Provider abgeschlossen";
+
+    case null:
+    case undefined:
+    case "":
+      return "Noch keine Provider-Operation";
+
+    default:
+      return state;
+  }
+}
+
+
+function requiresManualReview(
+  job:
+    PortalJob
+):
+  boolean {
+
+  return (
+    job.providerOperationState ===
+    "reconciliation_required"
+  );
+}
+
+
+function retryScheduled(
+  job:
+    PortalJob
+):
+  boolean {
+
+  return (
+    job.status ===
+      "failed" &&
+    typeof job.nextAttemptAt ===
+      "string" &&
+    job.nextAttemptAt.length >
+      0 &&
+    !requiresManualReview(
+      job
+    )
+  );
+}
+
+
+function attemptsExhausted(
+  job:
+    PortalJob
+):
+  boolean {
+
+  return (
+    job.attemptCount >=
+      job.maxAttempts &&
+    job.status ===
+      "failed" &&
+    !job.nextAttemptAt
+  );
+}
 
 export default function PortalPublishingPanel({
   listingId,
@@ -756,24 +893,318 @@ export default function PortalPublishingPanel({
                     <div
                       style={{
                         marginTop:
+                          "8px",
+
+                        display:
+                          "grid",
+
+                        gap:
                           "6px",
-
-                        color:
-                          job.status ===
-                            "failed"
-                            ? "#fca5a5"
-                            : "#fbbf24",
-
-                        fontSize:
-                          "11px",
-
-                        fontWeight:
-                          800,
                       }}
                     >
-                      Job:{" "}
-                      {getStatusLabel(
-                        job.status
+                      <div
+                        style={{
+                          display:
+                            "flex",
+
+                          alignItems:
+                            "center",
+
+                          justifyContent:
+                            "space-between",
+
+                          gap:
+                            "8px",
+                        }}
+                      >
+                        <span
+                          style={{
+                            color:
+                              job.status ===
+                                "failed"
+                                ? "#fca5a5"
+                                : job.status ===
+                                    "succeeded"
+                                  ? "#86efac"
+                                  : "#fbbf24",
+
+                            fontSize:
+                              "11px",
+
+                            fontWeight:
+                              900,
+                          }}
+                        >
+                          Job:{" "}
+                          {getStatusLabel(
+                            job.status
+                          )}
+                        </span>
+
+                        <span
+                          style={{
+                            color:
+                              "#cbd5e1",
+
+                            fontSize:
+                              "10px",
+
+                            fontWeight:
+                              800,
+                          }}
+                        >
+                          Versuch{" "}
+                          {Math.min(
+                            job.attemptCount,
+                            job.maxAttempts
+                          )}
+                          /
+                          {job.maxAttempts}
+                        </span>
+                      </div>
+
+
+                      {requiresManualReview(
+                        job
+                      ) && (
+                        <div
+                          style={{
+                            padding:
+                              "8px 9px",
+
+                            border:
+                              "1px solid rgba(248,113,113,.45)",
+
+                            borderRadius:
+                              "8px",
+
+                            background:
+                              "rgba(127,29,29,.18)",
+
+                            color:
+                              "#fecaca",
+
+                            fontSize:
+                              "11px",
+
+                            fontWeight:
+                              900,
+
+                            lineHeight:
+                              1.4,
+                          }}
+                        >
+                          ⚠ Manuelle Prüfung erforderlich
+                        </div>
+                      )}
+
+
+                      {retryScheduled(
+                        job
+                      ) && (
+                        <div
+                          style={{
+                            padding:
+                              "7px 9px",
+
+                            borderRadius:
+                              "8px",
+
+                            background:
+                              "rgba(59,130,246,.10)",
+
+                            color:
+                              "#bfdbfe",
+
+                            fontSize:
+                              "10px",
+
+                            fontWeight:
+                              800,
+                          }}
+                        >
+                          ↻ Automatischer Retry:{" "}
+                          {formatPortalDate(
+                            job.nextAttemptAt
+                          )}
+                        </div>
+                      )}
+
+
+                      {attemptsExhausted(
+                        job
+                      ) && (
+                        <div
+                          style={{
+                            padding:
+                              "7px 9px",
+
+                            borderRadius:
+                              "8px",
+
+                            background:
+                              "rgba(127,29,29,.16)",
+
+                            color:
+                              "#fca5a5",
+
+                            fontSize:
+                              "10px",
+
+                            fontWeight:
+                              800,
+                          }}
+                        >
+                          Maximale Anzahl Versuche erreicht
+                        </div>
+                      )}
+
+
+                      <div
+                        style={{
+                          display:
+                            "grid",
+
+                          gridTemplateColumns:
+                            "1fr 1fr",
+
+                          gap:
+                            "5px 8px",
+
+                          color:
+                            "#94a3b8",
+
+                          fontSize:
+                            "10px",
+
+                          lineHeight:
+                            1.35,
+                        }}
+                      >
+                        <span>
+                          Letzter Versuch
+                        </span>
+
+                        <strong
+                          style={{
+                            color:
+                              "#cbd5e1",
+
+                            textAlign:
+                              "right",
+                          }}
+                        >
+                          {formatPortalDate(
+                            job.lastAttemptAt
+                          )}
+                        </strong>
+
+                        <span>
+                          Provider
+                        </span>
+
+                        <strong
+                          style={{
+                            color:
+                              requiresManualReview(
+                                job
+                              )
+                                ? "#fca5a5"
+                                : "#cbd5e1",
+
+                            textAlign:
+                              "right",
+                          }}
+                        >
+                          {getProviderStateLabel(
+                            job.providerOperationState
+                          )}
+                        </strong>
+                      </div>
+
+
+                      {job.errorCode && (
+                        <div
+                          style={{
+                            padding:
+                              "7px 8px",
+
+                            borderRadius:
+                              "8px",
+
+                            background:
+                              "rgba(127,29,29,.12)",
+
+                            color:
+                              "#fecaca",
+
+                            fontSize:
+                              "10px",
+
+                            lineHeight:
+                              1.4,
+                          }}
+                        >
+                          <strong>
+                            {job.errorCode}
+                          </strong>
+
+                          {job.errorMessage && (
+                            <>
+                              <br />
+                              {job.errorMessage}
+                            </>
+                          )}
+                        </div>
+                      )}
+
+
+                      {job.status ===
+                        "succeeded" &&
+                        job.completedAt && (
+                          <div
+                            style={{
+                              color:
+                                "#86efac",
+
+                              fontSize:
+                                "10px",
+
+                              fontWeight:
+                                800,
+                            }}
+                          >
+                            ✓ Erfolgreich abgeschlossen:{" "}
+                            {formatPortalDate(
+                              job.completedAt
+                            )}
+                          </div>
+                        )}
+
+
+                      {job.externalPublicationUrl && (
+                        <a
+                          href={
+                            job.externalPublicationUrl
+                          }
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            color:
+                              "#fbbf24",
+
+                            fontSize:
+                              "10px",
+
+                            fontWeight:
+                              900,
+
+                            textDecoration:
+                              "none",
+                          }}
+                        >
+                          Portal-Inserat öffnen ↗
+                        </a>
                       )}
                     </div>
                   )}
