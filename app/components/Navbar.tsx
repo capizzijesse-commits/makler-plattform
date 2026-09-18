@@ -947,7 +947,7 @@ export default function Navbar() {
                           opacity: 0.8,
                         }}
                       >
-                        30 Tage kostenlos · dauerhaft bei aktivem Abo
+                        30 Tage kostenlos
                       </small>
 
                       <button

@@ -212,8 +212,6 @@
           "expose": "Professionelles Exposé mit PDF-Export",
           "storage": "Objekte, Texte und Bilder dauerhaft speichern",
           "trial": "30 Tage kostenlos testen",
-          "founderGuarantee": "CHF 19.90 pro Monat",
-          "regularPrice": "Für Makler",
           "marketingHub": "Marketing Hub für mehrere Immobilien"
         },
         "price": "30 Tage kostenlos"
@@ -336,15 +334,15 @@
       "founder": {
         "eyebrow": "FOUNDER-ANGEBOT",
         "title": "Founder-Zugang sichern",
-        "description": "Konto erstellen und Founder 30 Tage kostenlos testen. Danach CHF 19.90 pro Monat dauerhaft.",
+        "description": "Konto erstellen und Founder 30 Tage kostenlos testen. Danach CHF 19.90 pro Monat.",
         "submit": "Founder-Zugang vorbereiten",
-        "note": "Die Kontoerstellung ist kostenlos. Nach der E-Mail-Bestätigung und dem Login wirst du zum sicheren Stripe-Checkout weitergeleitet. Dort beginnt der kostenlose Testzeitraum von 30 Tagen. Danach bleibt der Founder-Preis bei CHF 19.90 pro Monat, solange das Abonnement ohne Unterbruch aktiv bleibt.",
+        "note": "Die Kontoerstellung ist kostenlos. Nach der E-Mail-Bestätigung und dem Login wirst du zum sicheren Stripe-Checkout weitergeleitet. Dort beginnt der kostenlose Testzeitraum von 30 Tagen. Danach CHF 19.90 pro Monat.",
         "statPrice": "pro Monat",
         "statImages": "Bilder pro Immobilie",
         "statPlaces": "Founder-Plätze verfügbar",
         "statTrialValue": "30 Tage",
         "statTrialLabel": "kostenlos testen",
-        "statAfterTrial": "dauerhaft bei aktivem Abo"
+        "statAfterTrial": "nach der Testphase"
       },
       "singleObject": {
         "eyebrow": "EINZELIMMOBILIE",

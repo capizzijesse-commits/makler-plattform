@@ -85,7 +85,7 @@ export default function PricingSection({
       highlighted: true,
       features: isGermany
         ? [
-            "19,90 € pro Monat dauerhaft",
+            "19,90 € pro Monat",
             "Mehrere Immobilien im Makler-Cockpit",
             "3 professionelle Inserat-Varianten pro Objekt",
             "Bis zu 10 Objektbilder pro Immobilie",
