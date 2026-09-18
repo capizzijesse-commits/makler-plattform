@@ -200,7 +200,7 @@
       "founder": {
         "label": "FOUNDER-ANGEBOT",
         "cadence": "danach 19.90 CHF / Monat",
-        "description": "30 Tage kostenlos testen. Danach CHF 19.90 pro Monat dauerhaft, solange das Abonnement ohne Unterbruch aktiv bleibt.",
+        "description": "30 Tage kostenlos testen. Danach CHF 19.90 pro Monat.",
         "button": "Founder sichern",
         "loading": "Checkout wird geöffnet …",
         "features": {
@@ -212,8 +212,8 @@
           "expose": "Professionelles Exposé mit PDF-Export",
           "storage": "Objekte, Texte und Bilder dauerhaft speichern",
           "trial": "30 Tage kostenlos testen",
-          "founderGuarantee": "Founder-Preisgarantie: CHF 19.90 pro Monat dauerhaft bei ununterbrochen aktivem Abonnement",
-          "regularPrice": "Founder-Angebot für Makler",
+          "founderGuarantee": "CHF 19.90 pro Monat",
+          "regularPrice": "Für Makler",
           "marketingHub": "Marketing Hub für mehrere Immobilien"
         },
         "price": "30 Tage kostenlos"

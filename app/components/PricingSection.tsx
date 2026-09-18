@@ -76,7 +76,7 @@ export default function PricingSection({
         ? "danach 19,90 € / Monat"
         : t("plans.founder.cadence"),
       text: isGermany
-        ? "19,90 € pro Monat dauerhaft – solange das Abonnement ohne Unterbrechung aktiv bleibt."
+        ? "30 Tage kostenlos, danach 19,90 € pro Monat."
         : t("plans.founder.description"),
       button: isGermany
         ? "30 Tage kostenlos starten"
@@ -93,8 +93,8 @@ export default function PricingSection({
           ]
         : [
             t("plans.founder.features.trial"),
-            t("plans.founder.features.founderGuarantee"),
-            t("plans.founder.features.regularPrice"),
+
+
             t("plans.founder.features.projects"),
             t("plans.founder.features.variants"),
             t("plans.founder.features.images"),

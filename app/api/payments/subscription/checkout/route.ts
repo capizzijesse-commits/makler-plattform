@@ -28,7 +28,7 @@ const LOCALE_COOKIE_NAME = "INSERAT_AI_LOCALE";
 const SUBSCRIPTION_PRODUCT_DESCRIPTIONS = {
   de: {
     founder:
-      "30 Tage kostenlos. Danach bleibt der Founder-Preis bei CHF 19.90 pro Monat, solange das Abonnement ohne Unterbruch aktiv bleibt.",
+      "30 Tage kostenlos. Danach CHF 19.90 pro Monat.",
     standard:
       "30 Tage kostenlos. Danach CHF 39.90 pro Monat. Jederzeit kündbar.",
   },
@@ -581,7 +581,7 @@ export async function POST(
         : expectedCurrency === "eur" &&
             descriptionLocale === "de"
           ? selectedPlan === "founder"
-            ? "30 Tage kostenlos. Danach bleibt der Founder-Preis bei 19,90 € pro Monat, solange das Abonnement ohne Unterbrechung aktiv bleibt."
+            ? "30 Tage kostenlos. Danach 19,90 € pro Monat."
             : "30 Tage kostenlos. Danach 39,90 € pro Monat. Jederzeit kündbar."
           : SUBSCRIPTION_PRODUCT_DESCRIPTIONS[
               descriptionLocale
