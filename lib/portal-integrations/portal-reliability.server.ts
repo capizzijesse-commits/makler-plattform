@@ -14,7 +14,7 @@ export type PortalReliabilityEnvironment =
   | "production";
 
 
-const GERMAN_PORTALS:
+export const GERMAN_PORTAL_IDS:
   readonly GermanPortalId[] = [
     "immoscout24_de",
     "immowelt_de",
@@ -335,6 +335,9 @@ export async function getGermanPortalReliabilityReport(
   input?: {
     environment?:
       PortalReliabilityEnvironment;
+
+    portals?:
+      readonly GermanPortalId[];
   }
 ) {
 
@@ -343,9 +346,22 @@ export async function getGermanPortalReliabilityReport(
     "test";
 
 
+  const requestedPortals =
+    input?.portals ??
+    GERMAN_PORTAL_IDS;
+
+  const portalsToMeasure:
+    GermanPortalId[] =
+      Array.from(
+        new Set(
+          requestedPortals
+        )
+      );
+
+
   const portals =
     await Promise.all(
-      GERMAN_PORTALS.map(
+      portalsToMeasure.map(
         (
           portal
         ) =>
@@ -385,6 +401,12 @@ export async function getGermanPortalReliabilityReport(
     scope:
       "operational_reliability_only",
 
+    portalScope:
+      portalsToMeasure,
+
+    portalCount:
+      portalsToMeasure.length,
+
     methodology: {
       sample:
         "last_100_settled_jobs_per_portal",
@@ -423,10 +445,12 @@ export async function getGermanPortalReliabilityReport(
     passingPortals,
 
     allOperationalGatesPassed:
+      portalsToMeasure.length >
+        0 &&
       readyPortals ===
-        GERMAN_PORTALS.length &&
+        portalsToMeasure.length &&
       passingPortals ===
-        GERMAN_PORTALS.length,
+        portalsToMeasure.length,
 
     portals,
   };

@@ -4,6 +4,10 @@ import {
   prisma,
 } from "@/lib/prisma";
 
+import type {
+  GermanPortalId,
+} from "@/lib/portal-integrations/types";
+
 
 export type PortalSafetyEnvironment =
   | "test"
@@ -91,12 +95,24 @@ export async function getPortalSafetyGateReport(
   input?: {
     environment?:
       PortalSafetyEnvironment;
+
+    portals?:
+      readonly GermanPortalId[];
   }
 ) {
 
   const environment =
     input?.environment ??
     "test";
+
+  const portals =
+    input?.portals
+      ? Array.from(
+          new Set(
+            input.portals
+          )
+        )
+      : null;
 
 
   /*
@@ -107,6 +123,16 @@ export async function getPortalSafetyGateReport(
     await prisma.portalPublishJob.findMany({
       where: {
         environment,
+
+        ...(portals !==
+        null
+          ? {
+              portal: {
+                in:
+                  portals,
+              },
+            }
+          : {}),
       },
 
       orderBy: {
@@ -417,6 +443,9 @@ export async function getPortalSafetyGateReport(
     environment,
 
     scope: {
+      portalFilter:
+        portals,
+
       jobsAudited:
         jobs.length,
 

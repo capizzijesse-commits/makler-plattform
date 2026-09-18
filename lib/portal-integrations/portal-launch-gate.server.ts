@@ -1,6 +1,7 @@
 import "server-only";
 
 import {
+  GERMAN_PORTAL_IDS,
   getGermanPortalReliabilityReport,
   type PortalReliabilityEnvironment,
 } from "@/lib/portal-integrations/portal-reliability.server";
@@ -8,6 +9,10 @@ import {
 import {
   getPortalSafetyGateReport,
 } from "@/lib/portal-integrations/portal-safety-gate.server";
+
+import {
+  isPortalPublishTransportImplemented,
+} from "@/lib/portal-integrations/portal-publish-dispatcher.server";
 
 
 export type PortalLaunchGateEnvironment =
@@ -27,6 +32,31 @@ export async function getPortalLaunchGateReport(
 
 
   /*
+   * Launch-Gates gelten nur für
+   * tatsächlich implementierte
+   * deutsche Portaltransporte.
+   *
+   * WICHTIG:
+   * 0 implementierte Portale
+   * bedeutet NICHT "pass",
+   * sondern bleibt fail-closed.
+   */
+  const enabledPortals =
+    GERMAN_PORTAL_IDS.filter(
+      (
+        portal
+      ) =>
+        isPortalPublishTransportImplemented(
+          portal
+        )
+    );
+
+  const hasEnabledPortals =
+    enabledPortals.length >
+    0;
+
+
+  /*
    * Beide Reports sind rein lesend.
    *
    * Keine Queue.
@@ -41,10 +71,16 @@ export async function getPortalLaunchGateReport(
     await Promise.all([
       getGermanPortalReliabilityReport({
         environment,
+
+        portals:
+          enabledPortals,
       }),
 
       getPortalSafetyGateReport({
         environment,
+
+        portals:
+          enabledPortals,
       }),
     ]);
 
@@ -57,6 +93,7 @@ export async function getPortalLaunchGateReport(
    * und >= 95 % automatischen Erfolg.
    */
   const operationalPassed =
+    hasEnabledPortals &&
     reliability
       .allOperationalGatesPassed ===
     true;
@@ -130,7 +167,13 @@ export async function getPortalLaunchGateReport(
     [];
 
 
-  if (!operationalPassed) {
+  if (!hasEnabledPortals) {
+
+    blockers.push(
+      "NO_IMPLEMENTED_GERMAN_PORTAL_TRANSPORT"
+    );
+  }
+  else if (!operationalPassed) {
 
     blockers.push(
       "OPERATIONAL_RELIABILITY_GATE_NOT_PASSED"
@@ -191,6 +234,9 @@ export async function getPortalLaunchGateReport(
 
       externalIdempotencyProofRequired:
         true,
+
+      implementedPortalsOnly:
+        true,
     },
 
     gates: {
@@ -198,6 +244,11 @@ export async function getPortalLaunchGateReport(
       operational: {
         passed:
           operationalPassed,
+
+        enabledPortals,
+
+        enabledPortalCount:
+          enabledPortals.length,
 
         readyPortals:
           reliability
