@@ -49,6 +49,7 @@ model User {
   socialConnections                                                       SocialConnection[]
   socialCredentials                                                       SocialCredential[]
   socialPublishJobs                                                       SocialPublishJob[]
+  portalPublishJobs                                                       PortalPublishJob[]
   MaklerChatBlock_MaklerChatBlock_blockedUserIdToUser                     MaklerChatBlock[]          @relation("MaklerChatBlock_blockedUserIdToUser")
   MaklerChatBlock_MaklerChatBlock_blockerUserIdToUser                     MaklerChatBlock[]          @relation("MaklerChatBlock_blockerUserIdToUser")
   MaklerChatBranding                                                      MaklerChatBranding?
@@ -199,6 +200,8 @@ model PortalConnection {
   credentialSource String?
 
   lastVerifiedAt DateTime?
+  publishJobs PortalPublishJob[]
+
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -515,6 +518,75 @@ model SocialPublishJob {
   @@index([provider, providerOperationState])
 }
 
+
+model PortalPublishJob {
+  id String @id @default(cuid())
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  listingId String?
+  listing   Listing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+
+  connectionId String?
+  connection   PortalConnection? @relation(fields: [connectionId], references: [id], onDelete: SetNull)
+
+  provider String
+  portal   String
+
+  environment String @default("test")
+
+  action String @default("publish")
+
+  externalObjectId String?
+
+  listingUpdatedAtSnapshot DateTime?
+
+  payloadSnapshot    Json?
+  payloadFingerprint String?
+
+  status String @default("queued")
+
+  scheduledFor DateTime?
+
+  idempotencyKey String @unique
+
+  attemptCount  Int       @default(0)
+  maxAttempts   Int       @default(5)
+  nextAttemptAt DateTime?
+  lastAttemptAt DateTime?
+
+  lockedAt DateTime?
+  lockedBy String?
+
+  providerOperationId        String?
+  providerOperationType      String?
+  providerOperationState     String?
+  providerOperationUpdatedAt DateTime?
+
+  externalPublicationId  String?
+  externalPublicationUrl String?
+
+  resultSnapshot Json?
+
+  completedAt DateTime?
+  failedAt    DateTime?
+
+  errorCode    String?
+  errorMessage String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status, createdAt])
+  @@index([connectionId, status])
+  @@index([listingId])
+  @@index([status, scheduledFor])
+  @@index([status, nextAttemptAt])
+  @@index([provider, portal, status])
+  @@index([provider, providerOperationState])
+  @@index([listingId, portal, status])
+}
 model Listing {
   id String @id @default(cuid())
 
@@ -560,6 +632,7 @@ model Listing {
   listingViewEvents ListingViewEvent[]
   socialPublishJobs SocialPublishJob[]
 
+  portalPublishJobs PortalPublishJob[]
   @@index([userId])
   @@index([userId, archivedAt])
   @@index([userId, unlockStatus])
