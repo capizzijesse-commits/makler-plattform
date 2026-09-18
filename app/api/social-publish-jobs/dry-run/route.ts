@@ -657,12 +657,8 @@ export async function POST(
       "facebook_page"
   ) {
 
-    /*
-     * Meta ist als Provider verdrahtet,
-     * Facebook Publishing aber noch nicht.
-     */
     channelImplemented =
-      false;
+      true;
 
     credentialSubjectId =
       connection.externalAccountId;
@@ -681,13 +677,39 @@ export async function POST(
         environment,
       });
 
-    mediaValid =
-      false;
 
-    mediaReason =
-      "FACEBOOK_PUBLISH_NOT_IMPLEMENTED";
+    const mediaPayloadPresent =
+      body.mediaPayload !==
+        undefined &&
+      body.mediaPayload !==
+        null &&
+      (
+        !Array.isArray(
+          body.mediaPayload
+        ) ||
+        body.mediaPayload.length >
+          0
+      );
+
+
+    if (
+      mediaPayloadPresent
+    ) {
+      mediaValid =
+        false;
+
+      mediaReason =
+        "FACEBOOK_TEXT_ONLY_V1";
+    }
+    else {
+      mediaValid =
+        true;
+
+      mediaReason =
+        null;
+    }
   }
-  else if (
+else if (
     connection.provider ===
       "linkedin" &&
     connection.channel ===

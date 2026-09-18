@@ -8,6 +8,7 @@ export type EnabledSocialPublishTarget = {
     "x";
 
   channel:
+    "facebook_page" |
     "instagram_business" |
     "linkedin" |
     "x";
@@ -38,6 +39,30 @@ export function isMetaPublishingEnabled():
 }
 
 
+export function isMetaInstagramPublishingEnabled():
+  boolean {
+
+  return (
+    isMetaPublishingEnabled() &&
+    enabled(
+      "META_INSTAGRAM_PUBLISHING_ENABLED"
+    )
+  );
+}
+
+
+export function isMetaFacebookPublishingEnabled():
+  boolean {
+
+  return (
+    isMetaPublishingEnabled() &&
+    enabled(
+      "META_FACEBOOK_PUBLISHING_ENABLED"
+    )
+  );
+}
+
+
 export function isLinkedInPublishingEnabled():
   boolean {
 
@@ -64,7 +89,7 @@ export function enabledSocialPublishTargets():
 
 
   if (
-    isMetaPublishingEnabled()
+    isMetaInstagramPublishingEnabled()
   ) {
     targets.push({
       provider:
@@ -72,6 +97,19 @@ export function enabledSocialPublishTargets():
 
       channel:
         "instagram_business",
+    });
+  }
+
+
+  if (
+    isMetaFacebookPublishingEnabled()
+  ) {
+    targets.push({
+      provider:
+        "meta",
+
+      channel:
+        "facebook_page",
     });
   }
 
