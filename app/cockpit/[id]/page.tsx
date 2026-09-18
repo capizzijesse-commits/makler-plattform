@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ListingActions from "./ListingActions";
+import PortalPublishingPanel from "./PortalPublishingPanel";
 import WorkspaceFrame from "../../components/WorkspaceFrame";
 import { useAppDialog } from "../../../components/AppDialogProvider";
 import {
@@ -1439,6 +1440,11 @@ function showNextImage() {
   </Link>
 )}
 
+              <PortalPublishingPanel
+                listingId={listing.id}
+                countryCode={listing.countryCode}
+                unlockStatus={listing.unlockStatus}
+              />
               <ListingActions
                 listingId={listing.id}
                 archived={Boolean(listing.archivedAt)}

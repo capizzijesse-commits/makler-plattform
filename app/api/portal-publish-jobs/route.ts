@@ -11,6 +11,7 @@ import {
   createGermanPortalPublishJobFromListing,
   GermanPortalJobCreationError,
   isGermanPortalId,
+  isPortalPublishQueueEnabled,
 } from "@/lib/portal-integrations/portal-publish-job-factory.server";
 
 import {
@@ -162,6 +163,9 @@ export async function GET(
       NextResponse.json({
         success:
           true,
+
+        queueEnabled:
+          isPortalPublishQueueEnabled(),
 
         jobs,
       })
