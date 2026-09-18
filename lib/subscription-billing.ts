@@ -475,7 +475,7 @@ async function getNextFounderNumber(
     FOUNDER_LIMIT
   ) {
     throw new Error(
-      "Alle 50 Founder-Plätze sind bereits vergeben."
+      "Das Founder-Angebot ist derzeit nicht verfügbar."
     );
   }
 

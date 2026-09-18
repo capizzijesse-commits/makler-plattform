@@ -947,8 +947,7 @@ export default function Navbar() {
                           opacity: 0.8,
                         }}
                       >
-                        30 Tage kostenlos · für die
-                        ersten 50 Founder-Kunden
+                        30 Tage kostenlos · dauerhaft bei aktivem Abo
                       </small>
 
                       <button

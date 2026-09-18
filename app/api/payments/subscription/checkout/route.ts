@@ -28,25 +28,25 @@ const LOCALE_COOKIE_NAME = "INSERAT_AI_LOCALE";
 const SUBSCRIPTION_PRODUCT_DESCRIPTIONS = {
   de: {
     founder:
-      "30 Tage kostenlos. Die ersten 50 Founder-Kunden behalten CHF 19.90 pro Monat dauerhaft, solange das Abonnement ohne Unterbruch aktiv bleibt.",
+      "30 Tage kostenlos. Danach bleibt der Founder-Preis bei CHF 19.90 pro Monat, solange das Abonnement ohne Unterbruch aktiv bleibt.",
     standard:
       "30 Tage kostenlos. Danach CHF 39.90 pro Monat. Jederzeit kündbar.",
   },
   it: {
     founder:
-      "30 giorni gratuiti. I primi 50 clienti Founder mantengono CHF 19.90 al mese finché l’abbonamento rimane attivo senza interruzioni.",
+      "30 giorni gratuiti. In seguito il prezzo Founder resta CHF 19.90 al mese finché l’abbonamento rimane attivo senza interruzioni.",
     standard:
       "30 giorni gratuiti. Successivamente CHF 39.90 al mese. Disdetta possibile in qualsiasi momento.",
   },
   fr: {
     founder:
-      "30 jours gratuits. Les 50 premiers clients Founder conservent le tarif de CHF 19.90 par mois tant que l’abonnement reste actif sans interruption.",
+      "30 jours gratuits. Ensuite, le tarif Founder reste de CHF 19.90 par mois tant que l’abonnement reste actif sans interruption.",
     standard:
       "30 jours gratuits. Ensuite CHF 39.90 par mois. Résiliable à tout moment.",
   },
   en: {
     founder:
-      "30 days free. The first 50 Founder customers keep CHF 19.90 per month for as long as the subscription remains continuously active.",
+      "30 days free. Afterwards the Founder price remains CHF 19.90 per month for as long as the subscription remains continuously active.",
     standard:
       "30 days free. Then CHF 39.90 per month. Cancel anytime.",
   },
@@ -376,7 +376,7 @@ export async function POST(
           success: false,
           founderUnavailable: true,
           error:
-            "Die 50 Founder-Plätze sind bereits vergeben.",
+            "Das Founder-Angebot ist derzeit nicht verfügbar.",
         },
         {
           status: 409,
@@ -581,7 +581,7 @@ export async function POST(
         : expectedCurrency === "eur" &&
             descriptionLocale === "de"
           ? selectedPlan === "founder"
-            ? "30 Tage kostenlos. Die ersten 50 Founder-Kunden behalten 19,90 € pro Monat dauerhaft, solange das Abonnement ohne Unterbrechung aktiv bleibt."
+            ? "30 Tage kostenlos. Danach bleibt der Founder-Preis bei 19,90 € pro Monat, solange das Abonnement ohne Unterbrechung aktiv bleibt."
             : "30 Tage kostenlos. Danach 39,90 € pro Monat. Jederzeit kündbar."
           : SUBSCRIPTION_PRODUCT_DESCRIPTIONS[
               descriptionLocale

@@ -165,7 +165,7 @@ export default function HomePageClient({
               }}
             >
               Founder-Start: 30 Tage kostenlos · danach dauerhaft
-              19,90 € / Monat für die ersten 50
+              19,90 € / Monat
             </div>
           </div>
         ) : null}

@@ -76,7 +76,7 @@ export default function PricingSection({
         ? "danach 19,90 € / Monat"
         : t("plans.founder.cadence"),
       text: isGermany
-        ? "Die ersten 50 Founder-Kunden sichern sich 19,90 € pro Monat dauerhaft – solange das Abonnement ohne Unterbrechung aktiv bleibt."
+        ? "19,90 € pro Monat dauerhaft – solange das Abonnement ohne Unterbrechung aktiv bleibt."
         : t("plans.founder.description"),
       button: isGermany
         ? "30 Tage kostenlos starten"
@@ -85,7 +85,7 @@ export default function PricingSection({
       highlighted: true,
       features: isGermany
         ? [
-            "19,90 € pro Monat dauerhaft für die ersten 50 Founder-Kunden",
+            "19,90 € pro Monat dauerhaft",
             "Mehrere Immobilien im Makler-Cockpit",
             "3 professionelle Inserat-Varianten pro Objekt",
             "Bis zu 10 Objektbilder pro Immobilie",
@@ -301,7 +301,7 @@ export default function PricingSection({
       : checkoutError ===
           "founder-unavailable"
         ? isGermany
-          ? "Die 50 Founder-Plätze sind bereits vergeben. Du kannst stattdessen Inserat-AI Pro für 79,90 € pro Monat wählen."
+          ? "Das Founder-Angebot ist derzeit nicht verfügbar. Du kannst stattdessen Inserat-AI Pro für 79,90 € pro Monat wählen."
           : "Die verfügbaren Founder-Plätze sind bereits vergeben."
         : checkoutError === "generic"
           ? t("errors.checkoutStart")
