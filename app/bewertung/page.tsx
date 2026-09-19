@@ -92,6 +92,11 @@ type ListingImportPayload = {
   livingArea?: number | null;
 };
 
+type ValuationMode =
+  | null
+  | "automatic"
+  | "manual";
+
 type IntakeStatus =
   | "idle"
   | "analyzing"
@@ -217,6 +222,15 @@ const steps = [
 
 export default function BewertungPage() {
   const [step, setStep] = useState(1);
+
+  /* VALUATION MODE SELECTOR V1 */
+  const [
+    valuationMode,
+    setValuationMode,
+  ] =
+    useState<ValuationMode>(
+      null
+    );
   const [form, setForm] =
     useState<ValuationForm>(initialForm);
 
@@ -2188,6 +2202,10 @@ export default function BewertungPage() {
   const labelClass =
     "text-sm font-black text-slate-200";
 
+  const showValuationForm =
+    valuationMode ===
+      "manual";
+
   return (
     <main className="min-h-screen bg-[#050a1d] text-white">{/* VALUATION INSERAT-AI MOBILE V1.1 */}{/* VALUATION DARK PREMIUM V2.1 */}
       <div className="mx-auto max-w-6xl px-4 pb-28 pt-24 sm:px-6 sm:pt-28 lg:px-8">
@@ -2209,6 +2227,150 @@ export default function BewertungPage() {
             für den Schweizer Immobilienmarkt vor.
           </p>
 
+          {/* VALUATION MODE SELECTOR V1 */}
+          {valuationMode ===
+            null ? (
+            <div className="mt-6 max-w-4xl rounded-[24px] border border-white/10 bg-white/[0.025] p-4 sm:p-5">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-300">
+                  Bewertungsmethode
+                </p>
+
+                <h2 className="mt-2 text-xl font-black text-white sm:text-2xl">
+                  Wie möchten Sie die Immobilie erfassen?
+                </h2>
+
+                <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-slate-300">
+                  Wählen Sie einmal zwischen automatischer Dokumentenanalyse und manueller Eingabe.
+                </p>
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setValuationMode(
+                      "automatic"
+                    );
+
+                    setStep(1);
+
+                    setValuation(null);
+
+                    setValuationStatus(
+                      "idle"
+                    );
+
+                    setValuationMessage(
+                      ""
+                    );
+
+                    setSavedValuationId(
+                      null
+                    );
+                  }}
+                  className="group min-h-32 rounded-2xl border border-cyan-300/25 bg-cyan-300/[0.07] p-5 text-left transition hover:border-cyan-300/50 hover:bg-cyan-300/[0.11]"
+                >
+                  <span className="text-[10px] font-black uppercase tracking-[0.16em] text-cyan-300">
+                    Schnell & automatisch
+                  </span>
+
+                  <span className="mt-2 block text-lg font-black text-white">
+                    Automatisch mit Unterlagen
+                  </span>
+
+                  <span className="mt-2 block text-xs font-medium leading-5 text-slate-300">
+                    PDF, Grundriss oder Fotos hochladen. Inserat-AI erkennt die Bewertungsdaten automatisch.
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setValuationMode(
+                      "manual"
+                    );
+
+                    setStep(1);
+
+                    setValuation(null);
+
+                    setValuationStatus(
+                      "idle"
+                    );
+
+                    setValuationMessage(
+                      ""
+                    );
+
+                    setSavedValuationId(
+                      null
+                    );
+                  }}
+                  className="group min-h-32 rounded-2xl border border-amber-300/25 bg-amber-300/[0.06] p-5 text-left transition hover:border-amber-300/50 hover:bg-amber-300/[0.1]"
+                >
+                  <span className="text-[10px] font-black uppercase tracking-[0.16em] text-amber-300">
+                    Schritt für Schritt
+                  </span>
+
+                  <span className="mt-2 block text-lg font-black text-white">
+                    Manuell eingeben
+                  </span>
+
+                  <span className="mt-2 block text-xs font-medium leading-5 text-slate-300">
+                    Objektdaten selbst erfassen und anschliessend den Marktwert berechnen.
+                  </span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-6 flex max-w-4xl flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.025] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                  Gewählte Methode
+                </p>
+
+                <p className="mt-1 text-sm font-black text-white">
+                  {valuationMode ===
+                  "automatic"
+                    ? "Automatisch mit Unterlagen"
+                    : "Manuell eingeben"}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setValuationMode(
+                    null
+                  );
+
+                  setValuation(null);
+
+                  setValuationStatus(
+                    "idle"
+                  );
+
+                  setValuationMessage(
+                    ""
+                  );
+
+                  setSavedValuationId(
+                    null
+                  );
+                }}
+                className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-xs font-black text-slate-200 transition hover:border-amber-300/30 hover:text-white"
+              >
+                Methode wechseln
+              </button>
+            </div>
+          )}
+
+          {valuationMode ===
+            "automatic" &&
+            intakeStatus !==
+              "success" && (
+            <>
           {/* VALUATION AUTOMATIC INTAKE UI V1 */}
           <div className="mt-6 max-w-4xl rounded-[24px] border border-cyan-300/20 bg-cyan-300/[0.045] p-4 sm:p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -2324,20 +2486,14 @@ export default function BewertungPage() {
                   intakeStatus ===
                   "error"
                     ? "border-rose-400/25 bg-rose-400/[0.07]"
-                    : intakeStatus ===
-                        "success"
-                      ? "border-emerald-400/25 bg-emerald-400/[0.07]"
-                      : "border-cyan-400/25 bg-cyan-400/[0.07]"
+                    : "border-cyan-400/25 bg-cyan-400/[0.07]"
                 }`}
               >
                 <p className="text-xs font-black text-white">
                   {intakeStatus ===
                   "analyzing"
                     ? "Automatische Analyse l\u00e4uft"
-                    : intakeStatus ===
-                        "success"
-                      ? "Objektdaten automatisch erkannt"
-                      : "Analyse nicht abgeschlossen"}
+                    : "Analyse nicht abgeschlossen"}
                 </p>
 
                 <p className="mt-1 text-xs font-medium leading-5 text-slate-300">
@@ -2387,9 +2543,77 @@ export default function BewertungPage() {
               </p>
             </div>
           )}
+            </>
+          )}
+
+          {valuationMode ===
+            "automatic" &&
+            intakeStatus ===
+              "success" && (
+            <div className="mt-6 max-w-4xl rounded-[24px] border border-emerald-400/25 bg-emerald-400/[0.06] p-4 sm:p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300">
+                    Automatische Analyse abgeschlossen
+                  </p>
+
+                  <h2 className="mt-2 text-xl font-black text-white">
+                    Erkannte Daten prüfen
+                  </h2>
+
+                  <p className="mt-2 text-sm font-medium leading-6 text-slate-300">
+                    {intakeMessage}
+                  </p>
+
+                  {intakeExtraction &&
+                    intakeExtraction
+                      .warnings
+                      .length > 0 && (
+                      <div className="mt-3 space-y-1">
+                        {intakeExtraction
+                          .warnings
+                          .map(
+                            (
+                              warning
+                            ) => (
+                              <p
+                                key={
+                                  warning
+                                }
+                                className="text-[11px] font-semibold leading-5 text-amber-200"
+                              >
+                                Hinweis:{" "}
+                                {
+                                  warning
+                                }
+                              </p>
+                            )
+                          )}
+                      </div>
+                    )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIntakeStatus(
+                      "idle"
+                    );
+                    setIntakeMessage(
+                      ""
+                    );
+                  }}
+                  className="shrink-0 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-xs font-black text-slate-200 transition hover:border-cyan-300/30 hover:text-white"
+                >
+                  Unterlagen ändern
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-[280px_minmax(0,1fr)]">
+        {showValuationForm && (
+          <div className="grid gap-5 lg:grid-cols-[280px_minmax(0,1fr)]">
           <aside className="rounded-[24px] border border-amber-300/15 bg-gradient-to-b from-[#101b38] to-[#091329] p-4 shadow-[0_18px_55px_rgba(0,0,0,0.3)] sm:p-5">
             <p className="mb-5 text-[10px] font-black uppercase tracking-[0.18em] text-amber-300">
               Bewertung
@@ -3487,6 +3711,7 @@ export default function BewertungPage() {
             </div>
           </section>
         </div>
+        )}
       </div>
     </main>
   );
