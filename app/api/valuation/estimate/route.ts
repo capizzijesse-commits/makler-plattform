@@ -41,12 +41,37 @@ function finiteNumber(
     : null;
 }
 
+/* VALUATION LISTING SERVER GUARD V1 */
+function normalizeLocationText(
+  value: unknown
+) {
+  return typeof value ===
+    "string"
+    ? value
+        .trim()
+        .toLocaleLowerCase(
+          "de-CH"
+        )
+        .replace(
+          /\s+/g,
+          " "
+        )
+    : "";
+}
+
 export async function POST(
   request: NextRequest
 ) {
   try {
     const body =
       await request.json();
+
+    const requestedListingId =
+      typeof body
+        ?.listingId ===
+        "string"
+        ? body.listingId.trim()
+        : "";
 
     if (
       typeof body?.latitude !==
@@ -259,6 +284,195 @@ export async function POST(
       );
     }
 
+    /*
+     * VALUATION LISTING SERVER GUARD V1
+     *
+     * Sobald eine Bewertung aus einem
+     * Cockpit-Listing gestartet wird,
+     * muss der Server VOR jedem externen
+     * Marktwert-Aufruf sicherstellen:
+     *
+     * - Benutzer ist authentifiziert
+     * - Listing gehoert diesem Benutzer
+     * - Listing ist ein CH-Objekt
+     * - PLZ und Ort stimmen mit der
+     *   bestaetigten Bewertungsadresse
+     *   ueberein
+     *
+     * Bei Konflikt: kein Provider-Aufruf.
+     */
+    if (requestedListingId) {
+      const user =
+        await getAuthenticatedUser(
+          request
+        );
+
+      if (!user) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "Bitte zuerst einloggen.",
+          },
+          {
+            status: 401,
+          }
+        );
+      }
+
+      const ownedListing =
+        await prisma
+          .listing
+          .findFirst({
+            where: {
+              id:
+                requestedListingId,
+
+              userId:
+                user.id,
+            },
+
+            select: {
+              id: true,
+
+              countryCode:
+                true,
+
+              postalCode:
+                true,
+
+              location:
+                true,
+            },
+          });
+
+      if (!ownedListing) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "Das verknuepfte Objekt wurde nicht gefunden.",
+          },
+          {
+            status: 404,
+          }
+        );
+      }
+
+      const countryCode =
+        ownedListing
+          .countryCode
+          ?.trim()
+          .toUpperCase() ||
+        "";
+
+      if (
+        countryCode &&
+        countryCode !== "CH"
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "Die automatische Marktwertbewertung ist aktuell nur fuer Schweizer Objekte aktiviert.",
+          },
+          {
+            status: 409,
+          }
+        );
+      }
+
+      const requestedPostalCode =
+        typeof body
+          ?.postalCode ===
+          "string"
+          ? body.postalCode.trim()
+          : "";
+
+      const requestedCity =
+        typeof body
+          ?.city ===
+          "string"
+          ? body.city.trim()
+          : "";
+
+      if (
+        !requestedPostalCode ||
+        !requestedCity
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "PLZ und Ort der bestaetigten Bewertungsadresse fehlen.",
+          },
+          {
+            status: 400,
+          }
+        );
+      }
+
+      const listingPostalCode =
+        ownedListing
+          .postalCode
+          ?.trim() ||
+        "";
+
+      const listingCity =
+        ownedListing
+          .location
+          ?.trim() ||
+        "";
+
+      if (
+        !listingPostalCode ||
+        !listingCity
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "Das verknuepfte Listing enthaelt noch keine vollstaendige PLZ-/Ortsangabe.",
+          },
+          {
+            status: 409,
+          }
+        );
+      }
+
+      const postalCodeMismatch =
+        listingPostalCode !==
+        requestedPostalCode;
+
+      const cityMismatch =
+        normalizeLocationText(
+          listingCity
+        ) !==
+        normalizeLocationText(
+          requestedCity
+        );
+
+      if (
+        postalCodeMismatch ||
+        cityMismatch
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+
+            error:
+              "Die Bewertungsadresse stimmt nicht mit dem verknuepften Listing ueberein. Die Marktwertabfrage wurde aus Sicherheitsgruenden nicht gestartet.",
+
+            code:
+              "VALUATION_LISTING_ADDRESS_MISMATCH",
+          },
+          {
+            status: 409,
+          }
+        );
+      }
+    }
+
     const result =
       await requestSwissMarketValuation(
         {
@@ -325,13 +539,6 @@ export async function POST(
         : "";
 
     /* VALUATION LISTING PERSISTENCE V1 */
-    const requestedListingId =
-      typeof body
-        ?.listingId ===
-        "string"
-        ? body.listingId.trim()
-        : "";
-
     if (requestedValuationId) {
       try {
         const user =

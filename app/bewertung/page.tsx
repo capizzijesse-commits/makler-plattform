@@ -2554,6 +2554,15 @@ export default function BewertungPage() {
                     valuationListingId ||
                     null,
 
+                  street:
+                    form.street.trim(),
+
+                  postalCode:
+                    form.zip.trim(),
+
+                  city:
+                    form.city.trim(),
+
                   latitude:
                     verifiedLocation.latitude,
 
@@ -2687,7 +2696,12 @@ export default function BewertungPage() {
                 .valuationId
             : null;
 
-        if (workflowListingId) {
+        if (
+          workflowListingId &&
+          data.persistence?.saved ===
+            true &&
+          workflowValuationId
+        ) {
           try {
             const workflowResponse =
               await fetch(
