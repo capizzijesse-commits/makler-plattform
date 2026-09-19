@@ -247,7 +247,7 @@ export async function POST(
           {
             success: false,
             error:
-              "Das zugeh?rige Objekt wurde nicht gefunden.",
+              "Das zugeh\u00f6rige Objekt wurde nicht gefunden.",
           },
           {
             status: 404,
@@ -264,7 +264,7 @@ export async function POST(
           {
             success: false,
             error:
-              "Die Marktwertbewertung ist aktuell nur f?r Schweizer Objekte verf?gbar.",
+              "Die Marktwertbewertung ist aktuell nur f\u00fcr Schweizer Objekte verf\u00fcgbar.",
           },
           {
             status: 400,
