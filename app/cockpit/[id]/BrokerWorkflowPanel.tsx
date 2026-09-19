@@ -3,6 +3,7 @@
 import Link from "next/link";
 import {
   useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -227,6 +228,14 @@ export default function BrokerWorkflowPanel({
   ] =
     useState("");
 
+  /*
+   * Verhindert Endlosschleifen,
+   * falls ein automatischer
+   * Package-Sync einmal fehlschlaegt.
+   */
+  const packageSyncAttemptRef =
+    useRef("");
+
   useEffect(() => {
     let cancelled =
       false;
@@ -309,6 +318,10 @@ export default function BrokerWorkflowPanel({
       action:
         | "mandate_confirmed"
         | "mandate_revoked"
+        | "package_prepared"
+        | "package_revoked"
+        | "marketing_approved"
+        | "marketing_revoked"
     ) => {
       if (workflowBusy) {
         return;
@@ -413,6 +426,78 @@ export default function BrokerWorkflowPanel({
       workflow
         ?.publishedAt
     );
+
+  /*
+   * BROKER PACKAGE AUTO SYNC V1
+   *
+   * Interner Workflow-Sync:
+   * KEIN Provider,
+   * KEIN Portal,
+   * KEIN Social-Publish.
+   */
+  useEffect(() => {
+    if (
+      workflowLoading ||
+      workflowBusy ||
+      !mandateDone
+    ) {
+      return;
+    }
+
+    const desiredAction =
+      objectPackageReady &&
+      !packageDone
+        ? "package_prepared"
+        : !objectPackageReady &&
+            packageDone
+          ? "package_revoked"
+          : null;
+
+    if (!desiredAction) {
+      packageSyncAttemptRef.current =
+        "";
+
+      return;
+    }
+
+    const syncKey = [
+      listingId,
+      desiredAction,
+      coreDataReady
+        ? "core1"
+        : "core0",
+      imagesReady
+        ? "img1"
+        : "img0",
+      listingTextReady
+        ? "text1"
+        : "text0",
+    ].join(":");
+
+    if (
+      packageSyncAttemptRef.current ===
+      syncKey
+    ) {
+      return;
+    }
+
+    packageSyncAttemptRef.current =
+      syncKey;
+
+    void updateWorkflow(
+      desiredAction
+    );
+  }, [
+    listingId,
+    workflowLoading,
+    workflowBusy,
+    mandateDone,
+    packageDone,
+    objectPackageReady,
+    coreDataReady,
+    imagesReady,
+    listingTextReady,
+  ]);
 
   const valuationState:
     StepState =
@@ -1012,7 +1097,15 @@ export default function BrokerWorkflowPanel({
           )}
         </div>
 
-        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-4">
+        <div
+          className={
+            approvalDone
+              ? "rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.045] p-4"
+              : packageDone
+                ? "rounded-2xl border border-cyan-300/30 bg-cyan-300/[0.055] p-4"
+                : "rounded-2xl border border-white/[0.08] bg-white/[0.025] p-4"
+          }
+        >
           <div className="flex items-center justify-between gap-3">
             <div className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-sm font-black text-slate-300">
               5
@@ -1030,10 +1123,50 @@ export default function BrokerWorkflowPanel({
           </h3>
 
           <p className="mt-1 text-xs font-medium leading-5 text-slate-400">
-            Makler kontrolliert nur
-            noch das fertige Paket und
-            gibt die Vermarktung frei.
+            {approvalDone
+              ? "Die Vermarktung wurde vom Makler freigegeben."
+              : "Makler kontrolliert das fertige Paket und gibt die Vermarktung bewusst frei."}
           </p>
+
+          {approvalDone ? (
+            <button
+              type="button"
+              disabled={
+                workflowBusy
+              }
+              onClick={() =>
+                void updateWorkflow(
+                  "marketing_revoked"
+                )
+              }
+              className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2 text-xs font-black text-slate-300 transition hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {workflowBusy
+                ? "Wird gespeichert ..."
+                : "Freigabe zur\u00fccknehmen"}
+            </button>
+          ) : packageDone ? (
+            <button
+              type="button"
+              disabled={
+                workflowBusy
+              }
+              onClick={() =>
+                void updateWorkflow(
+                  "marketing_approved"
+                )
+              }
+              className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-xl bg-cyan-300 px-3 py-2 text-xs font-black text-slate-950 transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {workflowBusy
+                ? "Wird gespeichert ..."
+                : "Vermarktung freigeben"}
+            </button>
+          ) : (
+            <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-2 text-center text-[11px] font-bold text-slate-500">
+              Sobald das Objektpaket bereit ist
+            </div>
+          )}
         </div>
 
         <div className="rounded-2xl border border-violet-300/20 bg-violet-300/[0.04] p-4">
@@ -1059,24 +1192,30 @@ export default function BrokerWorkflowPanel({
             Vorgang steuern.
           </p>
 
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <a
-              href="#portal-publishing"
-              className="inline-flex min-h-10 items-center justify-center rounded-xl border border-emerald-300/20 bg-emerald-300/[0.06] px-2 py-2 text-[11px] font-black text-emerald-100 no-underline"
-            >
-              Portale
-            </a>
+          {approvalDone ? (
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <a
+                href="#portal-publishing"
+                className="inline-flex min-h-10 items-center justify-center rounded-xl border border-emerald-300/20 bg-emerald-300/[0.06] px-2 py-2 text-[11px] font-black text-emerald-100 no-underline"
+              >
+                Portale
+              </a>
 
-            <Link
-              href={
-                "/dashboard/social-media?listingId=" +
-                listingId
-              }
-              className="inline-flex min-h-10 items-center justify-center rounded-xl border border-violet-300/20 bg-violet-300/[0.06] px-2 py-2 text-[11px] font-black text-violet-100 no-underline"
-            >
-              Social Media
-            </Link>
-          </div>
+              <Link
+                href={
+                  "/dashboard/social-media?listingId=" +
+                  listingId
+                }
+                className="inline-flex min-h-10 items-center justify-center rounded-xl border border-violet-300/20 bg-violet-300/[0.06] px-2 py-2 text-[11px] font-black text-violet-100 no-underline"
+              >
+                Social Media
+              </Link>
+            </div>
+          ) : (
+            <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-2 text-center text-[11px] font-bold text-slate-500">
+              Nach Vermarktungsfreigabe verf\u00fcgbar
+            </div>
+          )}
         </div>
       </div>
 

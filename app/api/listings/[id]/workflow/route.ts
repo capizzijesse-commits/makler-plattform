@@ -22,6 +22,7 @@ type WorkflowAction =
   | "mandate_confirmed"
   | "mandate_revoked"
   | "package_prepared"
+  | "package_revoked"
   | "marketing_approved"
   | "marketing_revoked"
   | "publication_started"
@@ -98,6 +99,133 @@ async function loadWorkflowValuation(
         true,
     },
   });
+}
+
+/* BROKER WORKFLOW PACKAGE READINESS V1 */
+function hasPreparedListingText(
+  value: string | null
+) {
+  if (!value?.trim()) {
+    return false;
+  }
+
+  try {
+    const parsed =
+      JSON.parse(value);
+
+    return (
+      Array.isArray(parsed) &&
+      parsed.some((item) => {
+        if (
+          !item ||
+          typeof item !==
+            "object"
+        ) {
+          return false;
+        }
+
+        const candidate =
+          item as Record<
+            string,
+            unknown
+          >;
+
+        return (
+          typeof candidate.title ===
+            "string" &&
+          candidate.title.trim()
+            .length > 0 &&
+          typeof candidate.text ===
+            "string" &&
+          candidate.text.trim()
+            .length > 0
+        );
+      })
+    );
+  } catch {
+    return false;
+  }
+}
+
+async function loadPackageReadiness(
+  userId: string,
+  listingId: string
+) {
+  const listing =
+    await prisma.listing.findFirst({
+      where: {
+        id:
+          listingId,
+
+        userId,
+      },
+
+      select: {
+        location:
+          true,
+
+        postalCode:
+          true,
+
+        propertyType:
+          true,
+
+        livingArea:
+          true,
+
+        rooms:
+          true,
+
+        generatedVariants:
+          true,
+
+        images: {
+          take:
+            1,
+
+          select: {
+            id:
+              true,
+          },
+        },
+      },
+    });
+
+  if (!listing) {
+    return null;
+  }
+
+  const coreDataReady =
+    Boolean(
+      listing.location?.trim() &&
+      listing.postalCode?.trim() &&
+      listing.propertyType?.trim() &&
+      typeof listing.livingArea ===
+        "number" &&
+      listing.livingArea > 0 &&
+      typeof listing.rooms ===
+        "number" &&
+      listing.rooms > 0
+    );
+
+  const imagesReady =
+    listing.images.length > 0;
+
+  const listingTextReady =
+    hasPreparedListingText(
+      listing.generatedVariants
+    );
+
+  return {
+    coreDataReady,
+    imagesReady,
+    listingTextReady,
+
+    ready:
+      coreDataReady &&
+      imagesReady &&
+      listingTextReady,
+  };
 }
 
 function stageFromWorkflow(
@@ -399,6 +527,7 @@ export async function PATCH(
         "mandate_confirmed",
         "mandate_revoked",
         "package_prepared",
+        "package_revoked",
         "marketing_approved",
         "marketing_revoked",
         "publication_started",
@@ -541,20 +670,52 @@ export async function PATCH(
 
     if (
       body.action ===
-        "package_prepared" &&
-      !current
-        ?.mandateConfirmedAt
+        "package_prepared"
     ) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            "Das Objektpaket kann erst nach best\u00e4tigtem Vermarktungsauftrag abgeschlossen werden.",
-        },
-        {
-          status: 409,
-        }
-      );
+      if (
+        !current
+          ?.mandateConfirmedAt
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "Das Objektpaket kann erst nach best\u00e4tigtem Vermarktungsauftrag abgeschlossen werden.",
+          },
+          {
+            status: 409,
+          }
+        );
+      }
+
+      const packageReadiness =
+        await loadPackageReadiness(
+          user.id,
+          listing.id
+        );
+
+      if (
+        !packageReadiness ||
+        !packageReadiness.ready
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+
+            error:
+              "Das Objektpaket ist noch nicht vollst\u00e4ndig vorbereitet.",
+
+            code:
+              "BROKER_PACKAGE_NOT_READY",
+
+            readiness:
+              packageReadiness,
+          },
+          {
+            status: 409,
+          }
+        );
+      }
     }
 
     if (
@@ -689,6 +850,21 @@ export async function PATCH(
       case "package_prepared":
         next.packagePreparedAt =
           now;
+
+        break;
+
+      case "package_revoked":
+        next.packagePreparedAt =
+          null;
+
+        next.marketingApprovedAt =
+          null;
+
+        next.publicationStartedAt =
+          null;
+
+        next.publishedAt =
+          null;
 
         break;
 
