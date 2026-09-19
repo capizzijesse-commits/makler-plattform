@@ -1,4 +1,4 @@
-﻿-- Broker end-to-end workflow persistence.
+-- Broker end-to-end workflow persistence.
 -- Additive only: no destructive changes.
 
 CREATE TABLE "BrokerWorkflow" (
