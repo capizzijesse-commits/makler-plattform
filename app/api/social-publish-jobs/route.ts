@@ -20,6 +20,11 @@ import {
 } from "@/lib/plans";
 
 import {
+  BROKER_MARKETING_APPROVAL_REQUIRED,
+  isBrokerMarketingApproved,
+} from "@/lib/broker-workflow/marketing-approval-guard.server";
+
+import {
   createSocialPublishJob,
   getSocialPublishJobByIdempotencyKey,
   listSocialPublishJobs,
@@ -801,6 +806,49 @@ export async function POST(
         }
       )
     );
+  }
+
+
+  /*
+   * Immobilienbezogene Social-Posts
+   * duerfen erst nach Maklerfreigabe
+   * in die Publish-Queue.
+   *
+   * Allgemeine Social-Posts ohne
+   * listingId bleiben unveraendert.
+   */
+  if (listingId) {
+
+    const marketingApproved =
+      await isBrokerMarketingApproved({
+        userId:
+          user.id,
+
+        listingId,
+      });
+
+
+    if (!marketingApproved) {
+
+      return noStore(
+        NextResponse.json(
+          {
+            success:
+              false,
+
+            error:
+              BROKER_MARKETING_APPROVAL_REQUIRED,
+
+            message:
+              "Die Vermarktung muss vor der Social-Media-Veröffentlichung vom Makler freigegeben werden.",
+          },
+          {
+            status:
+              409,
+          }
+        )
+      );
+    }
   }
 
 

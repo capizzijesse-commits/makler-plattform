@@ -8,6 +8,11 @@ import {
 } from "@/lib/session";
 
 import {
+  BROKER_MARKETING_APPROVAL_REQUIRED,
+  isBrokerMarketingApproved,
+} from "@/lib/broker-workflow/marketing-approval-guard.server";
+
+import {
   createGermanPortalPublishJobFromListing,
   GermanPortalJobCreationError,
   isGermanPortalId,
@@ -397,6 +402,45 @@ export async function POST(
           )
         );
       }
+    }
+
+
+    /*
+     * BROKER MARKETING APPROVAL GATE V1
+     *
+     * Ohne ausdrueckliche Freigabe darf
+     * nicht einmal ein Portal-Publish-Job
+     * erzeugt werden.
+     */
+    const marketingApproved =
+      await isBrokerMarketingApproved({
+        userId:
+          user.id,
+
+        listingId,
+      });
+
+
+    if (!marketingApproved) {
+
+      return noStore(
+        NextResponse.json(
+          {
+            success:
+              false,
+
+            error:
+              BROKER_MARKETING_APPROVAL_REQUIRED,
+
+            message:
+              "Die Vermarktung muss vor der Portalveroeffentlichung vom Makler freigegeben werden.",
+          },
+          {
+            status:
+              409,
+          }
+        )
+      );
     }
 
 

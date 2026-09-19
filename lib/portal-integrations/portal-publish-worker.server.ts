@@ -5,6 +5,11 @@ import type {
 } from "@prisma/client";
 
 import {
+  BROKER_MARKETING_APPROVAL_REQUIRED,
+  isBrokerMarketingApproved,
+} from "@/lib/broker-workflow/marketing-approval-guard.server";
+
+import {
   claimDuePortalPublishJobs,
   markPortalPublishJobFailed,
   markPortalPublishJobSucceeded,
@@ -156,6 +161,7 @@ const NON_RETRYABLE_PORTAL_ERROR_CODES =
     "PORTAL_PRODUCTION_NOT_ENABLED",
     "PORTAL_CONNECTION_NOT_READY",
     "PORTAL_RECONCILIATION_REQUIRED",
+    BROKER_MARKETING_APPROVAL_REQUIRED,
   ]);
 
 
@@ -276,6 +282,38 @@ export async function runPortalPublishWorker(
   ) {
 
     try {
+
+      /*
+       * SECOND APPROVAL GATE:
+       * Direkt vor dem externen Executor
+       * nochmals den aktuellen Workflow
+       * aus der DB pruefen.
+       */
+      const marketingApproved =
+        job.listingId
+          ? await isBrokerMarketingApproved({
+              userId:
+                job.userId,
+
+              listingId:
+                job.listingId,
+            })
+          : false;
+
+
+      if (!marketingApproved) {
+
+        throw Object.assign(
+          new Error(
+            "Broker marketing approval is required before portal publishing."
+          ),
+          {
+            code:
+              BROKER_MARKETING_APPROVAL_REQUIRED,
+          }
+        );
+      }
+
 
       const execution =
         await input.execute(

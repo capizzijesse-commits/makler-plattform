@@ -1,6 +1,11 @@
 import "server-only";
 
 import {
+  BROKER_MARKETING_APPROVAL_REQUIRED,
+  isBrokerMarketingApproved,
+} from "@/lib/broker-workflow/marketing-approval-guard.server";
+
+import {
   claimDueSocialPublishJobs,
   markSocialPublishJobFailed,
   markSocialPublishJobPublished,
@@ -211,6 +216,7 @@ const NON_RETRYABLE_SOCIAL_PUBLISH_ERROR_CODES =
     "LINKEDIN_PUBLISH_NOT_IMPLEMENTED",
     "TIKTOK_PUBLISH_NOT_IMPLEMENTED",
     "SOCIAL_PROVIDER_UNSUPPORTED",
+    BROKER_MARKETING_APPROVAL_REQUIRED,
   ]);
 
 
@@ -330,6 +336,43 @@ export async function runSocialPublishWorker(
        * Der Worker selbst kennt weder
        * Meta noch LinkedIn noch TikTok.
        */
+      /*
+       * SECOND APPROVAL GATE:
+       * Ein Immobilien-Post wird direkt
+       * vor dem Provider-Aufruf nochmals
+       * gegen die aktuelle Maklerfreigabe
+       * geprueft.
+       *
+       * Generische Social-Posts ohne
+       * listingId bleiben erlaubt.
+       */
+      if (job.listingId) {
+
+        const marketingApproved =
+          await isBrokerMarketingApproved({
+            userId:
+              job.userId,
+
+            listingId:
+              job.listingId,
+          });
+
+
+        if (!marketingApproved) {
+
+          throw Object.assign(
+            new Error(
+              "Broker marketing approval is required before social publishing."
+            ),
+            {
+              code:
+                BROKER_MARKETING_APPROVAL_REQUIRED,
+            }
+          );
+        }
+      }
+
+
       const execution =
         await input.execute(
           job
