@@ -804,9 +804,12 @@ export default function BewertungPage() {
         );
 
       const floorNumber =
-        parseNumber(
-          form.floor
-        );
+        form.propertyType ===
+          "apartment"
+          ? parseNumber(
+              form.floor
+            )
+          : null;
 
       const landArea =
         parseNumber(
@@ -1742,51 +1745,56 @@ export default function BewertungPage() {
                   </p>
 
                   <div className="mt-7 grid gap-5 sm:grid-cols-2">
-                    <label>
-                      <span className={labelClass}>
-                        Etage
-                      </span>
-                      <input
-                        value={form.floor}
-                        onChange={(event) =>
-                          updateField(
-                            "floor",
-                            event.target.value
-                          )
-                        }
-                        placeholder="z. B. 3"
-                        className={inputClass}
-                      />
-                    </label>
+                    {form.propertyType ===
+                      "apartment" && (
+                        <>
+                          <label>
+                            <span className={labelClass}>
+                              Etage
+                            </span>
+                            <input
+                              value={form.floor}
+                              onChange={(event) =>
+                                updateField(
+                                  "floor",
+                                  event.target.value
+                                )
+                              }
+                              placeholder="z. B. 3"
+                              className={inputClass}
+                            />
+                          </label>
 
-                    <label>
-                      <span className={labelClass}>
-                        Lift
-                      </span>
-                      <select
-                        value={form.lift}
-                        onChange={(event) =>
-                          updateField(
-                            "lift",
-                            event.target.value
-                          )
-                        }
-                        className={inputClass}
-                      >
-                        <option value="">
-                          Bitte auswählen
-                        </option>
-                        <option value="yes">
-                          Ja
-                        </option>
-                        <option value="no">
-                          Nein
-                        </option>
-                        <option value="not-relevant">
-                          Nicht relevant
-                        </option>
-                      </select>
-                    </label>
+                          <label>
+                            <span className={labelClass}>
+                              Lift
+                            </span>
+                            <select
+                              value={form.lift}
+                              onChange={(event) =>
+                                updateField(
+                                  "lift",
+                                  event.target.value
+                                )
+                              }
+                              className={inputClass}
+                            >
+                              <option value="">
+                                Bitte auswählen
+                              </option>
+                              <option value="yes">
+                                Ja
+                              </option>
+                              <option value="no">
+                                Nein
+                              </option>
+                              <option value="not-relevant">
+                                Nicht relevant
+                              </option>
+                            </select>
+                          </label>
+                        </>
+                      )}
 
                     <label>
                       <span className={labelClass}>

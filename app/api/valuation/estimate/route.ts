@@ -226,6 +226,8 @@ export async function POST(
     }
 
     const floorNumber =
+      propertyType ===
+        "apartment" &&
       body?.floorNumber !== "" &&
       body?.floorNumber != null
         ? finiteNumber(
@@ -281,6 +283,8 @@ export async function POST(
           floorNumber,
 
           hasLift:
+            propertyType ===
+              "apartment" &&
             typeof body.hasLift ===
               "boolean"
               ? body.hasLift

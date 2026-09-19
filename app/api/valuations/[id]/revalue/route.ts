@@ -199,10 +199,16 @@ export async function POST(
             valuation.rooms,
 
           floorNumber:
-            valuation.floorNumber,
+            propertyType ===
+              "apartment"
+              ? valuation.floorNumber
+              : null,
 
           hasLift:
-            valuation.hasLift,
+            propertyType ===
+              "apartment"
+              ? valuation.hasLift
+              : null,
 
           numberOfIndoorParkingSpaces:
             indoorParking,
