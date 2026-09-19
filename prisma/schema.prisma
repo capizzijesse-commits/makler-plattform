@@ -200,8 +200,7 @@ model PortalConnection {
   credentialSource String?
 
   lastVerifiedAt DateTime?
-  publishJobs PortalPublishJob[]
-
+  publishJobs    PortalPublishJob[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -479,12 +478,10 @@ model SocialPublishJob {
 
   /**
    * Dauerhafter Provider-Operationszustand.
-   *
    * Beispiel Instagram:
    * providerOperationType  = "instagram_reel_container"
    * providerOperationId    = Meta Container ID
    * providerOperationState = "container_created"
-   *
    * Damit kann ein Retry eine bereits
    * gestartete Provider-Operation fortsetzen,
    * statt blind eine zweite zu erzeugen.
@@ -518,12 +515,11 @@ model SocialPublishJob {
   @@index([provider, providerOperationState])
 }
 
-
 model PortalPublishJob {
   id String @id @default(cuid())
 
   userId String
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   listingId String?
   listing   Listing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
@@ -587,6 +583,7 @@ model PortalPublishJob {
   @@index([provider, providerOperationState])
   @@index([listingId, portal, status])
 }
+
 model Listing {
   id String @id @default(cuid())
 
@@ -627,16 +624,45 @@ model Listing {
   homeStagingImages HomeStagingImage[]
   floorPlans        FloorPlan[]
   finance           ListingFinance?
+  brokerWorkflow    BrokerWorkflow?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   listingViewEvents ListingViewEvent[]
   socialPublishJobs SocialPublishJob[]
 
   portalPublishJobs PortalPublishJob[]
+
   @@index([userId])
   @@index([userId, archivedAt])
   @@index([userId, unlockStatus])
   @@index([countryCode])
+}
+
+model BrokerWorkflow {
+  id String @id @default(cuid())
+
+  listingId String  @unique
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  currentStage String @default("valuation")
+
+  valuationId          String?
+  valuationCompletedAt DateTime?
+
+  mandateConfirmedAt DateTime?
+
+  packagePreparedAt DateTime?
+
+  marketingApprovedAt DateTime?
+
+  publicationStartedAt DateTime?
+  publishedAt          DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([currentStage])
+  @@index([updatedAt])
 }
 
 model FloorPlan {
