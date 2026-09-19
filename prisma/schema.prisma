@@ -50,6 +50,7 @@ model User {
   socialCredentials                                                       SocialCredential[]
   socialPublishJobs                                                       SocialPublishJob[]
   portalPublishJobs                                                       PortalPublishJob[]
+  publicationRuns                                                         PublicationRun[]
   MaklerChatBlock_MaklerChatBlock_blockedUserIdToUser                     MaklerChatBlock[]          @relation("MaklerChatBlock_blockedUserIdToUser")
   MaklerChatBlock_MaklerChatBlock_blockerUserIdToUser                     MaklerChatBlock[]          @relation("MaklerChatBlock_blockerUserIdToUser")
   MaklerChatBranding                                                      MaklerChatBranding?
@@ -630,8 +631,8 @@ model Listing {
   updatedAt         DateTime           @updatedAt
   listingViewEvents ListingViewEvent[]
   socialPublishJobs SocialPublishJob[]
-
   portalPublishJobs PortalPublishJob[]
+  publicationRuns   PublicationRun[]
 
   @@index([userId])
   @@index([userId, archivedAt])
@@ -664,6 +665,117 @@ model BrokerWorkflow {
 
   @@index([currentStage])
   @@index([updatedAt])
+}
+
+/*
+ * PUBLICATION ORCHESTRATOR V1
+ *
+ * Ein Run entspricht genau einem bewusst
+ * gestarteten Vermarktungs-/Publishing-Vorgang.
+ *
+ * Die einzelnen Ziele bleiben dauerhaft
+ * nachvollziehbar, auch wenn ein Portal-
+ * oder Social-Job spaeter fehlschlaegt.
+ */
+model PublicationRun {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  /*
+   * draft
+   * ready
+   * publishing
+   * partial
+   * published
+   * action_required
+   * cancelled
+   */
+  status String @default("draft")
+
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  targets PublicationTarget[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status, createdAt])
+  @@index([listingId, createdAt])
+  @@index([listingId, status])
+}
+
+model PublicationTarget {
+  id String @id @default(cuid())
+
+  runId String
+  run   PublicationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  /*
+   * Eindeutig innerhalb eines Runs:
+   *
+   * portal:immowelt_de
+   * social:<connectionId>
+   */
+  targetKey String
+
+  /*
+   * portal | social
+   */
+  kind String
+
+  /*
+   * Snapshot des Zielsystems.
+   */
+  provider          String?
+  destination       String
+  connectionId      String?
+  externalAccountId String?
+  environment       String?
+
+  /*
+   * Einheitlicher Orchestrator-Status:
+   *
+   * pending
+   * publishing
+   * published
+   * failed
+   * action_required
+   * skipped
+   */
+  status String @default("pending")
+
+  /*
+   * Bewusst zunaechst nur IDs und keine
+   * Foreign Keys:
+   *
+   * Der Run-/Target-Verlauf soll bestehen
+   * bleiben, selbst wenn Publish-Jobs
+   * spaeter archiviert oder entfernt werden.
+   */
+  portalJobId String?
+  socialJobId String?
+
+  externalId  String?
+  externalUrl String?
+
+  errorCode    String?
+  errorMessage String?
+
+  publishedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([runId, targetKey])
+  @@index([runId, status])
+  @@index([portalJobId])
+  @@index([socialJobId])
 }
 
 model FloorPlan {
