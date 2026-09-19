@@ -107,6 +107,12 @@ type ValuationIntakeResult = {
 
 
 type ResponsePayload = {
+  /* VALUATION INTAKE RESPONSE STATUS V1 */
+  status?: string;
+
+  incomplete_details?: {
+    reason?: string | null;
+  } | null;
   output?: Array<{
     content?: Array<{
       type?: string;
@@ -1160,7 +1166,7 @@ export async function POST(
             store: false,
 
             max_output_tokens:
-              3000,
+              8000,
 
             input: [
               {
@@ -1210,6 +1216,37 @@ export async function POST(
         responsePayload
       );
 
+    const incompleteReason =
+      responsePayload
+        .incomplete_details
+        ?.reason || null;
+
+    if (
+      responsePayload.status ===
+        "incomplete"
+    ) {
+      console.error(
+        "[valuation/intake:incomplete]",
+        {
+          status:
+            responsePayload.status,
+
+          reason:
+            incompleteReason,
+
+          outputLength:
+            outputText.length,
+        }
+      );
+
+      throw new Error(
+        incompleteReason ===
+          "max_output_tokens"
+          ? "VALUATION_INTAKE_MAX_OUTPUT_TOKENS"
+          : "VALUATION_INTAKE_INCOMPLETE"
+      );
+    }
+
 
     if (!outputText) {
       throw new Error(
@@ -1228,6 +1265,31 @@ export async function POST(
         ) as
           ValuationIntakeResult;
     } catch {
+      const trimmedOutput =
+        outputText.trim();
+
+      console.error(
+        "[valuation/intake:invalid-json]",
+        {
+          status:
+            responsePayload.status ||
+            null,
+
+          incompleteReason,
+
+          outputLength:
+            trimmedOutput.length,
+
+          startsWithObject:
+            trimmedOutput
+              .startsWith("{"),
+
+          endsWithObject:
+            trimmedOutput
+              .endsWith("}"),
+        }
+      );
+
       throw new Error(
         "VALUATION_INTAKE_INVALID_JSON"
       );
