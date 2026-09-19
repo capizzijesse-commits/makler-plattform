@@ -420,7 +420,7 @@ export async function PATCH(
           {
             success: false,
             error:
-              "Die Bewertung ist noch nicht vollst?ndig abgeschlossen.",
+              "Die Bewertung ist noch nicht vollst\u00e4ndig abgeschlossen.",
           },
           {
             status: 409,
@@ -443,7 +443,7 @@ export async function PATCH(
         {
           success: false,
           error:
-            "Der Vermarktungsauftrag kann erst nach einer abgeschlossenen Bewertung best?tigt werden.",
+            "Der Vermarktungsauftrag kann erst nach einer abgeschlossenen Bewertung best\u00e4tigt werden.",
         },
         {
           status: 409,
@@ -461,7 +461,7 @@ export async function PATCH(
         {
           success: false,
           error:
-            "Das Objektpaket kann erst nach best?tigtem Vermarktungsauftrag abgeschlossen werden.",
+            "Das Objektpaket kann erst nach best\u00e4tigtem Vermarktungsauftrag abgeschlossen werden.",
         },
         {
           status: 409,
@@ -497,7 +497,7 @@ export async function PATCH(
         {
           success: false,
           error:
-            "Die Ver?ffentlichung kann erst nach der Vermarktungsfreigabe gestartet werden.",
+            "Die Ver\u00f6ffentlichung kann erst nach der Vermarktungsfreigabe gestartet werden.",
         },
         {
           status: 409,
@@ -515,7 +515,7 @@ export async function PATCH(
         {
           success: false,
           error:
-            "Ein Objekt kann erst nach gestarteter Ver?ffentlichung als ver?ffentlicht markiert werden.",
+            "Ein Objekt kann erst nach gestarteter Ver\u00f6ffentlichung als ver\u00f6ffentlicht markiert werden.",
         },
         {
           status: 409,
