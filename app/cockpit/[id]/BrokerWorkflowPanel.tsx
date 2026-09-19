@@ -1,4 +1,10 @@
+"use client";
+
 import Link from "next/link";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 type BrokerWorkflowPanelProps = {
   listingId: string;
@@ -18,6 +24,43 @@ type StepState =
   | "ready"
   | "pending";
 
+type WorkflowData = {
+  listingId: string;
+
+  currentStage:
+    string;
+
+  valuationId:
+    string | null;
+
+  valuationCompletedAt:
+    string | null;
+
+  mandateConfirmedAt:
+    string | null;
+
+  packagePreparedAt:
+    string | null;
+
+  marketingApprovedAt:
+    string | null;
+
+  publicationStartedAt:
+    string | null;
+
+  publishedAt:
+    string | null;
+};
+
+type WorkflowResponse = {
+  success?: boolean;
+
+  error?: string;
+
+  workflow?:
+    WorkflowData;
+};
+
 function StateBadge({
   state,
 }: {
@@ -25,25 +68,33 @@ function StateBadge({
 }) {
   const config = {
     done: {
-      label: "Erledigt",
+      label:
+        "Erledigt",
+
       className:
         "border-emerald-400/25 bg-emerald-400/[0.08] text-emerald-200",
     },
 
     active: {
-      label: "Jetzt",
+      label:
+        "Jetzt",
+
       className:
         "border-cyan-300/30 bg-cyan-300/[0.09] text-cyan-100",
     },
 
     ready: {
-      label: "Bereit",
+      label:
+        "Bereit",
+
       className:
         "border-amber-300/30 bg-amber-300/[0.08] text-amber-100",
     },
 
     pending: {
-      label: "Danach",
+      label:
+        "Danach",
+
       className:
         "border-white/10 bg-white/[0.035] text-slate-400",
     },
@@ -71,27 +122,274 @@ export default function BrokerWorkflowPanel({
   imagesReady,
   listingTextReady,
 }: BrokerWorkflowPanelProps) {
+  const [
+    workflow,
+    setWorkflow,
+  ] =
+    useState<WorkflowData | null>(
+      null
+    );
+
+  const [
+    workflowLoading,
+    setWorkflowLoading,
+  ] =
+    useState(true);
+
+  const [
+    workflowBusy,
+    setWorkflowBusy,
+  ] =
+    useState(false);
+
+  const [
+    workflowError,
+    setWorkflowError,
+  ] =
+    useState("");
+
+  useEffect(() => {
+    let cancelled =
+      false;
+
+    const loadWorkflow =
+      async () => {
+        setWorkflowLoading(
+          true
+        );
+
+        setWorkflowError(
+          ""
+        );
+
+        try {
+          const response =
+            await fetch(
+              `/api/listings/${encodeURIComponent(
+                listingId
+              )}/workflow`,
+              {
+                cache:
+                  "no-store",
+              }
+            );
+
+          const data =
+            (await response.json()) as
+              WorkflowResponse;
+
+          if (
+            !response.ok ||
+            !data.success ||
+            !data.workflow
+          ) {
+            throw new Error(
+              data.error ||
+                "Workflow konnte nicht geladen werden."
+            );
+          }
+
+          if (!cancelled) {
+            setWorkflow(
+              data.workflow
+            );
+          }
+        } catch (error) {
+          if (!cancelled) {
+            setWorkflowError(
+              error instanceof
+                Error
+                ? error.message
+                : "Workflow konnte nicht geladen werden."
+            );
+          }
+        } finally {
+          if (!cancelled) {
+            setWorkflowLoading(
+              false
+            );
+          }
+        }
+      };
+
+    void loadWorkflow();
+
+    return () => {
+      cancelled =
+        true;
+    };
+  }, [listingId]);
+
+  const updateWorkflow =
+    async (
+      action:
+        | "mandate_confirmed"
+        | "mandate_revoked"
+    ) => {
+      if (workflowBusy) {
+        return;
+      }
+
+      setWorkflowBusy(true);
+      setWorkflowError("");
+
+      try {
+        const response =
+          await fetch(
+            `/api/listings/${encodeURIComponent(
+              listingId
+            )}/workflow`,
+            {
+              method:
+                "PATCH",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body:
+                JSON.stringify({
+                  action,
+                }),
+            }
+          );
+
+        const data =
+          (await response.json()) as
+            WorkflowResponse;
+
+        if (
+          !response.ok ||
+          !data.success ||
+          !data.workflow
+        ) {
+          throw new Error(
+            data.error ||
+              "Workflow konnte nicht aktualisiert werden."
+          );
+        }
+
+        setWorkflow(
+          data.workflow
+        );
+      } catch (error) {
+        setWorkflowError(
+          error instanceof Error
+            ? error.message
+            : "Workflow konnte nicht aktualisiert werden."
+        );
+      } finally {
+        setWorkflowBusy(false);
+      }
+    };
+
   const objectPackageReady =
     coreDataReady &&
     imagesReady &&
     listingTextReady;
 
+  const valuationDone =
+    Boolean(
+      workflow
+        ?.valuationCompletedAt
+    );
+
+  const mandateDone =
+    Boolean(
+      workflow
+        ?.mandateConfirmedAt
+    );
+
+  const packageDone =
+    Boolean(
+      workflow
+        ?.packagePreparedAt
+    );
+
+  const approvalDone =
+    Boolean(
+      workflow
+        ?.marketingApprovedAt
+    );
+
+  const publicationStarted =
+    Boolean(
+      workflow
+        ?.publicationStartedAt
+    );
+
+  const published =
+    Boolean(
+      workflow
+        ?.publishedAt
+    );
+
+  const valuationState:
+    StepState =
+      valuationDone
+        ? "done"
+        : market ===
+            "CH"
+          ? "active"
+          : "pending";
+
+  const mandateState:
+    StepState =
+      mandateDone
+        ? "done"
+        : valuationDone
+          ? "active"
+          : "pending";
+
+  const packageState:
+    StepState =
+      packageDone
+        ? "done"
+        : mandateDone
+          ? "active"
+          : objectPackageReady
+            ? "ready"
+            : "pending";
+
+  const approvalState:
+    StepState =
+      approvalDone
+        ? "done"
+        : packageDone
+          ? "active"
+          : "pending";
+
+  const publicationState:
+    StepState =
+      published
+        ? "done"
+        : approvalDone ||
+            publicationStarted
+          ? "active"
+          : "pending";
+
   const packageChecks = [
     {
       label:
         "Objektdaten",
+
       ready:
         coreDataReady,
     },
+
     {
       label:
         "Bilder",
+
       ready:
         imagesReady,
     },
+
     {
       label:
         "Inserattext",
+
       ready:
         listingTextReady,
     },
@@ -122,6 +420,18 @@ export default function BrokerWorkflowPanel({
             Ver&ouml;ffentlichung bauen
             direkt aufeinander auf.
           </p>
+
+          {workflowLoading ? (
+            <p className="mt-3 text-xs font-bold text-slate-400">
+              Workflow wird geladen ...
+            </p>
+          ) : null}
+
+          {workflowError ? (
+            <div className="mt-3 rounded-xl border border-rose-300/20 bg-rose-300/[0.06] px-3 py-2 text-xs font-bold text-rose-100">
+              {workflowError}
+            </div>
+          ) : null}
         </div>
 
         <div className="min-w-[210px] rounded-2xl border border-white/[0.08] bg-slate-950/35 p-4">
@@ -188,7 +498,13 @@ export default function BrokerWorkflowPanel({
           </p>
         </div>
 
-        <div className="rounded-2xl border border-cyan-300/30 bg-cyan-300/[0.055] p-4 shadow-[0_10px_30px_rgba(34,211,238,0.08)]">
+        <div
+          className={
+            valuationDone
+              ? "rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.045] p-4"
+              : "rounded-2xl border border-cyan-300/30 bg-cyan-300/[0.055] p-4 shadow-[0_10px_30px_rgba(34,211,238,0.08)]"
+          }
+        >
           <div className="flex items-center justify-between gap-3">
             <div className="grid h-9 w-9 place-items-center rounded-xl border border-cyan-300/30 bg-cyan-300/[0.1] text-sm font-black text-cyan-100">
               2
@@ -196,10 +512,7 @@ export default function BrokerWorkflowPanel({
 
             <StateBadge
               state={
-                market ===
-                "CH"
-                  ? "active"
-                  : "pending"
+                valuationState
               }
             />
           </div>
@@ -209,9 +522,9 @@ export default function BrokerWorkflowPanel({
           </h3>
 
           <p className="mt-1 text-xs font-medium leading-5 text-slate-400">
-            Unterlagen und Objektdaten
-            analysieren und
-            Marktwert vorbereiten.
+            {valuationDone
+              ? "Marktwert wurde ermittelt und dem Objekt-Workflow zugeordnet."
+              : "Unterlagen und Objektdaten analysieren und Marktwert vorbereiten."}
           </p>
 
           {market === "CH" ? (
@@ -222,7 +535,9 @@ export default function BrokerWorkflowPanel({
               }
               className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-xl border border-cyan-300/30 bg-cyan-300/[0.09] px-3 py-2 text-xs font-black text-cyan-100 no-underline transition hover:bg-cyan-300/[0.14]"
             >
-              Bewertung starten
+              {valuationDone
+                ? "Bewertung \u00f6ffnen"
+                : "Bewertung starten"}
             </Link>
           ) : (
             <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-2 text-center text-[11px] font-bold text-slate-400">
@@ -231,14 +546,24 @@ export default function BrokerWorkflowPanel({
           )}
         </div>
 
-        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-4">
+        <div
+          className={
+            mandateDone
+              ? "rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.045] p-4"
+              : valuationDone
+                ? "rounded-2xl border border-cyan-300/30 bg-cyan-300/[0.055] p-4"
+                : "rounded-2xl border border-white/[0.08] bg-white/[0.025] p-4"
+          }
+        >
           <div className="flex items-center justify-between gap-3">
             <div className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-sm font-black text-slate-300">
               3
             </div>
 
             <StateBadge
-              state="pending"
+              state={
+                mandateState
+              }
             />
           </div>
 
@@ -247,18 +572,61 @@ export default function BrokerWorkflowPanel({
           </h3>
 
           <p className="mt-1 text-xs font-medium leading-5 text-slate-400">
-            Eigent&uuml;mer gibt den
-            Vermarktungsauftrag frei.
-            Danach wird dasselbe
-            Datenpaket weiterverwendet.
+            {mandateDone
+              ? "Vermarktungsauftrag wurde best\u00e4tigt und dauerhaft gespeichert."
+              : "Eigent&uuml;mer gibt den Vermarktungsauftrag frei. Danach wird dasselbe Datenpaket weiterverwendet."}
           </p>
+
+          {mandateDone ? (
+            <button
+              type="button"
+              disabled={
+                workflowBusy
+              }
+              onClick={() =>
+                void updateWorkflow(
+                  "mandate_revoked"
+                )
+              }
+              className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2 text-xs font-black text-slate-300 transition hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {workflowBusy
+                ? "Wird gespeichert ..."
+                : "Auftrag zur\u00fccknehmen"}
+            </button>
+          ) : valuationDone ? (
+            <button
+              type="button"
+              disabled={
+                workflowBusy
+              }
+              onClick={() =>
+                void updateWorkflow(
+                  "mandate_confirmed"
+                )
+              }
+              className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-xl border border-cyan-300/30 bg-cyan-300/[0.1] px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/[0.15] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {workflowBusy
+                ? "Wird gespeichert ..."
+                : "Auftrag erhalten"}
+            </button>
+          ) : (
+            <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-2 text-center text-[11px] font-bold text-slate-500">
+              Nach abgeschlossener Bewertung
+            </div>
+          )}
         </div>
 
         <div
           className={
-            objectPackageReady
+            packageDone
               ? "rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.045] p-4"
-              : "rounded-2xl border border-amber-300/20 bg-amber-300/[0.04] p-4"
+              : mandateDone
+                ? "rounded-2xl border border-cyan-300/30 bg-cyan-300/[0.055] p-4"
+                : objectPackageReady
+                  ? "rounded-2xl border border-amber-300/20 bg-amber-300/[0.04] p-4"
+                  : "rounded-2xl border border-white/[0.08] bg-white/[0.025] p-4"
           }
         >
           <div className="flex items-center justify-between gap-3">
@@ -268,9 +636,7 @@ export default function BrokerWorkflowPanel({
 
             <StateBadge
               state={
-                objectPackageReady
-                  ? "ready"
-                  : "pending"
+                packageState
               }
             />
           </div>
@@ -280,23 +646,35 @@ export default function BrokerWorkflowPanel({
           </h3>
 
           <p className="mt-1 text-xs font-medium leading-5 text-slate-400">
-            Inserat, Bilder,
-            Expos&eacute; und
+            Inserat, Bilder, Expos&eacute; und
             Social-Inhalte werden aus
             denselben Objektdaten
             erzeugt.
           </p>
 
-          <Link
-            href={
-              "/cockpit/" +
-              listingId +
-              "/edit"
-            }
-            className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-xl border border-amber-300/25 bg-amber-300/[0.07] px-3 py-2 text-xs font-black text-amber-100 no-underline transition hover:bg-amber-300/[0.11]"
-          >
-            Objektpaket pr&uuml;fen
-          </Link>
+          {mandateDone ? (
+            <Link
+              href={
+                "/cockpit/" +
+                listingId +
+                "/edit"
+              }
+              className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-xl border border-cyan-300/30 bg-cyan-300/[0.09] px-3 py-2 text-xs font-black text-cyan-100 no-underline transition hover:bg-cyan-300/[0.14]"
+            >
+              Vermarktung vorbereiten
+            </Link>
+          ) : (
+            <Link
+              href={
+                "/cockpit/" +
+                listingId +
+                "/edit"
+              }
+              className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-xl border border-amber-300/25 bg-amber-300/[0.07] px-3 py-2 text-xs font-black text-amber-100 no-underline transition hover:bg-amber-300/[0.11]"
+            >
+              Objektpaket pr&uuml;fen
+            </Link>
+          )}
         </div>
 
         <div className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-4">
@@ -306,7 +684,9 @@ export default function BrokerWorkflowPanel({
             </div>
 
             <StateBadge
-              state="pending"
+              state={
+                approvalState
+              }
             />
           </div>
 
@@ -328,7 +708,9 @@ export default function BrokerWorkflowPanel({
             </div>
 
             <StateBadge
-              state="pending"
+              state={
+                publicationState
+              }
             />
           </div>
 

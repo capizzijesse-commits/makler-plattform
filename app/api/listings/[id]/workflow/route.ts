@@ -1,4 +1,4 @@
-﻿import type {
+import type {
   NextRequest,
 } from "next/server";
 
@@ -352,6 +352,177 @@ export async function PATCH(
     const now =
       new Date();
 
+    /* BROKER WORKFLOW SERVER GATES V1 */
+
+    if (
+      body.action ===
+        "valuation_completed"
+    ) {
+      const valuationId =
+        typeof body.valuationId ===
+          "string"
+          ? body.valuationId.trim()
+          : "";
+
+      if (!valuationId) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "Eine abgeschlossene Bewertung ist erforderlich.",
+          },
+          {
+            status: 409,
+          }
+        );
+      }
+
+      const completedValuation =
+        await prisma
+          .valuation
+          .findFirst({
+            where: {
+              id:
+                valuationId,
+
+              userId:
+                user.id,
+
+              status:
+                "completed",
+
+              valuedAt: {
+                not:
+                  null,
+              },
+
+              salePrice: {
+                not:
+                  null,
+              },
+
+              provider: {
+                not:
+                  null,
+              },
+            },
+
+            select: {
+              id:
+                true,
+            },
+          });
+
+      if (
+        !completedValuation
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "Die Bewertung ist noch nicht vollst?ndig abgeschlossen.",
+          },
+          {
+            status: 409,
+          }
+        );
+      }
+    }
+
+    if (
+      body.action ===
+        "mandate_confirmed" &&
+      (
+        !current
+          ?.valuationCompletedAt ||
+        !current
+          ?.valuationId
+      )
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Der Vermarktungsauftrag kann erst nach einer abgeschlossenen Bewertung best?tigt werden.",
+        },
+        {
+          status: 409,
+        }
+      );
+    }
+
+    if (
+      body.action ===
+        "package_prepared" &&
+      !current
+        ?.mandateConfirmedAt
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Das Objektpaket kann erst nach best?tigtem Vermarktungsauftrag abgeschlossen werden.",
+        },
+        {
+          status: 409,
+        }
+      );
+    }
+
+    if (
+      body.action ===
+        "marketing_approved" &&
+      !current
+        ?.packagePreparedAt
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Die Vermarktung kann erst nach einem fertig vorbereiteten Objektpaket freigegeben werden.",
+        },
+        {
+          status: 409,
+        }
+      );
+    }
+
+    if (
+      body.action ===
+        "publication_started" &&
+      !current
+        ?.marketingApprovedAt
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Die Ver?ffentlichung kann erst nach der Vermarktungsfreigabe gestartet werden.",
+        },
+        {
+          status: 409,
+        }
+      );
+    }
+
+    if (
+      body.action ===
+        "published" &&
+      !current
+        ?.publicationStartedAt
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Ein Objekt kann erst nach gestarteter Ver?ffentlichung als ver?ffentlicht markiert werden.",
+        },
+        {
+          status: 409,
+        }
+      );
+    }
+
     const next = {
       valuationId:
         current
@@ -397,11 +568,9 @@ export async function PATCH(
           now;
 
         next.valuationId =
-          typeof body.valuationId ===
-            "string" &&
-          body.valuationId.trim()
-            ? body.valuationId.trim()
-            : next.valuationId;
+          body.valuationId
+            ?.trim() ||
+          null;
 
         break;
 

@@ -2059,6 +2059,79 @@ export default function BewertungPage() {
             : "Marktwert erfolgreich ermittelt."
         );
 
+        /* BROKER WORKFLOW VALUATION SYNC V1 */
+        const workflowListingId =
+          new URLSearchParams(
+            window.location.search
+          )
+            .get("listingId")
+            ?.trim() || "";
+
+        const workflowValuationId =
+          typeof data.persistence
+            ?.valuationId ===
+            "string"
+            ? data.persistence
+                .valuationId
+            : null;
+
+        if (workflowListingId) {
+          try {
+            const workflowResponse =
+              await fetch(
+                `/api/listings/${encodeURIComponent(
+                  workflowListingId
+                )}/workflow`,
+                {
+                  method:
+                    "PATCH",
+
+                  headers: {
+                    "Content-Type":
+                      "application/json",
+                  },
+
+                  body:
+                    JSON.stringify({
+                      action:
+                        "valuation_completed",
+
+                      valuationId:
+                        workflowValuationId,
+                    }),
+                }
+              );
+
+            if (
+              !workflowResponse.ok
+            ) {
+              const workflowData =
+                (await workflowResponse
+                  .json()
+                  .catch(
+                    () => null
+                  )) as {
+                    error?:
+                      string;
+                  } | null;
+
+              console.warn(
+                "[broker-workflow]",
+                workflowData
+                  ?.error ||
+                  "Bewertung erfolgreich, Workflow-Status konnte aber nicht synchronisiert werden."
+              );
+            }
+          } catch (
+            workflowError
+          ) {
+            console.warn(
+              "[broker-workflow]",
+              workflowError
+            );
+          }
+        }
+
         window.setTimeout(
           () => {
             document
