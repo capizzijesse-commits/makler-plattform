@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ListingActions from "./ListingActions";
+import BrokerWorkflowPanel from "./BrokerWorkflowPanel";
 import PortalPublishingPanel from "./PortalPublishingPanel";
 import WorkspaceFrame from "../../components/WorkspaceFrame";
 import { useAppDialog } from "../../../components/AppDialogProvider";
@@ -779,6 +780,25 @@ function showNextImage() {
     "admin",
   ].includes(listing.viewerPlan);
 
+  const hasCoreWorkflowData =
+    Boolean(
+      listing.location?.trim() &&
+      listing.postalCode?.trim() &&
+      listing.propertyType?.trim() &&
+      typeof listing.livingArea ===
+        "number" &&
+      listing.livingArea > 0 &&
+      typeof listing.rooms ===
+        "number" &&
+      listing.rooms > 0
+    );
+
+  const hasWorkflowImages =
+    galleryImages.length > 0;
+
+  const hasWorkflowListingText =
+    variants.length > 0;
+
   return (
     <WorkspaceFrame
       market={market}
@@ -870,6 +890,20 @@ function showNextImage() {
     <strong>{formatPrice(listing.price)}</strong>
   </div>
 </header>
+
+        <BrokerWorkflowPanel
+          listingId={listing.id}
+          market={market}
+          coreDataReady={
+            hasCoreWorkflowData
+          }
+          imagesReady={
+            hasWorkflowImages
+          }
+          listingTextReady={
+            hasWorkflowListingText
+          }
+        />
 
         <div className="layout">
           <div className="mainColumn">
@@ -1467,11 +1501,19 @@ function showNextImage() {
   </Link>
 )}
 
-              <PortalPublishingPanel
-                listingId={listing.id}
-                countryCode={listing.countryCode}
-                unlockStatus={listing.unlockStatus}
-              />
+              <div
+                id="portal-publishing"
+                style={{
+                  scrollMarginTop:
+                    "110px",
+                }}
+              >
+                <PortalPublishingPanel
+                  listingId={listing.id}
+                  countryCode={listing.countryCode}
+                  unlockStatus={listing.unlockStatus}
+                />
+              </div>
               <ListingActions
                 listingId={listing.id}
                 archived={Boolean(listing.archivedAt)}
