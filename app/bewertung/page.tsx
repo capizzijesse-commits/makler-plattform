@@ -92,6 +92,54 @@ type ListingImportPayload = {
   livingArea?: number | null;
 };
 
+type IntakeStatus =
+  | "idle"
+  | "analyzing"
+  | "success"
+  | "error";
+
+type IntakeField<T> = {
+  value: T | null;
+  confidence: number;
+  source: string;
+  evidence: string;
+};
+
+type ValuationIntakeExtraction = {
+  propertyType: IntakeField<string>;
+  street: IntakeField<string>;
+  zip: IntakeField<string>;
+  city: IntakeField<string>;
+  livingArea: IntakeField<number>;
+  landArea: IntakeField<number>;
+  rooms: IntakeField<number>;
+  yearBuilt: IntakeField<number>;
+  renovationYear: IntakeField<number>;
+  condition: IntakeField<string>;
+  standard: IntakeField<string>;
+  floor: IntakeField<number>;
+  lift: IntakeField<string>;
+  parking: IntakeField<string>;
+  outdoorArea: IntakeField<string>;
+  view: IntakeField<string>;
+  sufficientForValuation: boolean;
+  missingCriticalFields: string[];
+  warnings: string[];
+};
+
+type ValuationIntakeResponse = {
+  success?: boolean;
+  error?: string;
+  extraction?: ValuationIntakeExtraction;
+  sources?: {
+    cockpit?: boolean;
+    uploadedFiles?: number;
+    listingImages?: number;
+    floorPlans?: number;
+  };
+  provider?: string;
+  priceHubbleCalled?: boolean;
+};
 function importedNumber(
   value: number | null | undefined
 ) {
@@ -254,6 +302,31 @@ export default function BewertungPage() {
   ] =
     useState("");
 
+  /* VALUATION AUTOMATIC INTAKE UI V1 */
+  const [
+    intakeFiles,
+    setIntakeFiles,
+  ] = useState<File[]>([]);
+
+  const [
+    intakeStatus,
+    setIntakeStatus,
+  ] = useState<IntakeStatus>(
+    "idle"
+  );
+
+  const [
+    intakeMessage,
+    setIntakeMessage,
+  ] = useState("");
+
+  const [
+    intakeExtraction,
+    setIntakeExtraction,
+  ] =
+    useState<ValuationIntakeExtraction | null>(
+      null
+    );
   useEffect(() => {
     const params =
       new URLSearchParams(
@@ -503,6 +576,446 @@ export default function BewertungPage() {
       cancelled = true;
     };
   }, []);
+  const addIntakeFiles = (
+    fileList: FileList | null
+  ) => {
+    if (!fileList) {
+      return;
+    }
+
+    const selected =
+      Array.from(fileList);
+
+    setIntakeFiles((current) => {
+      const combined = [
+        ...current,
+        ...selected,
+      ];
+
+      const unique =
+        combined.filter(
+          (file, index, all) =>
+            all.findIndex(
+              (candidate) =>
+                candidate.name ===
+                  file.name &&
+                candidate.size ===
+                  file.size &&
+                candidate.lastModified ===
+                  file.lastModified
+            ) === index
+        );
+
+      return unique.slice(0, 10);
+    });
+
+    setIntakeStatus("idle");
+    setIntakeMessage("");
+    setIntakeExtraction(null);
+  };
+
+  const removeIntakeFile = (
+    index: number
+  ) => {
+    setIntakeFiles((current) =>
+      current.filter(
+        (_, currentIndex) =>
+          currentIndex !== index
+      )
+    );
+  };
+
+  const handleIntakeAnalysis =
+    async () => {
+      if (
+        intakeStatus ===
+          "analyzing"
+      ) {
+        return;
+      }
+
+      const params =
+        new URLSearchParams(
+          window.location.search
+        );
+
+      const listingId =
+        params
+          .get("listingId")
+          ?.trim() || "";
+
+      if (
+        !listingId &&
+        intakeFiles.length === 0
+      ) {
+        setIntakeStatus("error");
+        setIntakeMessage(
+          "Bitte Unterlagen hochladen oder mit dem Handy scannen."
+        );
+        return;
+      }
+
+      setIntakeStatus(
+        "analyzing"
+      );
+
+      setIntakeMessage(
+        "Inserat-AI analysiert Cockpit-Daten, Dokumente, Grundrisse und Fotos ..."
+      );
+
+      setIntakeExtraction(null);
+
+      try {
+        const payload =
+          new FormData();
+
+        if (listingId) {
+          payload.append(
+            "listingId",
+            listingId
+          );
+        }
+
+        intakeFiles.forEach(
+          (file) => {
+            payload.append(
+              "files",
+              file,
+              file.name
+            );
+          }
+        );
+
+        const response =
+          await fetch(
+            "/api/valuation/intake",
+            {
+              method: "POST",
+              body: payload,
+              cache: "no-store",
+            }
+          );
+
+        const data =
+          (await response.json()) as
+            ValuationIntakeResponse;
+
+        if (
+          !response.ok ||
+          !data.success ||
+          !data.extraction
+        ) {
+          throw new Error(
+            data.error ||
+              "Die Unterlagen konnten nicht automatisch analysiert werden."
+          );
+        }
+
+        const extraction =
+          data.extraction;
+
+        setIntakeExtraction(
+          extraction
+        );
+
+        const stringValue = (
+          field: IntakeField<string>,
+          fallback: string
+        ) => {
+          return typeof field.value ===
+            "string" &&
+            field.value.trim()
+            ? field.value.trim()
+            : fallback;
+        };
+
+        const numberValue = (
+          field: IntakeField<number>,
+          fallback: string
+        ) => {
+          return typeof field.value ===
+            "number" &&
+            Number.isFinite(
+              field.value
+            )
+            ? String(field.value)
+            : fallback;
+        };
+
+        const nextForm:
+          ValuationForm = {
+            ...form,
+
+            propertyType:
+              stringValue(
+                extraction.propertyType,
+                form.propertyType
+              ),
+
+            street:
+              stringValue(
+                extraction.street,
+                form.street
+              ),
+
+            zip:
+              stringValue(
+                extraction.zip,
+                form.zip
+              ),
+
+            city:
+              stringValue(
+                extraction.city,
+                form.city
+              ),
+
+            livingArea:
+              numberValue(
+                extraction.livingArea,
+                form.livingArea
+              ),
+
+            landArea:
+              numberValue(
+                extraction.landArea,
+                form.landArea
+              ),
+
+            rooms:
+              numberValue(
+                extraction.rooms,
+                form.rooms
+              ),
+
+            yearBuilt:
+              numberValue(
+                extraction.yearBuilt,
+                form.yearBuilt
+              ),
+
+            renovationYear:
+              numberValue(
+                extraction.renovationYear,
+                form.renovationYear
+              ),
+
+            condition:
+              stringValue(
+                extraction.condition,
+                form.condition
+              ),
+
+            standard:
+              stringValue(
+                extraction.standard,
+                form.standard
+              ),
+
+            floor:
+              numberValue(
+                extraction.floor,
+                form.floor
+              ),
+
+            lift:
+              stringValue(
+                extraction.lift,
+                form.lift
+              ),
+
+            parking:
+              stringValue(
+                extraction.parking,
+                form.parking
+              ),
+
+            outdoorArea:
+              stringValue(
+                extraction.outdoorArea,
+                form.outdoorArea
+              ),
+
+            view:
+              stringValue(
+                extraction.view,
+                form.view
+              ),
+          };
+
+        setForm(nextForm);
+
+        setValuationStatus(
+          "idle"
+        );
+        setValuation(null);
+        setValuationMessage("");
+        setSavedValuationId(null);
+        setPdfStatus("idle");
+        setPdfMessage("");
+
+        setVerifiedLocation(null);
+        setVerifiedAddressKey("");
+        setLocationStatus("idle");
+        setLocationMessage("");
+
+        const street =
+          nextForm.street.trim();
+
+        const zip =
+          nextForm.zip.trim();
+
+        const city =
+          nextForm.city.trim();
+
+        let addressVerified =
+          false;
+
+        if (
+          street &&
+          zip &&
+          city
+        ) {
+          try {
+            setLocationStatus(
+              "checking"
+            );
+
+            setLocationMessage(
+              "Schweizer Adresse wird automatisch best\u00e4tigt ..."
+            );
+
+            const locationResponse =
+              await fetch(
+                "/api/valuation/location",
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type":
+                      "application/json",
+                  },
+                  body:
+                    JSON.stringify({
+                      street,
+                      zip,
+                      city,
+                    }),
+                  cache: "no-store",
+                }
+              );
+
+            const locationData =
+              (await locationResponse.json()) as {
+                success?: boolean;
+                error?: string;
+                location?: VerifiedLocation;
+              };
+
+            if (
+              locationResponse.ok &&
+              locationData.success &&
+              locationData.location
+            ) {
+              const addressKey = [
+                street.toLocaleLowerCase(
+                  "de-CH"
+                ),
+                zip,
+                city.toLocaleLowerCase(
+                  "de-CH"
+                ),
+              ].join("|");
+
+              setVerifiedLocation(
+                locationData.location
+              );
+
+              setVerifiedAddressKey(
+                addressKey
+              );
+
+              setLocationStatus(
+                "verified"
+              );
+
+              setLocationMessage(
+                "Schweizer Adresse automatisch erkannt."
+              );
+
+              addressVerified =
+                true;
+            } else {
+              setLocationStatus(
+                "error"
+              );
+
+              setLocationMessage(
+                locationData.error ||
+                  "Die erkannte Adresse konnte nicht automatisch best\u00e4tigt werden."
+              );
+            }
+          } catch {
+            setLocationStatus(
+              "error"
+            );
+
+            setLocationMessage(
+              "Die erkannte Adresse konnte momentan nicht automatisch best\u00e4tigt werden."
+            );
+          }
+        }
+
+        const missing =
+          extraction
+            .missingCriticalFields ||
+          [];
+
+        if (
+          extraction
+            .sufficientForValuation &&
+          missing.length === 0 &&
+          addressVerified
+        ) {
+          setStep(4);
+
+          setIntakeMessage(
+            "Alle kritischen Bewertungsdaten wurden automatisch erkannt. Die Schweizer Adresse ist best\u00e4tigt. Das Objekt ist bereit f\u00fcr die Marktwertberechnung."
+          );
+        } else if (
+          missing.length > 0
+        ) {
+          setIntakeMessage(
+            "Analyse abgeschlossen. F?r eine belastbare Bewertung fehlen noch: " +
+              missing.join(", ") +
+              ". Bitte weitere Unterlagen hochladen oder scannen."
+          );
+        } else if (
+          !addressVerified
+        ) {
+          setIntakeMessage(
+            "Die Objektdaten wurden erkannt. F?r die Bewertung muss nur noch die Schweizer Adresse eindeutig best\u00e4tigt werden."
+          );
+        } else {
+          setIntakeMessage(
+            "Die Unterlagen wurden analysiert und die erkannten Angaben automatisch \u00fcbernommen."
+          );
+        }
+
+        setIntakeStatus(
+          "success"
+        );
+      } catch (error) {
+        setIntakeStatus(
+          "error"
+        );
+
+        setIntakeMessage(
+          error instanceof Error
+            ? error.message
+            : "Die automatische Dokumentenanalyse ist momentan nicht m\u00f6glich."
+        );
+      }
+    };
   const updateField = (
     field: keyof ValuationForm,
     value: string
@@ -1607,6 +2120,159 @@ export default function BewertungPage() {
             für den Schweizer Immobilienmarkt vor.
           </p>
 
+          {/* VALUATION AUTOMATIC INTAKE UI V1 */}
+          <div className="mt-6 max-w-4xl rounded-[24px] border border-cyan-300/20 bg-cyan-300/[0.045] p-4 sm:p-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300">
+                  Automatische Objektaufnahme
+                </p>
+
+                <h2 className="mt-2 text-xl font-black text-white sm:text-2xl">
+                  Unterlagen hochladen oder scannen
+                </h2>
+
+                <p className="mt-2 text-sm font-medium leading-6 text-slate-300">
+                  Laden Sie Verkaufsdokumentation, Grundrisse oder Objektfotos hoch. Inserat-AI liest die wertrelevanten Angaben automatisch aus und kombiniert sie mit den bereits vorhandenen Cockpit-Daten.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.06] px-3 py-2.5 text-xs font-bold text-emerald-200">
+                {"Keine manuelle Dateneingabe n\u00f6tig"}
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <label className="flex min-h-14 cursor-pointer items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-black text-white transition hover:border-cyan-300/35 hover:bg-cyan-300/[0.07]">
+                Unterlagen hochladen
+
+                <input
+                  type="file"
+                  multiple
+                  accept="application/pdf,image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={(event) => {
+                    addIntakeFiles(
+                      event.currentTarget.files
+                    );
+                    event.currentTarget.value = "";
+                  }}
+                />
+              </label>
+
+              <label className="flex min-h-14 cursor-pointer items-center justify-center rounded-2xl border border-cyan-300/25 bg-cyan-300/[0.07] px-4 py-3 text-sm font-black text-cyan-100 transition hover:border-cyan-300/45 hover:bg-cyan-300/[0.11]">
+                Dokument mit Handy scannen
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(event) => {
+                    addIntakeFiles(
+                      event.currentTarget.files
+                    );
+                    event.currentTarget.value = "";
+                  }}
+                />
+              </label>
+            </div>
+
+            {intakeFiles.length > 0 && (
+              <div className="mt-4 grid gap-2">
+                {intakeFiles.map(
+                  (file, index) => (
+                    <div
+                      key={`${file.name}-${file.size}-${file.lastModified}`}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.07] bg-slate-950/35 px-3 py-2.5"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-black text-white">
+                          {file.name}
+                        </p>
+
+                        <p className="mt-0.5 text-[10px] font-semibold text-slate-400">
+                          {(file.size / 1024 / 1024).toFixed(1)} MB
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          removeIntakeFile(index)
+                        }
+                        className="shrink-0 rounded-lg border border-white/10 px-2.5 py-1.5 text-[10px] font-black text-slate-300 hover:border-rose-400/30 hover:text-rose-200"
+                      >
+                        Entfernen
+                      </button>
+                    </div>
+                  )
+                )}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleIntakeAnalysis}
+              disabled={
+                intakeStatus ===
+                  "analyzing" ||
+                listingImportStatus ===
+                  "loading"
+              }
+              className="mt-4 min-h-13 w-full rounded-2xl bg-gradient-to-r from-cyan-300 to-sky-400 px-5 py-3.5 text-sm font-black text-slate-950 shadow-[0_12px_35px_rgba(34,211,238,0.18)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {intakeStatus ===
+              "analyzing"
+                ? "Inserat-AI analysiert die Immobilie ..."
+                : "Immobilie automatisch analysieren"}
+            </button>
+
+            {intakeStatus !==
+              "idle" && (
+              <div
+                className={`mt-4 rounded-2xl border px-4 py-3 ${
+                  intakeStatus ===
+                  "error"
+                    ? "border-rose-400/25 bg-rose-400/[0.07]"
+                    : intakeStatus ===
+                        "success"
+                      ? "border-emerald-400/25 bg-emerald-400/[0.07]"
+                      : "border-cyan-400/25 bg-cyan-400/[0.07]"
+                }`}
+              >
+                <p className="text-xs font-black text-white">
+                  {intakeStatus ===
+                  "analyzing"
+                    ? "Automatische Analyse l\u00e4uft"
+                    : intakeStatus ===
+                        "success"
+                      ? "Objektdaten automatisch erkannt"
+                      : "Analyse nicht abgeschlossen"}
+                </p>
+
+                <p className="mt-1 text-xs font-medium leading-5 text-slate-300">
+                  {intakeMessage}
+                </p>
+
+                {intakeExtraction &&
+                  intakeExtraction.warnings.length > 0 && (
+                    <div className="mt-3">
+                      {intakeExtraction.warnings.map(
+                        (warning) => (
+                          <p
+                            key={warning}
+                            className="mt-1 text-[11px] font-semibold leading-5 text-amber-200"
+                          >
+                            Hinweis: {warning}
+                          </p>
+                        )
+                      )}
+                    </div>
+                  )}
+              </div>
+            )}
+          </div>
           {listingImportStatus !==
             "idle" && (
             <div
