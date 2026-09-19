@@ -15,6 +15,11 @@ import {
   type ImmoweltDeOpenImmoProvider,
 } from "@/lib/portal-integrations/immowelt-de-transport-foundation.server";
 
+import {
+  buildImmobilienDeTransportPreflightV1,
+  type ImmobilienDeOpenImmoProvider,
+} from "@/lib/portal-integrations/immobilien-de-transport-foundation.server";
+
 
 function dispatcherError(
   code:
@@ -61,6 +66,9 @@ export type PortalPublishDryRunOptions = {
 
   immoweltProvider?:
     ImmoweltDeOpenImmoProvider;
+
+  immobilienDeProvider?:
+    ImmobilienDeOpenImmoProvider;
 };
 
 
@@ -247,9 +255,63 @@ export async function executePortalPublishJobDryRun(
     }
 
 
+    case "immobilien_de": {
+
+      /*
+       * Immobilien.de bleibt aktuell
+       * reiner lokaler Preflight.
+       *
+       * Kein FTP.
+       * Kein Netzwerk.
+       * Kein Upload.
+       * Kein Production Publishing.
+       */
+      if (
+        job.environment !==
+        "test"
+      ) {
+
+        throw dispatcherError(
+          "PORTAL_PRODUCTION_NOT_ENABLED",
+          "Immobilien.de Preflight ist ausschließlich im Testmodus erlaubt."
+        );
+      }
+
+
+      const provider =
+        input.immobilienDeProvider;
+
+
+      if (!provider) {
+
+        throw dispatcherError(
+          "PORTAL_DRY_RUN_PROVIDER_MISSING",
+          "Immobilien.de OpenImmo Provider-Konfiguration fehlt für den Preflight."
+        );
+      }
+
+
+      const preflight =
+        buildImmobilienDeTransportPreflightV1({
+          job,
+
+          provider,
+        });
+
+
+      return {
+        resultSnapshot: {
+          dryRun:
+            true,
+
+          ...preflight,
+        },
+      };
+    }
+
+
     case "immoscout24_de":
     case "wg_gesucht_de":
-    case "immobilien_de":
     case "immoscout24_ch":
     case "homegate_ch":
     case "comparis_ch":
