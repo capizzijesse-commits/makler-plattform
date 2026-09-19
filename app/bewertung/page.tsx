@@ -985,7 +985,7 @@ export default function BewertungPage() {
           missing.length > 0
         ) {
           setIntakeMessage(
-            "Analyse abgeschlossen. F?r eine belastbare Bewertung fehlen noch: " +
+            "Analyse abgeschlossen. F\u00fcr eine belastbare Bewertung fehlen noch: " +
               missing.join(", ") +
               ". Bitte weitere Unterlagen hochladen oder scannen."
           );
@@ -993,7 +993,7 @@ export default function BewertungPage() {
           !addressVerified
         ) {
           setIntakeMessage(
-            "Die Objektdaten wurden erkannt. F?r die Bewertung muss nur noch die Schweizer Adresse eindeutig best\u00e4tigt werden."
+            "Die Objektdaten wurden erkannt. F\u00fcr die Bewertung muss nur noch die Schweizer Adresse eindeutig best\u00e4tigt werden."
           );
         } else {
           setIntakeMessage(
