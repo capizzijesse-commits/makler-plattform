@@ -86,7 +86,7 @@ function formatValuationMoney(
     typeof value !== "number" ||
     !Number.isFinite(value)
   ) {
-    return "?";
+    return "\u2014";
   }
 
   try {
@@ -126,10 +126,10 @@ function valuationConfidenceLabel(
   }
 
   if (value === "poor") {
-    return "Eingeschr?nkt";
+    return "Eingeschr\u00e4nkt";
   }
 
-  return "?";
+  return "\u2014";
 }
 
 function StateBadge({
@@ -509,10 +509,10 @@ export default function BrokerWorkflowPanel({
 
   const workflowPhaseLabel =
     published
-      ? "Ver?ffentlicht"
+      ? "Ver\u00f6ffentlicht"
       : publicationStarted ||
           approvalDone
-        ? "Ver?ffentlichung"
+        ? "Ver\u00f6ffentlichung"
         : packageDone
           ? "Freigabe"
           : mandateDone
@@ -662,7 +662,7 @@ export default function BrokerWorkflowPanel({
                       valuationSummary.salePriceLower,
                       valuationSummary.currency
                     )}{" "}
-                    ?{" "}
+                    &ndash;{" "}
                     {formatValuationMoney(
                       valuationSummary.salePriceUpper,
                       valuationSummary.currency
@@ -683,8 +683,8 @@ export default function BrokerWorkflowPanel({
                       ? formatValuationMoney(
                           valuationSummary.pricePerSqm,
                           valuationSummary.currency
-                        ) + "/m?"
-                      : "?"}
+                        ) + "/m\u00b2"
+                      : "\u2014"}
                   </p>
                 </div>
 
@@ -711,7 +711,7 @@ export default function BrokerWorkflowPanel({
                       ? valuationSummary.locationScore.toFixed(
                           3
                         )
-                      : "?"}
+                      : "\u2014"}
                   </p>
                 </div>
 
@@ -739,7 +739,7 @@ export default function BrokerWorkflowPanel({
                             valuationSummary.valuedAt
                           )
                         )
-                      : "?"}
+                      : "\u2014"}
                   </p>
                 </div>
               </div>
@@ -759,7 +759,7 @@ export default function BrokerWorkflowPanel({
                 >
                   {workflowBusy
                     ? "Wird gespeichert ..."
-                    : "Auftrag best?tigen & weiter"}
+                    : "Auftrag best\u00e4tigen & weiter"}
                 </button>
               ) : !packageDone ? (
                 <Link
@@ -781,7 +781,7 @@ export default function BrokerWorkflowPanel({
                   }
                   className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-cyan-300/30 bg-cyan-300/[0.09] px-4 py-2.5 text-xs font-black text-cyan-100 no-underline transition hover:bg-cyan-300/[0.14]"
                 >
-                  Objektpaket ?ffnen
+                  Objektpaket &ouml;ffnen
                 </Link>
               )}
 
@@ -798,14 +798,14 @@ export default function BrokerWorkflowPanel({
 
             {!mandateDone ? (
               <p className="mt-2 text-[10px] font-semibold leading-4 text-slate-500">
-                Auftrag nur best?tigen, wenn der Vermarktungsauftrag tats?chlich vorliegt.
+                Auftrag nur best&auml;tigen, wenn der Vermarktungsauftrag tats&auml;chlich vorliegt.
               </p>
             ) : null}
           </div>
         ) : valuationDone ? (
           <div className="p-4 sm:p-5">
             <div className="rounded-xl border border-amber-300/20 bg-amber-300/[0.05] px-4 py-3 text-xs font-semibold leading-5 text-amber-100">
-              Der Workflow enth?lt eine abgeschlossene Bewertung, die Bewertungsdetails konnten aber nicht geladen werden.
+              Der Workflow enth&auml;lt eine abgeschlossene Bewertung, die Bewertungsdetails konnten aber nicht geladen werden.
             </div>
           </div>
         ) : null}
