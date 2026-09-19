@@ -24,6 +24,10 @@ import {
   type WgGesuchtDeOpenImmoProvider,
 } from "@/lib/portal-integrations/wg-gesucht-de-transport-foundation.server";
 
+import {
+  buildImmoScout24DeTransportPreflightV1,
+} from "@/lib/portal-integrations/immoscout24-de-transport-foundation.server";
+
 
 function dispatcherError(
   code:
@@ -371,7 +375,44 @@ export async function executePortalPublishJobDryRun(
       };
     }
 
-    case "immoscout24_de":
+    case "immoscout24_de": {
+
+      /*
+       * Zentraler lokaler Payload-Preflight.
+       *
+       * Kein OAuth.
+       * Kein HTTP.
+       * Kein Sandbox-Publish.
+       * Kein Production Publishing.
+       */
+      if (
+        job.environment !==
+        "test"
+      ) {
+
+        throw dispatcherError(
+          "PORTAL_PRODUCTION_NOT_ENABLED",
+          "ImmoScout24 DE Preflight ist nur im Testmodus erlaubt."
+        );
+      }
+
+
+      const preflight =
+        buildImmoScout24DeTransportPreflightV1({
+          job,
+        });
+
+
+      return {
+        resultSnapshot: {
+          dryRun:
+            true,
+
+          ...preflight,
+        },
+      };
+    }
+
     case "immoscout24_ch":
     case "homegate_ch":
     case "comparis_ch":
