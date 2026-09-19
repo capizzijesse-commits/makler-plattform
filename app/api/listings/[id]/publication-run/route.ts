@@ -32,6 +32,11 @@ import {
   PublicationDispatchError,
 } from "@/lib/publication-orchestrator/publication-dispatcher.server";
 
+import {
+  reconcilePublicationRun,
+  PublicationReconcileError,
+} from "@/lib/publication-orchestrator/publication-reconciler.server";
+
 
 export const runtime =
   "nodejs";
@@ -589,36 +594,6 @@ export async function POST(
     }
 
 
-    const marketingApproved =
-      await isBrokerMarketingApproved({
-        userId:
-          user.id,
-
-        listingId:
-          listing.id,
-      });
-
-
-    if (!marketingApproved) {
-
-      return noStore(
-        NextResponse.json(
-          {
-            success:
-              false,
-
-            error:
-              BROKER_MARKETING_APPROVAL_REQUIRED,
-          },
-          {
-            status:
-              409,
-          }
-        )
-      );
-    }
-
-
     const rawBody:
       unknown =
       await request.json();
@@ -652,6 +627,98 @@ export async function POST(
       cleanText(
         rawBody.action
       );
+
+
+    if (
+      action ===
+      "reconcile"
+    ) {
+
+      const runId =
+        cleanText(
+          rawBody.runId
+        );
+
+
+      if (!runId) {
+
+        return noStore(
+          NextResponse.json(
+            {
+              success:
+                false,
+
+              error:
+                "PUBLICATION_RUN_ID_REQUIRED",
+            },
+            {
+              status:
+                400,
+            }
+          )
+        );
+      }
+
+
+      const result =
+        await reconcilePublicationRun({
+          userId:
+            user.id,
+
+          listingId:
+            listing.id,
+
+          runId,
+        });
+
+
+      return noStore(
+        NextResponse.json({
+          success:
+            true,
+
+          reconciled:
+            true,
+
+          ...result,
+        })
+      );
+    }
+
+
+    /*
+     * prepare + dispatch duerfen weiterhin
+     * nur nach ausdruecklicher Maklerfreigabe
+     * ausgefuehrt werden.
+     */
+    const marketingApproved =
+      await isBrokerMarketingApproved({
+        userId:
+          user.id,
+
+        listingId:
+          listing.id,
+      });
+
+
+    if (!marketingApproved) {
+
+      return noStore(
+        NextResponse.json(
+          {
+            success:
+              false,
+
+            error:
+              BROKER_MARKETING_APPROVAL_REQUIRED,
+          },
+          {
+            status:
+              409,
+          }
+        )
+      );
+    }
 
 
     if (
@@ -1372,7 +1439,9 @@ export async function POST(
 
     if (
       error instanceof
-      PublicationDispatchError
+        PublicationDispatchError ||
+      error instanceof
+        PublicationReconcileError
     ) {
 
       return noStore(
