@@ -316,6 +316,64 @@ export default function BewertungPage() {
   ] =
     useState("");
 
+  /* VALUATION CORRECTION NAV V1 */
+  const [
+    linkedListing,
+    setLinkedListing,
+  ] =
+    useState<ListingImportPayload | null>(
+      null
+    );
+
+  const [
+    valuationErrorTarget,
+    setValuationErrorTarget,
+  ] =
+    useState<{
+      step: number;
+      fieldId: string;
+    } | null>(
+      null
+    );
+
+  const [
+    correctionReturnToReview,
+    setCorrectionReturnToReview,
+  ] =
+    useState(false);
+
+  /* VALUATION STALE RESULT V1 */
+  const [
+    valuationNeedsRefresh,
+    setValuationNeedsRefresh,
+  ] =
+    useState(false);
+
+  /* VALUATION SERVER DETACH V1 */
+  const [
+    persistedValuationLinkId,
+    setPersistedValuationLinkId,
+  ] =
+    useState<string | null>(
+      null
+    );
+
+  const [
+    listingDetachStatus,
+    setListingDetachStatus,
+  ] =
+    useState<
+      "idle" |
+      "loading" |
+      "error"
+    >("idle");
+
+  const [
+    listingDetachMessage,
+    setListingDetachMessage,
+  ] =
+    useState("");
+
   /* VALUATION AUTOMATIC INTAKE UI V1 */
   const [
     intakeFiles,
@@ -404,6 +462,10 @@ export default function BewertungPage() {
 
           const listing =
             data.listing;
+
+          setLinkedListing(
+            listing
+          );
 
           const market =
             listing.market
@@ -1039,9 +1101,27 @@ export default function BewertungPage() {
       [field]: value,
     }));
 
+    const hadCompletedValuation =
+      valuationStatus ===
+        "success" ||
+      valuation !==
+        null;
+
+    if (
+      hadCompletedValuation
+    ) {
+      setValuationNeedsRefresh(
+        true
+      );
+    }
+
     setValuationStatus("idle");
     setValuation(null);
     setValuationMessage("");
+
+    setValuationErrorTarget(
+      null
+    );
 
     setPdfStatus("idle");
     setPdfMessage("");
@@ -1066,6 +1146,390 @@ export default function BewertungPage() {
       setVerifiedAddressKey("");
     }
   };
+
+  function normalizeListingText(
+    value:
+      string | null | undefined
+  ) {
+    return (
+      value
+        ?.trim()
+        .toLocaleLowerCase(
+          "de-CH"
+        )
+        .replace(
+          /\s+/g,
+          " "
+        ) ||
+      ""
+    );
+  }
+
+  function getListingAddressMismatch() {
+    if (!linkedListing) {
+      return null;
+    }
+
+    const listingZip =
+      linkedListing
+        .postalCode
+        ?.trim() || "";
+
+    const listingCity =
+      linkedListing
+        .location
+        ?.trim() || "";
+
+    const valuationZip =
+      form.zip.trim();
+
+    const valuationCity =
+      form.city.trim();
+
+    if (
+      !listingZip ||
+      !listingCity ||
+      !valuationZip ||
+      !valuationCity
+    ) {
+      return null;
+    }
+
+    const zipMismatch =
+      listingZip !==
+      valuationZip;
+
+    const cityMismatch =
+      normalizeListingText(
+        listingCity
+      ) !==
+      normalizeListingText(
+        valuationCity
+      );
+
+    if (
+      !zipMismatch &&
+      !cityMismatch
+    ) {
+      return null;
+    }
+
+    const listingStreet =
+      linkedListing
+        .street
+        ?.trim() || "";
+
+    const listingLabel =
+      [
+        listingStreet,
+        [
+          listingZip,
+          listingCity,
+        ]
+          .filter(Boolean)
+          .join(" "),
+      ]
+        .filter(Boolean)
+        .join(", ");
+
+    const valuationLabel =
+      verifiedLocation
+        ?.label ||
+      [
+        form.street.trim(),
+        [
+          valuationZip,
+          valuationCity,
+        ]
+          .filter(Boolean)
+          .join(" "),
+      ]
+        .filter(Boolean)
+        .join(", ");
+
+    return {
+      listingLabel,
+      valuationLabel,
+    };
+  }
+
+  function goToCorrection(
+    targetStep: number,
+    fieldId: string
+  ) {
+    /*
+     * Formulardaten bleiben erhalten.
+     * Nur Ansicht und Fokus wechseln.
+     */
+
+    /*
+     * VALUATION HIDE STALE RESULT V1
+     *
+     * Sobald eine bestehende Bewertung
+     * zur Korrektur geoeffnet wird,
+     * zeigen wir sie nicht mehr als
+     * aktuellen Marktwert an.
+     *
+     * Kein Provider-Aufruf.
+     */
+    if (
+      valuationStatus ===
+        "success" ||
+      valuation !==
+        null
+    ) {
+      setValuationNeedsRefresh(
+        true
+      );
+    }
+
+    setValuationMode(
+      "manual"
+    );
+
+    setStep(
+      targetStep
+    );
+
+    setCorrectionReturnToReview(
+      true
+    );
+
+    window.setTimeout(
+      () => {
+        const element =
+          document.getElementById(
+            fieldId
+          );
+
+        if (!element) {
+          return;
+        }
+
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+
+        if (
+          element instanceof
+          HTMLElement
+        ) {
+          element.focus({
+            preventScroll: true,
+          });
+        }
+      },
+      80
+    );
+  }
+
+  function returnToReview() {
+    setStep(4);
+
+    setCorrectionReturnToReview(
+      false
+    );
+
+    window.setTimeout(
+      () => {
+        document
+          .getElementById(
+            "valuation-review"
+          )
+          ?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+      },
+      80
+    );
+  }
+
+  async function detachListingFromValuation() {
+    if (
+      listingDetachStatus ===
+        "loading"
+    ) {
+      return;
+    }
+
+    const clearLocalListingLink =
+      () => {
+        const url =
+          new URL(
+            window.location.href
+          );
+
+        url.searchParams.delete(
+          "listingId"
+        );
+
+        window.history.replaceState(
+          {},
+          "",
+          url.pathname +
+            url.search +
+            url.hash
+        );
+
+        setLinkedListing(null);
+
+        setListingImportStatus(
+          "idle"
+        );
+
+        setListingImportMessage(
+          ""
+        );
+
+        setValuationErrorTarget(
+          null
+        );
+      };
+
+    const valuationId =
+      persistedValuationLinkId ||
+      savedValuationId;
+
+    /*
+     * Noch keine persistierte Bewertung:
+     * Dann existiert nur die aktuelle
+     * URL-/Cockpit-Verknuepfung.
+     */
+    if (!valuationId) {
+      clearLocalListingLink();
+
+      setListingDetachStatus(
+        "idle"
+      );
+
+      setListingDetachMessage(
+        ""
+      );
+
+      return;
+    }
+
+    setListingDetachStatus(
+      "loading"
+    );
+
+    setListingDetachMessage(
+      ""
+    );
+
+    try {
+      const response =
+        await fetch(
+          `/api/valuations/${encodeURIComponent(
+            valuationId
+          )}`,
+          {
+            method:
+              "PATCH",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body:
+              JSON.stringify({
+                action:
+                  "detach_listing",
+              }),
+
+            cache:
+              "no-store",
+          }
+        );
+
+      const data =
+        (await response.json()) as {
+          success?: boolean;
+          error?: string;
+          workflowReset?: boolean;
+        };
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+        throw new Error(
+          data.error ||
+            "Die Objektverknüpfung konnte nicht gelöst werden."
+        );
+      }
+
+      /*
+       * URL erst nach erfolgreichem
+       * Server-PATCH entfernen.
+       */
+      clearLocalListingLink();
+
+      setSavedValuationId(
+        null
+      );
+
+      setPersistedValuationLinkId(
+        null
+      );
+
+      setListingDetachStatus(
+        "idle"
+      );
+
+      setListingDetachMessage(
+        ""
+      );
+    } catch (error) {
+      setListingDetachStatus(
+        "error"
+      );
+
+      setListingDetachMessage(
+        error instanceof Error
+          ? error.message
+          : "Die Objektverknüpfung konnte nicht gelöst werden."
+      );
+    }
+  }
+
+  function correctionAction(
+    label: string,
+    value: string,
+    targetStep: number,
+    fieldId: string
+  ) {
+    return (
+      <button
+        type="button"
+        onClick={() =>
+          goToCorrection(
+            targetStep,
+            fieldId
+          )
+        }
+        className="flex min-h-16 items-center justify-between gap-3 rounded-xl border border-white/[0.08] bg-white/[0.025] px-3 py-3 text-left transition hover:border-amber-300/30 hover:bg-amber-300/[0.05]"
+      >
+        <span className="min-w-0">
+          <span className="block text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
+            {label}
+          </span>
+
+          <span className="mt-1 block truncate text-xs font-bold text-white">
+            {value ||
+              "Nicht angegeben"}
+          </span>
+        </span>
+
+        <span className="shrink-0 rounded-lg border border-amber-300/20 bg-amber-300/[0.07] px-2.5 py-1.5 text-[10px] font-black text-amber-200">
+          Ändern
+        </span>
+      </button>
+    );
+  }
 
   const nextStep = async () => {
     if (step !== 1) {
@@ -1618,6 +2082,12 @@ export default function BewertungPage() {
           "Bitte zuerst eine Schweizer Adresse bestätigen."
         );
 
+        setValuationErrorTarget({
+          step: 1,
+          fieldId:
+            "valuation-street",
+        });
+
         return;
       }
 
@@ -1638,6 +2108,67 @@ export default function BewertungPage() {
         setValuationMessage(
           "Dieser Immobilientyp wird in der aktuellen Bewertungsversion noch nicht unterstützt."
         );
+
+        setValuationErrorTarget({
+          step: 1,
+          fieldId:
+            "valuation-property-type",
+        });
+
+        return;
+      }
+
+      const currentListingId =
+        new URLSearchParams(
+          window.location.search
+        )
+          .get("listingId")
+          ?.trim() || "";
+
+      if (
+        currentListingId &&
+        !linkedListing
+      ) {
+        setValuationStatus(
+          "error"
+        );
+
+        setValuation(null);
+
+        setValuationMessage(
+          "Das verknüpfte Objekt konnte noch nicht sicher geprüft werden. Bitte kurz warten oder die Seite neu laden."
+        );
+
+        return;
+      }
+
+      const listingAddressMismatch =
+        getListingAddressMismatch();
+
+      if (
+        listingAddressMismatch
+      ) {
+        setValuationStatus(
+          "error"
+        );
+
+        setValuation(null);
+
+        setValuationMessage(
+          "Die Bewertungsadresse " +
+            listingAddressMismatch
+              .valuationLabel +
+            " stimmt nicht mit dem verknüpften Listing " +
+            listingAddressMismatch
+              .listingLabel +
+            " überein. Bitte die Adresse korrigieren oder die falsche Listing-Verknüpfung lösen."
+        );
+
+        setValuationErrorTarget({
+          step: 1,
+          fieldId:
+            "valuation-street",
+        });
 
         return;
       }
@@ -1687,6 +2218,12 @@ export default function BewertungPage() {
           "Bitte eine gültige Wohnfläche eingeben."
         );
 
+        setValuationErrorTarget({
+          step: 2,
+          fieldId:
+            "valuation-living-area",
+        });
+
         return;
       }
 
@@ -1700,6 +2237,12 @@ export default function BewertungPage() {
         setValuationMessage(
           "Bitte das Baujahr der Immobilie angeben."
         );
+
+        setValuationErrorTarget({
+          step: 2,
+          fieldId:
+            "valuation-year-built",
+        });
 
         return;
       }
@@ -1717,6 +2260,12 @@ export default function BewertungPage() {
           "Für Häuser wird die Grundstücksfläche benötigt."
         );
 
+        setValuationErrorTarget({
+          step: 2,
+          fieldId:
+            "valuation-land-area",
+        });
+
         return;
       }
 
@@ -1729,6 +2278,12 @@ export default function BewertungPage() {
           "Bitte den Objektzustand auswählen."
         );
 
+        setValuationErrorTarget({
+          step: 3,
+          fieldId:
+            "valuation-condition",
+        });
+
         return;
       }
 
@@ -1740,6 +2295,12 @@ export default function BewertungPage() {
         setValuationMessage(
           "Bitte den Ausbaustandard auswählen."
         );
+
+        setValuationErrorTarget({
+          step: 3,
+          fieldId:
+            "valuation-standard",
+        });
 
         return;
       }
@@ -1793,6 +2354,14 @@ export default function BewertungPage() {
        * in eine erfundene Anzahl
        * Parkplätze übersetzt.
        */
+
+      setValuationErrorTarget(
+        null
+      );
+
+      setCorrectionReturnToReview(
+        false
+      );
 
       setValuationStatus(
         "loading"
@@ -1935,6 +2504,10 @@ export default function BewertungPage() {
               setSavedValuationId(
                 valuationId
               );
+
+              setPersistedValuationLinkId(
+                valuationId
+              );
             } else {
               console.warn(
                 "[valuation-draft]",
@@ -2072,6 +2645,11 @@ export default function BewertungPage() {
             data.persistence
               .valuationId
           );
+
+          setPersistedValuationLinkId(
+            data.persistence
+              .valuationId
+          );
         }
 
         setValuation(
@@ -2080,6 +2658,10 @@ export default function BewertungPage() {
 
         setValuationStatus(
           "success"
+        );
+
+        setValuationNeedsRefresh(
+          false
         );
 
         setValuationMessage(
@@ -2205,6 +2787,9 @@ export default function BewertungPage() {
   const showValuationForm =
     valuationMode ===
       "manual";
+
+  const listingAddressMismatch =
+    getListingAddressMismatch();
 
   return (
     <main className="min-h-screen bg-[#050a1d] text-white">{/* VALUATION INSERAT-AI MOBILE V1.1 */}{/* VALUATION DARK PREMIUM V2.1 */}
@@ -2700,6 +3285,27 @@ export default function BewertungPage() {
               </div>
             </div>
 
+            {correctionReturnToReview &&
+              step !== 4 && (
+              <div className="sticky top-20 z-30 border-b border-amber-300/20 bg-[#111b36]/95 px-5 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:px-8">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-xs font-semibold text-amber-100">
+                    Sie korrigieren nur dieses Feld. Alle anderen Angaben bleiben erhalten.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={
+                      returnToReview
+                    }
+                    className="rounded-xl border border-amber-300/25 bg-amber-300/[0.07] px-4 py-2 text-xs font-black text-amber-100 transition hover:bg-amber-300/[0.12]"
+                  >
+                    Zur Prüfung zurück
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="px-5 py-6 sm:px-8 sm:py-7">
               {step === 1 && (
                 <div>
@@ -2719,6 +3325,7 @@ export default function BewertungPage() {
                         Immobilientyp
                       </span>
                       <select
+                        id="valuation-property-type"
                         value={form.propertyType}
                         onChange={(event) =>
                           updateField(
@@ -2754,6 +3361,7 @@ export default function BewertungPage() {
                         Strasse / Hausnummer
                       </span>
                       <input
+                        id="valuation-street"
                         value={form.street}
                         onChange={(event) =>
                           updateField(
@@ -2771,6 +3379,7 @@ export default function BewertungPage() {
                         PLZ
                       </span>
                       <input
+                        id="valuation-zip"
                         value={form.zip}
                         onChange={(event) =>
                           updateField(
@@ -2789,6 +3398,7 @@ export default function BewertungPage() {
                         Ort
                       </span>
                       <input
+                        id="valuation-city"
                         value={form.city}
                         onChange={(event) =>
                           updateField(
@@ -2897,6 +3507,7 @@ export default function BewertungPage() {
                         Wohnfläche in m²
                       </span>
                       <input
+                        id="valuation-living-area"
                         value={form.livingArea}
                         onChange={(event) =>
                           updateField(
@@ -2917,6 +3528,7 @@ export default function BewertungPage() {
                           Grundstück in m²
                         </span>
                         <input
+                          id="valuation-land-area"
                           value={form.landArea}
                           onChange={(event) =>
                             updateField(
@@ -2936,6 +3548,7 @@ export default function BewertungPage() {
                         Anzahl Zimmer
                       </span>
                       <input
+                        id="valuation-rooms"
                         value={form.rooms}
                         onChange={(event) =>
                           updateField(
@@ -2954,6 +3567,7 @@ export default function BewertungPage() {
                         Baujahr
                       </span>
                       <input
+                        id="valuation-year-built"
                         value={form.yearBuilt}
                         onChange={(event) =>
                           updateField(
@@ -2987,6 +3601,7 @@ export default function BewertungPage() {
                         Objektzustand
                       </span>
                       <select
+                        id="valuation-condition"
                         value={form.condition}
                         onChange={(event) =>
                           updateField(
@@ -3022,6 +3637,7 @@ export default function BewertungPage() {
                         Letzte grössere Renovation
                       </span>
                       <input
+                        id="valuation-renovation-year"
                         value={form.renovationYear}
                         onChange={(event) =>
                           updateField(
@@ -3040,6 +3656,7 @@ export default function BewertungPage() {
                         Ausbaustandard
                       </span>
                       <select
+                        id="valuation-standard"
                         value={form.standard}
                         onChange={(event) =>
                           updateField(
@@ -3081,6 +3698,117 @@ export default function BewertungPage() {
                     die spätere Marktwertspanne.
                   </p>
 
+                  {valuationNeedsRefresh && (
+                    <div
+                      role="status"
+                      className="mt-6 rounded-2xl border border-amber-300/30 bg-amber-300/[0.07] p-4 sm:p-5"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-amber-300/30 bg-amber-300/10 text-sm font-black text-amber-300">
+                          !
+                        </div>
+
+                        <div>
+                          <p className="text-xs font-black uppercase tracking-[0.14em] text-amber-300">
+                            Daten geändert
+                          </p>
+
+                          <p className="mt-1 text-sm font-black text-white">
+                            Der bisherige Marktwert ist nicht mehr aktuell.
+                          </p>
+
+                          <p className="mt-2 text-xs font-medium leading-5 text-slate-300">
+                            Ihre Eingaben bleiben vollständig erhalten. Prüfen Sie die Korrekturen und aktualisieren Sie den Marktwert erst danach bewusst.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {listingAddressMismatch && (
+                    <div
+                      role="alert"
+                      className="mt-6 rounded-2xl border border-rose-400/30 bg-rose-400/[0.07] p-4 sm:p-5"
+                    >
+                      <p className="text-xs font-black uppercase tracking-[0.14em] text-rose-300">
+                        Objektzuordnung prüfen
+                      </p>
+
+                      <p className="mt-2 text-sm font-black text-white">
+                        Diese Bewertung gehört nicht zum verknüpften Listing.
+                      </p>
+
+                      <div className="mt-3 grid gap-2 text-xs leading-5 text-slate-300">
+                        <p>
+                          <span className="font-black text-slate-200">
+                            Verknüpftes Listing:
+                          </span>{" "}
+                          {
+                            listingAddressMismatch
+                              .listingLabel
+                          }
+                        </p>
+
+                        <p>
+                          <span className="font-black text-slate-200">
+                            Aktuelle Bewertung:
+                          </span>{" "}
+                          {
+                            listingAddressMismatch
+                              .valuationLabel
+                          }
+                        </p>
+                      </div>
+
+                      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            goToCorrection(
+                              1,
+                              "valuation-street"
+                            )
+                          }
+                          className="rounded-xl bg-rose-300 px-4 py-2.5 text-xs font-black text-slate-950 transition hover:brightness-105"
+                        >
+                          Adresse korrigieren
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={
+                            detachListingFromValuation
+                          }
+                          disabled={
+                            listingDetachStatus ===
+                              "loading"
+                          }
+                          className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-xs font-black text-white transition hover:bg-white/[0.08] disabled:cursor-wait disabled:opacity-50"
+                        >
+                          {listingDetachStatus ===
+                            "loading"
+                            ? "Verknüpfung wird gelöst ..."
+                            : "Vom falschen Listing lösen"}
+                        </button>
+                      </div>
+
+                      <p className="mt-3 text-[11px] font-semibold leading-5 text-rose-200/80">
+                        Solange der Konflikt besteht, wird keine neue Marktwertabfrage gestartet.
+                      </p>
+
+                      {listingDetachStatus ===
+                        "error" &&
+                        listingDetachMessage && (
+                        <p
+                          role="alert"
+                          className="mt-3 rounded-xl border border-rose-300/20 bg-rose-300/[0.06] px-3 py-2 text-[11px] font-semibold leading-5 text-rose-200"
+                        >
+                          {listingDetachMessage}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   <div className="mt-7 grid gap-5 sm:grid-cols-2">
                     {form.propertyType ===
                       "apartment" && (
@@ -3090,6 +3818,7 @@ export default function BewertungPage() {
                               Etage
                             </span>
                             <input
+                              id="valuation-floor"
                               value={form.floor}
                               onChange={(event) =>
                                 updateField(
@@ -3107,6 +3836,7 @@ export default function BewertungPage() {
                               Lift
                             </span>
                             <select
+                              id="valuation-lift"
                               value={form.lift}
                               onChange={(event) =>
                                 updateField(
@@ -3138,6 +3868,7 @@ export default function BewertungPage() {
                         Parkplatz / Garage
                       </span>
                       <select
+                        id="valuation-parking"
                         value={form.parking}
                         onChange={(event) =>
                           updateField(
@@ -3173,6 +3904,7 @@ export default function BewertungPage() {
                         Aussenbereich
                       </span>
                       <select
+                        id="valuation-outdoor-area"
                         value={form.outdoorArea}
                         onChange={(event) =>
                           updateField(
@@ -3208,6 +3940,7 @@ export default function BewertungPage() {
                         Aussicht / Lagebesonderheit
                       </span>
                       <select
+                        id="valuation-view"
                         value={form.view}
                         onChange={(event) =>
                           updateField(
@@ -3244,6 +3977,7 @@ export default function BewertungPage() {
 
                   {valuationStatus ===
                     "success" &&
+                    !valuationNeedsRefresh &&
                     valuation && (
                       <div
                         id="valuation-result"
@@ -3398,6 +4132,161 @@ export default function BewertungPage() {
                         automatisch als AVM-Werttreiber
                         ausgewiesen.
                       </p>
+                    </div>
+
+                    <div
+                      id="valuation-review"
+                      className="border-b border-white/[0.08] bg-white/[0.015] px-4 py-4 sm:px-5"
+                    >
+                      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-amber-300">
+                        Direkt korrigieren
+                      </p>
+
+                      <p className="mt-1 text-xs leading-5 text-slate-400">
+                        Nur das gewünschte Merkmal ändern. Alle anderen Angaben bleiben erhalten.
+                      </p>
+
+                      <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                        {correctionAction(
+                          "Adresse",
+                          verifiedLocation
+                            ?.label ||
+                            [
+                              form.street,
+                              form.zip,
+                              form.city,
+                            ]
+                              .filter(Boolean)
+                              .join(" "),
+                          1,
+                          "valuation-street"
+                        )}
+
+                        {correctionAction(
+                          "Immobilientyp",
+                          propertyTypeLabel(
+                            form.propertyType
+                          ),
+                          1,
+                          "valuation-property-type"
+                        )}
+
+                        {correctionAction(
+                          "Wohnfläche",
+                          displayValue(
+                            form.livingArea,
+                            " m²"
+                          ),
+                          2,
+                          "valuation-living-area"
+                        )}
+
+                        {correctionAction(
+                          "Zimmer",
+                          displayValue(
+                            form.rooms
+                          ),
+                          2,
+                          "valuation-rooms"
+                        )}
+
+                        {correctionAction(
+                          "Baujahr",
+                          displayValue(
+                            form.yearBuilt
+                          ),
+                          2,
+                          "valuation-year-built"
+                        )}
+
+                        {form.propertyType !==
+                          "apartment" &&
+                          correctionAction(
+                            "Grundstück",
+                            displayValue(
+                              form.landArea,
+                              " m²"
+                            ),
+                            2,
+                            "valuation-land-area"
+                          )}
+
+                        {correctionAction(
+                          "Zustand",
+                          conditionLabel(
+                            form.condition
+                          ),
+                          3,
+                          "valuation-condition"
+                        )}
+
+                        {correctionAction(
+                          "Letzte Renovation",
+                          displayValue(
+                            form.renovationYear
+                          ),
+                          3,
+                          "valuation-renovation-year"
+                        )}
+
+                        {correctionAction(
+                          "Ausbaustandard",
+                          standardLabel(
+                            form.standard
+                          ),
+                          3,
+                          "valuation-standard"
+                        )}
+
+                        {form.propertyType ===
+                          "apartment" &&
+                          correctionAction(
+                            "Etage",
+                            displayValue(
+                              form.floor
+                            ),
+                            4,
+                            "valuation-floor"
+                          )}
+
+                        {form.propertyType ===
+                          "apartment" &&
+                          correctionAction(
+                            "Lift",
+                            liftLabel(
+                              form.lift
+                            ),
+                            4,
+                            "valuation-lift"
+                          )}
+
+                        {correctionAction(
+                          "Parkierung",
+                          parkingLabel(
+                            form.parking
+                          ),
+                          4,
+                          "valuation-parking"
+                        )}
+
+                        {correctionAction(
+                          "Aussenbereich",
+                          outdoorLabel(
+                            form.outdoorArea
+                          ),
+                          4,
+                          "valuation-outdoor-area"
+                        )}
+
+                        {correctionAction(
+                          "Aussicht / Lage",
+                          viewLabel(
+                            form.view
+                          ),
+                          4,
+                          "valuation-view"
+                        )}
+                      </div>
                     </div>
 
                     <div className="grid gap-px bg-white/[0.07] sm:grid-cols-2">
@@ -3655,6 +4544,21 @@ export default function BewertungPage() {
                       <p className="mt-1 text-sm leading-6 text-rose-200/80">
                         {valuationMessage}
                       </p>
+
+                      {valuationErrorTarget && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            goToCorrection(
+                              valuationErrorTarget.step,
+                              valuationErrorTarget.fieldId
+                            )
+                          }
+                          className="mt-4 rounded-xl bg-rose-300 px-4 py-2.5 text-xs font-black text-slate-950 transition hover:brightness-105"
+                        >
+                          Fehler direkt korrigieren
+                        </button>
+                      )}
                     </div>
                   )}
 
@@ -3695,17 +4599,26 @@ export default function BewertungPage() {
                   onClick={handleValuation}
                   disabled={
                     valuationStatus ===
-                    "loading"
+                      "loading" ||
+                    listingImportStatus ===
+                      "loading" ||
+                    Boolean(
+                      listingAddressMismatch
+                    )
                   }
                   className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl bg-gradient-to-r from-amber-300 to-amber-500 px-6 py-3 text-sm font-black text-slate-950 shadow-[0_10px_28px_rgba(245,158,11,0.18)] transition hover:brightness-105 disabled:cursor-wait disabled:opacity-60 sm:flex-none"
                 >
-                  {valuationStatus ===
-                    "loading"
-                    ? "Marktwert wird ermittelt ..."
+                  {listingAddressMismatch
+                    ? "Objektzuordnung prüfen"
                     : valuationStatus ===
-                        "success"
-                      ? "Bewertung aktualisieren"
-                      : "Immobilienwert ermitteln"}
+                        "loading"
+                      ? "Marktwert wird ermittelt ..."
+                      : valuationNeedsRefresh
+                        ? "Bewertung aktualisieren"
+                        : valuationStatus ===
+                            "success"
+                          ? "Bewertung aktualisieren"
+                          : "Immobilienwert ermitteln"}
                 </button>
               )}
             </div>
