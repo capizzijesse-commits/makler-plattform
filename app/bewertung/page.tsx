@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   downloadValuationPdf,
@@ -72,6 +72,75 @@ type MarketValuation = {
   longitude?: number | null;
 };
 
+type ListingImportStatus =
+  | "idle"
+  | "loading"
+  | "loaded"
+  | "error";
+
+type ListingImportPayload = {
+  id: string;
+  street?: string | null;
+  location?: string | null;
+  postalCode?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  market?: string | null;
+  countryCode?: string | null;
+  propertyType?: string | null;
+  rooms?: number | null;
+  livingArea?: number | null;
+};
+
+function importedNumber(
+  value: number | null | undefined
+) {
+  if (
+    typeof value === "number" &&
+    Number.isFinite(value)
+  ) {
+    return String(value);
+  }
+
+  return "";
+}
+
+function importedPropertyType(
+  value: string | null | undefined
+) {
+  const normalized =
+    value
+      ?.trim()
+      .toLocaleLowerCase("de-CH") ||
+    "";
+
+  const mapping:
+    Record<string, string> = {
+      apartment: "apartment",
+      wohnung: "apartment",
+      eigentumswohnung: "apartment",
+
+      house: "house",
+      haus: "house",
+      einfamilienhaus: "house",
+      "single-family": "house",
+      "single-family-house": "house",
+
+      "row-house": "row-house",
+      reihenhaus: "row-house",
+
+      "semi-detached":
+        "semi-detached",
+      doppeleinfamilienhaus:
+        "semi-detached",
+      doppelhaushaelfte:
+        "semi-detached",
+      "doppelhaush\u00e4lfte":
+        "semi-detached",
+    };
+
+  return mapping[normalized] || "";
+}
 const initialForm: ValuationForm = {
   propertyType: "",
   street: "",
@@ -171,6 +240,269 @@ export default function BewertungPage() {
       null
     );
 
+  const [
+    listingImportStatus,
+    setListingImportStatus,
+  ] =
+    useState<ListingImportStatus>(
+      "idle"
+    );
+
+  const [
+    listingImportMessage,
+    setListingImportMessage,
+  ] =
+    useState("");
+
+  useEffect(() => {
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const listingId =
+      params
+        .get("listingId")
+        ?.trim() || "";
+
+    if (!listingId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadListing =
+      async () => {
+        setListingImportStatus(
+          "loading"
+        );
+
+        setListingImportMessage(
+          "Objektdaten werden aus dem Makler-Cockpit geladen ..."
+        );
+
+        try {
+          const response =
+            await fetch(
+              `/api/listings/${encodeURIComponent(
+                listingId
+              )}`,
+              {
+                cache: "no-store",
+              }
+            );
+
+          const data =
+            (await response.json()) as {
+              success?: boolean;
+              error?: string;
+              listing?:
+                ListingImportPayload;
+            };
+
+          if (
+            !response.ok ||
+            !data.success ||
+            !data.listing
+          ) {
+            throw new Error(
+              data.error ||
+                "Das Objekt konnte nicht geladen werden."
+            );
+          }
+
+          if (cancelled) {
+            return;
+          }
+
+          const listing =
+            data.listing;
+
+          const market =
+            listing.market
+              ?.trim()
+              .toUpperCase() ||
+            "";
+
+          const countryCode =
+            listing.countryCode
+              ?.trim()
+              .toUpperCase() ||
+            "";
+
+          if (
+            (market &&
+              market !== "CH") ||
+            (countryCode &&
+              countryCode !== "CH")
+          ) {
+            throw new Error(
+              "Die automatische Marktwertbewertung ist aktuell nur f\u00fcr Schweizer Objekte aktiviert."
+            );
+          }
+
+          const propertyType =
+            importedPropertyType(
+              listing.propertyType
+            );
+
+          const street =
+            listing.street?.trim() ||
+            "";
+
+          const zip =
+            listing.postalCode
+              ?.trim() ||
+            "";
+
+          const city =
+            listing.location
+              ?.trim() ||
+            "";
+
+          setForm((current) => ({
+            ...current,
+
+            propertyType:
+              propertyType ||
+              current.propertyType,
+
+            street:
+              street ||
+              current.street,
+
+            zip:
+              zip ||
+              current.zip,
+
+            city:
+              city ||
+              current.city,
+
+            livingArea:
+              importedNumber(
+                listing.livingArea
+              ) ||
+              current.livingArea,
+
+            rooms:
+              importedNumber(
+                listing.rooms
+              ) ||
+              current.rooms,
+          }));
+
+          /*
+           * Imported address data is not
+           * automatically trusted as a
+           * valuation address.
+           * Existing Swiss address
+           * verification remains mandatory.
+           */
+          setLocationStatus(
+            "idle"
+          );
+
+          setLocationMessage(
+            ""
+          );
+
+          setVerifiedLocation(null);
+
+          setVerifiedAddressKey(
+            ""
+          );
+
+          setValuationStatus(
+            "idle"
+          );
+
+          setValuation(null);
+
+          setValuationMessage(
+            ""
+          );
+
+          setSavedValuationId(null);
+
+          const missing:
+            string[] = [];
+
+          if (!propertyType) {
+            missing.push(
+              "Immobilientyp"
+            );
+          }
+
+          if (!street) {
+            missing.push(
+              "Strasse"
+            );
+          }
+
+          if (!zip) {
+            missing.push(
+              "PLZ"
+            );
+          }
+
+          if (!city) {
+            missing.push(
+              "Ort"
+            );
+          }
+
+          if (
+            listing.livingArea == null
+          ) {
+            missing.push(
+              "Wohnfl\u00e4che"
+            );
+          }
+
+          if (
+            listing.rooms == null
+          ) {
+            missing.push(
+              "Zimmer"
+            );
+          }
+
+          setListingImportStatus(
+            "loaded"
+          );
+
+          setListingImportMessage(
+            missing.length
+              ?
+                `Vorhandene Objektdaten wurden automatisch \u00fcbernommen. Bitte noch erg\u00e4nzen: ${missing.join(", ")}. Weitere Bewertungsmerkmale folgen in den n\u00e4chsten Schritten.`
+              :
+                "Die vorhandenen Objektdaten wurden automatisch aus dem Makler-Cockpit \u00fcbernommen. Bitte kurz pr\u00fcfen und anschliessend die Schweizer Adresse best\u00e4tigen."
+          );
+        } catch (error) {
+          if (cancelled) {
+            return;
+          }
+
+          setListingImportStatus(
+            "error"
+          );
+
+          setListingImportMessage(
+            error instanceof Error
+              ? error.message
+              :
+                "Der automatische Objektimport ist momentan nicht m\u00f6glich."
+          );
+        }
+      };
+
+    void loadListing();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const updateField = (
     field: keyof ValuationForm,
     value: string
@@ -1274,6 +1606,32 @@ export default function BewertungPage() {
             eine strukturierte Markteinschätzung
             für den Schweizer Immobilienmarkt vor.
           </p>
+
+          {listingImportStatus !==
+            "idle" && (
+            <div
+              className={`mt-5 max-w-3xl rounded-2xl border px-4 py-4 ${
+                listingImportStatus ===
+                "error"
+                  ? "border-rose-400/25 bg-rose-400/[0.07]"
+                  : "border-cyan-400/25 bg-cyan-400/[0.07]"
+              }`}
+            >
+              <p className="text-sm font-black text-white">
+                {listingImportStatus ===
+                "loading"
+                  ? "Objektdaten werden geladen"
+                  : listingImportStatus ===
+                      "loaded"
+                    ? "Objektdaten automatisch \u00fcbernommen"
+                    : "Objektimport nicht m\u00f6glich"}
+              </p>
+
+              <p className="mt-1 text-xs font-medium leading-5 text-slate-300">
+                {listingImportMessage}
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="grid gap-5 lg:grid-cols-[280px_minmax(0,1fr)]">
