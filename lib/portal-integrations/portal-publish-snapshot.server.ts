@@ -1,4 +1,4 @@
-﻿import "server-only";
+import "server-only";
 
 import type {
   PrismaPortalListingInput,
@@ -345,6 +345,11 @@ function decodeFinance(
     askingPrice:
       optionalNumber(
         finance.askingPrice
+      ),
+
+    commissionRate:
+      optionalNumber(
+        finance.commissionRate
       ),
 
     netRentMonthly:

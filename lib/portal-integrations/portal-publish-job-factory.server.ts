@@ -143,7 +143,7 @@ export async function createGermanPortalPublishJobFromListing(
   /*
    * HARD GATE:
    *
-   * Job-Erzeugung ist standardmässig AUS.
+   * Job-Erzeugung ist standardmÃ¤ssig AUS.
    * Ohne explizites Queue-Gate
    * wird nicht einmal ein Queue-Eintrag
    * erstellt.
@@ -199,7 +199,7 @@ export async function createGermanPortalPublishJobFromListing(
 
 
   /*
-   * Listing zuerst prüfen.
+   * Listing zuerst prÃ¼fen.
    *
    * Keine Payment-/Unlock-Manipulation.
    */
@@ -279,6 +279,9 @@ export async function createGermanPortalPublishJobFromListing(
               true,
 
             askingPrice:
+              true,
+
+            commissionRate:
               true,
 
             netRentMonthly:
@@ -361,13 +364,13 @@ export async function createGermanPortalPublishJobFromListing(
     throw new GermanPortalJobCreationError(
       "PORTAL_LISTING_NOT_UNLOCKED",
       409,
-      "Inserat ist für Portal-Transfer noch nicht freigeschaltet."
+      "Inserat ist fÃ¼r Portal-Transfer noch nicht freigeschaltet."
     );
   }
 
 
   /*
-   * Portal-Verbindung gehört
+   * Portal-Verbindung gehÃ¶rt
    * zwingend demselben User.
    */
   const connection =
@@ -447,8 +450,8 @@ export async function createGermanPortalPublishJobFromListing(
    * Listing-Snapshot.
    *
    * Dieser Snapshot wird gleichzeitig
-   * für den Payload-Fingerprint und
-   * damit für Idempotency verwendet.
+   * fÃ¼r den Payload-Fingerprint und
+   * damit fÃ¼r Idempotency verwendet.
    */
   const payloadSnapshot = {
     schemaVersion:
@@ -536,6 +539,10 @@ export async function createGermanPortalPublishJobFromListing(
               askingPrice:
                 listing.finance
                   .askingPrice,
+
+              commissionRate:
+                listing.finance
+                  .commissionRate,
 
               netRentMonthly:
                 listing.finance

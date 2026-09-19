@@ -1,4 +1,4 @@
-﻿import type {
+import type {
   PortalNormalizedListing,
 } from "./normalized-listing";
 
@@ -12,6 +12,7 @@ type ListingFinanceInput = {
   marketingType?: string | null;
 
   askingPrice?: number | null;
+  commissionRate?: number | null;
 
   netRentMonthly?: number | null;
   additionalCostsMonthly?: number | null;
