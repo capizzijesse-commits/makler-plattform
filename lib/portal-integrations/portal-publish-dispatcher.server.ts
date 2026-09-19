@@ -1,4 +1,4 @@
-﻿import "server-only";
+import "server-only";
 
 import type {
   PortalPublishExecutionResult,
@@ -19,6 +19,10 @@ import {
   buildImmobilienDeTransportPreflightV1,
   type ImmobilienDeOpenImmoProvider,
 } from "@/lib/portal-integrations/immobilien-de-transport-foundation.server";
+import {
+  buildWgGesuchtDeTransportPreflightV1,
+  type WgGesuchtDeOpenImmoProvider,
+} from "@/lib/portal-integrations/wg-gesucht-de-transport-foundation.server";
 
 
 function dispatcherError(
@@ -69,6 +73,9 @@ export type PortalPublishDryRunOptions = {
 
   immobilienDeProvider?:
     ImmobilienDeOpenImmoProvider;
+
+  wgGesuchtDeProvider?:
+    WgGesuchtDeOpenImmoProvider;
 };
 
 
@@ -90,7 +97,7 @@ export async function executePortalPublishJobDryRun(
     case "kleinanzeigen_de": {
 
       /*
-       * Dry-Run ist ausschließlich
+       * Dry-Run ist ausschlieÃŸlich
        * im Test-Environment erlaubt.
        *
        * Kein Production Dry-Run.
@@ -104,7 +111,7 @@ export async function executePortalPublishJobDryRun(
 
         throw dispatcherError(
           "PORTAL_PRODUCTION_NOT_ENABLED",
-          "Kleinanzeigen DE Dry-Run ist ausschließlich im Testmodus erlaubt."
+          "Kleinanzeigen DE Dry-Run ist ausschlieÃŸlich im Testmodus erlaubt."
         );
       }
 
@@ -122,7 +129,7 @@ export async function executePortalPublishJobDryRun(
        * XML selbst wird NICHT als
        * Worker-Ergebnis gespeichert.
        *
-       * Persistiert werden ausschließlich
+       * Persistiert werden ausschlieÃŸlich
        * kleine, nicht-sensitive Metadaten.
        */
       return {
@@ -184,7 +191,7 @@ export async function executePortalPublishJobDryRun(
 
         throw dispatcherError(
           "PORTAL_PRODUCTION_NOT_ENABLED",
-          "Immowelt DE Dry-Run ist ausschließlich im Testmodus erlaubt."
+          "Immowelt DE Dry-Run ist ausschlieÃŸlich im Testmodus erlaubt."
         );
       }
 
@@ -197,7 +204,7 @@ export async function executePortalPublishJobDryRun(
 
         throw dispatcherError(
           "PORTAL_DRY_RUN_PROVIDER_MISSING",
-          "Immowelt OpenImmo Provider-Konfiguration fehlt für den Dry-Run."
+          "Immowelt OpenImmo Provider-Konfiguration fehlt fÃ¼r den Dry-Run."
         );
       }
 
@@ -273,7 +280,7 @@ export async function executePortalPublishJobDryRun(
 
         throw dispatcherError(
           "PORTAL_PRODUCTION_NOT_ENABLED",
-          "Immobilien.de Preflight ist ausschließlich im Testmodus erlaubt."
+          "Immobilien.de Preflight ist ausschlieÃŸlich im Testmodus erlaubt."
         );
       }
 
@@ -286,7 +293,7 @@ export async function executePortalPublishJobDryRun(
 
         throw dispatcherError(
           "PORTAL_DRY_RUN_PROVIDER_MISSING",
-          "Immobilien.de OpenImmo Provider-Konfiguration fehlt für den Preflight."
+          "Immobilien.de OpenImmo Provider-Konfiguration fehlt fÃ¼r den Preflight."
         );
       }
 
@@ -310,8 +317,61 @@ export async function executePortalPublishJobDryRun(
     }
 
 
+    case "wg_gesucht_de": {
+
+      /*
+       * WG-Gesucht bleibt aktuell
+       * reiner lokaler Preflight.
+       *
+       * Kein API-Aufruf.
+       * Kein Netzwerk.
+       * Kein Upload.
+       * Kein Production Publishing.
+       */
+      if (
+        job.environment !==
+        "test"
+      ) {
+
+        throw dispatcherError(
+          "PORTAL_PRODUCTION_NOT_ENABLED",
+          "WG-Gesucht Preflight ist ausschlieÃŸlich im Testmodus erlaubt."
+        );
+      }
+
+
+      const provider =
+        input.wgGesuchtDeProvider;
+
+
+      if (!provider) {
+
+        throw dispatcherError(
+          "PORTAL_DRY_RUN_PROVIDER_MISSING",
+          "WG-Gesucht OpenImmo Provider-Konfiguration fehlt fÃ¼r den Preflight."
+        );
+      }
+
+
+      const preflight =
+        buildWgGesuchtDeTransportPreflightV1({
+          job,
+
+          provider,
+        });
+
+
+      return {
+        resultSnapshot: {
+          dryRun:
+            true,
+
+          ...preflight,
+        },
+      };
+    }
+
     case "immoscout24_de":
-    case "wg_gesucht_de":
     case "immoscout24_ch":
     case "homegate_ch":
     case "comparis_ch":
@@ -344,7 +404,7 @@ export async function executePortalPublishJob(
 
   /*
    * Echter Dispatcher bleibt
-   * vollständig gesperrt.
+   * vollstÃ¤ndig gesperrt.
    *
    * Der Dry-Run oben wird NICHT
    * automatisch von diesem
