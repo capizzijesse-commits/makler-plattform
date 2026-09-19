@@ -52,6 +52,20 @@ type WorkflowData = {
     string | null;
 };
 
+type ValuationSummary = {
+  id: string;
+  addressLabel: string;
+  currency: string;
+  salePrice: number | null;
+  salePriceLower: number | null;
+  salePriceUpper: number | null;
+  pricePerSqm: number | null;
+  confidence: string | null;
+  locationScore: number | null;
+  provider: string | null;
+  valuedAt: string | null;
+};
+
 type WorkflowResponse = {
   success?: boolean;
 
@@ -59,7 +73,64 @@ type WorkflowResponse = {
 
   workflow?:
     WorkflowData;
+
+  valuation?:
+    ValuationSummary | null;
 };
+
+function formatValuationMoney(
+  value: number | null,
+  currency = "CHF"
+) {
+  if (
+    typeof value !== "number" ||
+    !Number.isFinite(value)
+  ) {
+    return "?";
+  }
+
+  try {
+    return new Intl.NumberFormat(
+      "de-CH",
+      {
+        style:
+          "currency",
+
+        currency:
+          currency || "CHF",
+
+        maximumFractionDigits:
+          0,
+      }
+    ).format(value);
+  } catch {
+    return (
+      Math.round(value).toLocaleString(
+        "de-CH"
+      ) +
+      " " +
+      (currency || "CHF")
+    );
+  }
+}
+
+function valuationConfidenceLabel(
+  value: string | null
+) {
+  if (value === "good") {
+    return "Hoch";
+  }
+
+  if (value === "medium") {
+    return "Mittel";
+  }
+
+  if (value === "poor") {
+    return "Eingeschr?nkt";
+  }
+
+  return "?";
+}
 
 function StateBadge({
   state,
@@ -131,6 +202,14 @@ export default function BrokerWorkflowPanel({
     );
 
   const [
+    valuationSummary,
+    setValuationSummary,
+  ] =
+    useState<ValuationSummary | null>(
+      null
+    );
+
+  const [
     workflowLoading,
     setWorkflowLoading,
   ] =
@@ -192,6 +271,11 @@ export default function BrokerWorkflowPanel({
           if (!cancelled) {
             setWorkflow(
               data.workflow
+            );
+
+            setValuationSummary(
+              data.valuation ??
+                null
             );
           }
         } catch (error) {
@@ -272,6 +356,11 @@ export default function BrokerWorkflowPanel({
 
         setWorkflow(
           data.workflow
+        );
+
+        setValuationSummary(
+          data.valuation ??
+            null
         );
       } catch (error) {
         setWorkflowError(
@@ -401,6 +490,37 @@ export default function BrokerWorkflowPanel({
         item.ready
     ).length;
 
+  const completedWorkflowSteps =
+    1 +
+    Number(valuationDone) +
+    Number(mandateDone) +
+    Number(packageDone) +
+    Number(approvalDone) +
+    Number(published);
+
+  const workflowProgress =
+    Math.round(
+      (
+        completedWorkflowSteps /
+        6
+      ) *
+        100
+    );
+
+  const workflowPhaseLabel =
+    published
+      ? "Ver?ffentlicht"
+      : publicationStarted ||
+          approvalDone
+        ? "Ver?ffentlichung"
+        : packageDone
+          ? "Freigabe"
+          : mandateDone
+            ? "Vermarktung vorbereiten"
+            : valuationDone
+              ? "Auftrag"
+              : "Bewertung";
+
   return (
     <section className="mb-6 overflow-hidden rounded-[26px] border border-cyan-300/20 bg-gradient-to-br from-[#111f3f] via-[#0b1730] to-[#071126] p-5 shadow-[0_22px_60px_rgba(0,0,0,0.3)] sm:p-6">
       <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
@@ -474,6 +594,221 @@ export default function BrokerWorkflowPanel({
             )}
           </div>
         </div>
+      </div>
+
+      <div className="mt-5 overflow-hidden rounded-2xl border border-white/[0.08] bg-slate-950/35">
+        <div className="flex flex-col gap-3 border-b border-white/[0.07] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-cyan-300">
+              Aktuelle Phase
+            </p>
+
+            <p className="mt-1 text-lg font-black text-white">
+              {workflowPhaseLabel}
+            </p>
+          </div>
+
+          <div className="min-w-[170px]">
+            <div className="flex items-center justify-between text-[11px] font-bold text-slate-400">
+              <span>
+                Fortschritt
+              </span>
+
+              <span className="text-cyan-200">
+                {completedWorkflowSteps}/6
+              </span>
+            </div>
+
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/[0.07]">
+              <div
+                className="h-full rounded-full bg-cyan-300 transition-all"
+                style={{
+                  width:
+                    workflowProgress +
+                    "%",
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {valuationDone &&
+        valuationSummary ? (
+          <div className="p-4 sm:p-5">
+            <div className="grid gap-4 lg:grid-cols-[1.25fr_1fr]">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-amber-300">
+                  Aktuelle Bewertung
+                </p>
+
+                <p className="mt-2 text-3xl font-black tracking-tight text-white">
+                  {formatValuationMoney(
+                    valuationSummary.salePrice,
+                    valuationSummary.currency
+                  )}
+                </p>
+
+                <p className="mt-2 text-xs font-semibold leading-5 text-slate-400">
+                  {valuationSummary.addressLabel}
+                </p>
+
+                {valuationSummary.salePriceLower !==
+                  null &&
+                valuationSummary.salePriceUpper !==
+                  null ? (
+                  <p className="mt-2 text-xs font-bold text-slate-300">
+                    Bandbreite{" "}
+                    {formatValuationMoney(
+                      valuationSummary.salePriceLower,
+                      valuationSummary.currency
+                    )}{" "}
+                    ?{" "}
+                    {formatValuationMoney(
+                      valuationSummary.salePriceUpper,
+                      valuationSummary.currency
+                    )}
+                  </p>
+                ) : null}
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-3">
+                  <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-500">
+                    Richtwert
+                  </p>
+
+                  <p className="mt-1 text-sm font-black text-white">
+                    {valuationSummary.pricePerSqm !==
+                    null
+                      ? formatValuationMoney(
+                          valuationSummary.pricePerSqm,
+                          valuationSummary.currency
+                        ) + "/m?"
+                      : "?"}
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-3">
+                  <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-500">
+                    Konfidenz
+                  </p>
+
+                  <p className="mt-1 text-sm font-black text-white">
+                    {valuationConfidenceLabel(
+                      valuationSummary.confidence
+                    )}
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-3">
+                  <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-500">
+                    Lage-Score
+                  </p>
+
+                  <p className="mt-1 text-sm font-black text-white">
+                    {typeof valuationSummary.locationScore ===
+                    "number"
+                      ? valuationSummary.locationScore.toFixed(
+                          3
+                        )
+                      : "?"}
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-3">
+                  <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-500">
+                    Stand
+                  </p>
+
+                  <p className="mt-1 text-sm font-black text-white">
+                    {valuationSummary.valuedAt
+                      ? new Intl.DateTimeFormat(
+                          "de-CH",
+                          {
+                            day:
+                              "2-digit",
+
+                            month:
+                              "2-digit",
+
+                            year:
+                              "numeric",
+                          }
+                        ).format(
+                          new Date(
+                            valuationSummary.valuedAt
+                          )
+                        )
+                      : "?"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+              {!mandateDone ? (
+                <button
+                  type="button"
+                  disabled={workflowBusy}
+                  onClick={() =>
+                    void updateWorkflow(
+                      "mandate_confirmed"
+                    )
+                  }
+                  className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-cyan-300 px-4 py-2.5 text-xs font-black text-slate-950 transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {workflowBusy
+                    ? "Wird gespeichert ..."
+                    : "Auftrag best?tigen & weiter"}
+                </button>
+              ) : !packageDone ? (
+                <Link
+                  href={
+                    "/cockpit/" +
+                    listingId +
+                    "/edit"
+                  }
+                  className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-cyan-300 px-4 py-2.5 text-xs font-black text-slate-950 no-underline transition hover:brightness-105"
+                >
+                  Vermarktung vorbereiten
+                </Link>
+              ) : (
+                <Link
+                  href={
+                    "/cockpit/" +
+                    listingId +
+                    "/edit"
+                  }
+                  className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-cyan-300/30 bg-cyan-300/[0.09] px-4 py-2.5 text-xs font-black text-cyan-100 no-underline transition hover:bg-cyan-300/[0.14]"
+                >
+                  Objektpaket ?ffnen
+                </Link>
+              )}
+
+              <Link
+                href={
+                  "/bewertung?listingId=" +
+                  listingId
+                }
+                className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.035] px-4 py-2.5 text-xs font-black text-slate-300 no-underline transition hover:bg-white/[0.06]"
+              >
+                Bewertung ansehen
+              </Link>
+            </div>
+
+            {!mandateDone ? (
+              <p className="mt-2 text-[10px] font-semibold leading-4 text-slate-500">
+                Auftrag nur best?tigen, wenn der Vermarktungsauftrag tats?chlich vorliegt.
+              </p>
+            ) : null}
+          </div>
+        ) : valuationDone ? (
+          <div className="p-4 sm:p-5">
+            <div className="rounded-xl border border-amber-300/20 bg-amber-300/[0.05] px-4 py-3 text-xs font-semibold leading-5 text-amber-100">
+              Der Workflow enth?lt eine abgeschlossene Bewertung, die Bewertungsdetails konnten aber nicht geladen werden.
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">

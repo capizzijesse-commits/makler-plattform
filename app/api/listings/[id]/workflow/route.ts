@@ -27,6 +27,79 @@ type WorkflowAction =
   | "publication_started"
   | "published";
 
+/* BROKER WORKFLOW VALUATION SUMMARY V1 */
+type WorkflowValuationSummary = {
+  id: string;
+  addressLabel: string;
+  currency: string;
+  salePrice: number | null;
+  salePriceLower: number | null;
+  salePriceUpper: number | null;
+  pricePerSqm: number | null;
+  confidence: string | null;
+  locationScore: number | null;
+  provider: string | null;
+  valuedAt: Date | null;
+};
+
+async function loadWorkflowValuation(
+  userId: string,
+  listingId: string,
+  valuationId: string | null
+): Promise<WorkflowValuationSummary | null> {
+  if (!valuationId) {
+    return null;
+  }
+
+  return prisma.valuation.findFirst({
+    where: {
+      id:
+        valuationId,
+
+      userId,
+
+      listingId,
+
+      status:
+        "completed",
+    },
+
+    select: {
+      id: true,
+
+      addressLabel:
+        true,
+
+      currency:
+        true,
+
+      salePrice:
+        true,
+
+      salePriceLower:
+        true,
+
+      salePriceUpper:
+        true,
+
+      pricePerSqm:
+        true,
+
+      confidence:
+        true,
+
+      locationScore:
+        true,
+
+      provider:
+        true,
+
+      valuedAt:
+        true,
+    },
+  });
+}
+
 function stageFromWorkflow(
   workflow: {
     valuationCompletedAt:
@@ -220,14 +293,25 @@ export async function GET(
             null,
         },
 
+        valuation:
+          null,
+
         persisted:
           false,
       });
     }
 
+    const valuation =
+      await loadWorkflowValuation(
+        user.id,
+        listing.id,
+        workflow.valuationId
+      );
+
     return NextResponse.json({
       success: true,
       workflow,
+      valuation,
       persisted:
         true,
     });
@@ -674,9 +758,17 @@ export async function PATCH(
           },
         });
 
+    const valuation =
+      await loadWorkflowValuation(
+        user.id,
+        listing.id,
+        workflow.valuationId
+      );
+
     return NextResponse.json({
       success: true,
       workflow,
+      valuation,
     });
   } catch (error) {
     console.error(

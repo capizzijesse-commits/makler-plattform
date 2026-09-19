@@ -4114,6 +4114,20 @@ export default function BewertungPage() {
                               {pdfMessage}
                             </p>
                           )}
+
+                          {linkedListing ? (
+                            <a
+                              href={
+                                "/cockpit/" +
+                                encodeURIComponent(
+                                  linkedListing.id
+                                )
+                              }
+                              className="mt-3 inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-cyan-300/30 bg-cyan-300/[0.09] px-5 py-3 text-sm font-black text-cyan-100 no-underline transition hover:bg-cyan-300/[0.14] sm:ml-2 sm:mt-0 sm:w-auto"
+                            >
+                              Weiter zum Auftrag im Objekt-Workflow
+                            </a>
+                          ) : null}
                         </div>
 
                         <div className="border-t border-white/[0.08] px-6 py-4">
