@@ -1251,6 +1251,33 @@ function showNextImage() {
               >
                 Objekt bearbeiten
               </Link>
+
+              {market === "CH" && (
+                <Link
+                  href={`/bewertung?listingId=${listing.id}`}
+                  style={{
+                    display: "inline-flex",
+                    width: "100%",
+                    minHeight: "48px",
+                    marginTop: "10px",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    border: "1px solid rgba(34, 211, 238, 0.38)",
+                    borderRadius: "11px",
+                    background:
+                      "linear-gradient(135deg, rgba(8, 145, 178, 0.22), rgba(34, 211, 238, 0.08))",
+                    color: "#67e8f9",
+                    fontWeight: 900,
+                    textDecoration: "none",
+                    boxShadow:
+                      "0 10px 24px rgba(6, 182, 212, 0.14)",
+                  }}
+                >
+                  Immobilie bewerten
+                </Link>
+              )}
+
 <Link
   href={`/dashboard/social-media?listingId=${listing.id}`}
   style={{
