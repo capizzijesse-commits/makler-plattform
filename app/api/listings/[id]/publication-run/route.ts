@@ -27,6 +27,11 @@ import {
   isGermanPortalId,
 } from "@/lib/portal-integrations/portal-publish-job-factory.server";
 
+import {
+  dispatchPublicationRun,
+  PublicationDispatchError,
+} from "@/lib/publication-orchestrator/publication-dispatcher.server";
+
 
 export const runtime =
   "nodejs";
@@ -647,6 +652,69 @@ export async function POST(
       cleanText(
         rawBody.action
       );
+
+
+    if (
+      action ===
+      "dispatch"
+    ) {
+
+      const runId =
+        cleanText(
+          rawBody.runId
+        );
+
+
+      if (!runId) {
+
+        return noStore(
+          NextResponse.json(
+            {
+              success:
+                false,
+
+              error:
+                "PUBLICATION_RUN_ID_REQUIRED",
+            },
+            {
+              status:
+                400,
+            }
+          )
+        );
+      }
+
+
+      const result =
+        await dispatchPublicationRun({
+          userId:
+            user.id,
+
+          listingId:
+            listing.id,
+
+          runId,
+        });
+
+
+      return noStore(
+        NextResponse.json(
+          {
+            success:
+              true,
+
+            dispatched:
+              true,
+
+            ...result,
+          },
+          {
+            status:
+              202,
+          }
+        )
+      );
+    }
 
 
     if (
@@ -1302,6 +1370,32 @@ export async function POST(
     error
   ) {
 
+    if (
+      error instanceof
+      PublicationDispatchError
+    ) {
+
+      return noStore(
+        NextResponse.json(
+          {
+            success:
+              false,
+
+            error:
+              error.code,
+
+            message:
+              error.message,
+          },
+          {
+            status:
+              error.httpStatus,
+          }
+        )
+      );
+    }
+
+
     console.error(
       "[publication-run] POST failed",
       error
@@ -1315,7 +1409,7 @@ export async function POST(
             false,
 
           error:
-            "PUBLICATION_RUN_PREPARE_FAILED",
+            "PUBLICATION_RUN_ACTION_FAILED",
         },
         {
           status:
