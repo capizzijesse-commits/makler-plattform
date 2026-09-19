@@ -324,6 +324,14 @@ export async function POST(
         ? body.valuationId.trim()
         : "";
 
+    /* VALUATION LISTING PERSISTENCE V1 */
+    const requestedListingId =
+      typeof body
+        ?.listingId ===
+        "string"
+        ? body.listingId.trim()
+        : "";
+
     if (requestedValuationId) {
       try {
         const user =
@@ -332,7 +340,49 @@ export async function POST(
           );
 
         if (user) {
+          let listingAllowed =
+            true;
+
+          if (
+            requestedListingId
+          ) {
+            const ownedListing =
+              await prisma
+                .listing
+                .findFirst({
+                  where: {
+                    id:
+                      requestedListingId,
+
+                    userId:
+                      user.id,
+                  },
+
+                  select: {
+                    id:
+                      true,
+
+                    countryCode:
+                      true,
+                  },
+                });
+
+            listingAllowed =
+              Boolean(
+                ownedListing &&
+                (
+                  !ownedListing
+                    .countryCode ||
+                  ownedListing
+                    .countryCode ===
+                    "CH"
+                )
+              );
+          }
+
           const updated =
+            listingAllowed
+              ?
             await prisma
               .valuation
               .updateMany({
@@ -342,6 +392,13 @@ export async function POST(
 
                   userId:
                     user.id,
+
+                  ...(requestedListingId
+                    ? {
+                        listingId:
+                          requestedListingId,
+                      }
+                    : {}),
                 },
 
                 data: {
@@ -392,7 +449,11 @@ export async function POST(
                   valuedAt:
                     new Date(),
                 },
-              });
+              })
+              : {
+                  count:
+                    0,
+                };
 
           if (
             updated.count ===

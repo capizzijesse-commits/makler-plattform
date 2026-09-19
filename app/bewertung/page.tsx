@@ -1801,6 +1801,14 @@ export default function BewertungPage() {
       let valuationId =
         savedValuationId;
 
+      /* VALUATION LISTING ID V1 */
+      const valuationListingId =
+        new URLSearchParams(
+          window.location.search
+        )
+          .get("listingId")
+          ?.trim() || "";
+
       if (!valuationId) {
         try {
           const draftResponse =
@@ -1817,6 +1825,10 @@ export default function BewertungPage() {
 
                 body:
                   JSON.stringify({
+                    listingId:
+                      valuationListingId ||
+                      null,
+
                     addressLabel:
                       verifiedLocation.label,
 
@@ -1951,6 +1963,10 @@ export default function BewertungPage() {
 
               body:
                 JSON.stringify({
+                  listingId:
+                    valuationListingId ||
+                    null,
+
                   latitude:
                     verifiedLocation.latitude,
 

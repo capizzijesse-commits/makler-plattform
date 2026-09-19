@@ -210,6 +210,72 @@ export async function POST(
     const body =
       await request.json();
 
+    /* VALUATION LISTING LINK V1 */
+    const requestedListingId =
+      optionalText(
+        body.listingId
+      );
+
+    let listingId:
+      string | null =
+      null;
+
+    if (requestedListingId) {
+      const ownedListing =
+        await prisma
+          .listing
+          .findFirst({
+            where: {
+              id:
+                requestedListingId,
+
+              userId:
+                user.id,
+            },
+
+            select: {
+              id:
+                true,
+
+              countryCode:
+                true,
+            },
+          });
+
+      if (!ownedListing) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "Das zugeh?rige Objekt wurde nicht gefunden.",
+          },
+          {
+            status: 404,
+          }
+        );
+      }
+
+      if (
+        ownedListing.countryCode &&
+        ownedListing.countryCode !==
+          "CH"
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "Die Marktwertbewertung ist aktuell nur f?r Schweizer Objekte verf?gbar.",
+          },
+          {
+            status: 400,
+          }
+        );
+      }
+
+      listingId =
+        ownedListing.id;
+    }
+
     const addressLabel =
       requiredText(
         body.addressLabel
@@ -433,6 +499,8 @@ export async function POST(
         data: {
           userId:
             user.id,
+
+          listingId,
 
           status:
             "draft",

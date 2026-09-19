@@ -625,6 +625,7 @@ model Listing {
   floorPlans        FloorPlan[]
   finance           ListingFinance?
   brokerWorkflow    BrokerWorkflow?
+  valuations        Valuation[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   listingViewEvents ListingViewEvent[]
@@ -832,6 +833,9 @@ model Valuation {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  listingId String?
+  listing   Listing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+
   status String @default("draft")
 
   // BestÃ¤tigte Schweizer Adresse
@@ -880,6 +884,8 @@ model Valuation {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([listingId])
+  @@index([listingId, status])
   @@index([userId])
   @@index([userId, createdAt])
   @@index([userId, status])

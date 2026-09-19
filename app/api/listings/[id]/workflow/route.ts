@@ -388,6 +388,10 @@ export async function PATCH(
               userId:
                 user.id,
 
+              /* VALUATION MUST BELONG TO LISTING V1 */
+              listingId:
+                listing.id,
+
               status:
                 "completed",
 
