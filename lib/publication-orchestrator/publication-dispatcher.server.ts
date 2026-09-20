@@ -88,6 +88,9 @@ type PortalJobCreator =
       scheduledFor?:
         Date |
         null;
+
+      stageOnly?:
+        boolean;
     }
   ) =>
     Promise<
@@ -106,6 +109,15 @@ export type PublicationDispatchDependencies = {
   dispatchEnabled?:
     () =>
       boolean;
+
+  /**
+   * SAFE_PORTAL_STAGING_V1
+   *
+   * true =
+   * only create/link draft portal jobs.
+   */
+  stageOnly?:
+    boolean;
 };
 
 
@@ -248,6 +260,11 @@ function mapPortalJobStatus(
   switch (
     status
   ) {
+
+    case "draft":
+
+      return "pending";
+
 
     case "queued":
     case "scheduled":
@@ -536,7 +553,14 @@ export async function dispatchPublicationRun(
     isPublicationOrchestratorDispatchEnabled;
 
 
+  const stageOnly =
+    dependencies
+      .stageOnly ===
+    true;
+
+
   if (
+    !stageOnly &&
     !dispatchEnabled()
   ) {
 
@@ -708,6 +732,20 @@ export async function dispatchPublicationRun(
       target.kind ===
       "social"
     ) {
+
+      /*
+       * SAFE staging betrifft V1
+       * ausschließlich Immobilienportale.
+       *
+       * Social bleibt unverändert pending.
+       */
+      if (
+        stageOnly
+      ) {
+
+        continue;
+      }
+
 
       /*
        * Falls später bereits ein Socialjob
@@ -1079,6 +1117,8 @@ export async function dispatchPublicationRun(
 
           portal:
             target.destination,
+
+          stageOnly,
         });
 
 
@@ -1192,9 +1232,11 @@ export async function dispatchPublicationRun(
 
 
   const status =
-    calculatePublicationRunStatus(
-      refreshed.targets
-    );
+    stageOnly
+      ? "ready"
+      : calculatePublicationRunStatus(
+          refreshed.targets
+        );
 
 
   const hasLinkedJob =
@@ -1222,10 +1264,12 @@ export async function dispatchPublicationRun(
         status,
 
         startedAt:
-          hasLinkedJob
-            ? refreshed.startedAt ??
-              timestamp
-            : refreshed.startedAt,
+          stageOnly
+            ? refreshed.startedAt
+            : hasLinkedJob
+              ? refreshed.startedAt ??
+                timestamp
+              : refreshed.startedAt,
 
         completedAt:
           status ===
@@ -1255,7 +1299,8 @@ export async function dispatchPublicationRun(
    * NICHT gesetzt.
    */
   if (
-    hasLinkedJob
+    hasLinkedJob &&
+    !stageOnly
   ) {
 
     const workflow =
@@ -1317,6 +1362,9 @@ export async function dispatchPublicationRun(
 
     externalCalls:
       0,
+
+    stagedOnly:
+      stageOnly,
 
     workerTriggered:
       false,

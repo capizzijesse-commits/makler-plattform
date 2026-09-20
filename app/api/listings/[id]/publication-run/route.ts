@@ -19,6 +19,10 @@ import {
 } from "@/lib/plans";
 
 import {
+  isDevelopmentE2EListing,
+} from "@/lib/development-e2e-access";
+
+import {
   BROKER_MARKETING_APPROVAL_REQUIRED,
   isBrokerMarketingApproved,
 } from "@/lib/broker-workflow/marketing-approval-guard.server";
@@ -273,6 +277,9 @@ async function ownedListing(
 
       select: {
         id:
+          true,
+
+        projectName:
           true,
 
         countryCode:
@@ -571,9 +578,16 @@ export async function POST(
       );
 
 
+    const hasPublishingCenterAccess =
+      capabilities
+        .canUsePublishingCenter ||
+      isDevelopmentE2EListing(
+        listing.projectName
+      );
+
+
     if (
-      !capabilities
-        .canUsePublishingCenter
+      !hasPublishingCenterAccess
     ) {
 
       return noStore(
@@ -715,6 +729,88 @@ export async function POST(
           {
             status:
               409,
+          }
+        )
+      );
+    }
+
+
+    /*
+     * SAFE_PORTAL_STAGING_V1
+     *
+     * Dieser Schritt persistiert lediglich
+     * idempotente Portal-Draft-Jobs.
+     *
+     * KEINE Queue.
+     * KEIN Worker.
+     * KEIN Provider-Netzwerk.
+     */
+    if (
+      action ===
+      "stage"
+    ) {
+
+      const runId =
+        cleanText(
+          rawBody.runId
+        );
+
+
+      if (!runId) {
+
+        return noStore(
+          NextResponse.json(
+            {
+              success:
+                false,
+
+              error:
+                "PUBLICATION_RUN_ID_REQUIRED",
+            },
+            {
+              status:
+                400,
+            }
+          )
+        );
+      }
+
+
+      const result =
+        await dispatchPublicationRun(
+          {
+            userId:
+              user.id,
+
+            listingId:
+              listing.id,
+
+            runId,
+          },
+          {
+            stageOnly:
+              true,
+          }
+        );
+
+
+      return noStore(
+        NextResponse.json(
+          {
+            success:
+              true,
+
+            staged:
+              true,
+
+            dispatched:
+              false,
+
+            ...result,
+          },
+          {
+            status:
+              201,
           }
         )
       );
@@ -1187,11 +1283,26 @@ export async function POST(
         }
 
 
+        const developmentE2EPortalPrepare =
+          isDevelopmentE2EListing(
+            listing.projectName
+          ) &&
+          target.portal ===
+            "immoscout24_de" &&
+          connection.environment ===
+            "test" &&
+          connection.status ===
+            "configured";
+
+
         if (
-          connection.status !==
-            "verified" ||
-          connection.environment !==
-            "test"
+          !developmentE2EPortalPrepare &&
+          (
+            connection.status !==
+              "verified" ||
+            connection.environment !==
+              "test"
+          )
         ) {
 
           return noStore(

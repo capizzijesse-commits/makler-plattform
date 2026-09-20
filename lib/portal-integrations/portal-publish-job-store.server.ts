@@ -12,6 +12,10 @@ import {
   prisma,
 } from "@/lib/prisma";
 
+import {
+  isDevelopmentE2EListing,
+} from "@/lib/development-e2e-access";
+
 
 export type PortalPublishJobStatus =
   | "draft"
@@ -60,6 +64,20 @@ export type CreatePortalPublishJobInput = {
 
   maxAttempts?:
     number;
+
+  /**
+   * SAFE_PORTAL_STAGING_V1
+   *
+   * draft:
+   * - persisted
+   * - idempotent
+   * - NOT claimable by worker
+   * - no provider call possible
+   */
+  initialStatus?:
+    "draft" |
+    "scheduled" |
+    "queued";
 };
 
 
@@ -398,21 +416,6 @@ export async function createPortalPublishJob(
   }
 
 
-  /*
-   * Jobs dürfen erst entstehen,
-   * wenn eine Portal-Verbindung
-   * tatsächlich verifiziert ist.
-   */
-  if (
-    connection.status !==
-    "verified"
-  ) {
-    throw new Error(
-      "Portal connection is not verified."
-    );
-  }
-
-
   const listing =
     await prisma.listing.findFirst({
       where: {
@@ -431,6 +434,9 @@ export async function createPortalPublishJob(
 
         updatedAt:
           true,
+
+        projectName:
+          true,
       },
     });
 
@@ -438,6 +444,40 @@ export async function createPortalPublishJob(
   if (!listing) {
     throw new Error(
       "Listing was not found."
+    );
+  }
+
+
+  const developmentE2EDraftConnection =
+    input.initialStatus ===
+      "draft" &&
+    action ===
+      "publish" &&
+    connection.portal ===
+      "immoscout24_de" &&
+    connection.environment ===
+      "test" &&
+    connection.status ===
+      "configured" &&
+    isDevelopmentE2EListing(
+      listing.projectName
+    );
+
+
+  /*
+   * Normalfall:
+   * Portal-Verbindung muss verifiziert sein.
+   *
+   * Einzige Ausnahme:
+   * expliziter Development-E2E-Draft.
+   */
+  if (
+    connection.status !==
+      "verified" &&
+    !developmentE2EDraftConnection
+  ) {
+    throw new Error(
+      "Portal connection is not verified."
     );
   }
 
@@ -496,9 +536,34 @@ export async function createPortalPublishJob(
 
 
   const status =
+    input.initialStatus ??
     initialStatus(
       scheduledFor
     );
+
+
+  if (
+    status ===
+      "scheduled" &&
+    !scheduledFor
+  ) {
+
+    throw new Error(
+      "scheduled status requires scheduledFor."
+    );
+  }
+
+
+  if (
+    status ===
+      "draft" &&
+    scheduledFor
+  ) {
+
+    throw new Error(
+      "draft status cannot have scheduledFor."
+    );
+  }
 
   const now =
     new Date();
@@ -553,9 +618,12 @@ export async function createPortalPublishJob(
 
         nextAttemptAt:
           status ===
-          "queued"
+            "queued"
             ? now
-            : scheduledFor,
+            : status ===
+              "scheduled"
+              ? scheduledFor
+              : null,
       },
     });
 

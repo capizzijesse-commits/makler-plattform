@@ -5,6 +5,10 @@ import {
 } from "@/lib/prisma";
 
 import {
+  isDevelopmentE2EListing,
+} from "@/lib/development-e2e-access";
+
+import {
   createPortalPublishJob,
   type PortalPublishAction,
 } from "@/lib/portal-integrations/portal-publish-job-store.server";
@@ -137,6 +141,15 @@ export async function createGermanPortalPublishJobFromListing(
     scheduledFor?:
       Date |
       null;
+
+    /**
+     * SAFE_PORTAL_STAGING_V1
+     *
+     * Erstellt ausschließlich
+     * einen nicht ausführbaren Draft-Job.
+     */
+    stageOnly?:
+      boolean;
   }
 ) {
 
@@ -149,6 +162,7 @@ export async function createGermanPortalPublishJobFromListing(
    * erstellt.
    */
   if (
+    !input.stageOnly &&
     !isPortalPublishQueueEnabled()
   ) {
 
@@ -354,7 +368,18 @@ export async function createGermanPortalPublishJobFromListing(
   }
 
 
+  const developmentE2EPortalStage =
+    input.stageOnly ===
+      true &&
+    input.portal ===
+      "immoscout24_de" &&
+    isDevelopmentE2EListing(
+      listing.projectName
+    );
+
+
   if (
+    !developmentE2EPortalStage &&
     listing.unlockStatus !==
       "paid" &&
     listing.unlockStatus !==
@@ -412,9 +437,18 @@ export async function createGermanPortalPublishJobFromListing(
   }
 
 
+  const developmentE2EConfiguredConnection =
+    developmentE2EPortalStage &&
+    connection.environment ===
+      "test" &&
+    connection.status ===
+      "configured";
+
+
   if (
     connection.status !==
-    "verified"
+      "verified" &&
+    !developmentE2EConfiguredConnection
   ) {
 
     throw new GermanPortalJobCreationError(
@@ -600,5 +634,10 @@ export async function createGermanPortalPublishJobFromListing(
     scheduledFor:
       input.scheduledFor ??
       null,
+
+    initialStatus:
+      input.stageOnly
+        ? "draft"
+        : undefined,
   });
 }
