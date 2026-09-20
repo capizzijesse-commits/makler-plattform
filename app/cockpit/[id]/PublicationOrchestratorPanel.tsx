@@ -852,7 +852,7 @@ export default function PublicationOrchestratorPanel({
                   ),
 
               fetch(
-                "/api/social-connections",
+                process.env.NODE_ENV === "production" ? "/api/social-connections?environment=production" : "/api/social-connections?environment=test",
                 {
                   method:
                     "GET",

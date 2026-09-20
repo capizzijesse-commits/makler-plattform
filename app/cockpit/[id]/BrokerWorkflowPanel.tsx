@@ -1035,7 +1035,7 @@ export default function BrokerWorkflowPanel({
             </Link>
           ) : (
             <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-2 text-center text-[11px] font-bold text-slate-400">
-              Bewertung aktuell CH
+              {valuationDone ? "Bewertung vorhanden" : "Bewertung Deutschland folgt"}
             </div>
           )}
         </div>
