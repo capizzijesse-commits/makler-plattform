@@ -17,6 +17,10 @@ import {
 } from "@/lib/portal-integrations/german-portal-listings.server";
 
 import {
+  getGermanExternalAccessReadinessV1,
+} from "@/lib/portal-integrations/german-external-access-readiness.server";
+
+import {
   getImmoScout24DeAccessSnapshot,
 } from "@/lib/portal-integrations/immoscout24-de-access.server";
 
@@ -164,6 +168,29 @@ export async function GET(
       getWgGesuchtDeAccessSnapshot();
 
 
+    /*
+     * Zentraler externer Freigabe-/
+     * Credential-Status.
+     *
+     * Rein lokale Auswertung:
+     * kein HTTP, kein FTP,
+     * kein OAuth-Start,
+     * kein Publishing.
+     */
+    const externalReadiness =
+      getGermanExternalAccessReadinessV1();
+
+    const externalReadinessByPortal =
+      new Map(
+        externalReadiness.map(
+          (entry) => [
+            entry.portal,
+            entry,
+          ]
+        )
+      );
+
+
     const byPortal =
       new Map(
         connections.map(
@@ -181,6 +208,12 @@ export async function GET(
 
           const connection =
             byPortal.get(portal);
+
+          const portalExternalReadiness =
+            externalReadinessByPortal.get(
+              portal
+            ) ??
+            null;
 
           const comingSoon =
             portal !==
@@ -215,6 +248,9 @@ export async function GET(
             externalOwnerId:
               connection?.externalOwnerId ??
               null,
+
+            externalReadiness:
+              portalExternalReadiness,
 
             access:
               portal ===
@@ -278,6 +314,8 @@ export async function GET(
         false,
 
       readiness,
+
+      externalReadiness,
 
       portals,
     });
