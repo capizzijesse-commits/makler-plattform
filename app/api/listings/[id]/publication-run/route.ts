@@ -29,10 +29,12 @@ import {
 
 import {
   isGermanPortalId,
+  isPortalPublishQueueEnabled,
 } from "@/lib/portal-integrations/portal-publish-job-factory.server";
 
 import {
   dispatchPublicationRun,
+  isPublicationOrchestratorDispatchEnabled,
   PublicationDispatchError,
 } from "@/lib/publication-orchestrator/publication-dispatcher.server";
 
@@ -406,6 +408,37 @@ export async function GET(
           true,
 
         run,
+
+        capabilities: {
+          planEligible:
+            getPlanCapabilities(
+              user.plan
+            )
+              .canUsePublishingCenter,
+
+          orchestratorDispatchEnabled:
+            isPublicationOrchestratorDispatchEnabled(),
+
+          portalQueueEnabled:
+            isPortalPublishQueueEnabled(),
+
+          canDispatchPortals:
+            getPlanCapabilities(
+              user.plan
+            )
+              .canUsePublishingCenter &&
+            isPublicationOrchestratorDispatchEnabled() &&
+            isPortalPublishQueueEnabled(),
+
+          /*
+           * Social wird absichtlich erst
+           * freigeschaltet, wenn der
+           * Content-Snapshot/Dispatcher
+           * vollständig abgesichert ist.
+           */
+          socialAutomaticDispatch:
+            false,
+        },
 
         summary:
           run
