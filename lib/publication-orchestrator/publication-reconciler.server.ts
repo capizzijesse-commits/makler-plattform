@@ -824,10 +824,34 @@ export async function reconcilePublicationRun(
   }
 
 
-  const status =
-    calculatePublicationRunStatus(
-      refreshed.targets
+  /*
+   * Ein nur vorbereiteter oder lediglich
+   * gestagter Run bleibt "ready".
+   *
+   * Eine vorhandene Job-ID allein bedeutet
+   * noch NICHT, dass Publishing begonnen hat:
+   * Safe-Staging erzeugt bewusst einen
+   * nicht ausführbaren Draft-Job.
+   *
+   * Maßgeblich ist deshalb der bereits
+   * reconciliierte Target-Status.
+   */
+  const hasStartedTarget =
+    refreshed.targets.some(
+      (target) =>
+        target.status !==
+          "pending" &&
+        target.status !==
+          "skipped"
     );
+
+
+  const status =
+    !hasStartedTarget
+      ? "ready"
+      : calculatePublicationRunStatus(
+          refreshed.targets
+        );
 
 
   const timestamp =
