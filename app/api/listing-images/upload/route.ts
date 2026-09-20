@@ -8,6 +8,11 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/session";
 import { normalizeUserPlan } from "@/lib/plans";
+import { isDevelopmentE2EListing } from "@/lib/development-e2e-access";
+
+/*
+ * DEVELOPMENT_E2E_UPLOAD_ACCESS_V1
+ */
 
 export const runtime = "nodejs";
 
@@ -77,6 +82,7 @@ export async function POST(
           },
           select: {
             id: true,
+            projectName: true,
             paymentModel: true,
             unlockStatus: true,
             paidAt: true,
@@ -111,8 +117,13 @@ export async function POST(
           listing.stripeCheckoutSessionId.startsWith(
             "cs_"
           );
+        const hasDevelopmentE2EImageAccess =
+          isDevelopmentE2EListing(
+            listing.projectName
+          );
 
         if (
+          !hasDevelopmentE2EImageAccess &&
           !hasSubscriptionImageAccess &&
           !hasPaidSingleObjectImageAccess &&
           !hasPendingSingleObjectCheckout
