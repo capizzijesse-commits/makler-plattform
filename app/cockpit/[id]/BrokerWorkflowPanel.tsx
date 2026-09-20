@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
 } from "react";
+
+import PublicationOrchestratorPanel from "./PublicationOrchestratorPanel";
 
 type BrokerWorkflowPanelProps = {
   listingId: string;
@@ -425,6 +428,77 @@ export default function BrokerWorkflowPanel({
     Boolean(
       workflow
         ?.publishedAt
+    );
+
+
+  const handlePublicationStateChange =
+    useCallback(
+      (
+        state: {
+          startedAt:
+            string |
+            null;
+
+          publishedAt:
+            string |
+            null;
+        }
+      ) => {
+
+        setWorkflow(
+          (
+            current
+          ) => {
+
+            if (!current) {
+              return current;
+            }
+
+
+            const nextStartedAt =
+              state.startedAt ??
+              current.publicationStartedAt;
+
+            const nextPublishedAt =
+              state.publishedAt ??
+              current.publishedAt;
+
+            const nextStage =
+              nextPublishedAt
+                ? "published"
+                : nextStartedAt
+                  ? "publication"
+                  : current.currentStage;
+
+
+            if (
+              nextStartedAt ===
+                current.publicationStartedAt &&
+              nextPublishedAt ===
+                current.publishedAt &&
+              nextStage ===
+                current.currentStage
+            ) {
+              return current;
+            }
+
+
+            return {
+              ...current,
+
+              currentStage:
+                nextStage,
+
+              publicationStartedAt:
+                nextStartedAt,
+
+              publishedAt:
+                nextPublishedAt,
+            };
+          }
+        );
+      },
+      []
     );
 
   /*
@@ -1193,27 +1267,20 @@ export default function BrokerWorkflowPanel({
           </p>
 
           {approvalDone ? (
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <a
-                href="#portal-publishing"
-                className="inline-flex min-h-10 items-center justify-center rounded-xl border border-emerald-300/20 bg-emerald-300/[0.06] px-2 py-2 text-[11px] font-black text-emerald-100 no-underline"
-              >
-                Portale
-              </a>
-
-              <Link
-                href={
-                  "/dashboard/social-media?listingId=" +
-                  listingId
-                }
-                className="inline-flex min-h-10 items-center justify-center rounded-xl border border-violet-300/20 bg-violet-300/[0.06] px-2 py-2 text-[11px] font-black text-violet-100 no-underline"
-              >
-                Social Media
-              </Link>
-            </div>
+            <PublicationOrchestratorPanel
+              listingId={
+                listingId
+              }
+              market={
+                market
+              }
+              onPublicationStateChange={
+                handlePublicationStateChange
+              }
+            />
           ) : (
             <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-2 text-center text-[11px] font-bold text-slate-500">
-              Nach Vermarktungsfreigabe verf\u00fcgbar
+              Nach Vermarktungsfreigabe verf&uuml;gbar
             </div>
           )}
         </div>
