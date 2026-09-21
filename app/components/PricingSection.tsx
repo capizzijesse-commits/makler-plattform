@@ -660,35 +660,168 @@ export default function PricingSection({
         {isGermany && !PRO_PUBLIC_LAUNCH_ENABLED ? (
           <div
             style={{
-              marginTop: "18px",
-              padding: "16px 20px",
-              borderRadius: "14px",
+              width: "100%",
+              maxWidth: "820px",
+              margin: "26px auto 24px",
+              position: "relative",
+              overflow: "hidden",
+              borderRadius: "24px",
               border:
-                "1px solid rgba(148,163,184,.22)",
+                "1px solid rgba(245, 158, 11, 0.34)",
               background:
-                "rgba(255,255,255,.04)",
-              textAlign: "center",
+                "linear-gradient(135deg, rgba(8,18,42,0.96) 0%, rgba(17,28,54,0.96) 52%, rgba(48,34,15,0.94) 100%)",
+              boxShadow:
+                "0 24px 70px rgba(0,0,0,0.32), 0 0 45px rgba(245,158,11,0.08), inset 0 1px 0 rgba(255,255,255,0.06)",
             }}
           >
-            <strong
+            <div
+              aria-hidden="true"
               style={{
-                display: "block",
-                fontSize: "16px",
-                marginBottom: "5px",
+                position: "absolute",
+                width: "260px",
+                height: "260px",
+                top: "-170px",
+                right: "-70px",
+                borderRadius: "999px",
+                background:
+                  "radial-gradient(circle, rgba(245,158,11,0.22) 0%, rgba(245,158,11,0) 72%)",
+                pointerEvents: "none",
               }}
-            >
-              Vollautomatisierung folgt demnächst
-            </strong>
+            />
 
-            <span
+            <div
+              aria-hidden="true"
               style={{
-                fontSize: "13px",
-                opacity: 0.72,
+                position: "absolute",
+                width: "220px",
+                height: "220px",
+                bottom: "-170px",
+                left: "-80px",
+                borderRadius: "999px",
+                background:
+                  "radial-gradient(circle, rgba(59,130,246,0.16) 0%, rgba(59,130,246,0) 72%)",
+                pointerEvents: "none",
+              }}
+            />
+
+            <div
+              style={{
+                position: "relative",
+                zIndex: 1,
+                padding: "27px 34px 29px",
+                textAlign: "center",
               }}
             >
-              Wir bereiten den Start aktuell vor.
-              Weitere Informationen folgen in Kürze.
-            </span>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "7px 13px",
+                  marginBottom: "15px",
+                  borderRadius: "999px",
+                  border:
+                    "1px solid rgba(245,158,11,0.30)",
+                  background:
+                    "rgba(245,158,11,0.10)",
+                  color: "#fbbf24",
+                  fontSize: "11px",
+                  lineHeight: 1,
+                  fontWeight: 900,
+                  letterSpacing: "0.11em",
+                  textTransform: "uppercase",
+                }}
+              >
+                <span
+                  style={{
+                    width: "7px",
+                    height: "7px",
+                    borderRadius: "999px",
+                    background: "#f59e0b",
+                    boxShadow:
+                      "0 0 14px rgba(245,158,11,0.85)",
+                  }}
+                />
+
+                In Vorbereitung
+              </div>
+
+              <h3
+                style={{
+                  margin: 0,
+                  color: "#ffffff",
+                  fontSize: "clamp(22px, 3vw, 31px)",
+                  lineHeight: 1.15,
+                  fontWeight: 950,
+                  letterSpacing: "-0.025em",
+                }}
+              >
+                Vollautomatisierung
+                <span
+                  style={{
+                    display: "block",
+                    marginTop: "4px",
+                    background:
+                      "linear-gradient(90deg, #fde68a 0%, #f59e0b 48%, #fbbf24 100%)",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    color: "transparent",
+                  }}
+                >
+                  folgt demnächst
+                </span>
+              </h3>
+
+              <p
+                style={{
+                  maxWidth: "610px",
+                  margin: "13px auto 0",
+                  color: "rgba(226,232,240,0.78)",
+                  fontSize: "14px",
+                  lineHeight: 1.65,
+                }}
+              >
+                Wir bereiten den Start aktuell vor.
+                Immobilien veröffentlichen,
+                Marketing steuern und Abläufe
+                automatisieren – direkt aus
+                Inserat-AI.
+              </p>
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  flexWrap: "wrap",
+                  gap: "8px",
+                  marginTop: "18px",
+                }}
+              >
+                {[
+                  "Immobilienportale",
+                  "Social Media",
+                  "Automatisierte Abläufe",
+                ].map((label) => (
+                  <span
+                    key={label}
+                    style={{
+                      padding: "7px 11px",
+                      borderRadius: "999px",
+                      border:
+                        "1px solid rgba(148,163,184,0.16)",
+                      background:
+                        "rgba(255,255,255,0.045)",
+                      color:
+                        "rgba(226,232,240,0.78)",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {label}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
         ) : null}
 
