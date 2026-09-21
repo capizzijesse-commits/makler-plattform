@@ -8,6 +8,7 @@ import PrivacyModeButton from "../../components/PrivacyModeButton";
 import MarketSwitcher from "../../components/MarketSwitcher";
 import LanguageSwitcher from "@/app/components/LanguageSwitcher";
 import { PRO_PUBLIC_LAUNCH_ENABLED } from "@/lib/pro-public-launch";
+import ActivityBell from "@/app/components/ActivityBell";
 
 type SessionResponse = {
   success?: boolean;
@@ -659,6 +660,8 @@ export default function Navbar() {
   {isLoggedInArea ? (
               
               <>
+                <ActivityBell />
+
                 <Link
                   href="/konto"
                   className="appHeaderAccount"
