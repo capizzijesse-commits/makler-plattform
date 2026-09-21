@@ -173,7 +173,7 @@ Deutschland:
 - Die Demo ist kostenlos.
 - Einzelobjekt: einmalig 9,90 € für eine konkrete Immobilie, ohne Abonnement.
 - Founder: 30 Tage kostenlos, danach 19,90 € pro Monat. Jederzeit kündbar.
-- Pro: 79,90 € pro Monat, soweit auf der aktuellen Preisseite angeboten.
+- Pro: 30 Tage kostenlos, danach 79,90 € pro Monat, soweit auf der aktuellen Preisseite angeboten.
 - Founder-Einstieg: /register?plan=founder
 - Einzelobjekt-Einstieg: /register?plan=single-object
 `

@@ -257,7 +257,7 @@ function handleRegisterFormStart() {
                 t("plans.founder.statAfterTrial"),
             },
             {
-              value: "50",
+              value: "Founder",
               label:
                 t("plans.founder.statPlaces"),
             },
@@ -277,14 +277,14 @@ function handleRegisterFormStart() {
                   ),
             submit:
               isGermany
-                ? "Pro starten"
+                ? "30 Tage kostenlos starten"
                 : pricingT(
                     "plans.pro.button"
                   ),
             note:
               isGermany
-                ? "79,90 € pro Monat. Jederzeit kündbar."
-                : "CHF 79.90 pro Monat.",
+                ? "30 Tage kostenlos. Danach 79,90 € pro Monat. Jederzeit kündbar."
+                : "30 Tage kostenlos. Danach CHF 79.90 pro Monat. Jederzeit kündbar.",
 
             stats: [
               {

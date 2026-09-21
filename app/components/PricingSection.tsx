@@ -110,19 +110,19 @@ export default function PricingSection({
         ? "Vollautomatisierung"
         : "Pro",
       label: isGermany
-        ? "IN VORBEREITUNG · FÜR EINZELNE MAKLER"
+        ? "30 TAGE KOSTENLOS · FÜR EINZELNE MAKLER"
         : t("plans.pro.label"),
       price: isGermany
-        ? "79,90 €"
+        ? "30 Tage kostenlos"
         : "79.90 CHF",
       cadence: isGermany
-        ? "pro Monat"
+        ? "danach 79,90 € / Monat"
         : t("plans.pro.cadence"),
       text: isGermany
-        ? "Für einzelne Immobilienmakler. 1 Benutzer inklusive."
+        ? "Für einzelne Immobilienmakler. 1 Benutzer inklusive. Jederzeit kündbar."
         : t("plans.pro.description"),
       button: isGermany
-        ? "In Vorbereitung"
+        ? "30 Tage kostenlos starten"
         : t("plans.pro.button"),
       href: "#preise",
       highlighted: false,
@@ -237,7 +237,7 @@ export default function PricingSection({
               ? "30 Tage kostenlos starten"
               : t("plans.founder.button")
             : isGermany
-              ? "Pro starten"
+              ? "30 Tage kostenlos starten"
               : t("plans.pro.button");
 
         trackAnalyticsEvent(
@@ -590,19 +590,28 @@ export default function PricingSection({
                 isGermany ? (
                   <button
                     type="button"
-                    disabled
+                    onClick={() =>
+                      startSubscriptionCheckout(
+                        "pro"
+                      )
+                    }
+                    disabled={checkoutLoading}
                     className="planButton"
                     style={{
                       border: 0,
-                      cursor: "not-allowed",
-                      opacity: 0.68,
+                      cursor: checkoutLoading
+                        ? "wait"
+                        : "pointer",
+                      opacity: 1,
                       font: "inherit",
                     }}
                   >
-                    {plan.button}
+                    {checkoutLoading
+                      ? "Checkout wird geöffnet …"
+                      : plan.button}
 
                     <span aria-hidden="true">
-                      {"\u{1F512}"}
+                      {"\u2192"}
                     </span>
                   </button>
                 ) : (
