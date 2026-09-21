@@ -198,9 +198,9 @@
         }
       },
       "founder": {
-        "label": "FOR THE FIRST 50 REAL ESTATE PROFESSIONALS",
+        "label": "FOUNDER",
         "cadence": "then CHF 19.90 / month",
-        "description": "Try Founder free for 30 days. The first 50 customers keep CHF 19.90 per month for as long as the subscription remains continuously active. The regular price afterwards is CHF 39.90 per month.",
+        "description": "Try Founder free for 30 days. After the 30-day free trial, CHF 19.90 per month. Cancel anytime.",
         "button": "Secure Founder",
         "loading": "Opening checkout …",
         "features": {
@@ -213,7 +213,7 @@
           "storage": "Store properties, text and images permanently",
           "trial": "30 days free",
           "founderGuarantee": "Founder price guarantee: CHF 19.90 per month while the subscription remains continuously active",
-          "regularPrice": "Limited to the first 50 customers – then CHF 39.90 per month",
+          "regularPrice": "30 days free, then CHF 19.90 per month",
           "marketingHub": "Marketing Hub for multiple properties"
         },
         "price": "30 days free"
@@ -333,12 +333,12 @@
       "founder": {
         "eyebrow": "FOUNDER OFFER",
         "title": "Secure Founder access",
-        "description": "Create your account and try Founder free for 30 days. The first 50 customers keep CHF 19.90 per month. The regular price afterwards is CHF 39.90 per month.",
+        "description": "Create your account and try Founder free for 30 days. After the 30-day free trial, CHF 19.90 per month.",
         "submit": "Prepare Founder access",
-        "note": "Registration is free. After confirming your email address and logging in, you will be redirected to the secure Stripe checkout. Your 30-day free trial will begin there. The first 50 Founder customers keep CHF 19.90 per month for as long as the subscription remains continuously active. The regular price afterwards is CHF 39.90 per month.",
+        "note": "Registration is free. After confirming your email address and logging in, you will be redirected to the secure Stripe checkout. Your 30-day free trial will begin there. After the 30-day free trial, CHF 19.90 per month. Cancel anytime.",
         "statPrice": "per month",
         "statImages": "images per property",
-        "statPlaces": "Founder places – then CHF 39.90",
+        "statPlaces": "Founder offer available",
         "statTrialValue": "30 days",
         "statTrialLabel": "free trial",
         "statAfterTrial": "guaranteed while subscription is active"

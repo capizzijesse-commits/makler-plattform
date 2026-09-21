@@ -947,8 +947,8 @@ export default function Navbar() {
                           opacity: 0.8,
                         }}
                       >
-                        30 Tage kostenlos · für die
-                        ersten 50 Founder-Kunden
+                        30 Tage kostenlos · danach{" "}
+                        {founderPrice} / Monat
                       </small>
 
                       <button

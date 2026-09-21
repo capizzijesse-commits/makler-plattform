@@ -198,9 +198,9 @@
         }
       },
       "founder": {
-        "label": "PER I PRIMI 50 AGENTI IMMOBILIARI",
+        "label": "FOUNDER",
         "cadence": "poi CHF 19.90 / mese",
-        "description": "Prova Founder gratuitamente per 30 giorni. I primi 50 clienti mantengono il prezzo di CHF 19.90 al mese finché l’abbonamento rimane attivo senza interruzioni. Successivamente il prezzo regolare è di CHF 39.90 al mese.",
+        "description": "Prova Founder gratuitamente per 30 giorni. Dopo 30 giorni gratuiti, CHF 19.90 al mese. Disdetta possibile in qualsiasi momento.",
         "button": "Assicurati Founder",
         "loading": "Apertura del checkout …",
         "features": {
@@ -213,7 +213,7 @@
           "storage": "Salvataggio permanente di immobili, testi e immagini",
           "trial": "30 giorni gratuiti",
           "founderGuarantee": "Garanzia Founder: CHF 19.90 al mese finché l’abbonamento rimane attivo senza interruzioni",
-          "regularPrice": "Limitato ai primi 50 clienti – successivamente CHF 39.90 al mese",
+          "regularPrice": "30 giorni gratuiti, poi CHF 19.90 al mese",
           "marketingHub": "Marketing Hub per più immobili"
         },
         "price": "30 giorni gratuiti"
@@ -333,12 +333,12 @@
       "founder": {
         "eyebrow": "OFFERTA FOUNDER",
         "title": "Assicurati l’accesso Founder",
-        "description": "Crea l’account e prova Founder gratuitamente per 30 giorni. I primi 50 clienti mantengono CHF 19.90 al mese. Successivamente il prezzo regolare è di CHF 39.90 al mese.",
+        "description": "Crea l’account e prova Founder gratuitamente per 30 giorni. Dopo 30 giorni gratuiti, CHF 19.90 al mese.",
         "submit": "Prepara l’accesso Founder",
-        "note": "La registrazione è gratuita. Dopo la conferma dell’e-mail e l’accesso verrai reindirizzato al checkout sicuro di Stripe. Qui inizierà la prova gratuita di 30 giorni. I primi 50 clienti Founder mantengono CHF 19.90 al mese finché l’abbonamento rimane attivo senza interruzioni. Successivamente il prezzo regolare è di CHF 39.90 al mese.",
+        "note": "La registrazione è gratuita. Dopo la conferma dell’e-mail e l’accesso verrai reindirizzato al checkout sicuro di Stripe. Qui inizierà la prova gratuita di 30 giorni. Dopo 30 giorni gratuiti, CHF 19.90 al mese. Disdetta possibile in qualsiasi momento.",
         "statPrice": "al mese",
         "statImages": "immagini per immobile",
-        "statPlaces": "posti Founder – poi CHF 39.90",
+        "statPlaces": "Offerta Founder disponibile",
         "statTrialValue": "30 giorni",
         "statTrialLabel": "prova gratuita",
         "statAfterTrial": "garantiti con abbonamento attivo"

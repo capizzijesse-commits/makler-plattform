@@ -198,9 +198,9 @@
         }
       },
       "founder": {
-        "label": "POUR LES 50 PREMIERS COURTIERS",
+        "label": "FOUNDER",
         "cadence": "puis CHF 19.90 / mois",
-        "description": "Testez Founder gratuitement pendant 30 jours. Les 50 premiers clients conservent le tarif de CHF 19.90 par mois tant que l’abonnement reste actif sans interruption. Ensuite, le tarif régulier est de CHF 39.90 par mois.",
+        "description": "Testez Founder gratuitement pendant 30 jours. Après 30 jours gratuits, CHF 19.90 par mois. Résiliable à tout moment.",
         "button": "Réserver Founder",
         "loading": "Ouverture du paiement …",
         "features": {
@@ -213,7 +213,7 @@
           "storage": "Enregistrement durable des biens, textes et photos",
           "trial": "30 jours gratuits",
           "founderGuarantee": "Garantie Founder : CHF 19.90 par mois tant que l’abonnement reste actif sans interruption",
-          "regularPrice": "Limité aux 50 premiers clients – ensuite CHF 39.90 par mois",
+          "regularPrice": "30 jours gratuits, puis CHF 19.90 par mois",
           "marketingHub": "Marketing Hub pour plusieurs biens"
         },
         "price": "30 jours gratuits"
@@ -333,12 +333,12 @@
       "founder": {
         "eyebrow": "OFFRE FOUNDER",
         "title": "Réserver l’accès Founder",
-        "description": "Créez votre compte et testez Founder gratuitement pendant 30 jours. Les 50 premiers clients conservent CHF 19.90 par mois. Ensuite, le tarif régulier est de CHF 39.90 par mois.",
+        "description": "Créez votre compte et testez Founder gratuitement pendant 30 jours. Après 30 jours gratuits, CHF 19.90 par mois.",
         "submit": "Préparer l’accès Founder",
-        "note": "L’inscription est gratuite. Après la confirmation de votre adresse e-mail et votre connexion, vous serez redirigé vers le paiement sécurisé Stripe. La période d’essai gratuite de 30 jours commencera alors. Les 50 premiers clients Founder conservent CHF 19.90 par mois tant que l’abonnement reste actif sans interruption. Ensuite, le tarif régulier est de CHF 39.90 par mois.",
+        "note": "L’inscription est gratuite. Après la confirmation de votre adresse e-mail et votre connexion, vous serez redirigé vers le paiement sécurisé Stripe. La période d’essai gratuite de 30 jours commencera alors. Après 30 jours gratuits, CHF 19.90 par mois. Résiliable à tout moment.",
         "statPrice": "par mois",
         "statImages": "photos par bien",
-        "statPlaces": "places Founder – puis CHF 39.90",
+        "statPlaces": "Offre Founder disponible",
         "statTrialValue": "30 jours",
         "statTrialLabel": "essai gratuit",
         "statAfterTrial": "garantis avec abonnement actif"

@@ -172,7 +172,7 @@ Deutschland:
 - Inserat-AI ist für Immobilienprofis in Deutschland verfügbar.
 - Die Demo ist kostenlos.
 - Einzelobjekt: einmalig 9,90 € für eine konkrete Immobilie, ohne Abonnement.
-- Founder: 30 Tage kostenlos, danach 19,90 € pro Monat. Die ersten 50 Founder-Kunden behalten diesen Preis dauerhaft, solange das Abonnement ohne Unterbrechung aktiv bleibt.
+- Founder: 30 Tage kostenlos, danach 19,90 € pro Monat. Jederzeit kündbar.
 - Pro: 79,90 € pro Monat, soweit auf der aktuellen Preisseite angeboten.
 - Founder-Einstieg: /register?plan=founder
 - Einzelobjekt-Einstieg: /register?plan=single-object

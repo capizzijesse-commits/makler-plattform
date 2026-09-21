@@ -28,25 +28,25 @@ const LOCALE_COOKIE_NAME = "INSERAT_AI_LOCALE";
 const SUBSCRIPTION_PRODUCT_DESCRIPTIONS = {
   de: {
     founder:
-      "30 Tage kostenlos. Die ersten 50 Founder-Kunden behalten CHF 19.90 pro Monat dauerhaft, solange das Abonnement ohne Unterbruch aktiv bleibt.",
+      "30 Tage kostenlos. Danach CHF 19.90 pro Monat. Jederzeit kündbar.",
     standard:
       "30 Tage kostenlos. Danach CHF 39.90 pro Monat. Jederzeit kündbar.",
   },
   it: {
     founder:
-      "30 giorni gratuiti. I primi 50 clienti Founder mantengono CHF 19.90 al mese finché l’abbonamento rimane attivo senza interruzioni.",
+      "30 giorni gratuiti. Successivamente CHF 19.90 al mese. Disdetta possibile in qualsiasi momento.",
     standard:
       "30 giorni gratuiti. Successivamente CHF 39.90 al mese. Disdetta possibile in qualsiasi momento.",
   },
   fr: {
     founder:
-      "30 jours gratuits. Les 50 premiers clients Founder conservent le tarif de CHF 19.90 par mois tant que l’abonnement reste actif sans interruption.",
+      "30 jours gratuits. Ensuite CHF 19.90 par mois. Résiliable à tout moment.",
     standard:
       "30 jours gratuits. Ensuite CHF 39.90 par mois. Résiliable à tout moment.",
   },
   en: {
     founder:
-      "30 days free. The first 50 Founder customers keep CHF 19.90 per month for as long as the subscription remains continuously active.",
+      "30 days free. Then CHF 19.90 per month. Cancel anytime.",
     standard:
       "30 days free. Then CHF 39.90 per month. Cancel anytime.",
   },
@@ -376,7 +376,7 @@ export async function POST(
           success: false,
           founderUnavailable: true,
           error:
-            "Die 50 Founder-Plätze sind bereits vergeben.",
+            "Das Founder-Angebot ist derzeit nicht verfügbar.",
         },
         {
           status: 409,
@@ -395,13 +395,11 @@ export async function POST(
           : "founder";
 
     /*
-     * Founder und Standard behalten den bestehenden
-     * 30-Tage-Test. Pro startet direkt kostenpflichtig.
+     * Founder, Standard und Pro erhalten den bestehenden
+     * 30-Tage-Test.
      */
     const selectedTrialDays =
-      selectedPlan === "pro"
-        ? 0
-        : SUBSCRIPTION_TRIAL_DAYS;
+      SUBSCRIPTION_TRIAL_DAYS;
 
     /*
      * Produktion:
@@ -576,12 +574,12 @@ export async function POST(
       selectedPlan === "pro"
         ? expectedCurrency === "eur" &&
           descriptionLocale === "de"
-          ? "Inserat-AI Pro für 79,90 € pro Monat. Erweiterte KI- und Pro-Funktionen. Jederzeit kündbar."
-          : `Inserat-AI Pro für ${expectedCurrency.toUpperCase()} 79.90 pro Monat. Erweiterte KI- und Pro-Funktionen.`
+          ? "30 Tage kostenlos. Danach Inserat-AI Pro für 79,90 € pro Monat. Erweiterte KI- und Pro-Funktionen. Jederzeit kündbar."
+          : `30 Tage kostenlos. Danach Inserat-AI Pro für ${expectedCurrency.toUpperCase()} 79.90 pro Monat. Erweiterte KI- und Pro-Funktionen.`
         : expectedCurrency === "eur" &&
             descriptionLocale === "de"
           ? selectedPlan === "founder"
-            ? "30 Tage kostenlos. Die ersten 50 Founder-Kunden behalten 19,90 € pro Monat dauerhaft, solange das Abonnement ohne Unterbrechung aktiv bleibt."
+            ? "30 Tage kostenlos. Danach 19,90 € pro Monat. Jederzeit kündbar."
             : "30 Tage kostenlos. Danach 39,90 € pro Monat. Jederzeit kündbar."
           : SUBSCRIPTION_PRODUCT_DESCRIPTIONS[
               descriptionLocale
