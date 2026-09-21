@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import PrivacyModeButton from "../../components/PrivacyModeButton";
 import MarketSwitcher from "../../components/MarketSwitcher";
 import LanguageSwitcher from "@/app/components/LanguageSwitcher";
+import { PRO_PUBLIC_LAUNCH_ENABLED } from "@/lib/pro-public-launch";
 
 type SessionResponse = {
   success?: boolean;
@@ -112,7 +113,7 @@ export default function Navbar() {
     {
   label: t("items.marketingHub.label"),
   description: t("items.marketingHub.description"),
-  icon: "📣",
+  icon: "­ƒôú",
   href: "/marketing-hub",
   accent: "gold",
 },
@@ -261,12 +262,12 @@ export default function Navbar() {
 
   const founderPrice =
     dashboardMarket === "DE"
-      ? "19,90 €"
+      ? "19,90 Ôé¼"
       : "CHF 19.90";
 
   const proPrice =
     dashboardMarket === "DE"
-      ? "79,90 €"
+      ? "79,90 Ôé¼"
       : "CHF 79.90";
 
   useEffect(() => {
@@ -719,7 +720,7 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={() => setMenuOpen(true)}
-                  aria-label="Plan und Upgrade öffnen"
+                  aria-label="Plan und Upgrade ├Âffnen"
                   title="Plan & Upgrade"
                   style={{
                     all: "unset",
@@ -736,7 +737,7 @@ export default function Navbar() {
                         opacity: 0.55,
                       }}
                     >
-                      ·
+                      ┬À
                     </span>
                     {planActionLabel}
                     <span
@@ -746,7 +747,7 @@ export default function Navbar() {
                         fontSize: "14px",
                       }}
                     >
-                      ›
+                      ÔÇ║
                     </span>
                   </span>
                 </button>
@@ -781,7 +782,7 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={() => setMenuOpen(true)}
-                  aria-label="Plan und Upgrade öffnen"
+                  aria-label="Plan und Upgrade ├Âffnen"
                   title="Plan & Upgrade"
                   style={{
                     all: "unset",
@@ -798,7 +799,7 @@ export default function Navbar() {
                         opacity: 0.55,
                       }}
                     >
-                      ·
+                      ┬À
                     </span>
                     {planActionLabel}
                     <span
@@ -808,7 +809,7 @@ export default function Navbar() {
                         fontSize: "14px",
                       }}
                     >
-                      ›
+                      ÔÇ║
                     </span>
                   </span>
                 </button>
@@ -947,7 +948,7 @@ export default function Navbar() {
                           opacity: 0.8,
                         }}
                       >
-                        30 Tage kostenlos · danach{" "}
+                        30 Tage kostenlos ┬À danach{" "}
                         {founderPrice} / Monat
                       </small>
 
@@ -978,7 +979,7 @@ export default function Navbar() {
                         }}
                       >
                         {upgradeBusy
-                          ? "Checkout wird geöffnet …"
+                          ? "Checkout wird ge├Âffnet ÔÇª"
                           : "Founder kostenlos testen"}
                       </button>
                     </div>
@@ -1014,7 +1015,9 @@ export default function Navbar() {
                         fontSize: "18px",
                       }}
                     >
-                      {proPrice} / Monat
+                      {PRO_PUBLIC_LAUNCH_ENABLED
+                        ? `${proPrice} / Monat`
+                        : "Folgt demnächst"}
                     </strong>
 
                     <small
@@ -1030,7 +1033,10 @@ export default function Navbar() {
 
                     <button
                       type="button"
-                      disabled={upgradeBusy}
+                      disabled={
+                        !PRO_PUBLIC_LAUNCH_ENABLED ||
+                        upgradeBusy
+                      }
                       onClick={() => {
                         const normalizedPlan =
                           userPlan
@@ -1071,8 +1077,10 @@ export default function Navbar() {
                       }}
                     >
                       {upgradeBusy
-                        ? "Checkout wird geöffnet …"
-                        : "Pro abonnieren"}
+                        ? "Checkout wird ge├Âffnet ÔÇª"
+                        : PRO_PUBLIC_LAUNCH_ENABLED
+                          ? "Pro abonnieren"
+                          : "Demnächst verfügbar"}
                     </button>
                   </div>
 
@@ -1138,9 +1146,9 @@ export default function Navbar() {
                   );
 
                 /*
-                 * Fertige Pro-Funktionen bleiben für Founder
-                 * sichtbar und führen als Upgrade-Hinweis
-                 * zur Preisübersicht.
+                 * Fertige Pro-Funktionen bleiben f├╝r Founder
+                 * sichtbar und f├╝hren als Upgrade-Hinweis
+                 * zur Preis├╝bersicht.
                  */
                 if (
                   isProLocked &&

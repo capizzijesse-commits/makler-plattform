@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { trackAnalyticsEvent } from "@/lib/analytics";
+import { PRO_PUBLIC_LAUNCH_ENABLED } from "@/lib/pro-public-launch";
 import type { InseratAiMarket } from "@/lib/inserat-ai-market";
 type CheckoutError =
   | "existing"
@@ -166,9 +167,16 @@ export default function PricingSection({
     ? plans.filter(
         (plan) =>
           plan.id === "founder" ||
-          plan.id === "pro"
+          (
+            PRO_PUBLIC_LAUNCH_ENABLED &&
+            plan.id === "pro"
+          )
       )
-    : plans;
+    : plans.filter(
+        (plan) =>
+          plan.id !== "pro" ||
+          PRO_PUBLIC_LAUNCH_ENABLED
+      );
 
   const singleObjectFeatures = isGermany
     ? [
@@ -648,6 +656,41 @@ export default function PricingSection({
             </article>
           ))}
         </div>
+
+        {isGermany && !PRO_PUBLIC_LAUNCH_ENABLED ? (
+          <div
+            style={{
+              marginTop: "18px",
+              padding: "16px 20px",
+              borderRadius: "14px",
+              border:
+                "1px solid rgba(148,163,184,.22)",
+              background:
+                "rgba(255,255,255,.04)",
+              textAlign: "center",
+            }}
+          >
+            <strong
+              style={{
+                display: "block",
+                fontSize: "16px",
+                marginBottom: "5px",
+              }}
+            >
+              Vollautomatisierung folgt demnächst
+            </strong>
+
+            <span
+              style={{
+                fontSize: "13px",
+                opacity: 0.72,
+              }}
+            >
+              Wir bereiten den Start aktuell vor.
+              Weitere Informationen folgen in Kürze.
+            </span>
+          </div>
+        ) : null}
 
         {isGermany ? (
           <div className="demoTeaser">

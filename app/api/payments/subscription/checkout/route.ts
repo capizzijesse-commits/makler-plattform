@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { getAppUrl } from "@/lib/app-url";
+import { PRO_PUBLIC_LAUNCH_ENABLED } from "@/lib/pro-public-launch";
 import {
   getInseratAiCurrencyForMarket,
   getInseratAiMarketFromHeaders,
@@ -276,6 +277,20 @@ export async function POST(
       );
     }
 
+    if (
+      requestedPlan === "pro" &&
+      !PRO_PUBLIC_LAUNCH_ENABLED
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          proUnavailable: true,
+          error:
+            "Inserat-AI Vollautomatisierung folgt demnächst.",
+        },
+        { status: 409 }
+      );
+    }
     const billingUser =
       await prisma.user.findUnique({
         where: {

@@ -4,6 +4,7 @@ import OpenAI from "openai";
 import { randomUUID } from "node:crypto";
 
 import { prisma } from "@/lib/prisma";
+import { PRO_PUBLIC_LAUNCH_ENABLED } from "@/lib/pro-public-launch";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -165,6 +166,13 @@ function normalizeAnswer(value: string): string {
 }
 
 function buildSystemPrompt(market: "CH" | "DE"): string {
+  const proFact =
+    PRO_PUBLIC_LAUNCH_ENABLED
+      ? market === "DE"
+        ? "- Pro: 30 Tage kostenlos, danach 79,90 € pro Monat."
+        : "- Pro: gemäss aktueller Inserat-AI Preisseite."
+      : "- Pro/Vollautomatisierung: folgt demnächst und ist aktuell noch nicht öffentlich buchbar.";
+
   const marketFacts =
     market === "DE"
       ? `
@@ -173,7 +181,7 @@ Deutschland:
 - Die Demo ist kostenlos.
 - Einzelobjekt: einmalig 9,90 € für eine konkrete Immobilie, ohne Abonnement.
 - Founder: 30 Tage kostenlos, danach 19,90 € pro Monat. Jederzeit kündbar.
-- Pro: 30 Tage kostenlos, danach 79,90 € pro Monat, soweit auf der aktuellen Preisseite angeboten.
+${proFact}
 - Founder-Einstieg: /register?plan=founder
 - Einzelobjekt-Einstieg: /register?plan=single-object
 `
@@ -182,7 +190,7 @@ Schweiz:
 - Die Demo ist kostenlos und benötigt keine Kreditkarte.
 - Einzelobjekt: einmalig CHF 9.90 für eine konkrete Immobilie, ohne Abonnement.
 - Founder: gemäss aktueller Inserat-AI Preisseite, inklusive kostenloser Testphase, sofern dort angezeigt.
-- Pro: gemäss aktueller Inserat-AI Preisseite.
+${proFact}
 - Kostenloser Einstieg: /register
 `;
 

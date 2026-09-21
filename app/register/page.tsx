@@ -9,6 +9,7 @@ import {
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { trackAnalyticsEvent } from "@/lib/analytics";
+import { PRO_PUBLIC_LAUNCH_ENABLED } from "@/lib/pro-public-launch";
 import { getInseratAiMarketFromHostname } from "@/lib/inserat-ai-market";
 import GoogleSignInButton from "@/app/components/GoogleSignInButton";
 import {
@@ -173,7 +174,7 @@ function handleRegisterFormStart() {
 
   const normalizedPlan: RequestedPlan =
     plan === "founder" ||
-    plan === "pro" ||
+    (plan === "pro" && PRO_PUBLIC_LAUNCH_ENABLED) ||
     plan === "single-object"
       ? plan
       : "";
