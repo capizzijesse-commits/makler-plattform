@@ -109,6 +109,9 @@ type PriorityAction = {
   description:
     string;
 
+  resolution:
+    string;
+
   href:
     string;
 
@@ -471,6 +474,13 @@ export default function CockpitOverviewV3View({
                       <p>
                         {action.description}
                       </p>
+
+                      <span className="v3PriorityResolution">
+                        <b>
+                          Nächster Schritt:
+                        </b>{" "}
+                        {action.resolution}
+                      </span>
                     </div>
 
                     <span className="v3PriorityCta">
@@ -1635,6 +1645,35 @@ export default function CockpitOverviewV3View({
           font-size: 8px;
           line-height: 1.4;
         }
+
+        .v3PriorityResolution {
+          display: block;
+          margin-top: 5px;
+          color: #475569;
+          font-size: 8px;
+          line-height: 1.4;
+        }
+
+        .v3PriorityResolution b {
+          color: #1e293b;
+          font-weight: 900;
+        }
+
+        .v3PriorityItem.red
+        .v3PriorityResolution b {
+          color: #991b1b;
+        }
+
+        .v3PriorityItem.orange
+        .v3PriorityResolution b {
+          color: #92400e;
+        }
+
+        .v3PriorityItem.blue
+        .v3PriorityResolution b {
+          color: #1e40af;
+        }
+
 
         .v3PriorityCta {
           color: #2563eb;

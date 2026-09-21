@@ -933,7 +933,125 @@ export default function CockpitOverviewV2({
    * 3. Prüfung / Veröffentlichung
    */
 
-  const urgentActivityActions =
+  /*
+   * COMMAND_CENTER_PROBLEM_RESOLUTION_V1
+   *
+   * Nutzt ausschließlich vorhandene
+   * Activity-/Provider-Fehlermeldungen.
+   */
+
+  const getProblemResolution =
+    (
+      item:
+        DailyActivityItem
+    ) => {
+
+      const problemText =
+        `${item.title ?? ""} ${item.message ?? ""}`
+          .toLowerCase();
+
+
+      if (
+        /403|forbidden|berechtigung|permission|freischalt|nicht freigeschaltet/.test(
+          problemText
+        )
+      ) {
+        return {
+          resolution:
+            "Portal-Freigabe oder Publish-Berechtigung prüfen und die Verbindung danach erneut verifizieren.",
+
+          label:
+            "Freigabe prüfen",
+        };
+      }
+
+
+      if (
+        /401|unauthorized|oauth|access token|token expired|credentials?|zugangsdaten|passwort|password|not verified|not connected|connection is not verified|connection not verified|verbindung nicht verifiziert|verbindung nicht bestätigt|nicht verbunden/.test(
+          problemText
+        )
+      ) {
+        return {
+          resolution:
+            "Portal-Verbindung bzw. Zugangsdaten prüfen und bei Bedarf neu verbinden.",
+
+          label:
+            "Verbindung prüfen",
+        };
+      }
+
+
+      if (
+        /pflichtfeld|required field|field is required|postalcode|postal code|plz fehlt|missing field/.test(
+          problemText
+        )
+      ) {
+        return {
+          resolution:
+            "Das fehlende Pflichtfeld im Objekt ergänzen und die Veröffentlichung danach erneut vorbereiten.",
+
+          label:
+            "Objektdaten prüfen",
+        };
+      }
+
+
+      if (
+        /429|rate limit|too many requests/.test(
+          problemText
+        )
+      ) {
+        return {
+          resolution:
+            "Das Portal begrenzt gerade Anfragen. Status prüfen und den nächsten Versuch abwarten bzw. erneut starten.",
+
+          label:
+            "Retry prüfen",
+        };
+      }
+
+
+      if (
+        /timeout|timed out|network|netzwerk|connection refused|econn/.test(
+          problemText
+        )
+      ) {
+        return {
+          resolution:
+            "Transportverbindung prüfen. Bei einem temporären Netzwerkfehler anschließend erneut versuchen.",
+
+          label:
+            "Transport prüfen",
+        };
+      }
+
+
+      if (
+        /404|not found/.test(
+          problemText
+        )
+      ) {
+        return {
+          resolution:
+            "Der angefragte Portal-Endpunkt oder Publishing-Kanal wurde nicht gefunden. Zugang und Publish-Konfiguration prüfen.",
+
+          label:
+            "Portalzugang prüfen",
+        };
+      }
+
+
+      return {
+        resolution:
+          "Portalstatus öffnen, die angezeigte Fehlermeldung prüfen und die betroffene Veröffentlichung korrigieren.",
+
+        label:
+          "Problem prüfen",
+      };
+    };
+
+
+  const urgentActivityCandidates =
     marketActivitySourceItems
       .filter(
         (item) =>
@@ -945,39 +1063,83 @@ export default function CockpitOverviewV2({
             item.kind.endsWith(".action_required") ||
             item.kind.endsWith(".failed")
           )
-      )
-      .map(
-        (item) => ({
-          id:
-            item.id ??
-            `${item.kind}:${item.listingId}:${item.latestAt}`,
-
-          listingId:
-            item.listingId,
-
-          tone:
-            "red" as const,
-
-          eyebrow:
-            "Aktion erforderlich",
-
-          title:
-            item.title ??
-            item.listingLabel,
-
-          description:
-            item.message ??
-            "Dieser Vorgang benötigt deine Aufmerksamkeit.",
-
-          href:
-            item.href ||
-            `/cockpit/${item.listingId}#portal-publishing`,
-
-          label:
-            "Problem öffnen",
-        })
       );
 
+
+  /*
+   * Wenn für ein Objekt bereits ein konkreter
+   * Target-/Portalfehler existiert, soll nicht
+   * zusätzlich der generische Publication-Fehler
+   * denselben Platz in den Top-3 belegen.
+   */
+
+  const specificUrgentListingIds =
+    new Set(
+      urgentActivityCandidates
+        .filter(
+          (item) =>
+            item.kind !==
+              "publication.action_required"
+        )
+        .map(
+          (item) =>
+            item.listingId
+        )
+    );
+
+
+  const urgentActivityActions =
+    urgentActivityCandidates
+      .filter(
+        (item) =>
+          item.kind !==
+            "publication.action_required" ||
+          !specificUrgentListingIds.has(
+            item.listingId
+          )
+      )
+      .map(
+        (item) => {
+
+          const resolution =
+            getProblemResolution(
+              item
+            );
+
+          return {
+            id:
+              item.id ??
+              `${item.kind}:${item.listingId}:${item.latestAt}`,
+
+            listingId:
+              item.listingId,
+
+            tone:
+              "red" as const,
+
+            eyebrow:
+              "Aktion erforderlich",
+
+            title:
+              item.title ??
+              item.listingLabel,
+
+            description:
+              item.message ??
+              "Dieser Vorgang benötigt deine Aufmerksamkeit.",
+
+            resolution:
+              resolution.resolution,
+
+            href:
+              item.href ||
+              `/cockpit/${item.listingId}#portal-publishing`,
+
+            label:
+              resolution.label,
+          };
+        }
+      );
 
   const urgentListingIds =
     new Set(
@@ -1036,6 +1198,16 @@ export default function CockpitOverviewV2({
 
             description,
 
+            resolution:
+              missingText &&
+              missingImages
+                ? "Inseratstext erzeugen und mindestens ein Objektbild ergänzen."
+                : missingText
+                  ? "Inseratstext erzeugen und das Objekt anschließend erneut prüfen."
+                  : missingImages
+                    ? "Mindestens ein Objektbild ergänzen und danach erneut prüfen."
+                    : "Fehlende Objektdaten vervollständigen.",
+
             href:
               `/cockpit/${listing.id}/edit`,
 
@@ -1074,6 +1246,9 @@ export default function CockpitOverviewV2({
 
           description:
             "Objektpaket ist vorbereitet. Veröffentlichung prüfen und freigeben.",
+
+          resolution:
+            "Objektpaket und Zielportale prüfen und anschließend die Veröffentlichung freigeben.",
 
           href:
             `/cockpit/${listing.id}#portal-publishing`,
