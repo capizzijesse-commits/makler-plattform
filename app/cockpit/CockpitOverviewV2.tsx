@@ -1434,6 +1434,64 @@ export default function CockpitOverviewV2({
     );
 
 
+  /*
+   * COMMAND_CENTER_AUTOMATION_STATUS_V1
+   *
+   * Automatische Worker-Aktionen werden
+   * sichtbar gemacht, aber niemals als
+   * menschliche CTA ausgegeben.
+   */
+  const automaticRetryListingIds =
+    new Set(
+      classifiedUrgentActivityCandidates
+        .filter(
+          ({ resolution }) =>
+            resolution.mode ===
+              "auto_retry"
+        )
+        .map(
+          ({ item }) =>
+            item.listingId
+        )
+    );
+
+
+  const automaticWorkItems =
+    classifiedUrgentActivityCandidates
+      .filter(
+        ({ resolution }) =>
+          resolution.mode ===
+            "auto_retry"
+      )
+      .map(
+        ({
+          item,
+          resolution,
+        }) => ({
+          id:
+            item.id ??
+            `auto:${item.listingId}:${item.latestAt}`,
+
+          listingId:
+            item.listingId,
+
+          title:
+            item.title ??
+            item.listingLabel,
+
+          description:
+            resolution.resolution,
+
+          latestAt:
+            item.latestAt,
+        })
+      )
+      .slice(
+        0,
+        3
+      );
+
+
   const isCoveredByAutomaticRetry =
     (
       item:
@@ -1580,6 +1638,9 @@ export default function CockpitOverviewV2({
         (listing) =>
           !urgentListingIds.has(
             listing.id
+          ) &&
+          !automaticRetryListingIds.has(
+            listing.id
           )
       )
       .map(
@@ -1659,6 +1720,9 @@ export default function CockpitOverviewV2({
       .filter(
         (listing) =>
           !urgentListingIds.has(
+            listing.id
+          ) &&
+          !automaticRetryListingIds.has(
             listing.id
           )
       )
@@ -2696,6 +2760,7 @@ export default function CockpitOverviewV2({
                   }
                 : null
             }
+            automaticWorkItems={automaticWorkItems}
             priorityActions={priorityActions}
             activityItems={marketActivityItems}
             activityLoading={dailyActivityLoading}

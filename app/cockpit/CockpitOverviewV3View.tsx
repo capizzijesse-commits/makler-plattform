@@ -97,6 +97,24 @@ type PrimaryAction = {
 };
 
 
+type AutomaticWorkItem = {
+  id:
+    string;
+
+  listingId:
+    string;
+
+  title:
+    string;
+
+  description:
+    string;
+
+  latestAt:
+    string;
+};
+
+
 type PriorityAction = {
   id:
     string;
@@ -153,6 +171,9 @@ type Props = {
   primaryAction:
     PrimaryAction | null;
 
+  automaticWorkItems:
+    AutomaticWorkItem[];
+
   priorityActions:
     PriorityAction[];
 
@@ -181,6 +202,7 @@ export default function CockpitOverviewV3View({
   readyCount,
   actionCount,
   viewsToday,
+  automaticWorkItems,
   priorityActions,
   activityItems,
   activityLoading,
@@ -783,6 +805,38 @@ export default function CockpitOverviewV3View({
               role="alert"
             >
               {commandActionError}
+            </div>
+          ) : null}
+
+
+          {automaticWorkItems.length > 0 ? (
+            <div
+              className="v3AutomationStatus"
+              role="status"
+              aria-live="polite"
+            >
+              <span
+                className="v3AutomationDot"
+                aria-hidden="true"
+              />
+
+              <div>
+                <small>
+                  INSERAT-AI ARBEITET AUTOMATISCH
+                </small>
+
+                <strong>
+                  {automaticWorkItems.length === 1
+                    ? automaticWorkItems[0].title
+                    : `${automaticWorkItems.length} Vorgänge werden automatisch bearbeitet`}
+                </strong>
+
+                <p>
+                  {automaticWorkItems.length === 1
+                    ? automaticWorkItems[0].description
+                    : "Automatische Wiederholungsversuche laufen. Du musst aktuell nichts auslösen."}
+                </p>
+              </div>
             </div>
           ) : null}
 
@@ -5780,6 +5834,65 @@ export default function CockpitOverviewV3View({
           cursor: wait;
           opacity: 0.76;
         }
+
+        /*
+         * COMMAND_CENTER_AUTOMATION_STATUS_V1
+         */
+        .v3AutomationStatus {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          margin: 12px 14px 0;
+          padding: 11px 12px;
+          border: 1px solid rgba(37, 99, 235, .18);
+          border-radius: 12px;
+          background: linear-gradient(
+            135deg,
+            rgba(239, 246, 255, .96),
+            rgba(224, 242, 254, .80)
+          );
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.76);
+        }
+
+        .v3AutomationDot {
+          width: 9px;
+          height: 9px;
+          margin-top: 5px;
+          flex: 0 0 auto;
+          border-radius: 999px;
+          background: #2563eb;
+          box-shadow:
+            0 0 0 4px rgba(37,99,235,.10);
+        }
+
+        .v3AutomationStatus > div {
+          min-width: 0;
+        }
+
+        .v3AutomationStatus small {
+          display: block;
+          color: #2563eb;
+          font-size: 7px;
+          font-weight: 950;
+          letter-spacing: .11em;
+        }
+
+        .v3AutomationStatus strong {
+          display: block;
+          margin-top: 3px;
+          color: #10233e;
+          font-size: 10px;
+          font-weight: 900;
+        }
+
+        .v3AutomationStatus p {
+          margin: 3px 0 0;
+          color: #55708d;
+          font-size: 8px;
+          line-height: 1.45;
+        }
+
 
         .v3CommandActionSuccess {
           display: flex;
