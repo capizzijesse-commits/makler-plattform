@@ -583,7 +583,48 @@ model PortalPublishJob {
   @@index([provider, portal, status])
   @@index([provider, providerOperationState])
   @@index([listingId, portal, status])
+
+  /*
+   * COMMAND_CENTER_TRANSITION_HISTORY_V1
+   *
+   * Append-only Statushistorie.
+   */
+  transitions PortalPublishJobTransition[]
 }
+
+
+model PortalPublishJobTransition {
+  id Int @id @default(autoincrement())
+
+  jobId String
+  job   PortalPublishJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  userId    String
+  listingId String?
+  provider  String
+  portal    String
+
+  fromStatus String?
+  toStatus   String
+
+  attemptCount Int
+  maxAttempts  Int
+
+  nextAttemptAt DateTime?
+
+  errorCode    String?
+  errorMessage String?
+
+  providerOperationState String?
+
+  createdAt DateTime @default(now())
+
+  @@index([jobId, createdAt])
+  @@index([userId, createdAt])
+  @@index([listingId, createdAt])
+  @@index([toStatus, createdAt])
+}
+
 
 model Listing {
   id String @id @default(cuid())
