@@ -88,6 +88,34 @@ type PrimaryAction = {
 };
 
 
+type PriorityAction = {
+  id:
+    string;
+
+  listingId:
+    string;
+
+  tone:
+    "red" |
+    "orange" |
+    "blue";
+
+  eyebrow:
+    string;
+
+  title:
+    string;
+
+  description:
+    string;
+
+  href:
+    string;
+
+  label:
+    string;
+};
+
 type Props = {
   market:
     "CH" | "DE";
@@ -110,6 +138,9 @@ type Props = {
   primaryAction:
     PrimaryAction | null;
 
+  priorityActions:
+    PriorityAction[];
+
   activityItems:
     ActivityItem[];
 
@@ -131,7 +162,7 @@ export default function CockpitOverviewV3View({
   readyCount,
   actionCount,
   viewsToday,
-  primaryAction,
+  priorityActions,
   activityItems,
   activityLoading,
   activityError,
@@ -400,94 +431,73 @@ export default function CockpitOverviewV3View({
               </strong>
             </div>
 
-            {primaryAction && (
+            {priorityActions.length > 0 ? (
               <span className="v3Warning">
-                ◉ Aktion nötig
+                ◉ {priorityActions.length} offen
+              </span>
+            ) : (
+              <span className="v3PriorityReady">
+                ✓ Alles erledigt
               </span>
             )}
           </header>
 
 
-          {primaryAction ? (
-            <div className="v3Object">
-              <div
-                className={
-                  primaryAction.imageUrl
-                    ? "v3ObjectImage hasImage"
-                    : "v3ObjectImage"
-                }
-                aria-hidden="true"
-                style={
-                  primaryAction.imageUrl
-                    ? {
-                        backgroundImage:
-                          `linear-gradient(
-                            180deg,
-                            rgba(5,28,50,.03),
-                            rgba(5,28,50,.12)
-                          ),
-                          url("${primaryAction.imageUrl}")`,
-                      }
-                    : undefined
-                }
-              >
-                <span className="v3HousePlaceholder">
-                  <i className="v3HouseRoof" />
-                  <i className="v3HouseBody" />
-                  <i className="v3HouseDoor" />
-                </span>
-              </div>
+          {priorityActions.length > 0 ? (
+            <div className="v3PriorityList">
+              {priorityActions.map(
+                (action) => (
+                  <Link
+                    key={action.id}
+                    href={action.href}
+                    className={
+                      `v3PriorityItem ${action.tone}`
+                    }
+                  >
+                    <span
+                      className="v3PrioritySignal"
+                      aria-hidden="true"
+                    />
 
+                    <div className="v3PriorityBody">
+                      <small>
+                        {action.eyebrow}
+                      </small>
 
-              <div className="v3ObjectBody">
-                <h3>
-                  {primaryAction.title}
-                </h3>
+                      <strong>
+                        {action.title}
+                      </strong>
 
-                <p>
-                  Dieses Objekt benötigt noch einen
-                  Schritt, bevor es vollständig
-                  vorbereitet ist.
-                </p>
+                      <p>
+                        {action.description}
+                      </p>
+                    </div>
 
-
-                <div className="v3ObjectMeta">
-                  <span>
-                    ⌖{" "}
-                    {primaryAction.postalCode
-                      ? primaryAction.postalCode + " "
-                      : ""}
-                    {primaryAction.location}
-                  </span>
-
-                  <span>
-                    ⌂{" "}
-                    {primaryAction.rooms ?? "–"} Zi.
-                  </span>
-
-                  <span>
-                    ◫{" "}
-                    {primaryAction.livingArea ?? "–"} m²
-                  </span>
-                </div>
-
-
-                <Link
-                  href={primaryAction.href}
-                  className="v3ObjectAction"
-                >
-                  {primaryAction.label} →
-                </Link>
-              </div>
+                    <span className="v3PriorityCta">
+                      {action.label} →
+                    </span>
+                  </Link>
+                )
+              )}
             </div>
           ) : (
-            <div className="v3NoObject">
-              Alles erledigt. Du kannst direkt ein
-              neues Objekt starten.
+            <div className="v3PriorityEmpty">
+              <span>✓</span>
+
+              <div>
+                <strong>
+                  Aktuell nichts offen
+                </strong>
+
+                <p>
+                  Alle bekannten Aufgaben sind
+                  erledigt. Du kannst direkt mit
+                  dem nächsten Objekt starten.
+                </p>
+              </div>
             </div>
           )}
         </article>
-
 
         <article className="v3Activity">
           <header className="v3CardHeader">
@@ -1513,6 +1523,181 @@ export default function CockpitOverviewV3View({
             display: none;
           }
         }
+        /* COMMAND_CENTER_PRIORITY_V1 */
+
+        .v3PriorityList {
+          display: flex;
+          flex-direction: column;
+          gap: 9px;
+          padding: 14px;
+        }
+
+        .v3PriorityItem {
+          display: grid;
+          grid-template-columns:
+            5px minmax(0,1fr) auto;
+          min-height: 72px;
+          align-items: center;
+          gap: 12px;
+          padding: 11px 12px;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          background: #fff;
+          color: inherit;
+          text-decoration: none;
+          box-shadow:
+            0 4px 12px rgba(15,23,42,.035);
+          transition:
+            transform .15s ease,
+            box-shadow .15s ease;
+        }
+
+        .v3PriorityItem:hover {
+          transform: translateY(-1px);
+          box-shadow:
+            0 8px 18px rgba(15,23,42,.07);
+        }
+
+        .v3PrioritySignal {
+          width: 5px;
+          height: 42px;
+          border-radius: 999px;
+        }
+
+        .v3PriorityItem.red {
+          border-color: #fecaca;
+          background: #fffafa;
+        }
+
+        .v3PriorityItem.red .v3PrioritySignal {
+          background: #dc2626;
+        }
+
+        .v3PriorityItem.orange {
+          border-color: #fde6ad;
+          background: #fffdf7;
+        }
+
+        .v3PriorityItem.orange .v3PrioritySignal {
+          background: #f59e0b;
+        }
+
+        .v3PriorityItem.blue {
+          border-color: #dbeafe;
+          background: #fbfdff;
+        }
+
+        .v3PriorityItem.blue .v3PrioritySignal {
+          background: #2563eb;
+        }
+
+        .v3PriorityBody {
+          display: flex;
+          min-width: 0;
+          flex-direction: column;
+        }
+
+        .v3PriorityBody small {
+          margin-bottom: 3px;
+          color: #64748b;
+          font-size: 8px;
+          font-weight: 900;
+          letter-spacing: .07em;
+          text-transform: uppercase;
+        }
+
+        .v3PriorityItem.red .v3PriorityBody small,
+        .v3PriorityItem.red .v3PriorityCta {
+          color: #b91c1c;
+        }
+
+        .v3PriorityItem.orange .v3PriorityBody small,
+        .v3PriorityItem.orange .v3PriorityCta {
+          color: #b45309;
+        }
+
+        .v3PriorityItem.blue .v3PriorityBody small,
+        .v3PriorityItem.blue .v3PriorityCta {
+          color: #1d4ed8;
+        }
+
+        .v3PriorityBody strong {
+          overflow: hidden;
+          color: #172033;
+          font-size: 11px;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .v3PriorityBody p {
+          margin: 4px 0 0;
+          color: #718096;
+          font-size: 8px;
+          line-height: 1.4;
+        }
+
+        .v3PriorityCta {
+          color: #2563eb;
+          font-size: 8px;
+          font-weight: 900;
+          white-space: nowrap;
+        }
+
+        .v3PriorityReady {
+          padding: 5px 8px;
+          border-radius: 999px;
+          background: #e8f8ef;
+          color: #168f52;
+          font-size: 8px;
+          font-weight: 900;
+        }
+
+        .v3PriorityEmpty {
+          display: flex;
+          min-height: 190px;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          padding: 24px;
+        }
+
+        .v3PriorityEmpty > span {
+          display: grid;
+          width: 38px;
+          height: 38px;
+          flex: 0 0 38px;
+          place-items: center;
+          border-radius: 50%;
+          background: #e8f8ef;
+          color: #168f52;
+          font-size: 17px;
+          font-weight: 950;
+        }
+
+        .v3PriorityEmpty strong {
+          color: #172033;
+          font-size: 11px;
+        }
+
+        .v3PriorityEmpty p {
+          max-width: 270px;
+          margin: 5px 0 0;
+          color: #7a889c;
+          font-size: 9px;
+          line-height: 1.45;
+        }
+
+        @media (max-width: 760px) {
+          .v3PriorityItem {
+            grid-template-columns:
+              5px minmax(0,1fr);
+          }
+
+          .v3PriorityCta {
+            grid-column: 2;
+          }
+        }
+
       `}</style>
 
 

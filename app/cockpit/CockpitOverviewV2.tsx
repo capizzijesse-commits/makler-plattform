@@ -869,7 +869,7 @@ export default function CockpitOverviewV2({
     );
 
 
-  const marketActivityItems =
+  const marketActivitySourceItems =
     (
       dailyActivity?.items ??
       []
@@ -879,12 +879,14 @@ export default function CockpitOverviewV2({
           marketListingIds.has(
             item.listingId
           )
-      )
-      .slice(
-        0,
-        4
       );
 
+
+  const marketActivityItems =
+    marketActivitySourceItems.slice(
+      0,
+      4
+    );
 
   const unreadActivityCount =
     marketActivityItems.filter(
@@ -922,6 +924,175 @@ export default function CockpitOverviewV2({
         ? "Objekt fertigstellen"
         : "Veröffentlichung prüfen"
       : "Neues Objekt erstellen";
+
+  /*
+   * COMMAND_CENTER_PRIORITY_V1
+   *
+   * 1. Portalfehler / Aktion erforderlich
+   * 2. Unvollständige Objekte
+   * 3. Prüfung / Veröffentlichung
+   */
+
+  const urgentActivityActions =
+    marketActivitySourceItems
+      .filter(
+        (item) =>
+          item.kind !== "views" &&
+          (
+            item.severity === "error" ||
+            item.status === "action_required" ||
+            item.status === "failed" ||
+            item.kind.endsWith(".action_required") ||
+            item.kind.endsWith(".failed")
+          )
+      )
+      .map(
+        (item) => ({
+          id:
+            item.id ??
+            `${item.kind}:${item.listingId}:${item.latestAt}`,
+
+          listingId:
+            item.listingId,
+
+          tone:
+            "red" as const,
+
+          eyebrow:
+            "Aktion erforderlich",
+
+          title:
+            item.title ??
+            item.listingLabel,
+
+          description:
+            item.message ??
+            "Dieser Vorgang benötigt deine Aufmerksamkeit.",
+
+          href:
+            item.href ||
+            `/cockpit/${item.listingId}#portal-publishing`,
+
+          label:
+            "Problem öffnen",
+        })
+      );
+
+
+  const urgentListingIds =
+    new Set(
+      urgentActivityActions.map(
+        (action) =>
+          action.listingId
+      )
+    );
+
+
+  const completionActions =
+    actionNeededListings
+      .filter(
+        (listing) =>
+          !urgentListingIds.has(
+            listing.id
+          )
+      )
+      .map(
+        (listing) => {
+
+          const missingText =
+            !hasGeneratedVariants(
+              listing.generatedVariants
+            );
+
+          const missingImages =
+            listing.images.length === 0;
+
+          const description =
+            missingText &&
+            missingImages
+              ? "Inseratstext und Bilder fehlen noch."
+              : missingText
+                ? "Der Inseratstext muss noch erstellt werden."
+                : missingImages
+                  ? "Für dieses Objekt fehlen noch Bilder."
+                  : "Das Objekt muss noch vervollständigt werden.";
+
+          return {
+            id:
+              `completion:${listing.id}`,
+
+            listingId:
+              listing.id,
+
+            tone:
+              "orange" as const,
+
+            eyebrow:
+              "Objekt vervollständigen",
+
+            title:
+              listing.projectName?.trim() ||
+              `${listing.propertyType} in ${listing.location}`,
+
+            description,
+
+            href:
+              `/cockpit/${listing.id}/edit`,
+
+            label:
+              "Objekt fertigstellen",
+          };
+        }
+      );
+
+
+  const reviewActions =
+    readyForReviewListings
+      .filter(
+        (listing) =>
+          !urgentListingIds.has(
+            listing.id
+          )
+      )
+      .map(
+        (listing) => ({
+          id:
+            `review:${listing.id}`,
+
+          listingId:
+            listing.id,
+
+          tone:
+            "blue" as const,
+
+          eyebrow:
+            "Zur Prüfung bereit",
+
+          title:
+            listing.projectName?.trim() ||
+            `${listing.propertyType} in ${listing.location}`,
+
+          description:
+            "Objektpaket ist vorbereitet. Veröffentlichung prüfen und freigeben.",
+
+          href:
+            `/cockpit/${listing.id}#portal-publishing`,
+
+          label:
+            "Veröffentlichung prüfen",
+        })
+      );
+
+
+  const priorityActions =
+    [
+      ...urgentActivityActions,
+      ...completionActions,
+      ...reviewActions,
+    ].slice(
+      0,
+      3
+    );
 
   const heroImage =
     sortedListings
@@ -1902,6 +2073,7 @@ export default function CockpitOverviewV2({
                   }
                 : null
             }
+            priorityActions={priorityActions}
             activityItems={marketActivityItems}
             activityLoading={dailyActivityLoading}
             activityError={dailyActivityError}
