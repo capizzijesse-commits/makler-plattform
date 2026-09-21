@@ -113,7 +113,7 @@ export default function Navbar() {
     {
   label: t("items.marketingHub.label"),
   description: t("items.marketingHub.description"),
-  icon: "­ƒôú",
+  icon: "📣",
   href: "/marketing-hub",
   accent: "gold",
 },
@@ -262,12 +262,12 @@ export default function Navbar() {
 
   const founderPrice =
     dashboardMarket === "DE"
-      ? "19,90 Ôé¼"
+      ? "19,90 €"
       : "CHF 19.90";
 
   const proPrice =
     dashboardMarket === "DE"
-      ? "79,90 Ôé¼"
+      ? "79,90 €"
       : "CHF 79.90";
 
   useEffect(() => {
@@ -720,7 +720,7 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={() => setMenuOpen(true)}
-                  aria-label="Plan und Upgrade ├Âffnen"
+                  aria-label="Plan und Upgrade öffnen"
                   title="Plan & Upgrade"
                   style={{
                     all: "unset",
@@ -737,7 +737,7 @@ export default function Navbar() {
                         opacity: 0.55,
                       }}
                     >
-                      ┬À
+                      ·
                     </span>
                     {planActionLabel}
                     <span
@@ -747,7 +747,7 @@ export default function Navbar() {
                         fontSize: "14px",
                       }}
                     >
-                      ÔÇ║
+                      ›
                     </span>
                   </span>
                 </button>
@@ -782,7 +782,7 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={() => setMenuOpen(true)}
-                  aria-label="Plan und Upgrade ├Âffnen"
+                  aria-label="Plan und Upgrade öffnen"
                   title="Plan & Upgrade"
                   style={{
                     all: "unset",
@@ -799,7 +799,7 @@ export default function Navbar() {
                         opacity: 0.55,
                       }}
                     >
-                      ┬À
+                      ·
                     </span>
                     {planActionLabel}
                     <span
@@ -809,7 +809,7 @@ export default function Navbar() {
                         fontSize: "14px",
                       }}
                     >
-                      ÔÇ║
+                      ›
                     </span>
                   </span>
                 </button>
@@ -948,7 +948,7 @@ export default function Navbar() {
                           opacity: 0.8,
                         }}
                       >
-                        30 Tage kostenlos ┬À danach{" "}
+                        30 Tage kostenlos · danach{" "}
                         {founderPrice} / Monat
                       </small>
 
@@ -979,7 +979,7 @@ export default function Navbar() {
                         }}
                       >
                         {upgradeBusy
-                          ? "Checkout wird ge├Âffnet ÔÇª"
+                          ? "Checkout wird geöffnet …"
                           : "Founder kostenlos testen"}
                       </button>
                     </div>
@@ -1077,7 +1077,7 @@ export default function Navbar() {
                       }}
                     >
                       {upgradeBusy
-                        ? "Checkout wird ge├Âffnet ÔÇª"
+                        ? "Checkout wird geöffnet …"
                         : PRO_PUBLIC_LAUNCH_ENABLED
                           ? "Pro abonnieren"
                           : "Demnächst verfügbar"}
@@ -1146,9 +1146,9 @@ export default function Navbar() {
                   );
 
                 /*
-                 * Fertige Pro-Funktionen bleiben f├╝r Founder
-                 * sichtbar und f├╝hren als Upgrade-Hinweis
-                 * zur Preis├╝bersicht.
+                 * Fertige Pro-Funktionen bleiben für Founder
+                 * sichtbar und führen als Upgrade-Hinweis
+                 * zur Preisübersicht.
                  */
                 if (
                   isProLocked &&
