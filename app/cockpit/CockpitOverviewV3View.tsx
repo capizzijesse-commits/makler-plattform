@@ -4,6 +4,7 @@
 import Link from "next/link";
 
 import {
+  useEffect,
   useState,
 } from "react";
 
@@ -169,6 +170,10 @@ type Props = {
 };
 
 
+const COMMAND_CENTER_RESULT_STORAGE_KEY =
+  "inserat-ai:command-center:action-result:v1";
+
+
 export default function CockpitOverviewV3View({
   market,
   displayName,
@@ -257,6 +262,107 @@ export default function CockpitOverviewV3View({
       ""
     );
 
+  const [
+    commandActionSuccess,
+    setCommandActionSuccess,
+  ] =
+    useState(
+      ""
+    );
+
+
+  /*
+   * COMMAND_CENTER_ACTION_RESULT_FEEDBACK_V1
+   *
+   * Erfolgreiches Reconcile lädt das Cockpit
+   * anschließend neu.
+   *
+   * Deshalb wird die Erfolgsmeldung genau
+   * einmal über sessionStorage transportiert.
+   *
+   * Keine DB.
+   * Kein Publish.
+   * Kein Retry.
+   */
+  useEffect(
+    () => {
+
+      try {
+
+        const raw =
+          window.sessionStorage.getItem(
+            COMMAND_CENTER_RESULT_STORAGE_KEY
+          );
+
+        if (!raw) {
+          return;
+        }
+
+
+        window.sessionStorage.removeItem(
+          COMMAND_CENTER_RESULT_STORAGE_KEY
+        );
+
+
+        const parsed =
+          JSON.parse(
+            raw
+          ) as {
+            message?:
+              unknown;
+
+            createdAt?:
+              unknown;
+          };
+
+
+        if (
+          typeof parsed.message !==
+            "string" ||
+          typeof parsed.createdAt !==
+            "number"
+        ) {
+          return;
+        }
+
+
+        /*
+         * Alte Flash-Meldungen werden
+         * absichtlich verworfen.
+         */
+        if (
+          Date.now() -
+            parsed.createdAt >
+          120_000
+        ) {
+          return;
+        }
+
+
+        setCommandActionSuccess(
+          parsed.message
+        );
+      }
+      catch {
+
+        /*
+         * Feedback darf niemals den
+         * eigentlichen Cockpit-Workflow
+         * blockieren.
+         */
+        try {
+          window.sessionStorage.removeItem(
+            COMMAND_CENTER_RESULT_STORAGE_KEY
+          );
+        }
+        catch {
+          // no-op
+        }
+      }
+    },
+    []
+  );
+
 
   async function executeCommandCenterAction(
     action:
@@ -285,6 +391,10 @@ export default function CockpitOverviewV3View({
       );
 
       setCommandActionError(
+        ""
+      );
+
+      setCommandActionSuccess(
         ""
       );
 
@@ -370,7 +480,33 @@ export default function CockpitOverviewV3View({
        * Activity Center + Prioritäten werden
        * nach erfolgreichem Reconcile frisch
        * vom Server gelesen.
+       *
+       * Die kurze Erfolgsmeldung überlebt
+       * exakt diesen Reload.
        */
+      try {
+
+        window.sessionStorage.setItem(
+          COMMAND_CENTER_RESULT_STORAGE_KEY,
+          JSON.stringify({
+            message:
+              "Status erfolgreich abgeglichen.",
+
+            createdAt:
+              Date.now(),
+          })
+        );
+      }
+      catch {
+        /*
+         * Feedback ist optional.
+         * Ein Storage-Fehler darf den
+         * erfolgreichen Reconcile nicht
+         * zurücksetzen.
+         */
+      }
+
+
       window.location.reload();
     }
     catch (
@@ -625,6 +761,20 @@ export default function CockpitOverviewV3View({
               </span>
             )}
           </header>
+
+
+          {commandActionSuccess ? (
+            <div
+              className="v3CommandActionSuccess"
+              role="status"
+            >
+              <span aria-hidden="true">
+                ✓
+              </span>
+
+              {commandActionSuccess}
+            </div>
+          ) : null}
 
 
           {commandActionError ? (
@@ -5629,6 +5779,39 @@ export default function CockpitOverviewV3View({
         .v3PriorityButton:disabled {
           cursor: wait;
           opacity: 0.76;
+        }
+
+        .v3CommandActionSuccess {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin: 12px 14px 0;
+          border: 1px solid rgba(22, 163, 74, 0.24);
+          border-radius: 12px;
+          background: linear-gradient(
+            135deg,
+            rgba(240, 253, 244, 0.96),
+            rgba(220, 252, 231, 0.82)
+          );
+          padding: 10px 12px;
+          color: #166534;
+          font-size: 12px;
+          font-weight: 800;
+          line-height: 1.45;
+        }
+
+        .v3CommandActionSuccess > span {
+          display: inline-flex;
+          width: 20px;
+          height: 20px;
+          align-items: center;
+          justify-content: center;
+          border-radius: 999px;
+          background: #16a34a;
+          color: #ffffff;
+          font-size: 11px;
+          font-weight: 900;
+          flex: 0 0 auto;
         }
 
         .v3CommandActionError {
