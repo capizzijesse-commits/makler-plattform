@@ -3,6 +3,14 @@
 
 import Link from "next/link";
 
+import {
+  useState,
+} from "react";
+
+import type {
+  CommandCenterExecutionAction,
+} from "@/lib/command-center/command-center-action-registry";
+
 import BatchPublishingV23
   from "./BatchPublishingV23";
 
@@ -117,6 +125,9 @@ type PriorityAction = {
 
   label:
     string;
+
+  execution:
+    CommandCenterExecutionAction;
 };
 
 type Props = {
@@ -210,6 +221,176 @@ export default function CockpitOverviewV3View({
           "numeric",
       }
     );
+
+
+  /*
+   * COMMAND_CENTER_ACTION_EXECUTION_V1
+   *
+   * Der Command Center darf hier nur
+   * bereits vorhandene sichere Operationen
+   * auslösen.
+   *
+   * Aktuell inline erlaubt:
+   * - RECONCILE_PUBLICATION
+   *
+   * Nicht erlaubt:
+   * - direkter Publish
+   * - manueller Portal-Retry
+   * - Approval-Bypass
+   */
+  const [
+    commandActionBusyId,
+    setCommandActionBusyId,
+  ] =
+    useState<
+      string |
+      null
+    >(
+      null
+    );
+
+  const [
+    commandActionError,
+    setCommandActionError,
+  ] =
+    useState(
+      ""
+    );
+
+
+  async function executeCommandCenterAction(
+    action:
+      PriorityAction
+  ) {
+
+    if (
+      action.execution.mode !==
+      "reconcile"
+    ) {
+      return;
+    }
+
+
+    if (
+      commandActionBusyId
+    ) {
+      return;
+    }
+
+
+    try {
+
+      setCommandActionBusyId(
+        action.id
+      );
+
+      setCommandActionError(
+        ""
+      );
+
+
+      const response =
+        await fetch(
+          `/api/listings/${encodeURIComponent(
+            action.execution.listingId
+          )}/publication-run`,
+          {
+            method:
+              "POST",
+
+            credentials:
+              "include",
+
+            cache:
+              "no-store",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body:
+              JSON.stringify({
+                action:
+                  "reconcile",
+
+                runId:
+                  action.execution.runId,
+              }),
+          }
+        );
+
+
+      const data =
+        (
+          await response
+            .json()
+            .catch(
+              () =>
+                null
+            )
+        ) as
+          | {
+              success?:
+                boolean;
+
+              error?:
+                string;
+
+              message?:
+                string;
+            }
+          | null;
+
+
+      if (
+        response.status ===
+        401
+      ) {
+        window.location.href =
+          "/login";
+
+        return;
+      }
+
+
+      if (
+        !response.ok ||
+        !data?.success
+      ) {
+        throw new Error(
+          data?.message ||
+          data?.error ||
+          "Status konnte nicht aktualisiert werden."
+        );
+      }
+
+
+      /*
+       * Activity Center + Prioritäten werden
+       * nach erfolgreichem Reconcile frisch
+       * vom Server gelesen.
+       */
+      window.location.reload();
+    }
+    catch (
+      actionError
+    ) {
+
+      setCommandActionError(
+        actionError instanceof
+          Error
+          ? actionError.message
+          : "Aktion konnte nicht ausgeführt werden."
+      );
+    }
+    finally {
+
+      setCommandActionBusyId(
+        null
+      );
+    }
+  }
 
 
   return (
@@ -446,48 +627,104 @@ export default function CockpitOverviewV3View({
           </header>
 
 
+          {commandActionError ? (
+            <div
+              className="v3CommandActionError"
+              role="alert"
+            >
+              {commandActionError}
+            </div>
+          ) : null}
+
+
           {priorityActions.length > 0 ? (
             <div className="v3PriorityList">
               {priorityActions.map(
-                (action) => (
-                  <Link
-                    key={action.id}
-                    href={action.href}
-                    className={
-                      `v3PriorityItem ${action.tone}`
-                    }
-                  >
-                    <span
-                      className="v3PrioritySignal"
-                      aria-hidden="true"
-                    />
+                (action) => {
 
-                    <div className="v3PriorityBody">
-                      <small>
-                        {action.eyebrow}
-                      </small>
+                  const content = (
+                    <>
+                      <span
+                        className="v3PrioritySignal"
+                        aria-hidden="true"
+                      />
 
-                      <strong>
-                        {action.title}
-                      </strong>
+                      <div className="v3PriorityBody">
+                        <small>
+                          {action.eyebrow}
+                        </small>
 
-                      <p>
-                        {action.description}
-                      </p>
+                        <strong>
+                          {action.title}
+                        </strong>
 
-                      <span className="v3PriorityResolution">
-                        <b>
-                          Nächster Schritt:
-                        </b>{" "}
-                        {action.resolution}
+                        <p>
+                          {action.description}
+                        </p>
+
+                        <span className="v3PriorityResolution">
+                          <b>
+                            Nächster Schritt:
+                          </b>{" "}
+                          {action.resolution}
+                        </span>
+                      </div>
+
+                      <span className="v3PriorityCta">
+                        {commandActionBusyId ===
+                        action.id
+                          ? "Status wird aktualisiert …"
+                          : `${action.label} →`}
                       </span>
-                    </div>
+                    </>
+                  );
 
-                    <span className="v3PriorityCta">
-                      {action.label} →
-                    </span>
-                  </Link>
-                )
+
+                  if (
+                    action.execution.mode ===
+                    "reconcile"
+                  ) {
+                    return (
+                      <button
+                        key={action.id}
+                        type="button"
+                        className={
+                          `v3PriorityItem v3PriorityButton ${action.tone}`
+                        }
+                        disabled={
+                          commandActionBusyId !==
+                          null
+                        }
+                        aria-busy={
+                          commandActionBusyId ===
+                          action.id
+                        }
+                        onClick={() =>
+                          void executeCommandCenterAction(
+                            action
+                          )
+                        }
+                      >
+                        {content}
+                      </button>
+                    );
+                  }
+
+
+                  return (
+                    <Link
+                      key={action.id}
+                      href={
+                        action.execution.href
+                      }
+                      className={
+                        `v3PriorityItem ${action.tone}`
+                      }
+                    >
+                      {content}
+                    </Link>
+                  );
+                }
               )}
             </div>
           ) : (
@@ -5372,6 +5609,38 @@ export default function CockpitOverviewV3View({
           .v3Publishing::before {
             display: none;
           }
+        }
+
+
+        /*
+         * COMMAND_CENTER_ACTION_EXECUTION_V1
+         */
+
+        .v3PriorityButton {
+          width: 100%;
+          box-sizing: border-box;
+          appearance: none;
+          font: inherit;
+          text-align: left;
+          color: inherit;
+          cursor: pointer;
+        }
+
+        .v3PriorityButton:disabled {
+          cursor: wait;
+          opacity: 0.76;
+        }
+
+        .v3CommandActionError {
+          margin: 12px 14px 0;
+          border: 1px solid rgba(220, 38, 38, 0.24);
+          border-radius: 12px;
+          background: rgba(254, 226, 226, 0.72);
+          padding: 10px 12px;
+          color: #991b1b;
+          font-size: 12px;
+          font-weight: 700;
+          line-height: 1.45;
         }
 
       `}</style>

@@ -18,6 +18,11 @@ import {
   type InseratAiMarket,
 } from "@/lib/inserat-ai-market";
 
+import {
+  createCommandCenterNavigationAction,
+  resolveCommandCenterAction,
+} from "@/lib/command-center/command-center-action-registry";
+
 type CockpitImage = {
   id: string;
   url: string;
@@ -1533,6 +1538,30 @@ export default function CockpitOverviewV2({
 
           label:
             resolution.label,
+
+          execution:
+            resolveCommandCenterAction({
+              mode:
+                resolution.mode,
+
+              listingId:
+                item.listingId,
+
+              errorCode:
+                getActivityMetadataString(
+                  item,
+                  "errorCode"
+                ),
+
+              runId:
+                getActivityMetadataString(
+                  item,
+                  "runId"
+                ),
+
+              label:
+                resolution.label,
+            }),
         })
       );
 
@@ -1608,6 +1637,18 @@ export default function CockpitOverviewV2({
 
             label:
               "Objekt fertigstellen",
+
+            execution:
+              createCommandCenterNavigationAction({
+                id:
+                  "OPEN_LISTING",
+
+                listingId:
+                  listing.id,
+
+                href:
+                  `/cockpit/${listing.id}/edit`,
+              }),
           };
         }
       );
@@ -1650,6 +1691,18 @@ export default function CockpitOverviewV2({
 
           label:
             "Veröffentlichung prüfen",
+
+          execution:
+            createCommandCenterNavigationAction({
+              id:
+                "PREPARE_PUBLICATION",
+
+              listingId:
+                listing.id,
+
+              href:
+                `/cockpit/${listing.id}#portal-publishing`,
+            }),
         })
       );
 

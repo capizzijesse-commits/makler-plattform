@@ -1754,6 +1754,48 @@ export async function GET(
     }
 
 
+    /*
+     * COMMAND_CENTER_PORTAL_RUN_ID_V1
+     *
+     * PortalPublishJob kennt selbst keine
+     * PublicationRun-ID.
+     *
+     * PublicationTarget.portalJobId liefert
+     * jedoch die eindeutige Verbindung.
+     *
+     * Damit kann ein Reconcile-Hinweis aus
+     * einem konkreten Portal-Job sicher auf
+     * exakt den zugehörigen Run zeigen.
+     */
+    const publicationRunIdByPortalJobId =
+      new Map<
+        string,
+        string
+      >();
+
+
+    for (
+      const run
+      of publicationRuns
+    ) {
+      for (
+        const target
+        of run.targets
+      ) {
+        if (
+          !target.portalJobId
+        ) {
+          continue;
+        }
+
+        publicationRunIdByPortalJobId.set(
+          target.portalJobId,
+          run.id
+        );
+      }
+    }
+
+
     const portalJobItems:
       ActivityItem[] =
       [];
@@ -1898,6 +1940,12 @@ export async function GET(
 
           jobId:
             job.id,
+
+          runId:
+            publicationRunIdByPortalJobId.get(
+              job.id
+            ) ??
+            null,
 
           provider:
             job.provider,
