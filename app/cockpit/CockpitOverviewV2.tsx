@@ -115,7 +115,59 @@ type DailyActivityItem = {
 
   href:
     string;
+
+  metadata?:
+    Record<string, unknown>;
 };
+
+
+function getActivityMetadataString(
+  item:
+    DailyActivityItem,
+  key:
+    string
+):
+  string |
+  null {
+
+  const value =
+    item.metadata?.[key];
+
+  if (
+    typeof value !==
+    "string"
+  ) {
+    return null;
+  }
+
+  const normalized =
+    value.trim();
+
+  return normalized ||
+    null;
+}
+
+
+function getActivityMetadataNumber(
+  item:
+    DailyActivityItem,
+  key:
+    string
+):
+  number |
+  null {
+
+  const value =
+    item.metadata?.[key];
+
+  return typeof value ===
+      "number" &&
+    Number.isFinite(
+      value
+    )
+      ? value
+      : null;
+}
 
 type DailyActivityResponse = {
   success:
@@ -940,6 +992,20 @@ export default function CockpitOverviewV2({
    * Activity-/Provider-Fehlermeldungen.
    */
 
+  /*
+   * COMMAND_CENTER_ERROR_CODE_CLASSIFICATION_V2
+   *
+   * Bevorzugt strukturierte Portal-Metadaten.
+   * Textanalyse bleibt nur als Fallback bestehen.
+   *
+   * Modi:
+   * - auto_retry
+   * - reconcile
+   * - user_action
+   * - provider_action
+   * - exhausted
+   */
+
   const getProblemResolution =
     (
       item:
@@ -951,12 +1017,215 @@ export default function CockpitOverviewV2({
           .toLowerCase();
 
 
+      const errorCode =
+        getActivityMetadataString(
+          item,
+          "errorCode"
+        )
+          ?.toUpperCase() ??
+        "";
+
+
+      const attemptCount =
+        getActivityMetadataNumber(
+          item,
+          "attemptCount"
+        );
+
+
+      const maxAttempts =
+        getActivityMetadataNumber(
+          item,
+          "maxAttempts"
+        );
+
+
+      const nextAttemptAt =
+        getActivityMetadataString(
+          item,
+          "nextAttemptAt"
+        );
+
+
+      /*
+       * Bereits vom bestehenden Worker verwaltet.
+       * Keine menschliche Aufgabe erzeugen.
+       */
+
+      const automaticRetryScheduled =
+        item.kind ===
+          "portal.retry_scheduled" ||
+        item.kind ===
+          "portal.retry_queued" ||
+        item.kind ===
+          "portal.retry_processing" ||
+        (
+          item.status ===
+            "failed" &&
+          Boolean(
+            nextAttemptAt
+          ) &&
+          (
+            attemptCount ===
+              null ||
+            maxAttempts ===
+              null ||
+            attemptCount <
+              maxAttempts
+          )
+        );
+
+
+      if (
+        automaticRetryScheduled
+      ) {
+        return {
+          mode:
+            "auto_retry" as const,
+
+          resolution:
+            nextAttemptAt
+              ? "Inserat-AI hat bereits einen automatischen neuen Veröffentlichungsversuch geplant."
+              : "Inserat-AI verarbeitet den automatischen Wiederholungsversuch.",
+
+          label:
+            "Automatischer Retry",
+        };
+      }
+
+
+      /*
+       * Unklarer Providerzustand:
+       * niemals blind nochmals publishen.
+       */
+
+      if (
+        errorCode ===
+          "PORTAL_RECONCILIATION_REQUIRED" ||
+        errorCode ===
+          "PORTAL_OPERATION_AMBIGUOUS" ||
+        /reconciliation required|abgleich erforderlich|statusabgleich/.test(
+          problemText
+        )
+      ) {
+        return {
+          mode:
+            "reconcile" as const,
+
+          resolution:
+            "Der externe Portalzustand ist nicht eindeutig. Zuerst den Portalstatus abgleichen; nicht blind erneut veröffentlichen.",
+
+          label:
+            "Status abgleichen",
+        };
+      }
+
+
+      /*
+       * Retry-Budget vollständig verbraucht.
+       */
+
+      const attemptsAreExhausted =
+        item.status ===
+          "failed" &&
+        attemptCount !==
+          null &&
+        maxAttempts !==
+          null &&
+        attemptCount >=
+          maxAttempts &&
+        !nextAttemptAt;
+
+
+      if (
+        attemptsAreExhausted
+      ) {
+        return {
+          mode:
+            "exhausted" as const,
+
+          resolution:
+            `Inserat-AI hat ${attemptCount} von ${maxAttempts} automatischen Versuchen verwendet. Der Fehler muss jetzt geprüft werden.`,
+
+          label:
+            "Fehler prüfen",
+        };
+      }
+
+
+      /*
+       * Externe bzw. technische Freigabe fehlt.
+       */
+
+      if (
+        [
+          "PORTAL_PRODUCTION_NOT_ENABLED",
+          "PORTAL_TRANSPORT_NOT_ENABLED",
+          "PORTAL_DRY_RUN_PROVIDER_MISSING",
+          "PORTAL_PROVIDER_UNSUPPORTED",
+          "WG_GESUCHT_DE_ACCESS_GATE_BROKEN",
+        ].includes(
+          errorCode
+        )
+      ) {
+        return {
+          mode:
+            "provider_action" as const,
+
+          resolution:
+            "Für dieses Ziel fehlt noch eine externe oder technische Publishing-Freigabe. Inserat-AI darf hier nicht automatisch weiterpublizieren.",
+
+          label:
+            "Freigabe prüfen",
+        };
+      }
+
+
+      /*
+       * Verbindung / Benutzerzugang benötigt Aktion.
+       */
+
+      if (
+        [
+          "PORTAL_CONNECTION_NOT_FOUND",
+          "PORTAL_CONNECTION_NOT_VERIFIED",
+          "PORTAL_CONNECTION_NOT_READY",
+          "OAUTH_ACCESS_REQUIRED",
+          "TEMPORARY_OAUTH_ACCESS_REQUIRED",
+          "INVALID_OAUTH_CALLBACK",
+          "INVALID_OR_EXPIRED_OAUTH_FLOW",
+          "PORTAL_LISTING_NOT_UNLOCKED",
+          "INVALID_PORTAL_CONFIGURATION",
+        ].includes(
+          errorCode
+        )
+      ) {
+        return {
+          mode:
+            "user_action" as const,
+
+          resolution:
+            "Portal-Verbindung bzw. Zugangsdaten prüfen und bei Bedarf neu verbinden.",
+
+          label:
+            "Verbindung prüfen",
+        };
+      }
+
+
+      /*
+       * Text-Fallback für Provider-/Freigabefehler.
+       */
+
       if (
         /403|forbidden|berechtigung|permission|freischalt|nicht freigeschaltet/.test(
           problemText
         )
       ) {
         return {
+          mode:
+            "provider_action" as const,
+
           resolution:
             "Portal-Freigabe oder Publish-Berechtigung prüfen und die Verbindung danach erneut verifizieren.",
 
@@ -966,12 +1235,19 @@ export default function CockpitOverviewV2({
       }
 
 
+      /*
+       * Text-Fallback für Verbindungsfehler.
+       */
+
       if (
         /401|unauthorized|oauth|access token|token expired|credentials?|zugangsdaten|passwort|password|not verified|not connected|connection is not verified|connection not verified|verbindung nicht verifiziert|verbindung nicht bestätigt|nicht verbunden/.test(
           problemText
         )
       ) {
         return {
+          mode:
+            "user_action" as const,
+
           resolution:
             "Portal-Verbindung bzw. Zugangsdaten prüfen und bei Bedarf neu verbinden.",
 
@@ -987,6 +1263,9 @@ export default function CockpitOverviewV2({
         )
       ) {
         return {
+          mode:
+            "user_action" as const,
+
           resolution:
             "Das fehlende Pflichtfeld im Objekt ergänzen und die Veröffentlichung danach erneut vorbereiten.",
 
@@ -996,14 +1275,24 @@ export default function CockpitOverviewV2({
       }
 
 
+      /*
+       * Rate Limit / Netzwerk:
+       * Nur dann AUTO, wenn der Worker tatsächlich
+       * nextAttemptAt gesetzt hat. Sonst keine
+       * automatische Behauptung.
+       */
+
       if (
         /429|rate limit|too many requests/.test(
           problemText
         )
       ) {
         return {
+          mode:
+            "user_action" as const,
+
           resolution:
-            "Das Portal begrenzt gerade Anfragen. Status prüfen und den nächsten Versuch abwarten bzw. erneut starten.",
+            "Das Portal begrenzt gerade Anfragen. Portaljob und Retry-Status prüfen.",
 
           label:
             "Retry prüfen",
@@ -1017,8 +1306,11 @@ export default function CockpitOverviewV2({
         )
       ) {
         return {
+          mode:
+            "user_action" as const,
+
           resolution:
-            "Transportverbindung prüfen. Bei einem temporären Netzwerkfehler anschließend erneut versuchen.",
+            "Transportstatus prüfen. Wenn der Worker einen Retry geplant hat, übernimmt Inserat-AI den nächsten Versuch automatisch.",
 
           label:
             "Transport prüfen",
@@ -1032,6 +1324,9 @@ export default function CockpitOverviewV2({
         )
       ) {
         return {
+          mode:
+            "provider_action" as const,
+
           resolution:
             "Der angefragte Portal-Endpunkt oder Publishing-Kanal wurde nicht gefunden. Zugang und Publish-Konfiguration prüfen.",
 
@@ -1042,6 +1337,9 @@ export default function CockpitOverviewV2({
 
 
       return {
+        mode:
+          "user_action" as const,
+
         resolution:
           "Portalstatus öffnen, die angezeigte Fehlermeldung prüfen und die betroffene Veröffentlichung korrigieren.",
 
@@ -1049,7 +1347,6 @@ export default function CockpitOverviewV2({
           "Problem prüfen",
       };
     };
-
 
   const urgentActivityCandidates =
     marketActivitySourceItems
@@ -1061,84 +1358,182 @@ export default function CockpitOverviewV2({
             item.status === "action_required" ||
             item.status === "failed" ||
             item.kind.endsWith(".action_required") ||
-            item.kind.endsWith(".failed")
+            item.kind.endsWith(".failed") ||
+            item.kind === "portal.retry_scheduled" ||
+            item.kind === "portal.retry_queued" ||
+            item.kind === "portal.retry_processing"
           )
       );
 
 
+  const classifiedUrgentActivityCandidates =
+    urgentActivityCandidates
+      .map(
+        (item) => ({
+          item,
+
+          resolution:
+            getProblemResolution(
+              item
+            ),
+        })
+      );
+
+
   /*
-   * Wenn für ein Objekt bereits ein konkreter
-   * Target-/Portalfehler existiert, soll nicht
-   * zusätzlich der generische Publication-Fehler
-   * denselben Platz in den Top-3 belegen.
+   * Ein spezifischer Portal-/Target-Zustand
+   * unterdrückt weiterhin den generischen
+   * Publication-Fehler.
+   *
+   * Das gilt auch bei AUTO-RETRY:
+   * Wir wollen nicht aus einem automatisch
+   * behandelten Fehler indirekt wieder eine
+   * menschliche Aufgabe machen.
    */
+
+  /*
+   * COMMAND_CENTER_AUTO_RETRY_IDENTITY_V1
+   *
+   * PublicationTarget.metadata.portalJobId
+   * wird mit
+   * PortalPublishJob.metadata.jobId
+   * verbunden.
+   *
+   * Nur derselbe Portal-Job wird aus
+   * menschlichen Aufgaben entfernt.
+   */
+
+  const automaticRetryJobIds =
+    new Set(
+      classifiedUrgentActivityCandidates
+        .filter(
+          ({ resolution }) =>
+            resolution.mode ===
+              "auto_retry"
+        )
+        .map(
+          ({ item }) =>
+            getActivityMetadataString(
+              item,
+              "jobId"
+            )
+        )
+        .filter(
+          (
+            jobId
+          ): jobId is string =>
+            Boolean(
+              jobId
+            )
+        )
+    );
+
+
+  const isCoveredByAutomaticRetry =
+    (
+      item:
+        DailyActivityItem
+    ):
+      boolean => {
+
+      const portalJobId =
+        getActivityMetadataString(
+          item,
+          "portalJobId"
+        );
+
+      if (!portalJobId) {
+        return false;
+      }
+
+      return automaticRetryJobIds.has(
+        portalJobId
+      );
+    };
+
 
   const specificUrgentListingIds =
     new Set(
-      urgentActivityCandidates
+      classifiedUrgentActivityCandidates
         .filter(
-          (item) =>
+          ({ item }) =>
             item.kind !==
               "publication.action_required"
         )
         .map(
-          (item) =>
+          ({ item }) =>
             item.listingId
         )
     );
 
 
   const urgentActivityActions =
-    urgentActivityCandidates
+    classifiedUrgentActivityCandidates
       .filter(
-        (item) =>
-          item.kind !==
-            "publication.action_required" ||
-          !specificUrgentListingIds.has(
-            item.listingId
+        ({
+          item,
+          resolution,
+        }) =>
+          resolution.mode !==
+            "auto_retry" &&
+
+          !isCoveredByAutomaticRetry(
+            item
+          ) &&
+
+          (
+            item.kind !==
+              "publication.action_required" ||
+            !specificUrgentListingIds.has(
+              item.listingId
+            )
           )
       )
       .map(
-        (item) => {
+        ({
+          item,
+          resolution,
+        }) => ({
+          id:
+            item.id ??
+            `${item.kind}:${item.listingId}:${item.latestAt}`,
 
-          const resolution =
-            getProblemResolution(
-              item
-            );
+          listingId:
+            item.listingId,
 
-          return {
-            id:
-              item.id ??
-              `${item.kind}:${item.listingId}:${item.latestAt}`,
+          tone:
+            "red" as const,
 
-            listingId:
-              item.listingId,
+          eyebrow:
+            resolution.mode ===
+              "reconcile"
+              ? "Statusabgleich erforderlich"
+              : resolution.mode ===
+                    "provider_action"
+                ? "Externe Freigabe erforderlich"
+                : resolution.mode ===
+                      "exhausted"
+                  ? "Automatische Versuche beendet"
+                  : "Aktion erforderlich",
 
-            tone:
-              "red" as const,
+          title:
+            item.title ??
+            item.listingLabel,
 
-            eyebrow:
-              "Aktion erforderlich",
+          description:
+            item.message ??
+            "Dieser Vorgang benötigt deine Aufmerksamkeit.",
 
-            title:
-              item.title ??
-              item.listingLabel,
+          resolution:
+            resolution.resolution,
 
-            description:
-              item.message ??
-              "Dieser Vorgang benötigt deine Aufmerksamkeit.",
+          href:
+            item.href ||
+            `/cockpit/${item.listingId}#portal-publishing`,
 
-            resolution:
-              resolution.resolution,
-
-            href:
-              item.href ||
-              `/cockpit/${item.listingId}#portal-publishing`,
-
-            label:
-              resolution.label,
-          };
-        }
+          label:
+            resolution.label,
+        })
       );
 
   const urgentListingIds =
