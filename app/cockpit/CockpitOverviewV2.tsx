@@ -492,6 +492,127 @@ function suppressResolvedPortalProblems(
 }
 
 
+/*
+ * COMMAND_CENTER_RESOLUTION_HISTORY_V1
+ *
+ * Nur echte immutable Transition-Events
+ * werden als von Inserat-AI gelöste
+ * Vorgänge dargestellt.
+ */
+function getResolvedPortalWorkItems(
+  items:
+    DailyActivityItem[]
+) {
+
+  const candidates =
+    items
+      .filter(
+        (item) =>
+          item.kind ===
+            "portal.problem_resolved" &&
+          item.severity ===
+            "success" &&
+          item.metadata
+            ?.immutableTransition ===
+            true
+      )
+      .map(
+        (item) => ({
+          item,
+
+          timestamp:
+            getActivityEventTimestamp(
+              item
+            ),
+
+          jobId:
+            getActivityMetadataString(
+              item,
+              "jobId"
+            ),
+        })
+      )
+      .filter(
+        (
+          candidate
+        ): candidate is {
+          item:
+            DailyActivityItem;
+
+          timestamp:
+            number;
+
+          jobId:
+            string;
+        } =>
+          candidate.timestamp !==
+            null &&
+          Boolean(
+            candidate.jobId
+          )
+      )
+      .sort(
+        (a, b) =>
+          b.timestamp -
+          a.timestamp
+      );
+
+
+  /*
+   * Pro PortalJob nur die neueste
+   * erfolgreiche Resolution anzeigen.
+   */
+  const seenJobIds =
+    new Set<string>();
+
+
+  return candidates
+    .filter(
+      ({ jobId }) => {
+
+        if (
+          seenJobIds.has(
+            jobId
+          )
+        ) {
+          return false;
+        }
+
+        seenJobIds.add(
+          jobId
+        );
+
+        return true;
+      }
+    )
+    .map(
+      ({ item }) => ({
+        id:
+          item.id ??
+          `resolved:${item.listingId}:${item.latestAt}`,
+
+        listingId:
+          item.listingId,
+
+        title:
+          item.title ??
+          item.listingLabel,
+
+        description:
+          item.message ??
+          "Inserat-AI hat das Portalproblem automatisch gelöst.",
+
+        href:
+          item.href ||
+          `/cockpit/${item.listingId}#portal-publishing`,
+
+        latestAt:
+          item.latestAt,
+      })
+    );
+}
+
+
 type DailyActivityResponse = {
   success:
     boolean;
@@ -1262,6 +1383,17 @@ export default function CockpitOverviewV2({
       0,
       4
     );
+
+
+  const resolvedWorkItems =
+    getResolvedPortalWorkItems(
+      marketActivitySourceItems
+    )
+      .slice(
+        0,
+        3
+      );
+
 
   const unreadActivityCount =
     marketActivityItems.filter(
@@ -3091,6 +3223,7 @@ export default function CockpitOverviewV2({
                 : null
             }
             automaticWorkItems={automaticWorkItems}
+            resolvedWorkItems={resolvedWorkItems}
             priorityActions={priorityActions}
             activityItems={marketActivityItems}
             activityLoading={dailyActivityLoading}

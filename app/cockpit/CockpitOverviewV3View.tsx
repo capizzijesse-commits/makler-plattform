@@ -115,6 +115,27 @@ type AutomaticWorkItem = {
 };
 
 
+type ResolvedWorkItem = {
+  id:
+    string;
+
+  listingId:
+    string;
+
+  title:
+    string;
+
+  description:
+    string;
+
+  href:
+    string;
+
+  latestAt:
+    string;
+};
+
+
 type PriorityAction = {
   id:
     string;
@@ -174,6 +195,9 @@ type Props = {
   automaticWorkItems:
     AutomaticWorkItem[];
 
+  resolvedWorkItems:
+    ResolvedWorkItem[];
+
   priorityActions:
     PriorityAction[];
 
@@ -203,6 +227,7 @@ export default function CockpitOverviewV3View({
   actionCount,
   viewsToday,
   automaticWorkItems,
+  resolvedWorkItems,
   priorityActions,
   activityItems,
   activityLoading,
@@ -836,6 +861,57 @@ export default function CockpitOverviewV3View({
                     ? automaticWorkItems[0].description
                     : "Automatische Wiederholungsversuche laufen. Du musst aktuell nichts auslösen."}
                 </p>
+              </div>
+            </div>
+          ) : null}
+
+
+          {resolvedWorkItems.length > 0 ? (
+            <div
+              className="v3ResolvedHistory"
+              role="status"
+              aria-label="Von Inserat-AI automatisch gelöste Vorgänge"
+            >
+              <div className="v3ResolvedHistoryHeader">
+                <span
+                  aria-hidden="true"
+                >
+                  ✓
+                </span>
+
+                <small>
+                  VON INSERAT-AI GELÖST
+                </small>
+              </div>
+
+
+              <div className="v3ResolvedHistoryList">
+                {resolvedWorkItems.map(
+                  (item) => (
+                    <Link
+                      key={item.id}
+                      href={item.href}
+                      className="v3ResolvedHistoryItem"
+                    >
+                      <div>
+                        <strong>
+                          {item.title}
+                        </strong>
+
+                        <p>
+                          {item.description}
+                        </p>
+                      </div>
+
+                      <span
+                        className="v3ResolvedHistoryLink"
+                        aria-hidden="true"
+                      >
+                        Details →
+                      </span>
+                    </Link>
+                  )
+                )}
               </div>
             </div>
           ) : null}
@@ -5891,6 +5967,108 @@ export default function CockpitOverviewV3View({
           color: #55708d;
           font-size: 8px;
           line-height: 1.45;
+        }
+
+
+        /*
+         * COMMAND_CENTER_RESOLUTION_HISTORY_V1
+         */
+        .v3ResolvedHistory {
+          margin: 12px 14px 0;
+          padding: 10px 11px;
+          border: 1px solid rgba(22, 163, 74, .20);
+          border-radius: 12px;
+          background: linear-gradient(
+            135deg,
+            rgba(240, 253, 244, .97),
+            rgba(220, 252, 231, .78)
+          );
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.78);
+        }
+
+        .v3ResolvedHistoryHeader {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+        }
+
+        .v3ResolvedHistoryHeader > span {
+          display: inline-flex;
+          width: 18px;
+          height: 18px;
+          align-items: center;
+          justify-content: center;
+          flex: 0 0 auto;
+          border-radius: 999px;
+          background: #16a34a;
+          color: #ffffff;
+          font-size: 10px;
+          font-weight: 950;
+        }
+
+        .v3ResolvedHistoryHeader small {
+          color: #15803d;
+          font-size: 7px;
+          font-weight: 950;
+          letter-spacing: .11em;
+        }
+
+        .v3ResolvedHistoryList {
+          display: grid;
+          gap: 5px;
+          margin-top: 8px;
+        }
+
+        .v3ResolvedHistoryItem {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          min-width: 0;
+          padding: 7px 8px;
+          border: 1px solid rgba(22,163,74,.10);
+          border-radius: 9px;
+          background: rgba(255,255,255,.60);
+          color: inherit;
+          text-decoration: none;
+          transition:
+            transform .15s ease,
+            border-color .15s ease,
+            background .15s ease;
+        }
+
+        .v3ResolvedHistoryItem:hover {
+          transform: translateY(-1px);
+          border-color: rgba(22,163,74,.25);
+          background: rgba(255,255,255,.88);
+        }
+
+        .v3ResolvedHistoryItem > div {
+          min-width: 0;
+        }
+
+        .v3ResolvedHistoryItem strong {
+          display: block;
+          color: #14532d;
+          font-size: 9px;
+          font-weight: 900;
+          line-height: 1.35;
+        }
+
+        .v3ResolvedHistoryItem p {
+          margin: 2px 0 0;
+          color: #4b6f58;
+          font-size: 8px;
+          line-height: 1.4;
+        }
+
+        .v3ResolvedHistoryLink {
+          flex: 0 0 auto;
+          color: #15803d;
+          font-size: 8px;
+          font-weight: 900;
+          white-space: nowrap;
         }
 
 
