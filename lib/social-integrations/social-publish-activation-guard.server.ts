@@ -65,7 +65,10 @@ function isSocialTargetEnabled(
 
   if (
     provider === "meta" &&
-    channel === "instagram_business"
+    (
+      channel === "instagram_business" ||
+      channel === "facebook_page"
+    )
   ) {
 
     return enabled(

@@ -9,6 +9,8 @@ import {
 
 import {
   exchangeMetaAuthorizationCode,
+  exchangeMetaLongLivedUserAccessToken,
+  getMetaGrantedScopes,
   getMetaManagedPages,
   getMetaOAuthConfig,
 } from "@/lib/social-integrations/meta-oauth.server";
@@ -241,7 +243,7 @@ export async function GET(
       });
 
 
-    const token =
+    const shortLivedToken =
       await exchangeMetaAuthorizationCode({
         config,
 
@@ -250,6 +252,40 @@ export async function GET(
         redirectUri:
           flow.redirectUri,
       });
+
+
+    const token =
+      await exchangeMetaLongLivedUserAccessToken({
+        config,
+
+        shortLivedAccessToken:
+          shortLivedToken.accessToken,
+      });
+
+
+    const grantedScopes =
+      await getMetaGrantedScopes({
+        config,
+
+        userAccessToken:
+          token.accessToken,
+      });
+
+
+    const expiresAt =
+      typeof token.expiresIn ===
+        "number" &&
+      Number.isFinite(
+        token.expiresIn
+      ) &&
+      token.expiresIn >
+        0
+        ? new Date(
+            Date.now() +
+            token.expiresIn *
+              1000
+          ).toISOString()
+        : undefined;
 
 
     const pages =
@@ -290,7 +326,13 @@ export async function GET(
           page.accessToken,
 
         tokenType:
+          token.tokenType ||
           "Bearer",
+
+        expiresAt,
+
+        scopes:
+          grantedScopes,
       });
 
 

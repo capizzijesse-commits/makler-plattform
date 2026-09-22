@@ -49,7 +49,10 @@ export type SocialPublishReadinessIssueCode =
   | "META_CREDENTIAL_UNREADABLE"
   | "META_CREDENTIAL_EXPIRY_UNKNOWN"
   | "META_CREDENTIAL_EXPIRY_INVALID"
-  | "META_CREDENTIAL_EXPIRED";
+  | "META_CREDENTIAL_EXPIRED"
+  | "META_CREDENTIAL_SCOPES_UNKNOWN"
+  | "META_FACEBOOK_SCOPE_MISSING"
+  | "META_INSTAGRAM_SCOPE_MISSING";
 
 
 function enabled(
@@ -300,8 +303,10 @@ export async function inspectSocialPublishReadiness(
 
                 {
                   channel: {
-                    not:
+                    notIn: [
                       "instagram_business",
+                      "facebook_page",
+                    ],
                   },
                 },
               ],
@@ -315,8 +320,12 @@ export async function inspectSocialPublishReadiness(
           provider:
             "meta",
 
-          channel:
-            "instagram_business",
+          channel: {
+            in: [
+              "instagram_business",
+              "facebook_page",
+            ],
+          },
 
           environment:
             "production",
@@ -330,6 +339,12 @@ export async function inspectSocialPublishReadiness(
             true,
 
           userId:
+            true,
+
+          channel:
+            true,
+
+          externalAccountId:
             true,
 
           externalParentId:
@@ -418,6 +433,15 @@ export async function inspectSocialPublishReadiness(
   let credentialExpired =
     0;
 
+  let credentialScopesUnknown =
+    0;
+
+  let facebookScopeMissing =
+    0;
+
+  let instagramScopeMissing =
+    0;
+
 
   for (
     const connection of
@@ -443,10 +467,16 @@ export async function inspectSocialPublishReadiness(
 
 
     const parentPageId =
-      connection
-        .externalParentId
-        ?.trim() ||
-      "";
+      connection.channel ===
+      "facebook_page"
+        ? connection
+            .externalAccountId
+            ?.trim() ||
+          ""
+        : connection
+            .externalParentId
+            ?.trim() ||
+          "";
 
 
     if (
@@ -558,6 +588,76 @@ export async function inspectSocialPublishReadiness(
       }
 
 
+      const scopes =
+        new Set(
+          (
+            credential.scopes ??
+            []
+          )
+            .map(
+              scope =>
+                scope.trim()
+            )
+            .filter(
+              Boolean
+            )
+        );
+
+
+      if (
+        scopes.size ===
+        0
+      ) {
+
+        credentialScopesUnknown +=
+          1;
+
+        issues.add(
+          "META_CREDENTIAL_SCOPES_UNKNOWN"
+        );
+
+        continue;
+      }
+
+
+      if (
+        connection.channel ===
+          "facebook_page" &&
+        !scopes.has(
+          "pages_manage_posts"
+        )
+      ) {
+
+        facebookScopeMissing +=
+          1;
+
+        issues.add(
+          "META_FACEBOOK_SCOPE_MISSING"
+        );
+
+        continue;
+      }
+
+
+      if (
+        connection.channel ===
+          "instagram_business" &&
+        !scopes.has(
+          "instagram_content_publish"
+        )
+      ) {
+
+        instagramScopeMissing +=
+          1;
+
+        issues.add(
+          "META_INSTAGRAM_SCOPE_MISSING"
+        );
+
+        continue;
+      }
+
+
       credentialReady +=
         1;
     }
@@ -643,7 +743,18 @@ export async function inspectSocialPublishReadiness(
 
     connections: {
       verifiedProductionInstagram:
-        productionConnections.length,
+        productionConnections.filter(
+          connection =>
+            connection.channel ===
+            "instagram_business"
+        ).length,
+
+      verifiedProductionFacebook:
+        productionConnections.filter(
+          connection =>
+            connection.channel ===
+            "facebook_page"
+        ).length,
 
       eligiblePlan:
         eligiblePlanConnections,
@@ -661,6 +772,12 @@ export async function inspectSocialPublishReadiness(
       credentialExpiryInvalid,
 
       credentialExpired,
+
+      credentialScopesUnknown,
+
+      facebookScopeMissing,
+
+      instagramScopeMissing,
     },
 
     issues:

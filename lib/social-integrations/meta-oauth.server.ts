@@ -4,6 +4,7 @@
 export const META_REQUIRED_SCOPES = [
   "pages_show_list",
   "pages_read_engagement",
+  "pages_manage_posts",
   "instagram_basic",
   "instagram_content_publish",
 ] as const;
@@ -500,6 +501,301 @@ export async function exchangeMetaAuthorizationCode(
     tokenType,
     expiresIn,
   };
+}
+
+
+export async function exchangeMetaLongLivedUserAccessToken(
+  input: {
+    config:
+      MetaOAuthConfig;
+
+    shortLivedAccessToken:
+      string;
+  }
+):
+  Promise<
+    MetaOAuthToken
+  > {
+
+  const shortLivedAccessToken =
+    cleanText(
+      input.shortLivedAccessToken,
+      "Meta short-lived access token"
+    );
+
+
+  const url =
+    new URL(
+      `https://graph.facebook.com/${input.config.graphVersion}/oauth/access_token`
+    );
+
+  url.searchParams.set(
+    "grant_type",
+    "fb_exchange_token"
+  );
+
+  url.searchParams.set(
+    "client_id",
+    input.config.appId
+  );
+
+  url.searchParams.set(
+    "client_secret",
+    input.config.appSecret
+  );
+
+  url.searchParams.set(
+    "fb_exchange_token",
+    shortLivedAccessToken
+  );
+
+
+  const response =
+    await fetch(
+      url,
+      {
+        method:
+          "GET",
+
+        cache:
+          "no-store",
+
+        headers: {
+          Accept:
+            "application/json",
+        },
+      }
+    );
+
+
+  const payload:
+    unknown =
+    await response.json();
+
+
+  if (
+    !response.ok
+  ) {
+
+    throw new Error(
+      providerErrorMessage(
+        payload
+      )
+    );
+  }
+
+
+  if (
+    !payload ||
+    typeof payload !==
+      "object" ||
+    Array.isArray(
+      payload
+    )
+  ) {
+
+    throw new Error(
+      "Meta returned an invalid long-lived token response."
+    );
+  }
+
+
+  const record =
+    payload as
+      Record<
+        string,
+        unknown
+      >;
+
+
+  const accessToken =
+    cleanText(
+      record.access_token,
+      "Meta long-lived access token"
+    );
+
+
+  const tokenType =
+    typeof record.token_type ===
+      "string"
+      ? record.token_type.trim() ||
+        undefined
+      : undefined;
+
+
+  const expiresIn =
+    typeof record.expires_in ===
+      "number" &&
+    Number.isFinite(
+      record.expires_in
+    ) &&
+    record.expires_in >
+      0
+      ? record.expires_in
+      : undefined;
+
+
+  return {
+    accessToken,
+    tokenType,
+    expiresIn,
+  };
+}
+
+
+export async function getMetaGrantedScopes(
+  input: {
+    config:
+      MetaOAuthConfig;
+
+    userAccessToken:
+      string;
+  }
+):
+  Promise<
+    string[]
+  > {
+
+  const userAccessToken =
+    cleanText(
+      input.userAccessToken,
+      "Meta user access token"
+    );
+
+
+  const url =
+    new URL(
+      `https://graph.facebook.com/${input.config.graphVersion}/me/permissions`
+    );
+
+
+  const response =
+    await fetch(
+      url,
+      {
+        method:
+          "GET",
+
+        cache:
+          "no-store",
+
+        headers: {
+          Accept:
+            "application/json",
+
+          Authorization:
+            `Bearer ${userAccessToken}`,
+        },
+      }
+    );
+
+
+  const payload:
+    unknown =
+    await response.json();
+
+
+  if (
+    !response.ok
+  ) {
+
+    throw new Error(
+      providerErrorMessage(
+        payload
+      )
+    );
+  }
+
+
+  if (
+    !payload ||
+    typeof payload !==
+      "object" ||
+    Array.isArray(
+      payload
+    )
+  ) {
+
+    throw new Error(
+      "Meta returned an invalid permissions response."
+    );
+  }
+
+
+  const data =
+    (
+      payload as
+        Record<
+          string,
+          unknown
+        >
+    ).data;
+
+
+  if (
+    !Array.isArray(
+      data
+    )
+  ) {
+
+    throw new Error(
+      "Meta permissions response does not contain a data array."
+    );
+  }
+
+
+  const scopes =
+    data.flatMap(
+      item => {
+
+        if (
+          !item ||
+          typeof item !==
+            "object" ||
+          Array.isArray(
+            item
+          )
+        ) {
+          return [];
+        }
+
+
+        const record =
+          item as
+            Record<
+              string,
+              unknown
+            >;
+
+
+        if (
+          record.status !==
+            "granted" ||
+          typeof record.permission !==
+            "string"
+        ) {
+          return [];
+        }
+
+
+        const permission =
+          record.permission.trim();
+
+
+        return permission
+          ? [
+              permission,
+            ]
+          : [];
+      }
+    );
+
+
+  return Array.from(
+    new Set(
+      scopes
+    )
+  ).sort();
 }
 
 

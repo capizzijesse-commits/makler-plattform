@@ -656,6 +656,595 @@ async function publishInstagramContainer(
 }
 
 
+async function createFacebookPageTextPost(
+  input: {
+    graphVersion:
+      string;
+
+    pageId:
+      string;
+
+    accessToken:
+      string;
+
+    message:
+      string;
+  }
+):
+  Promise<string> {
+
+  const url =
+    new URL(
+      `https://graph.facebook.com/${input.graphVersion}/${input.pageId}/feed`
+    );
+
+
+  url.searchParams.set(
+    "message",
+    input.message
+  );
+
+
+  const payload =
+    await metaRequest({
+      url,
+
+      accessToken:
+        input.accessToken,
+
+      method:
+        "POST",
+    });
+
+
+  return requiredString(
+    payload.id,
+    "META_FB_POST_ID_MISSING"
+  );
+}
+
+
+async function executeFacebookPagePublishJob(
+  input: {
+    job:
+      SocialPublishWorkerJob;
+
+    connection:
+      NonNullable<
+        Awaited<
+          ReturnType<
+            typeof getSocialConnectionById
+          >
+        >
+      >;
+  }
+):
+  Promise<
+    SocialPublishExecutionResult
+  > {
+
+  const job =
+    input.job;
+
+  const connection =
+    input.connection;
+
+
+  if (
+    connection.provider !==
+      "meta" ||
+    connection.channel !==
+      "facebook_page"
+  ) {
+
+    throw metaError(
+      "META_FB_CONNECTION_MISMATCH",
+      "Connection is not a Facebook Page connection."
+    );
+  }
+
+
+  if (
+    connection.externalAccountId !==
+    job.externalAccountId
+  ) {
+
+    throw metaError(
+      "META_FB_ACCOUNT_MISMATCH",
+      "Facebook Page does not match the publish job."
+    );
+  }
+
+
+  if (
+    job.mediaPayload !==
+      null &&
+    job.mediaPayload !==
+      undefined
+  ) {
+
+    throw metaError(
+      "META_FB_MEDIA_NOT_IMPLEMENTED",
+      "Facebook Page V1 supports text posts only."
+    );
+  }
+
+
+  const pageId =
+    requiredString(
+      connection.externalAccountId,
+      "META_FB_PAGE_ID_MISSING"
+    );
+
+
+  const caption =
+    requiredString(
+      job.caption,
+      "META_FB_MESSAGE_MISSING"
+    );
+
+
+  const credential =
+    await getSocialOAuthCredential({
+      userId:
+        job.userId,
+
+      provider:
+        "meta",
+
+      externalSubjectId:
+        pageId,
+
+      environment:
+        job.environment ===
+        "production"
+          ? "production"
+          : "test",
+    });
+
+
+  if (!credential) {
+
+    throw metaError(
+      "META_CREDENTIAL_MISSING",
+      "Meta Page credential was not found."
+    );
+  }
+
+
+  if (
+    !credential.expiresAt
+  ) {
+
+    throw metaError(
+      "META_FB_CREDENTIAL_EXPIRY_UNKNOWN",
+      "Facebook Page credential expiry is unknown. Reconnect Meta before publishing."
+    );
+  }
+
+
+  const expiresAt =
+    new Date(
+      credential.expiresAt
+    );
+
+
+  if (
+    Number.isNaN(
+      expiresAt.getTime()
+    )
+  ) {
+
+    throw metaError(
+      "META_CREDENTIAL_EXPIRY_INVALID",
+      "Meta credential expiry is invalid."
+    );
+  }
+
+
+  if (
+    expiresAt.getTime() <=
+    Date.now()
+  ) {
+
+    throw metaError(
+      "META_CREDENTIAL_EXPIRED",
+      "Meta credential has expired."
+    );
+  }
+
+
+  if (
+    !credential.scopes?.includes(
+      "pages_manage_posts"
+    )
+  ) {
+
+    throw metaError(
+      "META_FB_SCOPE_MISSING",
+      "Facebook Page credential does not include pages_manage_posts. Reconnect Meta before publishing."
+    );
+  }
+
+
+  const graphVersion =
+    requiredGraphVersion();
+
+
+  const workerId =
+    requiredString(
+      job.lockedBy,
+      "META_WORKER_LOCK_MISSING"
+    );
+
+
+  const operationId =
+    job.id;
+
+  const operationType =
+    "facebook_page_feed_post";
+
+
+  const storedOperationId =
+    typeof job.providerOperationId ===
+      "string"
+      ? job.providerOperationId.trim()
+      : "";
+
+  const storedOperationType =
+    typeof job.providerOperationType ===
+      "string"
+      ? job.providerOperationType.trim()
+      : "";
+
+  const state =
+    typeof job.providerOperationState ===
+      "string"
+      ? job.providerOperationState.trim()
+      : "";
+
+
+  if (
+    (
+      storedOperationId ||
+      storedOperationType ||
+      state
+    ) &&
+    (
+      !storedOperationId ||
+      !storedOperationType ||
+      !state
+    )
+  ) {
+
+    throw metaError(
+      "META_FB_OPERATION_STATE_INCOMPLETE",
+      "Stored Facebook provider operation state is incomplete."
+    );
+  }
+
+
+  if (
+    storedOperationId &&
+    storedOperationId !==
+      operationId
+  ) {
+
+    throw metaError(
+      "META_FB_OPERATION_ID_MISMATCH",
+      "Stored Facebook operation does not belong to this job."
+    );
+  }
+
+
+  if (
+    storedOperationType &&
+    storedOperationType !==
+      operationType
+  ) {
+
+    throw metaError(
+      "META_FB_OPERATION_TYPE_MISMATCH",
+      "Stored provider operation does not belong to Facebook Page publishing."
+    );
+  }
+
+
+  const knownStates =
+    new Set([
+      "request_rejected",
+      "publish_requested",
+      "reconciliation_required",
+      "post_published",
+    ]);
+
+
+  if (
+    state &&
+    !knownStates.has(
+      state
+    )
+  ) {
+
+    throw metaError(
+      "META_FB_OPERATION_STATE_UNKNOWN",
+      "Stored Facebook provider operation state is unknown."
+    );
+  }
+
+
+  if (
+    state ===
+    "post_published"
+  ) {
+
+    return {
+      externalPostId:
+        requiredString(
+          job.externalPostId,
+          "META_FB_POST_ID_MISSING_AFTER_PUBLISH"
+        ),
+
+      externalPostUrl:
+        job.externalPostUrl,
+    };
+  }
+
+
+  if (
+    state ===
+    "reconciliation_required"
+  ) {
+
+    throw metaError(
+      "META_FB_RECONCILIATION_REQUIRED",
+      "Facebook publish result requires reconciliation before another publish attempt."
+    );
+  }
+
+
+  if (
+    state ===
+    "publish_requested"
+  ) {
+
+    const quarantined =
+      await setSocialPublishProviderOperation({
+        jobId:
+          job.id,
+
+        workerId,
+
+        operationId,
+
+        operationType,
+
+        operationState:
+          "reconciliation_required",
+      });
+
+
+    if (
+      quarantined.count !==
+      1
+    ) {
+
+      throw metaError(
+        "WORKER_LOCK_LOST",
+        "Worker lost ownership while quarantining ambiguous Facebook publishing."
+      );
+    }
+
+
+    throw metaError(
+      "META_FB_RECONCILIATION_REQUIRED",
+      "Facebook publish result requires reconciliation before another publish attempt."
+    );
+  }
+
+
+  const publishIntent =
+    await setSocialPublishProviderOperation({
+      jobId:
+        job.id,
+
+      workerId,
+
+      operationId,
+
+      operationType,
+
+      operationState:
+        "publish_requested",
+    });
+
+
+  if (
+    publishIntent.count !==
+    1
+  ) {
+
+    throw metaError(
+      "WORKER_LOCK_LOST",
+      "Worker lost ownership before Facebook publishing."
+    );
+  }
+
+
+  let postId:
+    string;
+
+
+  try {
+
+    postId =
+      await createFacebookPageTextPost({
+        graphVersion,
+
+        pageId,
+
+        accessToken:
+          credential.accessToken,
+
+        message:
+          caption,
+      });
+  }
+  catch (
+    error
+  ) {
+
+    const code =
+      error &&
+      typeof error ===
+        "object" &&
+      "code" in error &&
+      typeof error.code ===
+        "string"
+        ? error.code
+        : "";
+
+
+    const match =
+      /^META_HTTP_(\d{3})$/.exec(
+        code
+      );
+
+    const status =
+      match
+        ? Number(
+            match[1]
+          )
+        : null;
+
+
+    /*
+     * Eine eindeutige 4xx-Antwort bedeutet:
+     * Meta hat den Request abgelehnt.
+     * Ein kontrollierter Retry darf erneut senden.
+     *
+     * Bei Timeout, Netzwerkabbruch, 5xx oder
+     * unklarer Provider-Antwort wissen wir nicht
+     * sicher, ob der Post bereits erstellt wurde.
+     * Deshalb: niemals automatisch doppelt senden.
+     */
+    if (
+      status !==
+        null &&
+      status >=
+        400 &&
+      status <
+        500
+    ) {
+
+      const rejected =
+        await setSocialPublishProviderOperation({
+          jobId:
+            job.id,
+
+          workerId,
+
+          operationId,
+
+          operationType,
+
+          operationState:
+            "request_rejected",
+        });
+
+
+      if (
+        rejected.count !==
+        1
+      ) {
+
+        throw metaError(
+          "WORKER_LOCK_LOST",
+          "Worker lost ownership while saving a rejected Facebook request."
+        );
+      }
+
+
+      throw error;
+    }
+
+
+    const reconciliation =
+      await setSocialPublishProviderOperation({
+        jobId:
+          job.id,
+
+        workerId,
+
+        operationId,
+
+        operationType,
+
+        operationState:
+          "reconciliation_required",
+      });
+
+
+    if (
+      reconciliation.count !==
+      1
+    ) {
+
+      throw metaError(
+        "WORKER_LOCK_LOST",
+        "Worker lost ownership while quarantining Facebook publishing."
+      );
+    }
+
+
+    throw metaError(
+      "META_FB_RECONCILIATION_REQUIRED",
+      "Facebook publish result is ambiguous and requires reconciliation."
+    );
+  }
+
+
+  const published =
+    await setSocialPublishProviderOperation({
+      jobId:
+        job.id,
+
+      workerId,
+
+      operationId,
+
+      operationType,
+
+      operationState:
+        "post_published",
+
+      externalPostId:
+        postId,
+    });
+
+
+  if (
+    published.count !==
+    1
+  ) {
+
+    throw metaError(
+      "WORKER_LOCK_LOST",
+      "Worker lost ownership while saving the Facebook publish result."
+    );
+  }
+
+
+  return {
+    externalPostId:
+      postId,
+
+    externalPostUrl:
+      null,
+  };
+}
+
+
 export async function executeMetaPublishJob(
   job:
     SocialPublishWorkerJob
@@ -749,21 +1338,20 @@ export async function executeMetaPublishJob(
 
 
   /*
-   * Facebook Publishing bauen wir als
-   * separaten Schritt.
-   *
-   * V1 aktiviert bewusst zuerst den von
-   * Meta aktuell dokumentierten IG-Reel-Flow.
+   * Facebook Page V1:
+   * Text-only, guarded und mit dauerhaftem
+   * Duplicate-/Reconciliation-Schutz.
    */
   if (
     job.channel ===
     "facebook_page"
   ) {
 
-    throw metaError(
-      "META_FACEBOOK_PUBLISH_NOT_IMPLEMENTED",
-      "Facebook Page publishing is not enabled in Meta Executor V1."
-    );
+    return executeFacebookPagePublishJob({
+      job,
+
+      connection,
+    });
   }
 
 
