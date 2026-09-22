@@ -36,6 +36,10 @@ import {
   executeKleinanzeigenDeControlledPublishV1,
 } from "@/lib/portal-integrations/kleinanzeigen-de-controlled-publish.server";
 
+import {
+  executeImmoweltDeControlledPublishV1,
+} from "@/lib/portal-integrations/immowelt-de-controlled-publish.server";
+
 
 function dispatcherError(
   code:
@@ -491,6 +495,18 @@ export async function executePortalPublishJob(
 
 
     case "immowelt_de":
+
+      /*
+       * Controlled Immowelt Executor.
+       *
+       * Aktuell endet dieser vor jedem
+       * externen Transport am Partner-Gate.
+       */
+      return executeImmoweltDeControlledPublishV1(
+        job
+      );
+
+
     case "wg_gesucht_de":
     case "immobilien_de":
     case "immoscout24_ch":
