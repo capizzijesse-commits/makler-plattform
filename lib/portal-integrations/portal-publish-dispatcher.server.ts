@@ -32,6 +32,10 @@ import {
   executeImmoScout24DeControlledPublishV1,
 } from "@/lib/portal-integrations/immoscout24-de-controlled-publish.server";
 
+import {
+  executeKleinanzeigenDeControlledPublishV1,
+} from "@/lib/portal-integrations/kleinanzeigen-de-controlled-publish.server";
+
 
 function dispatcherError(
   code:
@@ -473,8 +477,20 @@ export async function executePortalPublishJob(
       );
 
 
-    case "immowelt_de":
     case "kleinanzeigen_de":
+
+      /*
+       * Controlled Kleinanzeigen Executor.
+       *
+       * Aktuell endet dieser garantiert
+       * vor echtem FTP/FTPS.
+       */
+      return executeKleinanzeigenDeControlledPublishV1(
+        job
+      );
+
+
+    case "immowelt_de":
     case "wg_gesucht_de":
     case "immobilien_de":
     case "immoscout24_ch":
