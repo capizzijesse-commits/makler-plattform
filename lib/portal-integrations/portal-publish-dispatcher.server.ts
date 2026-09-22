@@ -40,6 +40,10 @@ import {
   executeImmoweltDeControlledPublishV1,
 } from "@/lib/portal-integrations/immowelt-de-controlled-publish.server";
 
+import {
+  executeImmobilienDeControlledPublishV1,
+} from "@/lib/portal-integrations/immobilien-de-controlled-publish.server";
+
 
 function dispatcherError(
   code:
@@ -507,8 +511,20 @@ export async function executePortalPublishJob(
       );
 
 
-    case "wg_gesucht_de":
     case "immobilien_de":
+
+      /*
+       * Controlled Immobilien.de Executor.
+       *
+       * Endet aktuell garantiert vor
+       * echtem FTP am Provider-ID-Gate.
+       */
+      return executeImmobilienDeControlledPublishV1(
+        job
+      );
+
+
+    case "wg_gesucht_de":
     case "immoscout24_ch":
     case "homegate_ch":
     case "comparis_ch":
