@@ -28,6 +28,10 @@ import {
   buildImmoScout24DeTransportPreflightV1,
 } from "@/lib/portal-integrations/immoscout24-de-transport-foundation.server";
 
+import {
+  executeImmoScout24DeControlledPublishV1,
+} from "@/lib/portal-integrations/immoscout24-de-controlled-publish.server";
+
 
 function dispatcherError(
   code:
@@ -456,6 +460,19 @@ export async function executePortalPublishJob(
   ) {
 
     case "immoscout24_de":
+
+      /*
+       * Controlled Sandbox Executor.
+       *
+       * Ohne externe Provider-Freigabe
+       * und explizite Armierung endet
+       * dieser Pfad vor OAuth/Netzwerk.
+       */
+      return executeImmoScout24DeControlledPublishV1(
+        job
+      );
+
+
     case "immowelt_de":
     case "kleinanzeigen_de":
     case "wg_gesucht_de":
