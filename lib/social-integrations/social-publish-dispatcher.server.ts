@@ -1,8 +1,12 @@
-﻿import "server-only";
+import "server-only";
 
 import {
   executeMetaPublishJob,
 } from "@/lib/social-integrations/meta-publish-executor.server";
+
+import {
+  executeLinkedInPublishJob,
+} from "@/lib/social-integrations/linkedin-publish-executor.server";
 
 import type {
   SocialPublishExecutionResult,
@@ -35,8 +39,10 @@ export function isSocialPublishProviderImplemented(
 ):
   boolean {
 
-  return provider ===
-    "meta";
+  return (
+    provider === "meta" ||
+    provider === "linkedin"
+  );
 }
 
 
@@ -61,9 +67,8 @@ export async function executeSocialPublishJob(
 
     case "linkedin":
 
-      throw dispatcherError(
-        "LINKEDIN_PUBLISH_NOT_IMPLEMENTED",
-        "LinkedIn publishing is not implemented yet."
+      return executeLinkedInPublishJob(
+        job
       );
 
 
