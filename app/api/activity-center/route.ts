@@ -690,6 +690,333 @@ function getPortalJobPresentation(
 
   return null;
 }
+
+
+/*
+ * COMMAND_CENTER_TRANSITION_ACTIVITY_V1
+ *
+ * Dieser Typ hängt absichtlich NICHT vom
+ * generierten Prisma Client ab.
+ *
+ * Die neue Tabelle wird per Raw Query gelesen,
+ * damit ein lokales prisma generate für diese
+ * Foundation nicht erforderlich ist.
+ */
+type PortalTransitionRow = {
+  id:
+    number;
+
+  jobId:
+    string;
+
+  listingId:
+    string |
+    null;
+
+  provider:
+    string;
+
+  portal:
+    string;
+
+  fromStatus:
+    string |
+    null;
+
+  toStatus:
+    string;
+
+  attemptCount:
+    number;
+
+  maxAttempts:
+    number;
+
+  nextAttemptAt:
+    Date |
+    null;
+
+  errorCode:
+    string |
+    null;
+
+  errorMessage:
+    string |
+    null;
+
+  providerOperationState:
+    string |
+    null;
+
+  createdAt:
+    Date;
+};
+
+
+async function loadPortalTransitionRows(
+  input: {
+    userId:
+      string;
+
+    windowStart:
+      Date;
+  }
+): Promise<
+  PortalTransitionRow[]
+> {
+
+  /*
+   * Fail-soft für Umgebungen, auf denen
+   * die Transition-Migration noch nicht
+   * ausgerollt wurde.
+   *
+   * Dadurch bricht Activity Center nicht,
+   * nur weil die neue Tabelle dort noch
+   * nicht existiert.
+   */
+  const availability =
+    await prisma.$queryRawUnsafe<
+      Array<{
+        tableName:
+          string |
+          null;
+      }>
+    >(
+      `
+        SELECT
+          to_regclass(
+            'public."PortalPublishJobTransition"'
+          )::text AS "tableName"
+      `
+    );
+
+
+  if (
+    !availability[0]
+      ?.tableName
+  ) {
+    return [];
+  }
+
+
+  return prisma.$queryRawUnsafe<
+    PortalTransitionRow[]
+  >(
+    `
+      SELECT
+        "id",
+        "jobId",
+        "listingId",
+        "provider",
+        "portal",
+        "fromStatus",
+        "toStatus",
+        "attemptCount",
+        "maxAttempts",
+        "nextAttemptAt",
+        "errorCode",
+        "errorMessage",
+        "providerOperationState",
+        "createdAt"
+      FROM
+        "PortalPublishJobTransition"
+      WHERE
+        "userId" = $1
+        AND "createdAt" >= $2
+      ORDER BY
+        "createdAt" DESC
+      LIMIT 250
+    `,
+    input.userId,
+    input.windowStart
+  );
+}
+
+
+function getPortalTransitionPresentation(
+  input: {
+    portal:
+      string;
+
+    provider:
+      string;
+
+    fromStatus:
+      string |
+      null;
+
+    toStatus:
+      string;
+
+    attemptCount:
+      number;
+
+    maxAttempts:
+      number;
+
+    nextAttemptAt:
+      Date |
+      null;
+  }
+): {
+  kind:
+    string;
+
+  severity:
+    ActivitySeverity;
+
+  title:
+    string;
+
+  message:
+    string;
+
+  icon:
+    string;
+} | null {
+
+  const portal =
+    getDestinationLabel(
+      input.portal,
+      input.provider
+    );
+
+
+  /*
+   * Initiale INSERT-Transitionen
+   * fromStatus=null bleiben unsichtbar.
+   *
+   * Dafür existiert bereits die normale
+   * Current-State Activity.
+   */
+  if (!input.fromStatus) {
+    return null;
+  }
+
+
+  if (
+    input.toStatus ===
+      "failed" &&
+    input.nextAttemptAt &&
+    input.attemptCount <
+      input.maxAttempts
+  ) {
+
+    return {
+      kind:
+        "portal.transition.retry_scheduled",
+
+      /*
+       * Kein menschlicher Handlungsbedarf:
+       * Inserat-AI übernimmt selbst.
+       */
+      severity:
+        "info",
+
+      title:
+        `${portal}: Automatischer Retry geplant`,
+
+      message:
+        "Inserat-AI wird die Veröffentlichung automatisch erneut versuchen.",
+
+      icon:
+        "🔁",
+    };
+  }
+
+
+  if (
+    input.fromStatus ===
+      "failed" &&
+    input.toStatus ===
+      "queued"
+  ) {
+
+    return {
+      kind:
+        "portal.transition.retry_queued",
+
+      severity:
+        "info",
+
+      title:
+        `${portal}: Automatischer Retry bereit`,
+
+      message:
+        `Der nächste Versuch wurde automatisch vorbereitet.`,
+
+      icon:
+        "🔁",
+    };
+  }
+
+
+  if (
+    input.fromStatus ===
+      "failed" &&
+    input.toStatus ===
+      "processing"
+  ) {
+
+    return {
+      kind:
+        "portal.transition.retry_started",
+
+      severity:
+        "info",
+
+      title:
+        `${portal}: Automatischer Retry gestartet`,
+
+      message:
+        input.attemptCount > 0
+          ? `Inserat-AI führt Versuch ${input.attemptCount} von maximal ${input.maxAttempts} aus.`
+          : "Inserat-AI versucht die Veröffentlichung automatisch erneut.",
+
+      icon:
+        "🔁",
+    };
+  }
+
+
+  /*
+   * Ein erfolgreicher Job nach mehreren
+   * Versuchen ist ein echter gelöster
+   * Problemfall.
+   *
+   * Das ist der entscheidende Unterschied
+   * zum bisherigen Current-State Event.
+   */
+  if (
+    input.toStatus ===
+      "succeeded" &&
+    input.attemptCount >
+      1
+  ) {
+
+    return {
+      kind:
+        "portal.problem_resolved",
+
+      severity:
+        "success",
+
+      title:
+        `${portal}-Problem automatisch gelöst`,
+
+      message:
+        `Inserat-AI hat die Veröffentlichung nach ${input.attemptCount} Versuchen erfolgreich abgeschlossen.`,
+
+      icon:
+        "✅",
+    };
+  }
+
+
+  return null;
+}
+
+
 export async function GET(
   request: NextRequest
 ) {
@@ -1432,6 +1759,15 @@ export async function GET(
       ]);
 
 
+    const portalTransitions =
+      await loadPortalTransitionRows({
+        userId:
+          user.id,
+
+        windowStart,
+      });
+
+
     const publicationItems:
       ActivityItem[] =
       [];
@@ -1793,6 +2129,198 @@ export async function GET(
           run.id
         );
       }
+    }
+
+
+    const portalTransitionItems:
+      ActivityItem[] =
+      [];
+
+
+    for (
+      const transition
+      of portalTransitions
+    ) {
+
+      if (!transition.listingId) {
+        continue;
+      }
+
+
+      const listing =
+        listingById.get(
+          transition.listingId
+        );
+
+
+      /*
+       * listingById ist gleichzeitig unser
+       * ownership- und optionaler
+       * listingId-Filter.
+       */
+      if (!listing) {
+        continue;
+      }
+
+
+      const presentation =
+        getPortalTransitionPresentation({
+          portal:
+            transition.portal,
+
+          provider:
+            transition.provider,
+
+          fromStatus:
+            transition.fromStatus,
+
+          toStatus:
+            transition.toStatus,
+
+          attemptCount:
+            transition.attemptCount,
+
+          maxAttempts:
+            transition.maxAttempts,
+
+          nextAttemptAt:
+            transition.nextAttemptAt,
+        });
+
+
+      if (!presentation) {
+        continue;
+      }
+
+
+      const eventAt =
+        transition.createdAt;
+
+
+      if (
+        eventAt <
+        windowStart
+      ) {
+        continue;
+      }
+
+
+      const timestamp =
+        eventAt.toISOString();
+
+
+      const portalLabel =
+        getDestinationLabel(
+          transition.portal,
+          transition.provider
+        );
+
+
+      portalTransitionItems.push({
+        id:
+          `portal-transition:${transition.id}`,
+
+        kind:
+          presentation.kind,
+
+        severity:
+          presentation.severity,
+
+        status:
+          transition.toStatus,
+
+        listingId:
+          transition.listingId,
+
+        listingLabel:
+          getListingLabel(
+            listing
+          ),
+
+        location:
+          listing.location,
+
+        title:
+          presentation.title,
+
+        message:
+          presentation.message,
+
+        icon:
+          presentation.icon,
+
+        count:
+          1,
+
+        uniqueVisitors:
+          0,
+
+        createdAt:
+          timestamp,
+
+        latestAt:
+          timestamp,
+
+        unread:
+          isUnread(
+            eventAt,
+            unreadFrom
+          ),
+
+        href:
+          `/cockpit/${transition.listingId}#portal-publishing`,
+
+        metadata: {
+          eventType:
+            presentation.kind,
+
+          immutableTransition:
+            true,
+
+          transitionId:
+            transition.id,
+
+          jobId:
+            transition.jobId,
+
+          runId:
+            publicationRunIdByPortalJobId.get(
+              transition.jobId
+            ) ??
+            null,
+
+          provider:
+            transition.provider,
+
+          portal:
+            transition.portal,
+
+          portalLabel,
+
+          fromStatus:
+            transition.fromStatus,
+
+          toStatus:
+            transition.toStatus,
+
+          attemptCount:
+            transition.attemptCount,
+
+          maxAttempts:
+            transition.maxAttempts,
+
+          nextAttemptAt:
+            transition.nextAttemptAt
+              ?.toISOString() ??
+            null,
+
+          errorCode:
+            transition.errorCode,
+
+          providerOperationState:
+            transition.providerOperationState,
+        },
+      });
     }
 
 
@@ -2208,6 +2736,7 @@ export async function GET(
       [
         ...publicationItems,
         ...targetItems,
+        ...portalTransitionItems,
         ...portalJobItems,
         ...workflowItems,
       ];
