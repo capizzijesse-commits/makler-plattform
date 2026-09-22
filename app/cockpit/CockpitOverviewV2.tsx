@@ -174,6 +174,324 @@ function getActivityMetadataNumber(
       : null;
 }
 
+
+/*
+ * COMMAND_CENTER_RESOLUTION_STATE_V1
+ *
+ * Ein immutable "problem resolved"-Event
+ * darf ältere Fehlermeldungen desselben
+ * Portal-Jobs nicht weiter als menschliche
+ * Aufgabe erscheinen lassen.
+ *
+ * Ein späterer neuer Fehler bleibt dagegen
+ * sichtbar.
+ */
+function getActivityEventTimestamp(
+  item:
+    DailyActivityItem
+):
+  number |
+  null {
+
+  const parsed =
+    Date.parse(
+      item.latestAt ||
+      item.createdAt ||
+      ""
+    );
+
+  return Number.isFinite(
+    parsed
+  )
+    ? parsed
+    : null;
+}
+
+
+function getActivityPortalJobIdentity(
+  item:
+    DailyActivityItem
+):
+  string |
+  null {
+
+  return (
+    getActivityMetadataString(
+      item,
+      "jobId"
+    ) ||
+    getActivityMetadataString(
+      item,
+      "portalJobId"
+    )
+  );
+}
+
+
+function suppressResolvedPortalProblems(
+  urgentItems:
+    DailyActivityItem[],
+
+  allActivityItems:
+    DailyActivityItem[]
+):
+  DailyActivityItem[] {
+
+  const resolvedJobAt =
+    new Map<
+      string,
+      number
+    >();
+
+  const resolvedRunAt =
+    new Map<
+      string,
+      number
+    >();
+
+
+  for (
+    const item
+    of allActivityItems
+  ) {
+
+    if (
+      item.kind !==
+        "portal.problem_resolved" ||
+      item.metadata
+        ?.immutableTransition !==
+        true
+    ) {
+      continue;
+    }
+
+
+    const timestamp =
+      getActivityEventTimestamp(
+        item
+      );
+
+    if (timestamp === null) {
+      continue;
+    }
+
+
+    const jobId =
+      getActivityMetadataString(
+        item,
+        "jobId"
+      );
+
+    if (jobId) {
+
+      const existing =
+        resolvedJobAt.get(
+          jobId
+        );
+
+      if (
+        existing ===
+          undefined ||
+        timestamp >
+          existing
+      ) {
+        resolvedJobAt.set(
+          jobId,
+          timestamp
+        );
+      }
+    }
+
+
+    const runId =
+      getActivityMetadataString(
+        item,
+        "runId"
+      );
+
+    if (runId) {
+
+      const existing =
+        resolvedRunAt.get(
+          runId
+        );
+
+      if (
+        existing ===
+          undefined ||
+        timestamp >
+          existing
+      ) {
+        resolvedRunAt.set(
+          runId,
+          timestamp
+        );
+      }
+    }
+  }
+
+
+  const isSuperseded =
+    (
+      item:
+        DailyActivityItem
+    ):
+      boolean => {
+
+      const jobId =
+        getActivityPortalJobIdentity(
+          item
+        );
+
+      if (!jobId) {
+        return false;
+      }
+
+
+      const resolvedAt =
+        resolvedJobAt.get(
+          jobId
+        );
+
+      if (
+        resolvedAt ===
+        undefined
+      ) {
+        return false;
+      }
+
+
+      const itemAt =
+        getActivityEventTimestamp(
+          item
+        );
+
+      if (itemAt === null) {
+        return false;
+      }
+
+
+      return (
+        itemAt <=
+        resolvedAt
+      );
+    };
+
+
+  /*
+   * Noch existierende konkrete Probleme
+   * je PublicationRun.
+   *
+   * Damit wird ein generischer
+   * publication.action_required-Eintrag
+   * nur entfernt, wenn für denselben Run
+   * kein neuer konkreter Fehler mehr
+   * übrig ist.
+   */
+  const unresolvedSpecificRunIds =
+    new Set(
+      urgentItems
+        .filter(
+          (item) =>
+            item.kind !==
+              "publication.action_required" &&
+            !isSuperseded(
+              item
+            )
+        )
+        .map(
+          (item) =>
+            getActivityMetadataString(
+              item,
+              "runId"
+            )
+        )
+        .filter(
+          (
+            runId
+          ): runId is string =>
+            Boolean(
+              runId
+            )
+        )
+    );
+
+
+  return urgentItems.filter(
+    (item) => {
+
+      /*
+       * Exakter PortalJob bereits gelöst.
+       */
+      if (
+        isSuperseded(
+          item
+        )
+      ) {
+        return false;
+      }
+
+
+      if (
+        item.kind !==
+          "publication.action_required"
+      ) {
+        return true;
+      }
+
+
+      const runId =
+        getActivityMetadataString(
+          item,
+          "runId"
+        );
+
+      if (!runId) {
+        return true;
+      }
+
+
+      const resolvedAt =
+        resolvedRunAt.get(
+          runId
+        );
+
+      if (
+        resolvedAt ===
+        undefined
+      ) {
+        return true;
+      }
+
+
+      const itemAt =
+        getActivityEventTimestamp(
+          item
+        );
+
+      if (
+        itemAt ===
+          null ||
+        itemAt >
+          resolvedAt
+      ) {
+        return true;
+      }
+
+
+      /*
+       * Andere unresolved Targets im selben
+       * Run verhindern bewusst das
+       * automatische Ausblenden.
+       */
+      return unresolvedSpecificRunIds.has(
+        runId
+      );
+    }
+  );
+}
+
+
 type DailyActivityResponse = {
   success:
     boolean;
@@ -1353,7 +1671,7 @@ export default function CockpitOverviewV2({
       };
     };
 
-  const urgentActivityCandidates =
+  const rawUrgentActivityCandidates =
     marketActivitySourceItems
       .filter(
         (item) =>
@@ -1369,6 +1687,18 @@ export default function CockpitOverviewV2({
             item.kind === "portal.retry_processing"
           )
       );
+
+
+  /*
+   * Echte immutable Resolution Events
+   * entfernen nur ältere Probleme mit
+   * derselben Job-/Run-Identität.
+   */
+  const urgentActivityCandidates =
+    suppressResolvedPortalProblems(
+      rawUrgentActivityCandidates,
+      marketActivitySourceItems
+    );
 
 
   const classifiedUrgentActivityCandidates =
