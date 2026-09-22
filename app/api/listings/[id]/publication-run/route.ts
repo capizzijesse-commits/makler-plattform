@@ -43,6 +43,11 @@ import {
   PublicationReconcileError,
 } from "@/lib/publication-orchestrator/publication-reconciler.server";
 
+import {
+  activatePublicationRunPortalDrafts,
+  PublicationActivationError,
+} from "@/lib/publication-orchestrator/publication-activation.server";
+
 
 export const runtime =
   "nodejs";
@@ -850,6 +855,82 @@ export async function POST(
     }
 
 
+    /*
+     * PORTAL_DRAFT_ACTIVATION_V1
+     *
+     * Persistierte Draft-Jobs werden
+     * nach erneuter Freigabeprüfung
+     * in die Queue aktiviert.
+     *
+     * KEIN Worker-Aufruf.
+     * KEIN Provider-Aufruf.
+     */
+    if (
+      action ===
+      "activate"
+    ) {
+
+      const runId =
+        cleanText(
+          rawBody.runId
+        );
+
+
+      if (!runId) {
+
+        return noStore(
+          NextResponse.json(
+            {
+              success:
+                false,
+
+              error:
+                "PUBLICATION_RUN_ID_REQUIRED",
+            },
+            {
+              status:
+                400,
+            }
+          )
+        );
+      }
+
+
+      const result =
+        await activatePublicationRunPortalDrafts({
+          userId:
+            user.id,
+
+          listingId:
+            listing.id,
+
+          runId,
+        });
+
+
+      return noStore(
+        NextResponse.json(
+          {
+            success:
+              true,
+
+            activated:
+              true,
+
+            dispatched:
+              false,
+
+            ...result,
+          },
+          {
+            status:
+              202,
+          }
+        )
+      );
+    }
+
+
     if (
       action ===
       "dispatch"
@@ -1585,7 +1666,9 @@ export async function POST(
       error instanceof
         PublicationDispatchError ||
       error instanceof
-        PublicationReconcileError
+        PublicationReconcileError ||
+      error instanceof
+        PublicationActivationError
     ) {
 
       return noStore(
