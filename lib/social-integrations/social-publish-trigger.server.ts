@@ -46,6 +46,11 @@ export function getSocialPublishTriggerGates() {
       enabled(
         "META_PUBLISHING_ENABLED"
       ),
+
+    linkedInPublishingEnabled:
+      enabled(
+        "LINKEDIN_PUBLISHING_ENABLED"
+      ),
   };
 }
 
@@ -78,7 +83,10 @@ export async function runSocialPublishTrigger(
   if (
     !gates.queueEnabled ||
     !gates.workerEnabled ||
-    !gates.metaPublishingEnabled
+    (
+      !gates.metaPublishingEnabled &&
+      !gates.linkedInPublishingEnabled
+    )
   ) {
 
     return {

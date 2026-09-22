@@ -13,6 +13,81 @@ import {
 } from "@/lib/prisma";
 
 
+function enabled(
+  name:
+    string
+):
+  boolean {
+
+  return (
+    process.env[
+      name
+    ]?.trim() ===
+    "1"
+  );
+}
+
+
+function isSocialProviderEnabled(
+  provider:
+    string
+):
+  boolean {
+
+  switch (provider) {
+
+    case "meta":
+
+      return enabled(
+        "META_PUBLISHING_ENABLED"
+      );
+
+    case "linkedin":
+
+      return enabled(
+        "LINKEDIN_PUBLISHING_ENABLED"
+      );
+
+    default:
+
+      return false;
+  }
+}
+
+
+function isSocialTargetEnabled(
+  provider:
+    string,
+  channel:
+    string
+):
+  boolean {
+
+  if (
+    provider === "meta" &&
+    channel === "instagram_business"
+  ) {
+
+    return enabled(
+      "META_PUBLISHING_ENABLED"
+    );
+  }
+
+
+  if (
+    provider === "linkedin" &&
+    channel === "linkedin"
+  ) {
+
+    return enabled(
+      "LINKEDIN_PUBLISHING_ENABLED"
+    );
+  }
+
+
+  return false;
+}
+
 const SOCIAL_PUBLISH_LOCK_TTL_MS =
   10 * 60_000;
 
@@ -378,8 +453,9 @@ export async function inspectSocialPublishActivationGuard(
 
 
     if (
-      job.provider !==
-      "meta"
+      !isSocialProviderEnabled(
+        job.provider
+      )
     ) {
 
       blockers.push({
@@ -393,8 +469,10 @@ export async function inspectSocialPublishActivationGuard(
 
 
     if (
-      job.channel !==
-      "instagram_business"
+      !isSocialTargetEnabled(
+        job.provider,
+        job.channel
+      )
     ) {
 
       blockers.push({
