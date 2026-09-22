@@ -44,6 +44,10 @@ import {
   executeImmobilienDeControlledPublishV1,
 } from "@/lib/portal-integrations/immobilien-de-controlled-publish.server";
 
+import {
+  executeWgGesuchtDeControlledPublishV1,
+} from "@/lib/portal-integrations/wg-gesucht-de-controlled-publish.server";
+
 
 function dispatcherError(
   code:
@@ -525,6 +529,18 @@ export async function executePortalPublishJob(
 
 
     case "wg_gesucht_de":
+
+      /*
+       * Controlled WG-Gesucht Executor.
+       *
+       * Endet aktuell garantiert
+       * vor externem Netzwerkzugriff.
+       */
+      return executeWgGesuchtDeControlledPublishV1(
+        job
+      );
+
+
     case "immoscout24_ch":
     case "homegate_ch":
     case "comparis_ch":
