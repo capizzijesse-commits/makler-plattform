@@ -9,6 +9,7 @@ import {
 } from "@/lib/inserat-ai-market";
 
 import MetaConnectionCard from "./MetaConnectionCard";
+import LinkedInConnectionCard from "./LinkedInConnectionCard";
 import ReconciliationAlertCard from "./ReconciliationAlertCard";
 
 type PlatformName = "Instagram" | "Facebook" | "LinkedIn" | "X" | "WhatsApp";
@@ -754,6 +755,8 @@ return (
         </div>
 
    <MetaConnectionCard />
+
+   <LinkedInConnectionCard />
 
    <ReconciliationAlertCard />
 

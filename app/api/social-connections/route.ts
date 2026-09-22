@@ -1,4 +1,4 @@
-﻿import {
+import {
   NextRequest,
   NextResponse,
 } from "next/server";
@@ -15,6 +15,10 @@ import {
 import {
   isMetaOAuthConfigured,
 } from "@/lib/social-integrations/meta-oauth.server";
+
+import {
+  isLinkedInOAuthConfigured,
+} from "@/lib/social-integrations/linkedin-oauth.server";
 
 
 export const runtime =
@@ -130,7 +134,8 @@ export async function GET(
 
       capabilities: {
         oauth:
-          isMetaOAuthConfigured(),
+          isMetaOAuthConfigured() ||
+          isLinkedInOAuthConfigured(),
 
         scheduling:
           false,
@@ -143,6 +148,11 @@ export async function GET(
         meta: {
           configured:
             isMetaOAuthConfigured(),
+        },
+
+        linkedin: {
+          configured:
+            isLinkedInOAuthConfigured(),
         },
       },
     })
