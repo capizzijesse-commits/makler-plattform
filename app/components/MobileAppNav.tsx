@@ -212,9 +212,48 @@ export default function MobileAppNav() {
   ] =
     useState(false);
 
+  /* IA_MOBILE_NAV_LOCATION_STATE_V1 */
+  const [
+    currentHash,
+    setCurrentHash,
+  ] =
+    useState("");
+
+  useEffect(() => {
+    const syncLocationState = () => {
+      setCurrentHash(
+        window.location.hash || ""
+      );
+    };
+
+    syncLocationState();
+
+    window.addEventListener(
+      "hashchange",
+      syncLocationState
+    );
+
+    window.addEventListener(
+      "popstate",
+      syncLocationState
+    );
+
+    return () => {
+      window.removeEventListener(
+        "hashchange",
+        syncLocationState
+      );
+
+      window.removeEventListener(
+        "popstate",
+        syncLocationState
+      );
+    };
+  }, [pathname]);
+
   useEffect(() => {
     setSheet(null);
-  }, [pathname]);
+  }, [pathname, currentHash]);
 
   function closeSheet() {
     setSheet(null);
@@ -283,12 +322,30 @@ export default function MobileAppNav() {
     }
   }
 
+  /* IA_MOBILE_NAV_ACTIVE_STATE_V1 */
+  const objectsAnchorActive =
+    currentHash ===
+      "#v2-objects";
+
   const todayActive =
-    pathname === "/cockpit";
+    pathname === "/cockpit" &&
+    !objectsAnchorActive;
 
   const objectsActive =
+    (
+      pathname === "/cockpit" &&
+      objectsAnchorActive
+    ) ||
     pathname.startsWith(
       "/cockpit/"
+    );
+
+  const createActive =
+    pathname === "/dashboard" &&
+    (
+      currentHash === "" ||
+      currentHash ===
+        "#new-listing"
     );
 
   const workspaceActive =
@@ -304,6 +361,23 @@ export default function MobileAppNav() {
     ) ||
     pathname.startsWith(
       "/dashboard/social-media"
+    ) ||
+    pathname.startsWith(
+      "/dashboard/analyse"
+    ) ||
+    pathname.startsWith(
+      "/dashboard/tour-guide"
+    );
+
+  const moreActive =
+    pathname.startsWith(
+      "/konto"
+    ) ||
+    pathname.startsWith(
+      "/kontakt"
+    ) ||
+    pathname.startsWith(
+      "/ueber-uns"
     );
 
   return (
@@ -641,7 +715,11 @@ export default function MobileAppNav() {
 
         <Link
           href="/dashboard#new-listing"
-          className="iaMobileNavCreate"
+          className={
+            createActive
+              ? "iaMobileNavCreate active"
+              : "iaMobileNavCreate"
+          }
           aria-label="Neues Inserat"
         >
           <span>
@@ -679,6 +757,7 @@ export default function MobileAppNav() {
         <button
           type="button"
           className={
+            moreActive ||
             sheet === "more"
               ? "iaMobileNavItem active"
               : "iaMobileNavItem"
@@ -714,6 +793,134 @@ export default function MobileAppNav() {
            * Desktop-Sidebar und alte Floating-Menüs weg.
            */
 
+          /* IA_MOBILE_COMPACT_HEADER_V1 */
+          body:has(.iaMobileAppNav)
+          .appLoggedInNavbar
+          .appHeaderDashboardMobile {
+            display:
+              none !important;
+          }
+
+          body:has(.iaMobileAppNav)
+          .appLoggedInNavbar
+          > .appCentralNavbarInner {
+            min-height:
+              58px !important;
+
+            padding:
+              6px 10px !important;
+
+            gap:
+              6px !important;
+          }
+
+          body:has(.iaMobileAppNav)
+          .appLoggedInNavbar
+          .siteBrandIcon {
+            width:
+              32px !important;
+
+            height:
+              32px !important;
+
+            min-width:
+              32px !important;
+
+            flex-basis:
+              32px !important;
+          }
+
+          body:has(.iaMobileAppNav)
+          .appLoggedInNavbar
+          .siteBrandText {
+            display:
+              block !important;
+
+            max-width:
+              150px !important;
+
+            overflow:
+              hidden !important;
+
+            font-size:
+              14px !important;
+
+            text-overflow:
+              ellipsis !important;
+
+            white-space:
+              nowrap !important;
+          }
+
+          body:has(.iaMobileAppNav)
+          .appLoggedInNavbar
+          .appHeaderAccount {
+            display:
+              inline-flex !important;
+
+            width:
+              38px !important;
+
+            min-width:
+              38px !important;
+
+            max-width:
+              38px !important;
+
+            min-height:
+              38px !important;
+
+            padding:
+              0 !important;
+
+            justify-content:
+              center !important;
+
+            border-radius:
+              50% !important;
+          }
+
+          body:has(.iaMobileAppNav)
+          .appLoggedInNavbar
+          .appHeaderAccount
+          > span:last-child {
+            display:
+              none !important;
+          }
+
+          body:has(.iaMobileAppNav)
+          .appLoggedInNavbar
+          .appHeaderAccount
+          > span:first-child {
+            width:
+              30px !important;
+
+            height:
+              30px !important;
+
+            border-radius:
+              50% !important;
+          }
+
+          body:has(.iaMobileAppNav)
+          .appLoggedInNavbar
+          .appHeaderLanguage button {
+            min-width:
+              40px !important;
+
+            max-width:
+              50px !important;
+
+            min-height:
+              38px !important;
+
+            padding-inline:
+              7px !important;
+
+            border-radius:
+              11px !important;
+          }
+
           /* IA_MOBILE_HIDE_COOKIE_GEAR_V1 */
           body:has(.iaMobileAppNav)
           .cookieSettingsButton {
@@ -721,9 +928,41 @@ export default function MobileAppNav() {
               none !important;
           }
 
-          .iaSidebar {
+          /* IA_MOBILE_SINGLE_NAV_V1 */
+          .iaSidebar,
+          .v2Sidebar,
+          .v2SidebarPremium {
             display:
               none !important;
+          }
+
+          .v2Main {
+            width:
+              100% !important;
+
+            max-width:
+              100% !important;
+
+            margin-left:
+              0 !important;
+
+            padding-bottom:
+              calc(
+                92px +
+                env(
+                  safe-area-inset-bottom
+                )
+              ) !important;
+          }
+
+          body:has(.iaMobileAppNav) {
+            padding-bottom:
+              calc(
+                84px +
+                env(
+                  safe-area-inset-bottom
+                )
+              ) !important;
           }
 
           .iaWorkspace {
@@ -1103,6 +1342,12 @@ export default function MobileAppNav() {
 
             font-weight:
               850;
+          }
+
+          .iaMobileNavCreate.active
+          small {
+            color:
+              #fbbf24;
           }
 
           .iaMobileAppSheet {
