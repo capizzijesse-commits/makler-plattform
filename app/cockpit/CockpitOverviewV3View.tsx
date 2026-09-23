@@ -6542,6 +6542,46 @@ export default function CockpitOverviewV3View({
         @media screen and (max-width: 650px) {
 
           /* ======================================
+             COCKPIT_MOBILE_GLOBAL_SHELL_FIX_V32
+             Remove desktop cockpit shell on mobile
+             ====================================== */
+
+          .v2Shell {
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+          }
+
+          .v2Shell .v2Sidebar,
+          .v2Shell .v2SidebarPremium {
+            display: none !important;
+            visibility: hidden !important;
+            width: 0 !important;
+            min-width: 0 !important;
+            max-width: 0 !important;
+            height: 0 !important;
+            overflow: hidden !important;
+            pointer-events: none !important;
+          }
+
+          .v2Shell .v2Main {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+          }
+
+          .v2Shell .v2MainContent {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            margin-left: 0 !important;
+          }
+
+
+          /* ======================================
              TOP APP BAR
              ====================================== */
 
