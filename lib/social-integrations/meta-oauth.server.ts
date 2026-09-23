@@ -635,12 +635,6 @@ export async function exchangeMetaLongLivedUserToken(
       : undefined;
 
 
-  if (!expiresIn) {
-
-    throw new Error(
-      "Meta long-lived token response does not contain a valid expires_in."
-    );
-  }
 
 
   return {

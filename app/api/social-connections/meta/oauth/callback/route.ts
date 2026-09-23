@@ -262,24 +262,16 @@ export async function GET(
       });
 
 
-    if (
-      !longLivedToken.expiresIn ||
-      longLivedToken.expiresIn <=
-        0
-    ) {
-
-      throw new Error(
-        "Meta long-lived token expiry is missing."
-      );
-    }
-
-
     const expiresAt =
-      new Date(
-        Date.now() +
-        longLivedToken.expiresIn *
-          1000
-      ).toISOString();
+      longLivedToken.expiresIn &&
+      longLivedToken.expiresIn >
+        0
+        ? new Date(
+            Date.now() +
+            longLivedToken.expiresIn *
+              1000
+          ).toISOString()
+        : undefined;
 
 
     const pages =
