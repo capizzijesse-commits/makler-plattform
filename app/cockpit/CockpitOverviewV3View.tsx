@@ -6117,6 +6117,420 @@ export default function CockpitOverviewV3View({
           line-height: 1.45;
         }
 
+
+
+        /* ========================================
+           COCKPIT_MOBILE_APP_V2
+           True mobile layout 360-430px
+           ======================================== */
+
+        @media screen and (max-width: 650px) {
+
+          html,
+          body {
+            overflow-x: hidden !important;
+          }
+
+          .v2Sidebar,
+          .v2SidebarPremium {
+            display: none !important;
+          }
+
+          .v2Main {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin-left: 0 !important;
+          }
+
+          /* compact workspace header */
+          .v2Topbar {
+            position: sticky !important;
+            top: 0 !important;
+            min-height: 56px !important;
+            gap: 7px !important;
+            padding: 7px 9px !important;
+          }
+
+          .v2Search {
+            min-width: 0 !important;
+            min-height: 42px !important;
+            flex: 1 1 auto !important;
+            padding: 0 11px !important;
+            border-radius: 12px !important;
+          }
+
+          .v2Search input {
+            min-width: 0 !important;
+            font-size: 16px !important;
+          }
+
+          .v2TopActions {
+            flex: 0 0 auto !important;
+            gap: 6px !important;
+          }
+
+          .v2MarketPill {
+            min-height: 38px !important;
+            padding: 0 7px !important;
+            border-radius: 11px !important;
+          }
+
+          /* page shell */
+          .cockpitV3 {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding:
+              10px 10px
+              calc(
+                112px +
+                env(safe-area-inset-bottom)
+              ) !important;
+          }
+
+          /* HERO */
+          .v3Hero {
+            min-height: 0 !important;
+            grid-template-columns: 1fr !important;
+            gap: 14px !important;
+            padding: 18px 16px !important;
+            border-radius: 17px !important;
+            background-position: 58% center !important;
+          }
+
+          .v3HeroCopy {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+          }
+
+          .v3HeroHeading {
+            align-items: flex-start !important;
+            flex-direction: column !important;
+            gap: 8px !important;
+          }
+
+          .v3HeroHeading h1 {
+            max-width: 100% !important;
+            white-space: normal !important;
+            word-break: normal !important;
+            overflow-wrap: normal !important;
+            font-size: 28px !important;
+            line-height: 1.04 !important;
+          }
+
+          .v3HeroCopy > p {
+            max-width: 100% !important;
+            margin-top: 10px !important;
+            font-size: 12px !important;
+            line-height: 1.45 !important;
+          }
+
+          .v3HeroCenter {
+            display: none !important;
+          }
+
+          .v3HeroActions {
+            display: grid !important;
+            width: 100% !important;
+            grid-template-columns: 1fr !important;
+            gap: 8px !important;
+            justify-self: stretch !important;
+          }
+
+          .v3NewObject {
+            width: 100% !important;
+            min-height: 52px !important;
+            padding: 0 14px !important;
+            border-radius: 14px !important;
+            transform: none !important;
+            box-shadow:
+              0 2px 0 rgba(255,255,255,.65) inset,
+              0 -3px 0 rgba(170,80,0,.22) inset,
+              0 8px 18px rgba(255,157,14,.20) !important;
+          }
+
+          .v3NewObject:hover {
+            transform: none !important;
+          }
+
+          .v3Plus {
+            width: 32px !important;
+            height: 32px !important;
+            flex-basis: 32px !important;
+            font-size: 20px !important;
+          }
+
+          .v3NewObject strong {
+            font-size: 12px !important;
+          }
+
+          .v3Publish {
+            min-height: 40px !important;
+            border-radius: 12px !important;
+          }
+
+          /* TODAY */
+          .v3Today {
+            margin-top: 10px !important;
+            padding: 12px !important;
+            border-radius: 16px !important;
+          }
+
+          .v3TodayHeader {
+            align-items: flex-start !important;
+            gap: 8px !important;
+          }
+
+          .v3TodayTitle {
+            min-width: 0 !important;
+            gap: 9px !important;
+          }
+
+          .v3Calendar {
+            width: 38px !important;
+            height: 38px !important;
+            flex: 0 0 38px !important;
+            border-radius: 11px !important;
+          }
+
+          .v3TodayTitle h2 {
+            font-size: 17px !important;
+            line-height: 1.15 !important;
+          }
+
+          .v3TodayTitle p {
+            font-size: 9px !important;
+            line-height: 1.4 !important;
+          }
+
+          .v3Date {
+            display: none !important;
+          }
+
+          /* KPI cards */
+          .v3Kpis {
+            grid-template-columns:
+              repeat(2, minmax(0,1fr)) !important;
+            gap: 8px !important;
+            margin-top: 11px !important;
+          }
+
+          .v3Kpis article {
+            min-width: 0 !important;
+            min-height: 78px !important;
+            grid-template-columns:
+              34px minmax(0,1fr) 10px !important;
+            gap: 7px !important;
+            padding: 10px !important;
+            overflow: hidden !important;
+            border-radius: 12px !important;
+          }
+
+          .v3KpiIcon {
+            width: 34px !important;
+            height: 34px !important;
+            font-size: 14px !important;
+          }
+
+          .v3Kpis article strong {
+            font-size: 20px !important;
+          }
+
+          .v3Kpis article b {
+            margin-top: 3px !important;
+            font-size: 10px !important;
+            line-height: 1.2 !important;
+          }
+
+          .v3Kpis article small {
+            font-size: 8px !important;
+            line-height: 1.25 !important;
+          }
+
+          .v3Kpis article > i {
+            font-size: 17px !important;
+          }
+
+          /* work / activity */
+          .v3WorkGrid {
+            grid-template-columns: 1fr !important;
+            gap: 10px !important;
+            margin-top: 10px !important;
+          }
+
+          .v3WorkCard,
+          .v3Activity {
+            min-height: 0 !important;
+            padding: 12px !important;
+            border-radius: 15px !important;
+          }
+
+          .v3WorkCard .v3CardHeader,
+          .v3Activity .v3CardHeader {
+            min-height: 44px !important;
+            margin: -1px -1px 12px !important;
+            padding: 0 12px !important;
+            border-radius:
+              14px 14px 10px 10px !important;
+          }
+
+          .v3PriorityList {
+            gap: 8px !important;
+            padding: 0 !important;
+          }
+
+          .v3PriorityItem {
+            min-height: 0 !important;
+            grid-template-columns:
+              4px minmax(0,1fr) !important;
+            gap: 9px !important;
+            padding: 10px !important;
+            border-radius: 11px !important;
+          }
+
+          .v3PriorityCta {
+            grid-column: 2 !important;
+            justify-self: start !important;
+            max-width: 100% !important;
+          }
+
+          .v3Activity h3 {
+            font-size: 16px !important;
+          }
+
+          .v3ActivityEmpty {
+            min-height: 90px !important;
+          }
+
+          /* portals */
+          .v3Portals {
+            margin-top: 10px !important;
+            padding: 0 !important;
+            border-radius: 15px !important;
+          }
+
+          .v3Portals header {
+            align-items: flex-start !important;
+            gap: 8px !important;
+            padding: 12px 12px 10px !important;
+          }
+
+          .v3PortalTitle {
+            min-width: 0 !important;
+            gap: 9px !important;
+          }
+
+          .v3PortalIcon {
+            width: 36px !important;
+            height: 36px !important;
+            flex: 0 0 36px !important;
+            border-radius: 10px !important;
+            font-size: 16px !important;
+          }
+
+          .v3PortalTitle h2 {
+            font-size: 17px !important;
+            line-height: 1.1 !important;
+          }
+
+          .v3PortalTitle p {
+            font-size: 9px !important;
+            line-height: 1.3 !important;
+          }
+
+          .v3Portals header > a {
+            flex: 0 0 auto !important;
+            padding: 7px 8px !important;
+            font-size: 8px !important;
+            white-space: nowrap !important;
+          }
+
+          .v3PortalLogos {
+            grid-template-columns:
+              repeat(2, minmax(0,1fr)) !important;
+            gap: 7px !important;
+            margin-top: 0 !important;
+            padding: 0 12px 12px !important;
+          }
+
+          .v3PortalLogos > div {
+            min-width: 0 !important;
+            min-height: 54px !important;
+            overflow: hidden !important;
+            padding: 6px !important;
+            border-radius: 11px !important;
+          }
+
+          .v3PortalLogos > div > span {
+            max-width: 100% !important;
+            white-space: nowrap !important;
+            font-size: 13px !important;
+            line-height: 1 !important;
+            transform: scale(.92);
+            transform-origin: center;
+          }
+
+          .logoScout {
+            font-size: 12px !important;
+          }
+
+          .logoScout b {
+            padding: 2px 3px !important;
+          }
+
+          .logoHomegate {
+            gap: 4px !important;
+            font-size: 12px !important;
+          }
+
+          .logoHomegate b {
+            font-size: 18px !important;
+          }
+
+          .logoComparis {
+            font-size: 13px !important;
+          }
+
+          .logoImmowelt,
+          .logoKlein {
+            font-size: 11px !important;
+          }
+
+          .logoKlein b {
+            font-size: 18px !important;
+          }
+
+          /* publishing */
+          .v3Publishing {
+            margin-top: 10px !important;
+            border-radius: 16px !important;
+          }
+
+          .cockpitV3 .batch23 {
+            padding: 12px !important;
+            border-radius: 14px !important;
+          }
+
+          /* MobileAppNav replaces floating support dock */
+          .supportDock {
+            display: none !important;
+          }
+        }
+
+        @media screen and (max-width: 370px) {
+          .cockpitV3 {
+            padding-left: 8px !important;
+            padding-right: 8px !important;
+          }
+
+          .v3HeroHeading h1 {
+            font-size: 25px !important;
+          }
+
+          .v3Kpis {
+            gap: 6px !important;
+          }
+        }
       `}</style>
     </main>
   );
