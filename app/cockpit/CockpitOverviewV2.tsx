@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import BatchPublishingV23 from "./BatchPublishingV23";
+import CockpitOverviewV3View from "./CockpitOverviewV3View";
 import AccountMenu from "../components/AccountMenu";
 import MarketBadge from "../components/MarketBadge";
 import {
@@ -9,11 +11,17 @@ import {
   useState,
 } from "react";
 import { useLocale } from "next-intl";
+import PortalConnectionsCard from "./PortalConnectionsCard";
 
 import {
   getInseratAiMarketFromHostname,
   type InseratAiMarket,
 } from "@/lib/inserat-ai-market";
+
+import {
+  createCommandCenterNavigationAction,
+  resolveCommandCenterAction,
+} from "@/lib/command-center/command-center-action-registry";
 
 type CockpitImage = {
   id: string;
@@ -58,6 +66,579 @@ type ListingAnalytics = {
     views: number;
   }>;
 };
+
+/* DAILY_COCKPIT_V22 */
+type DailyActivityItem = {
+  id?:
+    string;
+
+  kind:
+    string;
+
+  severity?:
+    "info" |
+    "success" |
+    "warning" |
+    "error";
+
+  status?:
+    string |
+    null;
+
+  listingId:
+    string;
+
+  listingLabel:
+    string;
+
+  location:
+    string;
+
+  title?:
+    string;
+
+  message?:
+    string;
+
+  icon?:
+    string;
+
+  count:
+    number;
+
+  uniqueVisitors?:
+    number;
+
+  createdAt?:
+    string;
+
+  latestAt:
+    string;
+
+  unread:
+    boolean;
+
+  href:
+    string;
+
+  metadata?:
+    Record<string, unknown>;
+};
+
+
+function getActivityMetadataString(
+  item:
+    DailyActivityItem,
+  key:
+    string
+):
+  string |
+  null {
+
+  const value =
+    item.metadata?.[key];
+
+  if (
+    typeof value !==
+    "string"
+  ) {
+    return null;
+  }
+
+  const normalized =
+    value.trim();
+
+  return normalized ||
+    null;
+}
+
+
+function getActivityMetadataNumber(
+  item:
+    DailyActivityItem,
+  key:
+    string
+):
+  number |
+  null {
+
+  const value =
+    item.metadata?.[key];
+
+  return typeof value ===
+      "number" &&
+    Number.isFinite(
+      value
+    )
+      ? value
+      : null;
+}
+
+
+/*
+ * COMMAND_CENTER_RESOLUTION_STATE_V1
+ *
+ * Ein immutable "problem resolved"-Event
+ * darf ältere Fehlermeldungen desselben
+ * Portal-Jobs nicht weiter als menschliche
+ * Aufgabe erscheinen lassen.
+ *
+ * Ein späterer neuer Fehler bleibt dagegen
+ * sichtbar.
+ */
+function getActivityEventTimestamp(
+  item:
+    DailyActivityItem
+):
+  number |
+  null {
+
+  const parsed =
+    Date.parse(
+      item.latestAt ||
+      item.createdAt ||
+      ""
+    );
+
+  return Number.isFinite(
+    parsed
+  )
+    ? parsed
+    : null;
+}
+
+
+function getActivityPortalJobIdentity(
+  item:
+    DailyActivityItem
+):
+  string |
+  null {
+
+  return (
+    getActivityMetadataString(
+      item,
+      "jobId"
+    ) ||
+    getActivityMetadataString(
+      item,
+      "portalJobId"
+    )
+  );
+}
+
+
+function suppressResolvedPortalProblems(
+  urgentItems:
+    DailyActivityItem[],
+
+  allActivityItems:
+    DailyActivityItem[]
+):
+  DailyActivityItem[] {
+
+  const resolvedJobAt =
+    new Map<
+      string,
+      number
+    >();
+
+  const resolvedRunAt =
+    new Map<
+      string,
+      number
+    >();
+
+
+  for (
+    const item
+    of allActivityItems
+  ) {
+
+    if (
+      item.kind !==
+        "portal.problem_resolved" ||
+      item.metadata
+        ?.immutableTransition !==
+        true
+    ) {
+      continue;
+    }
+
+
+    const timestamp =
+      getActivityEventTimestamp(
+        item
+      );
+
+    if (timestamp === null) {
+      continue;
+    }
+
+
+    const jobId =
+      getActivityMetadataString(
+        item,
+        "jobId"
+      );
+
+    if (jobId) {
+
+      const existing =
+        resolvedJobAt.get(
+          jobId
+        );
+
+      if (
+        existing ===
+          undefined ||
+        timestamp >
+          existing
+      ) {
+        resolvedJobAt.set(
+          jobId,
+          timestamp
+        );
+      }
+    }
+
+
+    const runId =
+      getActivityMetadataString(
+        item,
+        "runId"
+      );
+
+    if (runId) {
+
+      const existing =
+        resolvedRunAt.get(
+          runId
+        );
+
+      if (
+        existing ===
+          undefined ||
+        timestamp >
+          existing
+      ) {
+        resolvedRunAt.set(
+          runId,
+          timestamp
+        );
+      }
+    }
+  }
+
+
+  const isSuperseded =
+    (
+      item:
+        DailyActivityItem
+    ):
+      boolean => {
+
+      const jobId =
+        getActivityPortalJobIdentity(
+          item
+        );
+
+      if (!jobId) {
+        return false;
+      }
+
+
+      const resolvedAt =
+        resolvedJobAt.get(
+          jobId
+        );
+
+      if (
+        resolvedAt ===
+        undefined
+      ) {
+        return false;
+      }
+
+
+      const itemAt =
+        getActivityEventTimestamp(
+          item
+        );
+
+      if (itemAt === null) {
+        return false;
+      }
+
+
+      return (
+        itemAt <=
+        resolvedAt
+      );
+    };
+
+
+  /*
+   * Noch existierende konkrete Probleme
+   * je PublicationRun.
+   *
+   * Damit wird ein generischer
+   * publication.action_required-Eintrag
+   * nur entfernt, wenn für denselben Run
+   * kein neuer konkreter Fehler mehr
+   * übrig ist.
+   */
+  const unresolvedSpecificRunIds =
+    new Set(
+      urgentItems
+        .filter(
+          (item) =>
+            item.kind !==
+              "publication.action_required" &&
+            !isSuperseded(
+              item
+            )
+        )
+        .map(
+          (item) =>
+            getActivityMetadataString(
+              item,
+              "runId"
+            )
+        )
+        .filter(
+          (
+            runId
+          ): runId is string =>
+            Boolean(
+              runId
+            )
+        )
+    );
+
+
+  return urgentItems.filter(
+    (item) => {
+
+      /*
+       * Exakter PortalJob bereits gelöst.
+       */
+      if (
+        isSuperseded(
+          item
+        )
+      ) {
+        return false;
+      }
+
+
+      if (
+        item.kind !==
+          "publication.action_required"
+      ) {
+        return true;
+      }
+
+
+      const runId =
+        getActivityMetadataString(
+          item,
+          "runId"
+        );
+
+      if (!runId) {
+        return true;
+      }
+
+
+      const resolvedAt =
+        resolvedRunAt.get(
+          runId
+        );
+
+      if (
+        resolvedAt ===
+        undefined
+      ) {
+        return true;
+      }
+
+
+      const itemAt =
+        getActivityEventTimestamp(
+          item
+        );
+
+      if (
+        itemAt ===
+          null ||
+        itemAt >
+          resolvedAt
+      ) {
+        return true;
+      }
+
+
+      /*
+       * Andere unresolved Targets im selben
+       * Run verhindern bewusst das
+       * automatische Ausblenden.
+       */
+      return unresolvedSpecificRunIds.has(
+        runId
+      );
+    }
+  );
+}
+
+
+/*
+ * COMMAND_CENTER_RESOLUTION_HISTORY_V1
+ *
+ * Nur echte immutable Transition-Events
+ * werden als von Inserat-AI gelöste
+ * Vorgänge dargestellt.
+ */
+function getResolvedPortalWorkItems(
+  items:
+    DailyActivityItem[]
+) {
+
+  const candidates =
+    items
+      .filter(
+        (item) =>
+          item.kind ===
+            "portal.problem_resolved" &&
+          item.severity ===
+            "success" &&
+          item.metadata
+            ?.immutableTransition ===
+            true
+      )
+      .map(
+        (item) => ({
+          item,
+
+          timestamp:
+            getActivityEventTimestamp(
+              item
+            ),
+
+          jobId:
+            getActivityMetadataString(
+              item,
+              "jobId"
+            ),
+        })
+      )
+      .filter(
+        (
+          candidate
+        ): candidate is {
+          item:
+            DailyActivityItem;
+
+          timestamp:
+            number;
+
+          jobId:
+            string;
+        } =>
+          candidate.timestamp !==
+            null &&
+          Boolean(
+            candidate.jobId
+          )
+      )
+      .sort(
+        (a, b) =>
+          b.timestamp -
+          a.timestamp
+      );
+
+
+  /*
+   * Pro PortalJob nur die neueste
+   * erfolgreiche Resolution anzeigen.
+   */
+  const seenJobIds =
+    new Set<string>();
+
+
+  return candidates
+    .filter(
+      ({ jobId }) => {
+
+        if (
+          seenJobIds.has(
+            jobId
+          )
+        ) {
+          return false;
+        }
+
+        seenJobIds.add(
+          jobId
+        );
+
+        return true;
+      }
+    )
+    .map(
+      ({ item }) => ({
+        id:
+          item.id ??
+          `resolved:${item.listingId}:${item.latestAt}`,
+
+        listingId:
+          item.listingId,
+
+        title:
+          item.title ??
+          item.listingLabel,
+
+        description:
+          item.message ??
+          "Inserat-AI hat das Portalproblem automatisch gelöst.",
+
+        href:
+          item.href ||
+          `/cockpit/${item.listingId}#portal-publishing`,
+
+        latestAt:
+          item.latestAt,
+      })
+    );
+}
+
+
+type DailyActivityResponse = {
+  success:
+    boolean;
+
+  unreadCount:
+    number;
+
+  items:
+    DailyActivityItem[];
+
+  summary:
+    {
+      views7d:
+        number;
+
+      uniqueVisitors7d:
+        number;
+
+      operationalEvents7d?:
+        number;
+
+      actionRequired7d?:
+        number;
+    };
+};
+
 
 type CockpitOverviewV2Props = {
   userName: string;
@@ -245,11 +826,87 @@ export default function CockpitOverviewV2({
   const [market, setMarket] =
     useState<InseratAiMarket>("CH");
 
+  const [
+    marketResolved,
+    setMarketResolved,
+  ] =
+    useState(false);
+
   const [searchQuery, setSearchQuery] =
     useState("");
 
   const [showAll, setShowAll] =
     useState(false);
+
+
+  /*
+   * LISTING TRASH V1
+   *
+   * "Löschen" ist zunächst ein sicherer
+   * Soft Delete über archivedAt.
+   */
+  const [
+    localListings,
+    setLocalListings,
+  ] =
+    useState<CockpitListing[]>(
+      listings
+    );
+
+  const [
+    objectView,
+    setObjectView,
+  ] =
+    useState<
+      "active" |
+      "trash"
+    >("active");
+
+  const [
+    listingActionId,
+    setListingActionId,
+  ] =
+    useState<string | null>(
+      null
+    );
+
+  const [
+    listingActionMessage,
+    setListingActionMessage,
+  ] =
+    useState("");
+
+  const [
+    listingActionError,
+    setListingActionError,
+  ] =
+    useState(false);
+
+
+  /*
+   * INSERAT-AI CONFIRMATION MODAL
+   *
+   * Kein Browser-window.confirm.
+   * Das Cockpit übernimmt die Bestätigung
+   * vollständig im eigenen Inserat-AI Design.
+   */
+  const [
+    trashConfirmListing,
+    setTrashConfirmListing,
+  ] =
+    useState<CockpitListing | null>(
+      null
+    );
+
+
+  useEffect(() => {
+    setLocalListings(
+      listings
+    );
+  }, [
+    listings,
+  ]);
+
 
   const [analytics, setAnalytics] =
     useState<ListingAnalytics | null>(null);
@@ -264,6 +921,26 @@ export default function CockpitOverviewV2({
     setAnalyticsError,
   ] = useState("");
 
+  const [
+    dailyActivity,
+    setDailyActivity,
+  ] =
+    useState<DailyActivityResponse | null>(
+      null
+    );
+
+  const [
+    dailyActivityLoading,
+    setDailyActivityLoading,
+  ] =
+    useState(true);
+
+  const [
+    dailyActivityError,
+    setDailyActivityError,
+  ] =
+    useState("");
+
   useEffect(() => {
     const domainMarket =
       getInseratAiMarketFromHostname(
@@ -272,6 +949,7 @@ export default function CockpitOverviewV2({
 
     if (domainMarket) {
       setMarket(domainMarket);
+      setMarketResolved(true);
       return;
     }
 
@@ -286,6 +964,8 @@ export default function CockpitOverviewV2({
     ) {
       setMarket(storedMarket);
     }
+
+    setMarketResolved(true);
   }, []);
 
   useEffect(() => {
@@ -352,6 +1032,108 @@ export default function CockpitOverviewV2({
       cancelled = true;
     };
   }, [market]);
+
+  useEffect(() => {
+    let cancelled =
+      false;
+
+
+    async function loadDailyActivity() {
+      try {
+        setDailyActivityLoading(
+          true
+        );
+
+        setDailyActivityError(
+          ""
+        );
+
+
+        const today =
+          new Date();
+
+        today.setHours(
+          0,
+          0,
+          0,
+          0
+        );
+
+
+        const response =
+          await fetch(
+            "/api/activity-center?mode=all&since=" +
+              encodeURIComponent(
+                today.toISOString()
+              ),
+            {
+              method:
+                "GET",
+
+              cache:
+                "no-store",
+            }
+          );
+
+
+        const data =
+          await response.json();
+
+
+        if (
+          !response.ok
+        ) {
+          throw new Error(
+            typeof data?.error ===
+              "string"
+              ? data.error
+              : "Aktivitäten konnten nicht geladen werden."
+          );
+        }
+
+
+        if (
+          !cancelled
+        ) {
+          setDailyActivity(
+            data as DailyActivityResponse
+          );
+        }
+      }
+      catch (
+        error
+      ) {
+        if (
+          !cancelled
+        ) {
+          setDailyActivityError(
+            error instanceof Error
+              ? error.message
+              : "Aktivitäten konnten nicht geladen werden."
+          );
+        }
+      }
+      finally {
+        if (
+          !cancelled
+        ) {
+          setDailyActivityLoading(
+            false
+          );
+        }
+      }
+    }
+
+
+    void loadDailyActivity();
+
+
+    return () => {
+      cancelled =
+        true;
+    };
+  }, []);
+
 
   const intlLocale =
     market === "DE"
@@ -424,7 +1206,7 @@ export default function CockpitOverviewV2({
 
   const marketListings =
     useMemo(() => {
-      return listings.filter(
+      return localListings.filter(
         (listing) => {
           const countryCode =
             listing.countryCode
@@ -460,7 +1242,7 @@ export default function CockpitOverviewV2({
         }
       );
     }, [
-      listings,
+      localListings,
       market,
     ]);
 
@@ -477,13 +1259,30 @@ export default function CockpitOverviewV2({
       );
     }, [marketListings]);
 
+  const viewListings =
+    useMemo(() => {
+      return sortedListings.filter(
+        (listing) =>
+          objectView ===
+            "trash"
+            ? Boolean(
+                listing.archivedAt
+              )
+            : !listing.archivedAt
+      );
+    }, [
+      sortedListings,
+      objectView,
+    ]);
+
+
   const filteredListings =
     useMemo(() => {
       if (!normalizedSearch) {
-        return sortedListings;
+        return viewListings;
       }
 
-      return sortedListings.filter(
+      return viewListings.filter(
         (listing) => {
           const values = [
             listing.projectName,
@@ -507,7 +1306,7 @@ export default function CockpitOverviewV2({
     }, [
       intlLocale,
       normalizedSearch,
-      sortedListings,
+      viewListings,
     ]);
 
   const generatedCount =
@@ -526,6 +1325,923 @@ export default function CockpitOverviewV2({
   const archivedCount =
     marketListings.length -
     activeCount;
+
+
+  const activeMarketListings =
+    marketListings.filter(
+      (listing) =>
+        !listing.archivedAt
+    );
+
+
+  const readyForReviewListings =
+    activeMarketListings.filter(
+      (listing) =>
+        hasGeneratedVariants(
+          listing.generatedVariants
+        ) &&
+        listing.images.length >
+          0
+    );
+
+
+  const actionNeededListings =
+    activeMarketListings.filter(
+      (listing) =>
+        !hasGeneratedVariants(
+          listing.generatedVariants
+        ) ||
+        listing.images.length ===
+          0
+    );
+
+
+  const marketListingIds =
+    new Set(
+      marketListings.map(
+        (listing) =>
+          listing.id
+      )
+    );
+
+
+  const marketActivitySourceItems =
+    (
+      dailyActivity?.items ??
+      []
+    )
+      .filter(
+        (item) =>
+          marketListingIds.has(
+            item.listingId
+          )
+      );
+
+
+  const marketActivityItems =
+    marketActivitySourceItems.slice(
+      0,
+      4
+    );
+
+
+  const resolvedWorkItems =
+    getResolvedPortalWorkItems(
+      marketActivitySourceItems
+    )
+      .slice(
+        0,
+        3
+      );
+
+
+  const unreadActivityCount =
+    marketActivityItems.filter(
+      (item) =>
+        item.unread
+    ).length;
+
+
+  const primaryActionListing =
+    actionNeededListings[0] ??
+    readyForReviewListings[0] ??
+    activeMarketListings[0] ??
+    null;
+
+
+  const primaryActionHref =
+    primaryActionListing
+      ? actionNeededListings.some(
+          (listing) =>
+            listing.id ===
+            primaryActionListing.id
+        )
+        ? `/cockpit/${primaryActionListing.id}/edit`
+        : `/cockpit/${primaryActionListing.id}#portal-publishing`
+      : "/dashboard";
+
+
+  const primaryActionLabel =
+    primaryActionListing
+      ? actionNeededListings.some(
+          (listing) =>
+            listing.id ===
+            primaryActionListing.id
+        )
+        ? "Objekt fertigstellen"
+        : "Veröffentlichung prüfen"
+      : "Neues Objekt erstellen";
+
+  /*
+   * COMMAND_CENTER_PRIORITY_V1
+   *
+   * 1. Portalfehler / Aktion erforderlich
+   * 2. Unvollständige Objekte
+   * 3. Prüfung / Veröffentlichung
+   */
+
+  /*
+   * COMMAND_CENTER_PROBLEM_RESOLUTION_V1
+   *
+   * Nutzt ausschließlich vorhandene
+   * Activity-/Provider-Fehlermeldungen.
+   */
+
+  /*
+   * COMMAND_CENTER_ERROR_CODE_CLASSIFICATION_V2
+   *
+   * Bevorzugt strukturierte Portal-Metadaten.
+   * Textanalyse bleibt nur als Fallback bestehen.
+   *
+   * Modi:
+   * - auto_retry
+   * - reconcile
+   * - user_action
+   * - provider_action
+   * - exhausted
+   */
+
+  const getProblemResolution =
+    (
+      item:
+        DailyActivityItem
+    ) => {
+
+      const problemText =
+        `${item.title ?? ""} ${item.message ?? ""}`
+          .toLowerCase();
+
+
+      const errorCode =
+        getActivityMetadataString(
+          item,
+          "errorCode"
+        )
+          ?.toUpperCase() ??
+        "";
+
+
+      const attemptCount =
+        getActivityMetadataNumber(
+          item,
+          "attemptCount"
+        );
+
+
+      const maxAttempts =
+        getActivityMetadataNumber(
+          item,
+          "maxAttempts"
+        );
+
+
+      const nextAttemptAt =
+        getActivityMetadataString(
+          item,
+          "nextAttemptAt"
+        );
+
+
+      /*
+       * Bereits vom bestehenden Worker verwaltet.
+       * Keine menschliche Aufgabe erzeugen.
+       */
+
+      const automaticRetryScheduled =
+        item.kind ===
+          "portal.retry_scheduled" ||
+        item.kind ===
+          "portal.retry_queued" ||
+        item.kind ===
+          "portal.retry_processing" ||
+        (
+          item.status ===
+            "failed" &&
+          Boolean(
+            nextAttemptAt
+          ) &&
+          (
+            attemptCount ===
+              null ||
+            maxAttempts ===
+              null ||
+            attemptCount <
+              maxAttempts
+          )
+        );
+
+
+      if (
+        automaticRetryScheduled
+      ) {
+        return {
+          mode:
+            "auto_retry" as const,
+
+          resolution:
+            nextAttemptAt
+              ? "Inserat-AI hat bereits einen automatischen neuen Veröffentlichungsversuch geplant."
+              : "Inserat-AI verarbeitet den automatischen Wiederholungsversuch.",
+
+          label:
+            "Automatischer Retry",
+        };
+      }
+
+
+      /*
+       * Unklarer Providerzustand:
+       * niemals blind nochmals publishen.
+       */
+
+      if (
+        errorCode ===
+          "PORTAL_RECONCILIATION_REQUIRED" ||
+        errorCode ===
+          "PORTAL_OPERATION_AMBIGUOUS" ||
+        /reconciliation required|abgleich erforderlich|statusabgleich/.test(
+          problemText
+        )
+      ) {
+        return {
+          mode:
+            "reconcile" as const,
+
+          resolution:
+            "Der externe Portalzustand ist nicht eindeutig. Zuerst den Portalstatus abgleichen; nicht blind erneut veröffentlichen.",
+
+          label:
+            "Status abgleichen",
+        };
+      }
+
+
+      /*
+       * Retry-Budget vollständig verbraucht.
+       */
+
+      const attemptsAreExhausted =
+        item.status ===
+          "failed" &&
+        attemptCount !==
+          null &&
+        maxAttempts !==
+          null &&
+        attemptCount >=
+          maxAttempts &&
+        !nextAttemptAt;
+
+
+      if (
+        attemptsAreExhausted
+      ) {
+        return {
+          mode:
+            "exhausted" as const,
+
+          resolution:
+            `Inserat-AI hat ${attemptCount} von ${maxAttempts} automatischen Versuchen verwendet. Der Fehler muss jetzt geprüft werden.`,
+
+          label:
+            "Fehler prüfen",
+        };
+      }
+
+
+      /*
+       * Externe bzw. technische Freigabe fehlt.
+       */
+
+      if (
+        [
+          "PORTAL_PRODUCTION_NOT_ENABLED",
+          "PORTAL_TRANSPORT_NOT_ENABLED",
+          "PORTAL_DRY_RUN_PROVIDER_MISSING",
+          "PORTAL_PROVIDER_UNSUPPORTED",
+          "WG_GESUCHT_DE_ACCESS_GATE_BROKEN",
+        ].includes(
+          errorCode
+        )
+      ) {
+        return {
+          mode:
+            "provider_action" as const,
+
+          resolution:
+            "Für dieses Ziel fehlt noch eine externe oder technische Publishing-Freigabe. Inserat-AI darf hier nicht automatisch weiterpublizieren.",
+
+          label:
+            "Freigabe prüfen",
+        };
+      }
+
+
+      /*
+       * Verbindung / Benutzerzugang benötigt Aktion.
+       */
+
+      if (
+        [
+          "PORTAL_CONNECTION_NOT_FOUND",
+          "PORTAL_CONNECTION_NOT_VERIFIED",
+          "PORTAL_CONNECTION_NOT_READY",
+          "OAUTH_ACCESS_REQUIRED",
+          "TEMPORARY_OAUTH_ACCESS_REQUIRED",
+          "INVALID_OAUTH_CALLBACK",
+          "INVALID_OR_EXPIRED_OAUTH_FLOW",
+          "PORTAL_LISTING_NOT_UNLOCKED",
+          "INVALID_PORTAL_CONFIGURATION",
+        ].includes(
+          errorCode
+        )
+      ) {
+        return {
+          mode:
+            "user_action" as const,
+
+          resolution:
+            "Portal-Verbindung bzw. Zugangsdaten prüfen und bei Bedarf neu verbinden.",
+
+          label:
+            "Verbindung prüfen",
+        };
+      }
+
+
+      /*
+       * Text-Fallback für Provider-/Freigabefehler.
+       */
+
+      if (
+        /403|forbidden|berechtigung|permission|freischalt|nicht freigeschaltet/.test(
+          problemText
+        )
+      ) {
+        return {
+          mode:
+            "provider_action" as const,
+
+          resolution:
+            "Portal-Freigabe oder Publish-Berechtigung prüfen und die Verbindung danach erneut verifizieren.",
+
+          label:
+            "Freigabe prüfen",
+        };
+      }
+
+
+      /*
+       * Text-Fallback für Verbindungsfehler.
+       */
+
+      if (
+        /401|unauthorized|oauth|access token|token expired|credentials?|zugangsdaten|passwort|password|not verified|not connected|connection is not verified|connection not verified|verbindung nicht verifiziert|verbindung nicht bestätigt|nicht verbunden/.test(
+          problemText
+        )
+      ) {
+        return {
+          mode:
+            "user_action" as const,
+
+          resolution:
+            "Portal-Verbindung bzw. Zugangsdaten prüfen und bei Bedarf neu verbinden.",
+
+          label:
+            "Verbindung prüfen",
+        };
+      }
+
+
+      if (
+        /pflichtfeld|required field|field is required|postalcode|postal code|plz fehlt|missing field/.test(
+          problemText
+        )
+      ) {
+        return {
+          mode:
+            "user_action" as const,
+
+          resolution:
+            "Das fehlende Pflichtfeld im Objekt ergänzen und die Veröffentlichung danach erneut vorbereiten.",
+
+          label:
+            "Objektdaten prüfen",
+        };
+      }
+
+
+      /*
+       * Rate Limit / Netzwerk:
+       * Nur dann AUTO, wenn der Worker tatsächlich
+       * nextAttemptAt gesetzt hat. Sonst keine
+       * automatische Behauptung.
+       */
+
+      if (
+        /429|rate limit|too many requests/.test(
+          problemText
+        )
+      ) {
+        return {
+          mode:
+            "user_action" as const,
+
+          resolution:
+            "Das Portal begrenzt gerade Anfragen. Portaljob und Retry-Status prüfen.",
+
+          label:
+            "Retry prüfen",
+        };
+      }
+
+
+      if (
+        /timeout|timed out|network|netzwerk|connection refused|econn/.test(
+          problemText
+        )
+      ) {
+        return {
+          mode:
+            "user_action" as const,
+
+          resolution:
+            "Transportstatus prüfen. Wenn der Worker einen Retry geplant hat, übernimmt Inserat-AI den nächsten Versuch automatisch.",
+
+          label:
+            "Transport prüfen",
+        };
+      }
+
+
+      if (
+        /404|not found/.test(
+          problemText
+        )
+      ) {
+        return {
+          mode:
+            "provider_action" as const,
+
+          resolution:
+            "Der angefragte Portal-Endpunkt oder Publishing-Kanal wurde nicht gefunden. Zugang und Publish-Konfiguration prüfen.",
+
+          label:
+            "Portalzugang prüfen",
+        };
+      }
+
+
+      return {
+        mode:
+          "user_action" as const,
+
+        resolution:
+          "Portalstatus öffnen, die angezeigte Fehlermeldung prüfen und die betroffene Veröffentlichung korrigieren.",
+
+        label:
+          "Problem prüfen",
+      };
+    };
+
+  const rawUrgentActivityCandidates =
+    marketActivitySourceItems
+      .filter(
+        (item) =>
+          item.kind !== "views" &&
+          (
+            item.severity === "error" ||
+            item.status === "action_required" ||
+            item.status === "failed" ||
+            item.kind.endsWith(".action_required") ||
+            item.kind.endsWith(".failed") ||
+            item.kind === "portal.retry_scheduled" ||
+            item.kind === "portal.retry_queued" ||
+            item.kind === "portal.retry_processing"
+          )
+      );
+
+
+  /*
+   * Echte immutable Resolution Events
+   * entfernen nur ältere Probleme mit
+   * derselben Job-/Run-Identität.
+   */
+  const urgentActivityCandidates =
+    suppressResolvedPortalProblems(
+      rawUrgentActivityCandidates,
+      marketActivitySourceItems
+    );
+
+
+  const classifiedUrgentActivityCandidates =
+    urgentActivityCandidates
+      .map(
+        (item) => ({
+          item,
+
+          resolution:
+            getProblemResolution(
+              item
+            ),
+        })
+      );
+
+
+  /*
+   * Ein spezifischer Portal-/Target-Zustand
+   * unterdrückt weiterhin den generischen
+   * Publication-Fehler.
+   *
+   * Das gilt auch bei AUTO-RETRY:
+   * Wir wollen nicht aus einem automatisch
+   * behandelten Fehler indirekt wieder eine
+   * menschliche Aufgabe machen.
+   */
+
+  /*
+   * COMMAND_CENTER_AUTO_RETRY_IDENTITY_V1
+   *
+   * PublicationTarget.metadata.portalJobId
+   * wird mit
+   * PortalPublishJob.metadata.jobId
+   * verbunden.
+   *
+   * Nur derselbe Portal-Job wird aus
+   * menschlichen Aufgaben entfernt.
+   */
+
+  const automaticRetryJobIds =
+    new Set(
+      classifiedUrgentActivityCandidates
+        .filter(
+          ({ resolution }) =>
+            resolution.mode ===
+              "auto_retry"
+        )
+        .map(
+          ({ item }) =>
+            getActivityMetadataString(
+              item,
+              "jobId"
+            )
+        )
+        .filter(
+          (
+            jobId
+          ): jobId is string =>
+            Boolean(
+              jobId
+            )
+        )
+    );
+
+
+  /*
+   * COMMAND_CENTER_AUTOMATION_STATUS_V1
+   *
+   * Automatische Worker-Aktionen werden
+   * sichtbar gemacht, aber niemals als
+   * menschliche CTA ausgegeben.
+   */
+  const automaticRetryListingIds =
+    new Set(
+      classifiedUrgentActivityCandidates
+        .filter(
+          ({ resolution }) =>
+            resolution.mode ===
+              "auto_retry"
+        )
+        .map(
+          ({ item }) =>
+            item.listingId
+        )
+    );
+
+
+  const automaticWorkItems =
+    classifiedUrgentActivityCandidates
+      .filter(
+        ({ resolution }) =>
+          resolution.mode ===
+            "auto_retry"
+      )
+      .map(
+        ({
+          item,
+          resolution,
+        }) => ({
+          id:
+            item.id ??
+            `auto:${item.listingId}:${item.latestAt}`,
+
+          listingId:
+            item.listingId,
+
+          title:
+            item.title ??
+            item.listingLabel,
+
+          description:
+            resolution.resolution,
+
+          latestAt:
+            item.latestAt,
+        })
+      )
+      .slice(
+        0,
+        3
+      );
+
+
+  const isCoveredByAutomaticRetry =
+    (
+      item:
+        DailyActivityItem
+    ):
+      boolean => {
+
+      const portalJobId =
+        getActivityMetadataString(
+          item,
+          "portalJobId"
+        );
+
+      if (!portalJobId) {
+        return false;
+      }
+
+      return automaticRetryJobIds.has(
+        portalJobId
+      );
+    };
+
+
+  const specificUrgentListingIds =
+    new Set(
+      classifiedUrgentActivityCandidates
+        .filter(
+          ({ item }) =>
+            item.kind !==
+              "publication.action_required"
+        )
+        .map(
+          ({ item }) =>
+            item.listingId
+        )
+    );
+
+
+  const urgentActivityActions =
+    classifiedUrgentActivityCandidates
+      .filter(
+        ({
+          item,
+          resolution,
+        }) =>
+          resolution.mode !==
+            "auto_retry" &&
+
+          !isCoveredByAutomaticRetry(
+            item
+          ) &&
+
+          (
+            item.kind !==
+              "publication.action_required" ||
+            !specificUrgentListingIds.has(
+              item.listingId
+            )
+          )
+      )
+      .map(
+        ({
+          item,
+          resolution,
+        }) => ({
+          id:
+            item.id ??
+            `${item.kind}:${item.listingId}:${item.latestAt}`,
+
+          listingId:
+            item.listingId,
+
+          tone:
+            "red" as const,
+
+          eyebrow:
+            resolution.mode ===
+              "reconcile"
+              ? "Statusabgleich erforderlich"
+              : resolution.mode ===
+                    "provider_action"
+                ? "Externe Freigabe erforderlich"
+                : resolution.mode ===
+                      "exhausted"
+                  ? "Automatische Versuche beendet"
+                  : "Aktion erforderlich",
+
+          title:
+            item.title ??
+            item.listingLabel,
+
+          description:
+            item.message ??
+            "Dieser Vorgang benötigt deine Aufmerksamkeit.",
+
+          resolution:
+            resolution.resolution,
+
+          href:
+            item.href ||
+            `/cockpit/${item.listingId}#portal-publishing`,
+
+          label:
+            resolution.label,
+
+          execution:
+            resolveCommandCenterAction({
+              mode:
+                resolution.mode,
+
+              listingId:
+                item.listingId,
+
+              errorCode:
+                getActivityMetadataString(
+                  item,
+                  "errorCode"
+                ),
+
+              runId:
+                getActivityMetadataString(
+                  item,
+                  "runId"
+                ),
+
+              label:
+                resolution.label,
+            }),
+        })
+      );
+
+  const urgentListingIds =
+    new Set(
+      urgentActivityActions.map(
+        (action) =>
+          action.listingId
+      )
+    );
+
+
+  const completionActions =
+    actionNeededListings
+      .filter(
+        (listing) =>
+          !urgentListingIds.has(
+            listing.id
+          ) &&
+          !automaticRetryListingIds.has(
+            listing.id
+          )
+      )
+      .map(
+        (listing) => {
+
+          const missingText =
+            !hasGeneratedVariants(
+              listing.generatedVariants
+            );
+
+          const missingImages =
+            listing.images.length === 0;
+
+          const description =
+            missingText &&
+            missingImages
+              ? "Inseratstext und Bilder fehlen noch."
+              : missingText
+                ? "Der Inseratstext muss noch erstellt werden."
+                : missingImages
+                  ? "Für dieses Objekt fehlen noch Bilder."
+                  : "Das Objekt muss noch vervollständigt werden.";
+
+          return {
+            id:
+              `completion:${listing.id}`,
+
+            listingId:
+              listing.id,
+
+            tone:
+              "orange" as const,
+
+            eyebrow:
+              "Objekt vervollständigen",
+
+            title:
+              listing.projectName?.trim() ||
+              `${listing.propertyType} in ${listing.location}`,
+
+            description,
+
+            resolution:
+              missingText &&
+              missingImages
+                ? "Inseratstext erzeugen und mindestens ein Objektbild ergänzen."
+                : missingText
+                  ? "Inseratstext erzeugen und das Objekt anschließend erneut prüfen."
+                  : missingImages
+                    ? "Mindestens ein Objektbild ergänzen und danach erneut prüfen."
+                    : "Fehlende Objektdaten vervollständigen.",
+
+            href:
+              `/cockpit/${listing.id}/edit`,
+
+            label:
+              "Objekt fertigstellen",
+
+            execution:
+              createCommandCenterNavigationAction({
+                id:
+                  "OPEN_LISTING",
+
+                listingId:
+                  listing.id,
+
+                href:
+                  `/cockpit/${listing.id}/edit`,
+              }),
+          };
+        }
+      );
+
+
+  const reviewActions =
+    readyForReviewListings
+      .filter(
+        (listing) =>
+          !urgentListingIds.has(
+            listing.id
+          ) &&
+          !automaticRetryListingIds.has(
+            listing.id
+          )
+      )
+      .map(
+        (listing) => ({
+          id:
+            `review:${listing.id}`,
+
+          listingId:
+            listing.id,
+
+          tone:
+            "blue" as const,
+
+          eyebrow:
+            "Zur Prüfung bereit",
+
+          title:
+            listing.projectName?.trim() ||
+            `${listing.propertyType} in ${listing.location}`,
+
+          description:
+            "Objektpaket ist vorbereitet. Veröffentlichung prüfen und freigeben.",
+
+          resolution:
+            "Objektpaket und Zielportale prüfen und anschließend die Veröffentlichung freigeben.",
+
+          href:
+            `/cockpit/${listing.id}#portal-publishing`,
+
+          label:
+            "Veröffentlichung prüfen",
+
+          execution:
+            createCommandCenterNavigationAction({
+              id:
+                "PREPARE_PUBLICATION",
+
+              listingId:
+                listing.id,
+
+              href:
+                `/cockpit/${listing.id}#portal-publishing`,
+            }),
+        })
+      );
+
+
+  const priorityActions =
+    [
+      ...urgentActivityActions,
+      ...completionActions,
+      ...reviewActions,
+    ].slice(
+      0,
+      3
+    );
 
   const heroImage =
     sortedListings
@@ -548,6 +2264,155 @@ export default function CockpitOverviewV2({
     showAll
       ? filteredListings
       : filteredListings.slice(0, 3);
+
+  async function setListingArchived(
+    listing:
+      CockpitListing,
+    archived:
+      boolean
+  ) {
+
+    if (
+      listingActionId
+    ) {
+      return;
+    }
+
+
+    try {
+
+      setListingActionId(
+        listing.id
+      );
+
+      setListingActionMessage(
+        ""
+      );
+
+      setListingActionError(
+        false
+      );
+
+
+      const response =
+        await fetch(
+          `/api/listings/${encodeURIComponent(
+            listing.id
+          )}`,
+          {
+            method:
+              "POST",
+
+            credentials:
+              "include",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body:
+              JSON.stringify({
+                archived,
+              }),
+          }
+        );
+
+
+      if (
+        response.status ===
+        401
+      ) {
+        window.location.href =
+          "/login";
+
+        return;
+      }
+
+
+      const data =
+        await response
+          .json()
+          .catch(
+            () => ({})
+          );
+
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+        throw new Error(
+          typeof data.error ===
+            "string"
+            ? data.error
+            : "Objekt konnte nicht aktualisiert werden."
+        );
+      }
+
+
+      const serverArchivedAt =
+        typeof data.listing
+          ?.archivedAt ===
+          "string"
+          ? data.listing.archivedAt
+          : null;
+
+
+      setLocalListings(
+        (current) =>
+          current.map(
+            (item) =>
+              item.id ===
+                listing.id
+                ? {
+                    ...item,
+
+                    archivedAt:
+                      archived
+                        ? (
+                            serverArchivedAt ||
+                            new Date()
+                              .toISOString()
+                          )
+                        : null,
+                  }
+                : item
+          )
+      );
+
+
+      setListingActionMessage(
+        archived
+          ? trashLabels.moved
+          : trashLabels.restored
+      );
+
+    }
+    catch (
+      actionError
+    ) {
+
+      setListingActionError(
+        true
+      );
+
+      setListingActionMessage(
+        actionError instanceof
+          Error
+          ? actionError.message
+          : "Objekt konnte nicht aktualisiert werden."
+      );
+
+    }
+    finally {
+
+      setListingActionId(
+        null
+      );
+    }
+  }
+
 
   const formatPrice = (
     price: number | null
@@ -693,6 +2558,146 @@ export default function CockpitOverviewV2({
             };
 
 
+  const trashLabels =
+    locale === "it"
+      ? {
+          trash:
+            "Cestino",
+          objects:
+            "Immobili",
+          move:
+            "Sposta nel cestino",
+          restore:
+            "Ripristina",
+          confirm:
+            "Spostare questo immobile nel cestino?",
+          moved:
+            "Immobile spostato nel cestino.",
+          restored:
+            "Immobile ripristinato.",
+          empty:
+            "Il cestino è vuoto.",
+        }
+      : locale === "fr"
+        ? {
+            trash:
+              "Corbeille",
+            objects:
+              "Biens",
+            move:
+              "Mettre à la corbeille",
+            restore:
+              "Restaurer",
+            confirm:
+              "Déplacer ce bien dans la corbeille ?",
+            moved:
+              "Bien placé dans la corbeille.",
+            restored:
+              "Bien restauré.",
+            empty:
+              "La corbeille est vide.",
+          }
+        : locale === "en"
+          ? {
+              trash:
+                "Trash",
+              objects:
+                "Properties",
+              move:
+                "Move to trash",
+              restore:
+                "Restore",
+              confirm:
+                "Move this property to the trash?",
+              moved:
+                "Property moved to trash.",
+              restored:
+                "Property restored.",
+              empty:
+                "The trash is empty.",
+            }
+          : {
+              trash:
+                "Papierkorb",
+              objects:
+                "Objekte",
+              move:
+                "In Papierkorb",
+              restore:
+                "Wiederherstellen",
+              confirm:
+                "Dieses Objekt in den Papierkorb verschieben?",
+              moved:
+                "Objekt wurde in den Papierkorb verschoben.",
+              restored:
+                "Objekt wurde wiederhergestellt.",
+              empty:
+                "Der Papierkorb ist leer.",
+            };
+
+
+  const trashDialogLabels =
+    locale === "it"
+      ? {
+          eyebrow:
+            "INSERAT-AI SICUREZZA",
+          title:
+            "Spostare nel cestino?",
+          description:
+            "L'immobile viene rimosso dalla vista attiva, ma non viene cancellato definitivamente.",
+          safety:
+            "Puoi ripristinarlo in qualsiasi momento dal cestino.",
+          cancel:
+            "Annulla",
+          confirm:
+            "Sposta nel cestino",
+        }
+      : locale === "fr"
+        ? {
+            eyebrow:
+              "SÉCURITÉ INSERAT-AI",
+            title:
+              "Déplacer vers la corbeille ?",
+            description:
+              "Le bien disparaît de la vue active, mais n'est pas supprimé définitivement.",
+            safety:
+              "Vous pourrez le restaurer à tout moment depuis la corbeille.",
+            cancel:
+              "Annuler",
+            confirm:
+              "Mettre à la corbeille",
+          }
+        : locale === "en"
+          ? {
+              eyebrow:
+                "INSERAT-AI SAFETY",
+              title:
+                "Move to trash?",
+              description:
+                "The property disappears from your active workspace but is not permanently deleted.",
+              safety:
+                "You can restore it at any time from the trash.",
+              cancel:
+                "Cancel",
+              confirm:
+                "Move to trash",
+            }
+          : {
+              eyebrow:
+                "INSERAT-AI SICHERHEIT",
+              title:
+                "Objekt in den Papierkorb?",
+              description:
+                "Das Objekt verschwindet aus deinem aktiven Arbeitsbereich, wird aber nicht endgültig gelöscht.",
+              safety:
+                "Du kannst es jederzeit aus dem Papierkorb wiederherstellen.",
+              cancel:
+                "Abbrechen",
+              confirm:
+                "In Papierkorb",
+            };
+
+
   const todayLabel =
     locale === "it"
       ? "Oggi"
@@ -701,6 +2706,11 @@ export default function CockpitOverviewV2({
       : locale === "en"
       ? "Today"
       : "Heute";
+
+
+  const [portalNavOpen, setPortalNavOpen] =
+    useState(true);
+
 
   const navItems: Array<{
     key:
@@ -733,16 +2743,146 @@ export default function CockpitOverviewV2({
       label: labels.marketing,
       href: "/marketing-hub",
     },
-    {
-      key: "finance",
-      icon: "finance",
-      label: labels.finance,
-      href: "/finanzierung",
-    },
   ];
 
   return (
     <div className="v2Shell">
+
+      {trashConfirmListing && (
+        <div
+          className="iaTrashConfirmBackdrop"
+          role="presentation"
+          onMouseDown={() =>
+            setTrashConfirmListing(
+              null
+            )
+          }
+        >
+          <section
+            className="iaTrashConfirmDialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ia-trash-title"
+            onMouseDown={(event) =>
+              event.stopPropagation()
+            }
+          >
+            <div className="iaTrashConfirmGlow" />
+
+            <div className="iaTrashConfirmBrand">
+              <span className="iaTrashConfirmMark">
+                <svg
+                  viewBox="0 0 32 32"
+                  aria-hidden="true"
+                >
+                  <path d="M4 15.5 16 4l12 11.5" />
+                  <path d="M8 14v13" />
+                  <path d="M24 14v13" />
+                  <path d="M11 27h10" />
+                  <path d="M10 19h12" />
+                </svg>
+              </span>
+
+              <div>
+                <span>
+                  {trashDialogLabels.eyebrow}
+                </span>
+
+                <strong>
+                  Inserat-AI
+                </strong>
+              </div>
+            </div>
+
+
+            <div className="iaTrashConfirmIcon">
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path d="M4 7h16" />
+                <path d="M9 7V4h6v3" />
+                <path d="M7 7l1 13h8l1-13" />
+                <path d="M10 11v5" />
+                <path d="M14 11v5" />
+              </svg>
+            </div>
+
+
+            <div className="iaTrashConfirmCopy">
+              <h2 id="ia-trash-title">
+                {trashDialogLabels.title}
+              </h2>
+
+              <strong className="iaTrashObjectName">
+                {trashConfirmListing
+                  .projectName
+                  ?.trim() ||
+                  `${trashConfirmListing.propertyType} in ${trashConfirmListing.location}`}
+              </strong>
+
+              <p>
+                {trashDialogLabels.description}
+              </p>
+            </div>
+
+
+            <div className="iaTrashSafety">
+              <span aria-hidden="true">
+                ✓
+              </span>
+
+              <p>
+                {trashDialogLabels.safety}
+              </p>
+            </div>
+
+
+            <div className="iaTrashConfirmActions">
+
+              <button
+                type="button"
+                className="iaTrashCancel"
+                onClick={() =>
+                  setTrashConfirmListing(
+                    null
+                  )
+                }
+              >
+                {trashDialogLabels.cancel}
+              </button>
+
+
+              <button
+                type="button"
+                className="iaTrashConfirm"
+                onClick={() => {
+
+                  const listing =
+                    trashConfirmListing;
+
+                  setTrashConfirmListing(
+                    null
+                  );
+
+                  void setListingArchived(
+                    listing,
+                    true
+                  );
+                }}
+              >
+                <span aria-hidden="true">
+                  🗑
+                </span>
+
+                {trashDialogLabels.confirm}
+              </button>
+
+            </div>
+          </section>
+        </div>
+      )}
+
       <aside className="v2Sidebar v2SidebarPremium">
         <Link
           href="/"
@@ -848,6 +2988,101 @@ export default function CockpitOverviewV2({
               </span>
             </Link>
           ))}
+
+          {isGerman ? (
+            <div className="v2PortalNavGroup">
+              <button
+                type="button"
+                className="v2NavItem v2PortalNavToggle"
+                onClick={() =>
+                  setPortalNavOpen(
+                    (current) =>
+                      !current
+                  )
+                }
+                aria-expanded={portalNavOpen}
+              >
+                <span className="v2NavIcon">
+                  <SidebarIcon
+                    name="connect"
+                  />
+                </span>
+
+                <span className="v2NavLabel">
+                  Portale
+                </span>
+
+                <span
+                  className={
+                    portalNavOpen
+                      ? "v2PortalNavArrow open"
+                      : "v2PortalNavArrow"
+                  }
+                  aria-hidden="true"
+                >
+                  ›
+                </span>
+              </button>
+
+              {portalNavOpen ? (
+                <div className="v2PortalSubnav">
+                  <div className="v2PortalCountry">
+                    Deutschland
+                  </div>
+
+                  <Link
+                    href="/cockpit#portale"
+                    className="v2PortalSubitem"
+                  >
+                    ImmoScout24 DE
+                  </Link>
+
+                  <Link
+                    href="/cockpit#portale"
+                    className="v2PortalSubitem"
+                  >
+                    Immowelt
+                  </Link>
+
+                  <Link
+                    href="/cockpit#portale"
+                    className="v2PortalSubitem"
+                  >
+                    Kleinanzeigen
+                  </Link>
+
+                  <Link
+                    href="/cockpit#portale"
+                    className="v2PortalSubitem"
+                  >
+                    Immobilien.de
+                  </Link>
+
+                  <Link
+                    href="/cockpit#portale"
+                    className="v2PortalSubitem"
+                  >
+                    WG-Gesucht
+                  </Link>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
+          <Link
+            href="/finanzierung"
+            className="v2NavItem"
+          >
+            <span className="v2NavIcon">
+              <SidebarIcon
+                name="finance"
+              />
+            </span>
+
+            <span className="v2NavLabel">
+              {labels.finance}
+            </span>
+          </Link>
         </nav>
 
         <div className="v2SidebarBottom">
@@ -933,607 +3168,1547 @@ export default function CockpitOverviewV2({
           </div>
         </header>
 
-        <main className="v2Content">
-          <section className="v2Hero v2HeroBrand">
-            <div className="v2HeroCopy">
-              <span className="v2Eyebrow">
+        {/* COCKPIT_V3_CLEAN */}
+          <CockpitOverviewV3View
+            market={market}
+            displayName={displayName}
+            activeCount={activeCount}
+            readyCount={readyForReviewListings.length}
+            actionCount={actionNeededListings.length}
+            viewsToday={
+              analyticsLoading
+                ? null
+                : analyticsData.viewsToday
+            }
+            primaryAction={
+              primaryActionListing
+                ? {
+                    id:
+                      primaryActionListing.id,
+
+                    title:
+                      primaryActionListing
+                        .projectName
+                        ?.trim() ||
+                      `${primaryActionListing.propertyType} in ${primaryActionListing.location}`,
+
+                    location:
+                      primaryActionListing.location,
+
+                    postalCode:
+                      primaryActionListing.postalCode,
+
+                    rooms:
+                      primaryActionListing.rooms,
+
+                    livingArea:
+                      primaryActionListing.livingArea,
+
+                    imageUrl:
+                      primaryActionListing.images
+                        ?.find(
+                          (image) =>
+                            image.isPrimary
+                        )
+                        ?.url ??
+                      primaryActionListing.images?.[0]?.url ??
+                      null,
+
+                    href:
+                      primaryActionHref,
+
+                    label:
+                      primaryActionLabel,
+                  }
+                : null
+            }
+            automaticWorkItems={automaticWorkItems}
+            resolvedWorkItems={resolvedWorkItems}
+            priorityActions={priorityActions}
+            activityItems={marketActivityItems}
+            activityLoading={dailyActivityLoading}
+            activityError={dailyActivityError}
+            listings={marketListings}
+          />
+
+
+          <main className="v2Content v2LegacyHidden">
+          {/* ONE_SCREEN_COCKPIT_V25 */}
+          {/* PREMIUM_COCKPIT_V26 */}
+          <section className="v26PremiumHero">
+            <div className="v26HeroCopy">
+              <span className="v26HeroEyebrow">
                 {market === "DE"
                   ? "INSERAT-AI DEUTSCHLAND"
                   : "INSERAT-AI SCHWEIZ"}
               </span>
 
-              <h1>
-                {labels.welcome},
-                <br />
-                {displayName}!
-              </h1>
+              <div className="v26HeroTitleRow">
+                <h1>
+                  {labels.welcome}, {displayName}
+                </h1>
+
+                <span className="v26HeroStatus">
+                  <span />
+                  {activeCount} aktiv
+                </span>
+              </div>
 
               <p>
-                {labels.heroText}
+                Mehr Reichweite. Mehr Anfragen.
+                Mit KI zu besseren Inseraten.
               </p>
+            </div>
 
-              <div className="v2HeroActions">
+
+            <div className="v26HeroRight">
+              <div className="v26HeroScene">
+                <span>
+                  Immobilien
+                  <br />
+                  haben Zukunft.
+                </span>
+
+                <div className="v26Mountain v26MountainBack" />
+                <div className="v26Mountain v26MountainFront" />
+
+                <div className="v26SwissFlag">
+                  +
+                </div>
+              </div>
+
+
+              <div className="v26HeroActions">
                 <Link
                   href="/dashboard"
-                  className="v2PrimaryButton"
+                  className="v26HeroPrimary"
+                  style={{
+                    display: "inline-flex",
+                    background:
+                      "linear-gradient(135deg,#ffd44d,#ff9e1b)",
+                    color:
+                      "#111827",
+                    boxShadow:
+                      "0 12px 30px rgba(255,158,27,.35)",
+                    border:
+                      "1px solid rgba(255,190,48,.55)",
+                  }}
                 >
-                  <span>＋</span>
-                  {labels.create}
+                  <span className="v28CtaIcon">
+                    ＋
+                  </span>
+
+                  <span className="v28CtaText">
+                    Neues Objekt
+                  </span>
                 </Link>
 
                 <a
-                  href="#v2-objects"
-                  className="v2SecondaryButton"
+                  href="#batch-publishing"
+                  className="v26HeroSecondary"
                 >
-                  {labels.myObjects}
+                  Veröffentlichen →
                 </a>
               </div>
             </div>
-
-            <div className="v2HeroInsight">
-              <span className="v2InsightIcon">
-                ▥
-              </span>
-
-              <strong>
-                {activeCount}
-              </strong>
-
-              <span>
-                {labels.active}
-              </span>
-
-              <p>
-                {isGerman
-                  ? "Alle wichtigen Immobilien und Marketing-Werkzeuge an einem Ort."
-                  : labels.heroText}
-              </p>
-            </div>
           </section>
 
-          <section className="v2Stats">
-            <article>
-              <span className="v2StatIcon blue">
-                ▣
-              </span>
-              <div>
-                <strong>
-                  {marketListings.length}
-                </strong>
-                <span>
-                  {labels.totalObjects}
-                </span>
-              </div>
-            </article>
-
-            <article>
-              <span className="v2StatIcon violet">
-                ▤
-              </span>
-              <div>
-                <strong>
-                  {generatedCount}
-                </strong>
-                <span>
-                  {labels.generated}
-                </span>
-              </div>
-            </article>
-
-            <article>
-              <span className="v2StatIcon green">
-                ✓
-              </span>
-              <div>
-                <strong>
-                  {activeCount}
-                </strong>
-                <span>
-                  {labels.active}
-                </span>
-              </div>
-            </article>
-
-            <article>
-              <span className="v2StatIcon gray">
-                ◫
-              </span>
-              <div>
-                <strong>
-                  {archivedCount}
-                </strong>
-                <span>
-                  {labels.archived}
-                </span>
-              </div>
-            </article>
-          </section>
-
-          <section className="v2Performance">
-            <div className="v2SectionHeader">
+          {/* DAILY_COCKPIT_V22 */}
+          <section className="v22Daily">
+            <div className="v22DailyHeader">
               <div>
                 <span className="v2Eyebrow dark">
-                  ANALYTICS
+                  HEUTE
                 </span>
 
                 <h2>
-                  Objekt-Performance
+                  Dein Arbeitstag auf einen Blick
                 </h2>
+
+                <p>
+                  Die wichtigsten Objekte, Aufgaben und Aktivitäten – ohne Umwege.
+                </p>
               </div>
 
-              <span className="v2PerformancePeriod">
-                Letzte 30 Tage
-              </span>
+              <div className="v26TodayStatus">
+                <span className="v26TodaySun">
+                  ☀
+                </span>
+
+                <span>
+                  <strong>
+                    {new Date().toLocaleDateString(
+                      locale === "it"
+                        ? "it-CH"
+                        : "de-CH",
+                      {
+                        weekday: "long",
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                      }
+                    )}
+                  </strong>
+
+                  <small>
+                    Schön, dass du da bist!
+                  </small>
+                </span>
+              </div>
             </div>
 
-            {analyticsError ? (
-              <div className="v2PerformanceError">
-                {analyticsError}
-              </div>
-            ) : (
-              <div className="v2PerformanceLayout">
-                <div className="v2PerformanceMain">
-                  <div className="v2PerformanceKpis">
-                    <article>
-                      <span className="v2PerformanceIcon blue">
-                        ◉
-                      </span>
 
-                      <div>
-                        <strong>
-                          {analyticsLoading
-                            ? "–"
-                            : analyticsData.totalViews30d}
-                        </strong>
+            <div className="v22KpiGrid">
+              <article>
+                <span className="v22KpiIcon blue">
+                  ▣
+                </span>
 
-                        <span>
-                          Aufrufe
-                        </span>
-                      </div>
-                    </article>
+                <div>
+                  <strong>
+                    {activeCount}
+                  </strong>
 
-                    <article>
-                      <span className="v2PerformanceIcon violet">
-                        ◎
-                      </span>
+                  <span>
+                    Aktive Objekte
+                  </span>
 
-                      <div>
-                        <strong>
-                          {analyticsLoading
-                            ? "–"
-                            : analyticsData.uniqueVisitors30d}
-                        </strong>
-
-                        <span>
-                          Besucher
-                        </span>
-                      </div>
-                    </article>
-
-                    <article>
-                      <span className="v2PerformanceIcon green">
-                        ↗
-                      </span>
-
-                      <div>
-                        <strong>
-                          {analyticsLoading
-                            ? "–"
-                            : analyticsData.views7d}
-                        </strong>
-
-                        <span>
-                          Letzte 7 Tage
-                        </span>
-                      </div>
-                    </article>
-
-                    <article>
-                      <span className="v2PerformanceIcon gold">
-                        ●
-                      </span>
-
-                      <div>
-                        <strong>
-                          {analyticsLoading
-                            ? "–"
-                            : analyticsData.viewsToday}
-                        </strong>
-
-                        <span>
-                          Heute
-                        </span>
-                      </div>
-                    </article>
-                  </div>
-
-                  <div className="v2ChartCard">
-                    <div className="v2ChartHeader">
-                      <div>
-                        <strong>
-                          Aufrufe im Verlauf
-                        </strong>
-
-                        <span>
-                          Letzte 7 Tage
-                        </span>
-                      </div>
-
-                      <span className="v2ChartTotal">
-                        {analyticsData.views7d}
-                      </span>
-                    </div>
-
-                    {analyticsLoading ? (
-                      <div className="v2ChartLoading">
-                        Statistiken werden geladen…
-                      </div>
-                    ) : analyticsData.daily7d.length === 0 ? (
-                      <div className="v2ChartEmpty">
-                        Noch keine Aufrufe erfasst.
-                      </div>
-                    ) : (
-                      <div className="v2MiniChart">
-                        {analyticsData.daily7d.map(
-                          (item) => (
-                            <div
-                              key={item.date}
-                              className="v2MiniChartColumn"
-                            >
-                              <div className="v2MiniChartValue">
-                                {item.views}
-                              </div>
-
-                              <div className="v2MiniChartTrack">
-                                <div
-                                  className="v2MiniChartBar"
-                                  style={{
-                                    height:
-                                      `${
-                                        Math.max(
-                                          8,
-                                          (
-                                            item.views /
-                                            maxDailyViews
-                                          ) * 100
-                                        )
-                                      }%`,
-                                  }}
-                                />
-                              </div>
-
-                              <span>
-                                {formatAnalyticsDate(
-                                  item.date
-                                )}
-                              </span>
-                            </div>
-                          )
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  <small>
+                    aktuell im Bestand
+                  </small>
                 </div>
+              </article>
 
-                <aside className="v2TopObjects">
-                  <div className="v2TopObjectsHeader">
-                    <span>
-                      Top-Objekte
+
+              <article>
+                <span className="v22KpiIcon green">
+                  ✓
+                </span>
+
+                <div>
+                  <strong>
+                    {readyForReviewListings.length}
+                  </strong>
+
+                  <span>
+                    Paket bereit
+                  </span>
+
+                  <small>
+                    Text + Bilder vorhanden
+                  </small>
+                </div>
+              </article>
+
+
+              <article>
+                <span className="v22KpiIcon gold">
+                  !
+                </span>
+
+                <div>
+                  <strong>
+                    {actionNeededListings.length}
+                  </strong>
+
+                  <span>
+                    Aktion nötig
+                  </span>
+
+                  <small>
+                    Inhalt oder Bilder fehlen
+                  </small>
+                </div>
+              </article>
+
+
+              <article>
+                <span className="v22KpiIcon violet">
+                  ◉
+                </span>
+
+                <div>
+                  <strong>
+                    {analyticsLoading
+                      ? "–"
+                      : analyticsData.viewsToday}
+                  </strong>
+
+                  <span>
+                    Aufrufe heute
+                  </span>
+
+                  <small>
+                    echte Inserat-AI-Aufrufe
+                  </small>
+                </div>
+              </article>
+            </div>
+
+
+            <div className="v22DailyMain">
+              <article className="v22NextAction">
+                <div className="v22CardTitle">
+                  <div>
+                    <span className="v2Eyebrow dark">
+                      JETZT ERLEDIGEN
                     </span>
 
-                    <small>
-                      30 Tage
-                    </small>
+                    <h3>
+                      {primaryActionListing
+                        ? (
+                            primaryActionListing.projectName?.trim() ||
+                            `${primaryActionListing.propertyType} in ${primaryActionListing.location}`
+                          )
+                        : "Alles bereit"}
+                    </h3>
                   </div>
 
-                  {analyticsLoading ? (
-                    <div className="v2TopObjectsEmpty">
-                      Wird geladen…
-                    </div>
-                  ) : analyticsData.topListings.length === 0 ? (
-                    <div className="v2TopObjectsEmpty">
-                      <strong>
-                        Noch keine Aufrufe
-                      </strong>
-
-                      <p>
-                        Sobald Interessenten einen
-                        messbaren Inserat-AI-Link öffnen,
-                        erscheinen hier die meistgesehenen
-                        Objekte.
-                      </p>
-                    </div>
+                  {actionNeededListings.length > 0 ? (
+                    <span className="v22State warning">
+                      Aktion nötig
+                    </span>
+                  ) : readyForReviewListings.length > 0 ? (
+                    <span className="v22State ready">
+                      Bereit
+                    </span>
                   ) : (
-                    <div className="v2TopObjectsList">
-                      {analyticsData.topListings.map(
-                        (
-                          listing,
-                          index
-                        ) => (
-                          <Link
-                            key={listing.id}
-                            href={`/cockpit/${listing.id}`}
-                            className="v2TopObjectRow"
-                          >
-                            <span className="v2TopObjectRank">
-                              {String(
-                                index + 1
-                              ).padStart(
-                                2,
-                                "0"
-                              )}
-                            </span>
-
-                            <span className="v2TopObjectName">
-                              {listing.title}
-                            </span>
-
-                            <strong>
-                              {listing.views}
-                            </strong>
-                          </Link>
-                        )
-                      )}
-                    </div>
+                    <span className="v22State neutral">
+                      Alles erledigt
+                    </span>
                   )}
+                </div>
 
-                  <div className="v2PrivacyNote">
-                    <span>✓</span>
 
+                {primaryActionListing ? (
+                  <>
                     <p>
-                      Anonyme Besucher werden nur
-                      datenschutzfreundlich gezählt.
-                      Es werden keine Namen oder
-                      IP-Adressen angezeigt.
+                      {actionNeededListings.some(
+                        (listing) =>
+                          listing.id ===
+                          primaryActionListing.id
+                      )
+                        ? "Dieses Objekt benötigt noch einen Schritt, bevor es vollständig vorbereitet ist."
+                        : "Dieses Objektpaket ist vorbereitet und kann als Nächstes geprüft werden."}
                     </p>
+
+                    <div className="v22ActionMeta">
+                      <span>
+                        {primaryActionListing.postalCode
+                          ? `${primaryActionListing.postalCode} `
+                          : ""}
+                        {primaryActionListing.location}
+                      </span>
+
+                      <span>
+                        {primaryActionListing.rooms ?? "–"} Zi.
+                      </span>
+
+                      <span>
+                        {primaryActionListing.livingArea !== null
+                          ? `${primaryActionListing.livingArea} m²`
+                          : "– m²"}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <p>
+                    Aktuell ist kein aktives Objekt offen. Du kannst direkt ein neues Projekt starten.
+                  </p>
+                )}
+
+
+                <Link
+                  href={primaryActionHref}
+                  className="v22PrimaryAction"
+                >
+                  {primaryActionLabel}
+                  <span>
+                    →
+                  </span>
+                </Link>
+              </article>
+
+
+              <article className="v22ActivityCard">
+                <div className="v22CardTitle">
+                  <div>
+                    <span className="v2Eyebrow dark">
+                      AKTIVITÄT
+                    </span>
+
+                    <h3>
+                      Was passiert gerade?
+                    </h3>
                   </div>
-                </aside>
-              </div>
-            )}
+
+                  {unreadActivityCount > 0 && (
+                    <span className="v22ActivityBadge">
+                      {unreadActivityCount} neu
+                    </span>
+                  )}
+                </div>
+
+
+                {dailyActivityLoading ? (
+                  <div className="v22ActivityEmpty">
+                    Aktivitäten werden geladen…
+                  </div>
+                ) : dailyActivityError ? (
+                  <div className="v22ActivityEmpty error">
+                    {dailyActivityError}
+                  </div>
+                ) : marketActivityItems.length === 0 ? (
+                  <div className="v22ActivityEmpty">
+                    Heute gibt es noch keine neue Objektaktivität.
+                  </div>
+                ) : (
+                  <div className="v22ActivityList">
+                    {marketActivityItems.map(
+                      (item) => (
+                        <Link
+                          key={
+                            item.listingId +
+                            "-" +
+                            item.latestAt
+                          }
+                          href={
+                            item.href ||
+                            `/cockpit/${item.listingId}`
+                          }
+                          className="v22ActivityRow"
+                        >
+                          <span className="v22ActivityDot">
+                            ◉
+                          </span>
+
+                          <span className="v22ActivityText">
+                            <strong>
+                              {item.listingLabel}
+                            </strong>
+
+                            <small>
+                              {item.count} Aufruf{item.count === 1 ? "" : "e"}
+                              {item.location
+                                ? ` · ${item.location}`
+                                : ""}
+                            </small>
+                          </span>
+
+                          <span className="v22ActivityArrow">
+                            →
+                          </span>
+                        </Link>
+                      )
+                    )}
+                  </div>
+                )}
+              </article>
+            </div>
           </section>
 
-          <section
-            className="v2Objects"
-            id="v2-objects"
-          >
-            <div className="v2SectionHeader">
+
+          {/* COMPACT_COCKPIT_V24
+    Alte KPI-Reihe entfernt:
+    Daily Cockpit enthält diese Informationen bereits.
+*/}
+
+          <BatchPublishingV23
+            listings={marketListings}
+          />
+
+
+          <details className="v24Section">
+            <summary className="v24SectionSummary">
               <div>
-                <span className="v2Eyebrow dark">
-                  IMMOBILIEN
+                <span className="v24Icon">
+                  ↗
                 </span>
-                <h2>
-                  {labels.recent}
-                </h2>
+
+                <span>
+                  <strong>
+                    Performance
+                  </strong>
+
+                  <small>
+                    Aufrufe, Besucher und Entwicklung
+                  </small>
+                </span>
               </div>
 
-              {filteredListings.length > 3 && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowAll(
-                      (current) =>
-                        !current
-                    )
-                  }
-                >
-                  {showAll
-                    ? labels.less
-                    : labels.all}
-                  <span>→</span>
-                </button>
-              )}
-            </div>
+              <span className="v24Open">
+                Anzeigen
+              </span>
+            </summary>
 
-            {loadingListings ? (
-              <div className="v2LoadingGrid">
-                <div />
-                <div />
-                <div />
-              </div>
-            ) : listingsError ? (
-              <div className="v2StateBox error">
-                {listingsError}
-              </div>
-            ) : filteredListings.length === 0 ? (
-              <div className="v2StateBox">
-                {labels.empty}
-              </div>
-            ) : (
-              <div className="v2PropertyGrid">
-                {visibleListings.map(
-                  (listing) => {
-                    const primaryImage =
-                      listing.images.find(
-                        (image) =>
-                          image.isPrimary
-                      ) ??
-                      listing.images[0] ??
-                      null;
+            <div className="v24SectionBody">
+              <section className="v2Performance">
+                          <div className="v2SectionHeader">
+                            <div>
+                              <span className="v2Eyebrow dark">
+                                ANALYTICS
+                              </span>
 
-                    const generated =
-                      hasGeneratedVariants(
-                        listing.generatedVariants
-                      );
+                              <h2>
+                                Objekt-Performance
+                              </h2>
+                            </div>
 
-                    const status =
-                      listing.archivedAt
-                        ? labels.archivedStatus
-                        : generated
-                          ? labels.ready
-                          : labels.draft;
+                            <span className="v2PerformancePeriod">
+                              Letzte 30 Tage
+                            </span>
+                          </div>
 
-                    const title =
-                      listing.projectName?.trim() ||
-                      `${listing.propertyType} in ${listing.location}`;
-
-                    return (
-                      <Link
-                        key={listing.id}
-                        href={`/cockpit/${listing.id}`}
-                        className="v2PropertyCard"
-                      >
-                        <div className="v2PropertyImage">
-                          {primaryImage ? (
-                            <img
-                              src={
-                                primaryImage.url
-                              }
-                              alt={title}
-                            />
+                          {analyticsError ? (
+                            <div className="v2PerformanceError">
+                              {analyticsError}
+                            </div>
                           ) : (
-                            <div className="v2PropertyFallback">
-                              <span>⌂</span>
+                            <div className="v2PerformanceLayout">
+                              <div className="v2PerformanceMain">
+                                <div className="v2PerformanceKpis">
+                                  <article>
+                                    <span className="v2PerformanceIcon blue">
+                                      ◉
+                                    </span>
+
+                                    <div>
+                                      <strong>
+                                        {analyticsLoading
+                                          ? "–"
+                                          : analyticsData.totalViews30d}
+                                      </strong>
+
+                                      <span>
+                                        Aufrufe
+                                      </span>
+                                    </div>
+                                  </article>
+
+                                  <article>
+                                    <span className="v2PerformanceIcon violet">
+                                      ◎
+                                    </span>
+
+                                    <div>
+                                      <strong>
+                                        {analyticsLoading
+                                          ? "–"
+                                          : analyticsData.uniqueVisitors30d}
+                                      </strong>
+
+                                      <span>
+                                        Besucher
+                                      </span>
+                                    </div>
+                                  </article>
+
+                                  <article>
+                                    <span className="v2PerformanceIcon green">
+                                      ↗
+                                    </span>
+
+                                    <div>
+                                      <strong>
+                                        {analyticsLoading
+                                          ? "–"
+                                          : analyticsData.views7d}
+                                      </strong>
+
+                                      <span>
+                                        Letzte 7 Tage
+                                      </span>
+                                    </div>
+                                  </article>
+
+                                  <article>
+                                    <span className="v2PerformanceIcon gold">
+                                      ●
+                                    </span>
+
+                                    <div>
+                                      <strong>
+                                        {analyticsLoading
+                                          ? "–"
+                                          : analyticsData.viewsToday}
+                                      </strong>
+
+                                      <span>
+                                        Heute
+                                      </span>
+                                    </div>
+                                  </article>
+                                </div>
+
+                                <div className="v2ChartCard">
+                                  <div className="v2ChartHeader">
+                                    <div>
+                                      <strong>
+                                        Aufrufe im Verlauf
+                                      </strong>
+
+                                      <span>
+                                        Letzte 7 Tage
+                                      </span>
+                                    </div>
+
+                                    <span className="v2ChartTotal">
+                                      {analyticsData.views7d}
+                                    </span>
+                                  </div>
+
+                                  {analyticsLoading ? (
+                                    <div className="v2ChartLoading">
+                                      Statistiken werden geladen…
+                                    </div>
+                                  ) : analyticsData.daily7d.length === 0 ? (
+                                    <div className="v2ChartEmpty">
+                                      Noch keine Aufrufe erfasst.
+                                    </div>
+                                  ) : (
+                                    <div className="v2MiniChart">
+                                      {analyticsData.daily7d.map(
+                                        (item) => (
+                                          <div
+                                            key={item.date}
+                                            className="v2MiniChartColumn"
+                                          >
+                                            <div className="v2MiniChartValue">
+                                              {item.views}
+                                            </div>
+
+                                            <div className="v2MiniChartTrack">
+                                              <div
+                                                className="v2MiniChartBar"
+                                                style={{
+                                                  height:
+                                                    `${
+                                                      Math.max(
+                                                        8,
+                                                        (
+                                                          item.views /
+                                                          maxDailyViews
+                                                        ) * 100
+                                                      )
+                                                    }%`,
+                                                }}
+                                              />
+                                            </div>
+
+                                            <span>
+                                              {formatAnalyticsDate(
+                                                item.date
+                                              )}
+                                            </span>
+                                          </div>
+                                        )
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              <aside className="v2TopObjects">
+                                <div className="v2TopObjectsHeader">
+                                  <span>
+                                    Top-Objekte
+                                  </span>
+
+                                  <small>
+                                    30 Tage
+                                  </small>
+                                </div>
+
+                                {analyticsLoading ? (
+                                  <div className="v2TopObjectsEmpty">
+                                    Wird geladen…
+                                  </div>
+                                ) : analyticsData.topListings.length === 0 ? (
+                                  <div className="v2TopObjectsEmpty">
+                                    <strong>
+                                      Noch keine Aufrufe
+                                    </strong>
+
+                                    <p>
+                                      Sobald Interessenten einen
+                                      messbaren Inserat-AI-Link öffnen,
+                                      erscheinen hier die meistgesehenen
+                                      Objekte.
+                                    </p>
+                                  </div>
+                                ) : (
+                                  <div className="v2TopObjectsList">
+                                    {analyticsData.topListings.map(
+                                      (
+                                        listing,
+                                        index
+                                      ) => (
+                                        <Link
+                                          key={listing.id}
+                                          href={`/cockpit/${listing.id}`}
+                                          className="v2TopObjectRow"
+                                        >
+                                          <span className="v2TopObjectRank">
+                                            {String(
+                                              index + 1
+                                            ).padStart(
+                                              2,
+                                              "0"
+                                            )}
+                                          </span>
+
+                                          <span className="v2TopObjectName">
+                                            {listing.title}
+                                          </span>
+
+                                          <strong>
+                                            {listing.views}
+                                          </strong>
+                                        </Link>
+                                      )
+                                    )}
+                                  </div>
+                                )}
+
+                                <div className="v2PrivacyNote">
+                                  <span>✓</span>
+
+                                  <p>
+                                    Anonyme Besucher werden nur
+                                    datenschutzfreundlich gezählt.
+                                    Es werden keine Namen oder
+                                    IP-Adressen angezeigt.
+                                  </p>
+                                </div>
+                              </aside>
+                            </div>
+                          )}
+                        </section>
+            </div>
+          </details>
+
+          <details className="v25Fold">
+            <summary className="v25FoldSummary">
+              <div>
+                <span className="v25FoldIcon">
+                  ▣
+                </span>
+
+                <span>
+                  <strong>
+                    Meine Objekte
+                  </strong>
+
+                  <small>
+                    {activeCount} aktiv · Objekte und Papierkorb
+                  </small>
+                </span>
+              </div>
+
+              <span className="v25FoldAction">
+                Anzeigen
+              </span>
+            </summary>
+
+            <div className="v25FoldBody">
+              <section
+                          className="v2Objects"
+                          id="v2-objects"
+                        >
+                          <div className="v2SectionHeader">
+                            <div>
+                              <span className="v2Eyebrow dark">
+                                IMMOBILIEN
+                              </span>
+                              <h2>
+                                {labels.recent}
+                              </h2>
+                            </div>
+
+                            <div className="v2ObjectHeaderActions">
+
+                              <button
+                                type="button"
+                                className={
+                                  objectView ===
+                                    "trash"
+                                    ? "v2TrashToggle active"
+                                    : "v2TrashToggle"
+                                }
+                                onClick={() => {
+
+                                  const nextView =
+                                    objectView ===
+                                      "active"
+                                      ? "trash"
+                                      : "active";
+
+                                  setObjectView(
+                                    nextView
+                                  );
+
+                                  setShowAll(
+                                    nextView ===
+                                      "trash"
+                                  );
+
+                                  setListingActionMessage(
+                                    ""
+                                  );
+
+                                  setListingActionError(
+                                    false
+                                  );
+                                }}
+                              >
+                                <span aria-hidden="true">
+                                  {objectView ===
+                                    "trash"
+                                    ? "←"
+                                    : "🗑"}
+                                </span>
+
+                                {objectView ===
+                                  "trash"
+                                  ? trashLabels.objects
+                                  : `${trashLabels.trash} (${archivedCount})`}
+                              </button>
+
+
+                              {objectView ===
+                                "active" &&
+                                filteredListings.length >
+                                  3 && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setShowAll(
+                                      (current) =>
+                                        !current
+                                    )
+                                  }
+                                >
+                                  {showAll
+                                    ? labels.less
+                                    : labels.all}
+
+                                  <span>→</span>
+                                </button>
+                              )}
+
+                            </div>
+                          </div>
+
+                          {listingActionMessage && (
+                            <div
+                              className={
+                                listingActionError
+                                  ? "v2TrashMessage error"
+                                  : "v2TrashMessage"
+                              }
+                              role="status"
+                            >
+                              {listingActionMessage}
                             </div>
                           )}
 
-                          <span
-                            className={
-                              listing.archivedAt
-                                ? "v2Status archived"
-                                : generated
-                                  ? "v2Status ready"
-                                  : "v2Status draft"
-                            }
-                          >
-                            {status}
-                          </span>
-                        </div>
 
-                        <div className="v2PropertyBody">
-                          <strong className="v2Price">
-                            {formatPrice(
-                              listing.price
-                            )}
-                          </strong>
+                          {loadingListings ? (
+                            <div className="v2LoadingGrid">
+                              <div />
+                              <div />
+                              <div />
+                            </div>
+                          ) : listingsError ? (
+                            <div className="v2StateBox error">
+                              {listingsError}
+                            </div>
+                          ) : filteredListings.length === 0 ? (
+                            <div className="v2StateBox">
+                              {objectView ===
+                                "trash"
+                                ? trashLabels.empty
+                                : labels.empty}
+                            </div>
+                          ) : (
+                            <div className="v2PropertyGrid">
+                              {visibleListings.map(
+                                (listing) => {
+                                  const primaryImage =
+                                    listing.images.find(
+                                      (image) =>
+                                        image.isPrimary
+                                    ) ??
+                                    listing.images[0] ??
+                                    null;
 
-                          <h3>{title}</h3>
+                                  const generated =
+                                    hasGeneratedVariants(
+                                      listing.generatedVariants
+                                    );
 
-                          <p className="v2Location">
-                            {listing.postalCode
-                              ? `${listing.postalCode} `
-                              : ""}
-                            {listing.location}
-                          </p>
+                                  const status =
+                                    listing.archivedAt
+                                      ? labels.archivedStatus
+                                      : generated
+                                        ? labels.ready
+                                        : labels.draft;
 
-                          <div className="v2Facts">
-                            <span>
-                              {listing.rooms ??
-                                "–"}{" "}
-                              Zi.
-                            </span>
+                                  const title =
+                                    listing.projectName?.trim() ||
+                                    `${listing.propertyType} in ${listing.location}`;
 
-                            <span>
-                              {listing.livingArea !==
-                              null
-                                ? `${listing.livingArea} m²`
-                                : "– m²"}
-                            </span>
+                                  return (
+                                    <article
+                                      key={listing.id}
+                                      className="v2PropertyCardWrap"
+                                    >
+                                      <Link
+                                        href={`/cockpit/${listing.id}`}
+                                        className="v2PropertyCard"
+                                      >
+                                      <div className="v2PropertyImage">
+                                        {primaryImage ? (
+                                          <img
+                                            src={
+                                              primaryImage.url
+                                            }
+                                            alt={title}
+                                          />
+                                        ) : (
+                                          <div className="v2PropertyFallback">
+                                            <span>⌂</span>
+                                          </div>
+                                        )}
 
-                            <span>
-                              {
-                                listing.propertyType
-                              }
-                            </span>
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  }
-                )}
+                                        <span
+                                          className={
+                                            listing.archivedAt
+                                              ? "v2Status archived"
+                                              : generated
+                                                ? "v2Status ready"
+                                                : "v2Status draft"
+                                          }
+                                        >
+                                          {status}
+                                        </span>
+                                      </div>
 
-                {!showAll && (
-                  <Link
-                    href="/dashboard"
-                    className="v2CreateCard"
-                  >
-                    <span className="v2CreatePlus">
-                      +
-                    </span>
-                    <strong>
-                      {labels.create}
-                    </strong>
-                    <small>
-                      {isGerman
-                        ? "In wenigen Minuten zum professionellen Immobilieninserat."
-                        : labels.heroText}
-                    </small>
-                  </Link>
-                )}
-              </div>
-            )}
-          </section>
+                                      <div className="v2PropertyBody">
+                                        <strong className="v2Price">
+                                          {formatPrice(
+                                            listing.price
+                                          )}
+                                        </strong>
 
-          <section className="v2QuickSection">
-            <div className="v2SectionHeader">
+                                        <h3>{title}</h3>
+
+                                        <p className="v2Location">
+                                          {listing.postalCode
+                                            ? `${listing.postalCode} `
+                                            : ""}
+                                          {listing.location}
+                                        </p>
+
+                                        <div className="v2Facts">
+                                          <span>
+                                            {listing.rooms ??
+                                              "–"}{" "}
+                                            Zi.
+                                          </span>
+
+                                          <span>
+                                            {listing.livingArea !==
+                                            null
+                                              ? `${listing.livingArea} m²`
+                                              : "– m²"}
+                                          </span>
+
+                                          <span>
+                                            {
+                                              listing.propertyType
+                                            }
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </Link>
+
+
+                                    <button
+                                      type="button"
+                                      className={
+                                        objectView ===
+                                          "trash"
+                                          ? "v2ListingAction restore"
+                                          : "v2ListingAction trash"
+                                      }
+                                      disabled={
+                                        listingActionId ===
+                                        listing.id
+                                      }
+                                      aria-label={
+                                        objectView ===
+                                          "trash"
+                                          ? trashLabels.restore
+                                          : trashLabels.move
+                                      }
+                                      title={
+                                        objectView ===
+                                          "trash"
+                                          ? trashLabels.restore
+                                          : trashLabels.move
+                                      }
+                                      onClick={() => {
+
+                                        if (
+                                          objectView ===
+                                          "trash"
+                                        ) {
+                                          void setListingArchived(
+                                            listing,
+                                            false
+                                          );
+
+                                          return;
+                                        }
+
+
+                                        setTrashConfirmListing(
+                                          listing
+                                        );
+                                      }}
+                                    >
+                                      {listingActionId ===
+                                      listing.id
+                                        ? "…"
+                                        : objectView ===
+                                            "trash"
+                                          ? "↶"
+                                          : "🗑"}
+                                    </button>
+
+                                  </article>
+                                  );
+                                }
+                              )}
+
+                              {!showAll &&
+                                objectView ===
+                                  "active" && (
+                                <Link
+                                  href="/dashboard"
+                                  className="v2CreateCard"
+                                >
+                                  <span className="v2CreatePlus">
+                                    +
+                                  </span>
+                                  <strong>
+                                    {labels.create}
+                                  </strong>
+                                  <small>
+                                    {isGerman
+                                      ? "In wenigen Minuten zum professionellen Immobilieninserat."
+                                      : labels.heroText}
+                                  </small>
+                                </Link>
+                              )}
+                            </div>
+                          )}
+                        </section>
+            </div>
+          </details>
+
+          <details className="v25Fold">
+            <summary className="v25FoldSummary">
               <div>
-                <span className="v2Eyebrow dark">
-                  TOOLS
+                <span className="v25FoldIcon">
+                  ⚡
                 </span>
-                <h2>
-                  {labels.quick}
-                </h2>
+
+                <span>
+                  <strong>
+                    Schnellzugriff
+                  </strong>
+
+                  <small>
+                    Inserat · Bilder · Social · Marketing
+                  </small>
+                </span>
               </div>
+
+              <span className="v25FoldAction">
+                Anzeigen
+              </span>
+            </summary>
+
+            <div className="v25FoldBody v25QuickBody">
+              <section className="v2QuickSection">
+                          <div className="v2SectionHeader">
+                            <div>
+                              <span className="v2Eyebrow dark">
+                                TOOLS
+                              </span>
+                              <h2>
+                                {labels.quick}
+                              </h2>
+                            </div>
+                          </div>
+
+                          <div className="v2QuickGrid">
+                            <Link href="/dashboard">
+                              <span>＋</span>
+                              <strong>
+                                {labels.newListing}
+                              </strong>
+                              <small>
+                                {isGerman
+                                  ? "Immobilie erfassen und Inserat erstellen"
+                                  : labels.create}
+                              </small>
+                            </Link>
+
+                            <Link href="/dashboard/analyse">
+                              <span>◇</span>
+                              <strong>
+                                {labels.images}
+                              </strong>
+                              <small>
+                                {isGerman
+                                  ? "Objektbilder mit KI analysieren"
+                                  : labels.images}
+                              </small>
+                            </Link>
+
+                            <Link href="/dashboard/social-media">
+                              <span>◎</span>
+                              <strong>
+                                {labels.social}
+                              </strong>
+                              <small>
+                                {isGerman
+                                  ? "Beiträge für deine Kanäle vorbereiten"
+                                  : labels.social}
+                              </small>
+                            </Link>
+
+                            <Link href="/marketing-hub">
+                              <span>▥</span>
+                              <strong>
+                                {labels.marketing}
+                              </strong>
+                              <small>
+                                {isGerman
+                                  ? "Vermarktung zentral organisieren"
+                                  : labels.marketing}
+                              </small>
+                            </Link>
+                          </div>
+                        </section>
             </div>
+          </details>
+          {marketResolved ? (
+            <div
+              id="portale"
+              style={{
+                paddingTop: 34,
+                scrollMarginTop: 24,
+              }}
+            >
+              {/* PREMIUM_PORTALS_V26 */}
+              <details className="v26PortalFold">
+                <summary className="v26PortalSummary">
+                  <div>
+                    <span className="v26PortalIcon">
+                      ⇄
+                    </span>
 
-            <div className="v2QuickGrid">
-              <Link href="/dashboard">
-                <span>＋</span>
-                <strong>
-                  {labels.newListing}
-                </strong>
-                <small>
-                  {isGerman
-                    ? "Immobilie erfassen und Inserat erstellen"
-                    : labels.create}
-                </small>
-              </Link>
+                    <span>
+                      <strong>
+                        Portal-Verbindungen
+                      </strong>
 
-              <Link href="/dashboard/analyse">
-                <span>◇</span>
-                <strong>
-                  {labels.images}
-                </strong>
-                <small>
-                  {isGerman
-                    ? "Objektbilder mit KI analysieren"
-                    : labels.images}
-                </small>
-              </Link>
+                      <small>
+                        Freigaben und technische Details
+                      </small>
+                    </span>
+                  </div>
 
-              <Link href="/dashboard/social-media">
-                <span>◎</span>
-                <strong>
-                  {labels.social}
-                </strong>
-                <small>
-                  {isGerman
-                    ? "Beiträge für deine Kanäle vorbereiten"
-                    : labels.social}
-                </small>
-              </Link>
+                  <span className="v26PortalOpen">
+                    Portale verwalten
+                  </span>
+                </summary>
 
-              <Link href="/marketing-hub">
-                <span>▥</span>
-                <strong>
-                  {labels.marketing}
-                </strong>
-                <small>
-                  {isGerman
-                    ? "Vermarktung zentral organisieren"
-                    : labels.marketing}
-                </small>
-              </Link>
+                {/* MOCKUP_MATCH_V28 */}
+                <div
+                  className="v28PortalLogoStrip"
+                  aria-label="Immobilienportale"
+                >
+                  <div className="v28PortalLogoTile">
+                    <span className="v28Scout">
+                      <b>Immo</b>
+                      <span>Scout24</span>
+                    </span>
+                  </div>
+
+
+                  <div className="v28PortalLogoTile">
+                    <span className="v28Homegate">
+                      <b>✕</b>
+                      <span>homegate</span>
+                    </span>
+                  </div>
+
+
+                  <div className="v28PortalLogoTile">
+                    <span className="v28Immowelt">
+                      <b>immo</b>
+                      <span>welt</span>
+                    </span>
+                  </div>
+
+
+                  <div className="v28PortalLogoTile">
+                    <span className="v28Kleinanzeigen">
+                      <b>♧</b>
+                      <span>kleinanzeigen</span>
+                    </span>
+                  </div>
+
+
+                  <div className="v28PortalLogoTile">
+                    <span className="v28Comparis">
+                      <b>✓</b>
+                      <span>comparis</span>
+                    </span>
+                  </div>
+                </div>
+
+
+                <div className="v26PortalBody">
+                  <PortalConnectionsCard
+                    market={market}
+                  />
+                </div>
+              </details>
             </div>
-          </section>
+          ) : null}
         </main>
       </div>
 
       <style jsx>{`
+        /*
+         * ONE_SCREEN_COCKPIT_V25
+         */
+
+        .v25MiniHero {
+          display: flex;
+          min-height: 82px;
+          align-items: center;
+          justify-content: space-between;
+          gap: 18px;
+          padding: 16px 20px;
+          border: 1px solid rgba(36, 92, 151, .18);
+          border-radius: 16px;
+          background:
+            linear-gradient(
+              125deg,
+              #07192e 0%,
+              #0d2c50 65%,
+              #173a5e 100%
+            );
+          box-shadow:
+            0 12px 30px
+            rgba(15, 23, 42, .10);
+        }
+
+        .v25MiniHeroIdentity {
+          min-width: 0;
+        }
+
+        .v25MiniEyebrow {
+          display: block;
+          margin-bottom: 5px;
+          color: #fbbf24;
+          font-size: 8px;
+          font-weight: 950;
+          letter-spacing: .13em;
+        }
+
+        .v25MiniTitle {
+          display: flex;
+          min-width: 0;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .v25MiniTitle h1 {
+          margin: 0;
+          overflow: hidden;
+          color: #fff;
+          font-size: clamp(
+            18px,
+            2vw,
+            25px
+          );
+          font-weight: 700;
+          letter-spacing: -.025em;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .v25ActiveBadge {
+          flex: 0 0 auto;
+          padding: 5px 8px;
+          border: 1px solid rgba(134,239,172,.18);
+          border-radius: 999px;
+          background: rgba(34,197,94,.10);
+          color: #86efac;
+          font-size: 8px;
+          font-weight: 900;
+        }
+
+        .v25MiniActions {
+          display: flex;
+          flex: 0 0 auto;
+          align-items: center;
+          gap: 7px;
+        }
+
+        .v25MiniPrimary,
+        .v25MiniSecondary {
+          display: inline-flex;
+          min-height: 37px;
+          align-items: center;
+          justify-content: center;
+          padding: 0 12px;
+          border-radius: 9px;
+          font-size: 9px;
+          font-weight: 900;
+          text-decoration: none;
+        }
+
+        .v25MiniPrimary {
+          background:
+            linear-gradient(
+              135deg,
+              #ffd84d,
+              #f7b928
+            );
+          color: #172033;
+        }
+
+        .v25MiniSecondary {
+          border: 1px solid rgba(255,255,255,.16);
+          background: rgba(255,255,255,.055);
+          color: #dbeafe;
+        }
+
+        .v25Fold {
+          margin-top: 10px;
+          overflow: hidden;
+          border: 1px solid #dce5ef;
+          border-radius: 14px;
+          background: #fff;
+        }
+
+        .v25FoldSummary {
+          display: flex;
+          min-height: 58px;
+          align-items: center;
+          justify-content: space-between;
+          gap: 14px;
+          padding: 10px 14px;
+          cursor: pointer;
+          list-style: none;
+        }
+
+        .v25FoldSummary::-webkit-details-marker {
+          display: none;
+        }
+
+        .v25FoldSummary > div {
+          display: flex;
+          min-width: 0;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .v25FoldSummary > div > span:last-child {
+          display: flex;
+          min-width: 0;
+          flex-direction: column;
+        }
+
+        .v25FoldSummary strong {
+          color: #0f172a;
+          font-size: 11px;
+        }
+
+        .v25FoldSummary small {
+          margin-top: 2px;
+          color: #94a3b8;
+          font-size: 8px;
+        }
+
+        .v25FoldIcon {
+          display: grid;
+          width: 30px;
+          height: 30px;
+          flex: 0 0 30px;
+          place-items: center;
+          border-radius: 9px;
+          background: #eef4fb;
+          color: #173c69;
+          font-size: 11px;
+          font-weight: 950;
+        }
+
+        .v25FoldAction {
+          flex: 0 0 auto;
+          color: #64748b;
+          font-size: 8px;
+          font-weight: 850;
+        }
+
+        .v25Fold[open]
+          .v25FoldAction::after {
+          content: " · geöffnet";
+        }
+
+        .v25FoldBody {
+          padding: 0 14px 14px;
+        }
+
+        .v25FoldBody
+          .v2Objects,
+        .v25FoldBody
+          .v2QuickSection {
+          padding-top: 4px !important;
+        }
+
+        .v25QuickBody
+          .v2QuickGrid a {
+          min-height: 70px;
+          padding: 10px 12px;
+        }
+
+        .v25QuickBody
+          .v2QuickGrid a > span {
+          width: 30px;
+          height: 30px;
+          flex-basis: 30px;
+          font-size: 14px;
+        }
+
+        .v25QuickBody
+          .v2QuickGrid small {
+          display: none;
+        }
+
+        @media (max-width: 700px) {
+          .v25MiniHero {
+            align-items: stretch;
+            flex-direction: column;
+          }
+
+          .v25MiniTitle {
+            align-items: flex-start;
+            flex-direction: column;
+          }
+
+          .v25MiniTitle h1 {
+            white-space: normal;
+          }
+
+          .v25MiniActions {
+            width: 100%;
+          }
+
+          .v25MiniActions a {
+            flex: 1;
+          }
+        }
+
         .v2Shell {
           min-height: 100vh;
           background: #eef3f9;
           color: #0f172a;
           font-family: inherit;
+        }
+
+
+        .v2PortalNavGroup {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .v2PortalNavToggle {
+          width: 100%;
+          border: 0;
+          font: inherit;
+          text-align: left;
+          cursor: pointer;
+        }
+
+        .v2PortalNavArrow {
+          margin-left: auto;
+          font-size: 20px;
+          line-height: 1;
+          transition:
+            transform 160ms ease;
+        }
+
+        .v2PortalNavArrow.open {
+          transform:
+            rotate(90deg);
+        }
+
+        .v2PortalSubnav {
+          display: flex;
+          flex-direction: column;
+          margin:
+            2px 0 8px 36px;
+          padding:
+            3px 0 5px 13px;
+          border-left:
+            1px solid
+            rgba(103, 232, 249, 0.18);
+        }
+
+        .v2PortalCountry {
+          padding:
+            5px 8px 6px;
+          color:
+            #71869d;
+          font-size:
+            10px;
+          font-weight:
+            800;
+          letter-spacing:
+            0.08em;
+        }
+
+        .v2PortalSubitem {
+          display: block;
+          padding:
+            6px 8px;
+          border-radius:
+            7px;
+          color:
+            #aebfd1;
+          font-size:
+            12px;
+          font-weight:
+            650;
+          text-decoration:
+            none;
+        }
+
+        .v2PortalSubitem:hover {
+          background:
+            rgba(103, 232, 249, 0.07);
+          color:
+            #ffffff;
         }
 
         .v2Sidebar {
@@ -2019,6 +5194,483 @@ export default function CockpitOverviewV2({
           line-height: 1.55;
         }
 
+        /*
+         * DAILY_COCKPIT_V22
+         */
+        /*
+         * COMPACT_COCKPIT_V24
+         */
+
+        .v2Hero {
+          min-height: 0 !important;
+          padding-top: 28px !important;
+          padding-bottom: 28px !important;
+        }
+
+        .v2Hero h1 {
+          margin-bottom: 8px !important;
+        }
+
+        .v22Daily {
+          margin-top: 14px !important;
+          padding: 18px !important;
+        }
+
+        .v22DailyHeader {
+          margin-bottom: 14px !important;
+        }
+
+        .v22DailyHeader h2 {
+          font-size: 20px !important;
+        }
+
+        .v22KpiGrid {
+          gap: 8px !important;
+        }
+
+        .v22KpiGrid article {
+          padding: 10px 12px !important;
+          min-height: 62px;
+        }
+
+        .v22KpiGrid strong {
+          font-size: 19px !important;
+        }
+
+        .v22DailyMain {
+          margin-top: 9px !important;
+          gap: 9px !important;
+        }
+
+        .v22NextAction,
+        .v22ActivityCard {
+          padding: 13px !important;
+        }
+
+        .v24Section {
+          margin-top: 12px;
+          border: 1px solid #dce5ef;
+          border-radius: 14px;
+          background: #ffffff;
+          overflow: hidden;
+        }
+
+        .v24SectionSummary {
+          min-height: 60px;
+          padding: 10px 14px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 14px;
+          cursor: pointer;
+          list-style: none;
+        }
+
+        .v24SectionSummary::-webkit-details-marker {
+          display: none;
+        }
+
+        .v24SectionSummary > div {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .v24SectionSummary > div > span:last-child {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .v24SectionSummary strong {
+          color: #0f172a;
+          font-size: 11px;
+        }
+
+        .v24SectionSummary small {
+          margin-top: 2px;
+          color: #94a3b8;
+          font-size: 8px;
+        }
+
+        .v24Icon {
+          display: grid;
+          width: 30px;
+          height: 30px;
+          place-items: center;
+          border-radius: 9px;
+          background: #eef4fb;
+          color: #173c69;
+          font-size: 12px;
+          font-weight: 900;
+        }
+
+        .v24Open {
+          color: #64748b;
+          font-size: 9px;
+          font-weight: 850;
+        }
+
+        .v24Section[open]
+          .v24Open::after {
+          content: " · geöffnet";
+        }
+
+        .v24SectionBody {
+          padding: 0 12px 12px;
+        }
+
+        .v22Daily {
+          margin-top: 22px;
+          padding: 24px;
+          border: 1px solid #dce5f0;
+          border-radius: 18px;
+          background:
+            linear-gradient(
+              180deg,
+              #ffffff,
+              #f8fbff
+            );
+          box-shadow:
+            0 16px 36px
+            rgba(15, 23, 42, .06);
+        }
+
+        .v22DailyHeader {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 20px;
+          margin-bottom: 20px;
+        }
+
+        .v22DailyHeader h2 {
+          margin: 0;
+          color: #0f172a;
+          font-size: 24px;
+          letter-spacing: -.025em;
+        }
+
+        .v22DailyHeader p {
+          margin: 6px 0 0;
+          color: #64748b;
+          font-size: 12px;
+        }
+
+        .v22NewObject {
+          display: inline-flex;
+          min-height: 42px;
+          align-items: center;
+          justify-content: center;
+          gap: 7px;
+          padding: 0 15px;
+          border-radius: 10px;
+          background:
+            linear-gradient(
+              135deg,
+              #ffd84d,
+              #f7b928
+            );
+          color: #172033;
+          font-size: 11px;
+          font-weight: 900;
+          text-decoration: none;
+          box-shadow:
+            0 10px 22px
+            rgba(245, 183, 37, .20);
+        }
+
+        .v22KpiGrid {
+          display: grid;
+          grid-template-columns:
+            repeat(
+              4,
+              minmax(0, 1fr)
+            );
+          gap: 10px;
+        }
+
+        .v22KpiGrid article {
+          display: flex;
+          min-width: 0;
+          align-items: center;
+          gap: 11px;
+          padding: 14px;
+          border:
+            1px solid #e3eaf2;
+          border-radius: 13px;
+          background: #fff;
+        }
+
+        .v22KpiGrid article > div {
+          display: flex;
+          min-width: 0;
+          flex-direction: column;
+        }
+
+        .v22KpiGrid strong {
+          color: #0f172a;
+          font-size: 22px;
+          line-height: 1;
+        }
+
+        .v22KpiGrid span:not(.v22KpiIcon) {
+          margin-top: 4px;
+          color: #334155;
+          font-size: 11px;
+          font-weight: 850;
+        }
+
+        .v22KpiGrid small {
+          margin-top: 2px;
+          overflow: hidden;
+          color: #94a3b8;
+          font-size: 9px;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .v22KpiIcon {
+          display: grid;
+          width: 34px;
+          height: 34px;
+          flex: 0 0 34px;
+          place-items: center;
+          border-radius: 10px;
+          font-size: 14px;
+          font-weight: 950;
+        }
+
+        .v22KpiIcon.blue {
+          background: #e8f2ff;
+          color: #2563eb;
+        }
+
+        .v22KpiIcon.green {
+          background: #eaf9f0;
+          color: #16a34a;
+        }
+
+        .v22KpiIcon.gold {
+          background: #fff7dc;
+          color: #d97706;
+        }
+
+        .v22KpiIcon.violet {
+          background: #f1ecff;
+          color: #7c3aed;
+        }
+
+        .v22DailyMain {
+          display: grid;
+          grid-template-columns:
+            minmax(0, 1.15fr)
+            minmax(320px, .85fr);
+          gap: 12px;
+          margin-top: 12px;
+        }
+
+        .v22NextAction,
+        .v22ActivityCard {
+          padding: 17px;
+          border:
+            1px solid #e3eaf2;
+          border-radius: 14px;
+          background: #fff;
+        }
+
+        .v22CardTitle {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 12px;
+        }
+
+        .v22CardTitle h3 {
+          margin: 0;
+          color: #0f172a;
+          font-size: 16px;
+          line-height: 1.2;
+        }
+
+        .v22State,
+        .v22ActivityBadge {
+          flex: 0 0 auto;
+          padding: 5px 8px;
+          border-radius: 999px;
+          font-size: 9px;
+          font-weight: 900;
+        }
+
+        .v22State.warning {
+          background: #fff7dc;
+          color: #b45309;
+        }
+
+        .v22State.ready {
+          background: #eaf9f0;
+          color: #15803d;
+        }
+
+        .v22State.neutral {
+          background: #eef2f7;
+          color: #64748b;
+        }
+
+        .v22ActivityBadge {
+          background: #e8f2ff;
+          color: #2563eb;
+        }
+
+        .v22NextAction > p {
+          margin: 12px 0 0;
+          color: #64748b;
+          font-size: 11px;
+          line-height: 1.55;
+        }
+
+        .v22ActionMeta {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 7px;
+          margin-top: 12px;
+        }
+
+        .v22ActionMeta span {
+          padding: 5px 8px;
+          border:
+            1px solid #e5eaf0;
+          border-radius: 8px;
+          background: #f8fafc;
+          color: #475569;
+          font-size: 9px;
+          font-weight: 750;
+        }
+
+        .v22PrimaryAction {
+          display: inline-flex;
+          min-height: 40px;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          margin-top: 14px;
+          padding: 0 14px;
+          border-radius: 9px;
+          background: #0b2748;
+          color: #fff;
+          font-size: 10px;
+          font-weight: 900;
+          text-decoration: none;
+        }
+
+        .v22PrimaryAction span {
+          color: #fbbf24;
+        }
+
+        .v22ActivityList {
+          display: flex;
+          flex-direction: column;
+          margin-top: 10px;
+        }
+
+        .v22ActivityRow {
+          display: flex;
+          min-height: 48px;
+          align-items: center;
+          gap: 9px;
+          padding: 8px 4px;
+          border-bottom:
+            1px solid #edf1f5;
+          color: inherit;
+          text-decoration: none;
+        }
+
+        .v22ActivityRow:last-child {
+          border-bottom: 0;
+        }
+
+        .v22ActivityDot {
+          color: #2563eb;
+          font-size: 11px;
+        }
+
+        .v22ActivityText {
+          display: flex;
+          min-width: 0;
+          flex: 1;
+          flex-direction: column;
+        }
+
+        .v22ActivityText strong {
+          overflow: hidden;
+          color: #0f172a;
+          font-size: 10px;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .v22ActivityText small {
+          margin-top: 2px;
+          overflow: hidden;
+          color: #94a3b8;
+          font-size: 9px;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .v22ActivityArrow {
+          color: #94a3b8;
+          font-size: 12px;
+        }
+
+        .v22ActivityEmpty {
+          margin-top: 10px;
+          padding: 16px;
+          border-radius: 10px;
+          background: #f8fafc;
+          color: #64748b;
+          font-size: 10px;
+          text-align: center;
+        }
+
+        .v22ActivityEmpty.error {
+          background: #fff1f2;
+          color: #be123c;
+        }
+
+        @media (max-width: 1050px) {
+          .v22KpiGrid {
+            grid-template-columns:
+              repeat(
+                2,
+                minmax(0, 1fr)
+              );
+          }
+
+          .v22DailyMain {
+            grid-template-columns:
+              1fr;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .v22Daily {
+            padding: 16px;
+          }
+
+          .v22DailyHeader {
+            flex-direction: column;
+          }
+
+          .v22NewObject {
+            width: 100%;
+          }
+
+          .v22KpiGrid {
+            grid-template-columns:
+              1fr;
+          }
+        }
+
         .v2Stats {
           position: relative;
           z-index: 3;
@@ -2125,11 +5777,580 @@ export default function CockpitOverviewV2({
           font-weight: 850;
         }
 
+        .iaTrashConfirmBackdrop {
+          position: fixed;
+          z-index: 10000;
+          inset: 0;
+
+          display: grid;
+          place-items: center;
+
+          padding: 24px;
+
+          background:
+            rgba(2, 6, 23, 0.72);
+
+          backdrop-filter:
+            blur(12px);
+        }
+
+        .iaTrashConfirmDialog {
+          position: relative;
+
+          width:
+            min(460px, 100%);
+
+          overflow: hidden;
+
+          padding:
+            26px;
+
+          border:
+            1px solid
+            rgba(251, 191, 36, 0.28);
+
+          border-radius:
+            24px;
+
+          background:
+            radial-gradient(
+              circle at 100% 0%,
+              rgba(37, 99, 235, 0.22),
+              transparent 35%
+            ),
+            linear-gradient(
+              145deg,
+              #07111f 0%,
+              #0b1b31 55%,
+              #111827 100%
+            );
+
+          color:
+            #ffffff;
+
+          box-shadow:
+            0 36px 90px
+            rgba(0, 0, 0, 0.52),
+            inset 0 1px 0
+            rgba(255,255,255,.06);
+
+          animation:
+            iaTrashModalIn
+            180ms ease-out;
+        }
+
+        .iaTrashConfirmGlow {
+          position: absolute;
+
+          right: -80px;
+          bottom: -110px;
+
+          width: 240px;
+          height: 240px;
+
+          border-radius: 50%;
+
+          background:
+            rgba(249, 115, 22, 0.18);
+
+          filter:
+            blur(38px);
+
+          pointer-events: none;
+        }
+
+        .iaTrashConfirmBrand {
+          position: relative;
+          z-index: 1;
+
+          display: flex;
+          align-items: center;
+
+          gap: 11px;
+        }
+
+        .iaTrashConfirmMark {
+          display: grid;
+
+          width: 42px;
+          height: 42px;
+
+          place-items: center;
+
+          border:
+            1px solid
+            rgba(251,191,36,.35);
+
+          border-radius:
+            13px;
+
+          background:
+            linear-gradient(
+              145deg,
+              rgba(251,191,36,.18),
+              rgba(249,115,22,.09)
+            );
+
+          color:
+            #fbbf24;
+        }
+
+        .iaTrashConfirmMark svg {
+          width: 23px;
+          height: 23px;
+
+          fill: none;
+
+          stroke:
+            currentColor;
+
+          stroke-width:
+            1.8;
+
+          stroke-linecap:
+            round;
+
+          stroke-linejoin:
+            round;
+        }
+
+        .iaTrashConfirmBrand > div {
+          display: flex;
+
+          flex-direction:
+            column;
+        }
+
+        .iaTrashConfirmBrand div span {
+          color:
+            #67e8f9;
+
+          font-size:
+            9px;
+
+          font-weight:
+            900;
+
+          letter-spacing:
+            .13em;
+        }
+
+        .iaTrashConfirmBrand strong {
+          margin-top: 2px;
+
+          font-size:
+            15px;
+
+          letter-spacing:
+            -.01em;
+        }
+
+        .iaTrashConfirmIcon {
+          position: relative;
+          z-index: 1;
+
+          display: grid;
+
+          width: 64px;
+          height: 64px;
+
+          place-items: center;
+
+          margin-top:
+            26px;
+
+          border:
+            1px solid
+            rgba(248,113,113,.25);
+
+          border-radius:
+            20px;
+
+          background:
+            rgba(239,68,68,.09);
+
+          color:
+            #fca5a5;
+        }
+
+        .iaTrashConfirmIcon svg {
+          width: 29px;
+          height: 29px;
+
+          fill: none;
+
+          stroke:
+            currentColor;
+
+          stroke-width:
+            1.7;
+
+          stroke-linecap:
+            round;
+
+          stroke-linejoin:
+            round;
+        }
+
+        .iaTrashConfirmCopy {
+          position: relative;
+          z-index: 1;
+
+          margin-top:
+            20px;
+        }
+
+        .iaTrashConfirmCopy h2 {
+          margin: 0;
+
+          color:
+            #ffffff;
+
+          font-size:
+            25px;
+
+          letter-spacing:
+            -.035em;
+        }
+
+        .iaTrashObjectName {
+          display: block;
+
+          margin-top:
+            10px;
+
+          color:
+            #fbbf24;
+
+          font-size:
+            14px;
+        }
+
+        .iaTrashConfirmCopy p {
+          margin:
+            10px 0 0;
+
+          color:
+            rgba(226,232,240,.72);
+
+          font-size:
+            13px;
+
+          line-height:
+            1.6;
+        }
+
+        .iaTrashSafety {
+          position: relative;
+          z-index: 1;
+
+          display: flex;
+          align-items: center;
+
+          gap: 9px;
+
+          margin-top:
+            20px;
+
+          padding:
+            11px 13px;
+
+          border:
+            1px solid
+            rgba(34,197,94,.16);
+
+          border-radius:
+            12px;
+
+          background:
+            rgba(34,197,94,.07);
+        }
+
+        .iaTrashSafety > span {
+          display: grid;
+
+          width: 22px;
+          height: 22px;
+
+          place-items: center;
+
+          flex:
+            0 0 22px;
+
+          border-radius:
+            50%;
+
+          background:
+            rgba(34,197,94,.14);
+
+          color:
+            #86efac;
+
+          font-size:
+            11px;
+
+          font-weight:
+            900;
+        }
+
+        .iaTrashSafety p {
+          margin: 0;
+
+          color:
+            #bbf7d0;
+
+          font-size:
+            11px;
+
+          font-weight:
+            700;
+
+          line-height:
+            1.45;
+        }
+
+        .iaTrashConfirmActions {
+          position: relative;
+          z-index: 1;
+
+          display: grid;
+
+          grid-template-columns:
+            1fr 1.35fr;
+
+          gap: 10px;
+
+          margin-top:
+            24px;
+        }
+
+        .iaTrashConfirmActions button {
+          min-height:
+            48px;
+
+          border-radius:
+            13px;
+
+          cursor:
+            pointer;
+
+          font:
+            inherit;
+
+          font-size:
+            12px;
+
+          font-weight:
+            900;
+
+          transition:
+            transform 140ms ease,
+            box-shadow 140ms ease;
+        }
+
+        .iaTrashConfirmActions button:hover {
+          transform:
+            translateY(-1px);
+        }
+
+        .iaTrashCancel {
+          border:
+            1px solid
+            rgba(255,255,255,.13);
+
+          background:
+            rgba(255,255,255,.055);
+
+          color:
+            #cbd5e1;
+        }
+
+        .iaTrashConfirm {
+          display: flex;
+
+          align-items: center;
+          justify-content: center;
+
+          gap: 8px;
+
+          border:
+            1px solid
+            rgba(251,191,36,.44);
+
+          background:
+            linear-gradient(
+              135deg,
+              #f5b914,
+              #f59e0b 54%,
+              #f97316
+            );
+
+          color:
+            #07111f;
+
+          box-shadow:
+            0 12px 26px
+            rgba(249,115,22,.18);
+        }
+
+        @keyframes iaTrashModalIn {
+          from {
+            opacity: 0;
+
+            transform:
+              translateY(8px)
+              scale(.985);
+          }
+
+          to {
+            opacity: 1;
+
+            transform:
+              translateY(0)
+              scale(1);
+          }
+        }
+
+        @media (max-width: 520px) {
+          .iaTrashConfirmDialog {
+            padding: 21px;
+          }
+
+          .iaTrashConfirmActions {
+            grid-template-columns:
+              1fr;
+          }
+        }
+
+
+        .v2ObjectHeaderActions {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .v2TrashToggle {
+          display: inline-flex !important;
+          min-height: 34px;
+          align-items: center;
+          gap: 7px !important;
+          padding: 0 11px !important;
+          border:
+            1px solid #d8e1eb !important;
+          border-radius: 9px;
+          background:
+            #ffffff !important;
+          color:
+            #475569 !important;
+          box-shadow:
+            0 4px 12px
+            rgba(15,23,42,.04);
+        }
+
+        .v2TrashToggle.active {
+          border-color:
+            rgba(239,68,68,.26) !important;
+          background:
+            #fff7f7 !important;
+          color:
+            #b42318 !important;
+        }
+
+        .v2TrashMessage {
+          margin: -3px 0 13px;
+          padding: 10px 13px;
+          border:
+            1px solid
+            rgba(34,197,94,.2);
+          border-radius: 9px;
+          background:
+            rgba(34,197,94,.07);
+          color: #16794b;
+          font-size: 11px;
+          font-weight: 750;
+        }
+
+        .v2TrashMessage.error {
+          border-color:
+            rgba(239,68,68,.22);
+          background:
+            rgba(239,68,68,.07);
+          color: #b42318;
+        }
+
         .v2PropertyGrid {
           display: grid;
           grid-template-columns:
             repeat(4, minmax(0,1fr));
           gap: 13px;
+        }
+
+        .v2PropertyCardWrap {
+          position: relative;
+          min-width: 0;
+        }
+
+        .v2PropertyCard {
+          display: block;
+          height: 100%;
+        }
+
+        .v2ListingAction {
+          position: absolute;
+          z-index: 6;
+          top: 10px;
+          right: 10px;
+
+          display: grid;
+          width: 33px;
+          height: 33px;
+          place-items: center;
+
+          padding: 0;
+          border-radius: 10px;
+
+          cursor: pointer;
+
+          font-size: 14px;
+          font-weight: 900;
+
+          box-shadow:
+            0 6px 16px
+            rgba(15,23,42,.16);
+
+          transition:
+            transform 140ms ease,
+            opacity 140ms ease;
+        }
+
+        .v2ListingAction:hover {
+          transform:
+            scale(1.07);
+        }
+
+        .v2ListingAction:disabled {
+          cursor: wait;
+          opacity: .55;
+        }
+
+        .v2ListingAction.trash {
+          border:
+            1px solid
+            rgba(239,68,68,.26);
+          background:
+            rgba(255,255,255,.96);
+          color:
+            #dc2626;
+        }
+
+        .v2ListingAction.restore {
+          border:
+            1px solid
+            rgba(34,197,94,.3);
+          background:
+            rgba(255,255,255,.96);
+          color:
+            #15803d;
         }
 
         .v2PropertyCard,
@@ -3654,6 +7875,2315 @@ export default function CockpitOverviewV2({
             display: none !important;
           }
         }
+
+        /*
+         * ========================================
+         * PREMIUM_COCKPIT_V26
+         * ========================================
+         */
+
+        .v2Shell,
+        .v2Content {
+          background:
+            linear-gradient(
+              180deg,
+              #f8fbff 0%,
+              #edf4fa 100%
+            ) !important;
+        }
+
+
+        .v26PremiumHero {
+          position: relative;
+          display: grid;
+          min-height: 150px;
+          grid-template-columns:
+            minmax(0, 1fr)
+            minmax(410px, .85fr);
+          align-items: center;
+          gap: 24px;
+          overflow: hidden;
+          padding: 24px 30px;
+          border:
+            1px solid
+            rgba(14,116,144,.16);
+          border-radius: 22px;
+          background:
+            radial-gradient(
+              circle at 72% 20%,
+              rgba(34,211,238,.27),
+              transparent 27%
+            ),
+            linear-gradient(
+              115deg,
+              #07182c 0%,
+              #07375d 52%,
+              #0582a6 100%
+            );
+          box-shadow:
+            0 18px 42px
+            rgba(15,48,81,.15);
+        }
+
+
+        .v26PremiumHero::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background:
+            linear-gradient(
+              115deg,
+              transparent 45%,
+              rgba(255,255,255,.065) 45.2%,
+              transparent 72%
+            );
+        }
+
+
+        .v26HeroCopy,
+        .v26HeroRight {
+          position: relative;
+          z-index: 2;
+        }
+
+
+        .v26HeroEyebrow {
+          display: block;
+          margin-bottom: 8px;
+          color: #ffd34a;
+          font-size: 9px;
+          font-weight: 950;
+          letter-spacing: .16em;
+        }
+
+
+        .v26HeroTitleRow {
+          display: flex;
+          align-items: center;
+          gap: 11px;
+        }
+
+
+        .v26HeroTitleRow h1 {
+          margin: 0;
+          color: #fff;
+          font-size:
+            clamp(
+              24px,
+              2.5vw,
+              38px
+            );
+          font-weight: 800;
+          line-height: 1.04;
+          letter-spacing: -.035em;
+        }
+
+
+        .v26HeroCopy > p {
+          margin: 10px 0 0;
+          color: rgba(235,246,255,.84);
+          font-size: 12px;
+        }
+
+
+        .v26HeroStatus {
+          display: inline-flex;
+          flex: 0 0 auto;
+          align-items: center;
+          gap: 5px;
+          padding: 5px 9px;
+          border:
+            1px solid
+            rgba(74,222,128,.28);
+          border-radius: 999px;
+          background:
+            rgba(22,163,74,.18);
+          color: #a7f3c1;
+          font-size: 8px;
+          font-weight: 900;
+        }
+
+
+        .v26HeroStatus > span {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #4ade80;
+          box-shadow:
+            0 0 9px
+            rgba(74,222,128,.8);
+        }
+
+
+        .v26HeroRight {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 20px;
+        }
+
+
+        .v26HeroScene {
+          position: relative;
+          width: 220px;
+          height: 98px;
+          overflow: hidden;
+        }
+
+
+        .v26HeroScene > span {
+          position: relative;
+          z-index: 5;
+          display: block;
+          margin-top: 7px;
+          color: rgba(255,255,255,.9);
+          font-family:
+            Georgia,
+            serif;
+          font-size: 18px;
+          font-style: italic;
+          line-height: 1.25;
+          transform:
+            rotate(-4deg);
+        }
+
+
+        .v26Mountain {
+          position: absolute;
+          bottom: -16px;
+          clip-path:
+            polygon(
+              50% 0,
+              100% 100%,
+              0 100%
+            );
+        }
+
+
+        .v26MountainBack {
+          right: 77px;
+          width: 125px;
+          height: 70px;
+          background:
+            linear-gradient(
+              135deg,
+              #d8f6ff,
+              #2f849f
+            );
+          opacity: .6;
+        }
+
+
+        .v26MountainFront {
+          right: 4px;
+          width: 145px;
+          height: 90px;
+          background:
+            linear-gradient(
+              135deg,
+              #f4fbff 0%,
+              #91d8e9 38%,
+              #146f8c 75%
+            );
+        }
+
+
+        .v26SwissFlag {
+          position: absolute;
+          z-index: 6;
+          right: 25px;
+          bottom: 29px;
+          display: grid;
+          width: 21px;
+          height: 21px;
+          place-items: center;
+          border-radius: 4px;
+          background: #e31b23;
+          color: #fff;
+          font-size: 15px;
+          font-weight: 950;
+        }
+
+
+        .v26HeroActions {
+          display: flex;
+          width: 170px;
+          flex: 0 0 170px;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+
+        .v26HeroPrimary,
+        .v26HeroSecondary {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 12px;
+          text-decoration: none;
+          font-weight: 950;
+        }
+
+
+        .v26HeroPrimary {
+          min-height: 50px;
+          gap: 7px;
+          background:
+            linear-gradient(
+              135deg,
+              #ffd64d,
+              #ff9f1c
+            );
+          color: #172033;
+          font-size: 11px;
+          box-shadow:
+            0 12px 28px
+            rgba(255,159,28,.30);
+        }
+
+
+        .v26HeroPrimary > span {
+          display: grid;
+          width: 27px;
+          height: 27px;
+          place-items: center;
+          border-radius: 8px;
+          background: rgba(17,24,39,.15);
+          font-size: 16px;
+        }
+
+
+        .v26HeroSecondary {
+          min-height: 29px;
+          border:
+            1px solid
+            rgba(255,255,255,.15);
+          background:
+            rgba(255,255,255,.06);
+          color: #dcecff;
+          font-size: 8px;
+        }
+
+
+        .v22Daily {
+          margin-top: 14px !important;
+          padding: 20px !important;
+          border:
+            1px solid
+            #e5edf5 !important;
+          border-radius:
+            22px !important;
+          background:
+            linear-gradient(
+              180deg,
+              #fff,
+              #fcfdff
+            ) !important;
+          box-shadow:
+            0 14px 36px
+            rgba(31,62,91,.06) !important;
+        }
+
+
+        .v22DailyHeader {
+          align-items: center !important;
+          margin-bottom: 16px !important;
+        }
+
+
+        .v22DailyHeader h2 {
+          color: #10233e !important;
+          font-size: 20px !important;
+          font-weight: 800 !important;
+        }
+
+
+        .v22DailyHeader p {
+          color: #75869b !important;
+        }
+
+
+        .v26TodayStatus {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          padding-left: 18px;
+          border-left:
+            1px solid #e5ebf2;
+        }
+
+
+        .v26TodayStatus > span:last-child {
+          display: flex;
+          flex-direction: column;
+        }
+
+
+        .v26TodayStatus strong {
+          color: #233b59;
+          font-size: 10px;
+        }
+
+
+        .v26TodayStatus small {
+          margin-top: 2px;
+          color: #8a98aa;
+          font-size: 8px;
+        }
+
+
+        .v26TodaySun {
+          color: #ffab1a;
+          font-size: 22px;
+        }
+
+
+        .v22KpiGrid {
+          gap: 10px !important;
+        }
+
+
+        .v22KpiGrid article {
+          min-height: 84px !important;
+          padding: 13px !important;
+          border-radius: 14px !important;
+          box-shadow: none !important;
+        }
+
+
+        .v22KpiGrid article:nth-child(1) {
+          border-color:
+            #d7e8ff !important;
+          background:
+            linear-gradient(
+              135deg,
+              #f7faff,
+              #edf5ff
+            ) !important;
+        }
+
+
+        .v22KpiGrid article:nth-child(2) {
+          border-color:
+            #d8f0e2 !important;
+          background:
+            linear-gradient(
+              135deg,
+              #f7fdf9,
+              #edf9f3
+            ) !important;
+        }
+
+
+        .v22KpiGrid article:nth-child(3) {
+          border-color:
+            #f7dfbd !important;
+          background:
+            linear-gradient(
+              135deg,
+              #fffaf3,
+              #fff3e2
+            ) !important;
+        }
+
+
+        .v22KpiGrid article:nth-child(4) {
+          border-color:
+            #eadfff !important;
+          background:
+            linear-gradient(
+              135deg,
+              #fbf9ff,
+              #f3edff
+            ) !important;
+        }
+
+
+        .v22KpiIcon {
+          width: 40px !important;
+          height: 40px !important;
+          flex-basis: 40px !important;
+          border-radius: 50% !important;
+          font-size: 16px !important;
+        }
+
+
+        .v22KpiIcon.blue {
+          background: #dcecff !important;
+          color: #1677e8 !important;
+        }
+
+
+        .v22KpiIcon.green {
+          background: #d9f5e5 !important;
+          color: #20a35a !important;
+        }
+
+
+        .v22KpiIcon.gold {
+          background: #ffe8c5 !important;
+          color: #e9790c !important;
+        }
+
+
+        .v22KpiIcon.violet {
+          background: #eadfff !important;
+          color: #8b4de8 !important;
+        }
+
+
+        .v22KpiGrid strong {
+          color: #10233e !important;
+          font-size: 21px !important;
+          font-weight: 850 !important;
+        }
+
+
+        .v22NextAction,
+        .v22ActivityCard {
+          min-height: 150px;
+          padding: 16px !important;
+          border:
+            1px solid
+            #e5edf6 !important;
+          border-radius: 16px !important;
+          background: #fff !important;
+          box-shadow:
+            0 6px 18px
+            rgba(31,62,91,.035);
+        }
+
+
+        .v22CardTitle h3 {
+          color: #10233e !important;
+          font-size: 16px !important;
+        }
+
+
+        .v22PrimaryAction {
+          min-height: 35px !important;
+          border-radius: 9px !important;
+          background:
+            linear-gradient(
+              135deg,
+              #1677e8,
+              #075fbd
+            ) !important;
+          box-shadow:
+            0 7px 16px
+            rgba(22,119,232,.20);
+        }
+
+
+        .v22State.warning {
+          background: #fff2db !important;
+          color: #dc7200 !important;
+        }
+
+
+        .v22ActivityEmpty {
+          background:
+            linear-gradient(
+              180deg,
+              #f8fbff,
+              #f3f8fc
+            ) !important;
+          color: #708299 !important;
+        }
+
+
+        .v24Section,
+        .v25Fold,
+        .v26PortalFold {
+          border:
+            1px solid
+            #e2eaf3 !important;
+          border-radius: 15px !important;
+          background: #fff !important;
+          box-shadow:
+            0 8px 22px
+            rgba(31,62,91,.04);
+        }
+
+
+        .v26PortalFold {
+          margin-top: 10px;
+          overflow: hidden;
+        }
+
+
+        .v26PortalSummary {
+          display: flex;
+          min-height: 62px;
+          align-items: center;
+          justify-content: space-between;
+          gap: 15px;
+          padding: 11px 15px;
+          cursor: pointer;
+          list-style: none;
+        }
+
+
+        .v26PortalSummary::-webkit-details-marker {
+          display: none;
+        }
+
+
+        .v26PortalSummary > div {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+
+        .v26PortalSummary > div > span:last-child {
+          display: flex;
+          flex-direction: column;
+        }
+
+
+        .v26PortalSummary strong {
+          color: #10233e;
+          font-size: 11px;
+        }
+
+
+        .v26PortalSummary small {
+          margin-top: 2px;
+          color: #8a98aa;
+          font-size: 8px;
+        }
+
+
+        .v26PortalIcon {
+          display: grid;
+          width: 32px;
+          height: 32px;
+          place-items: center;
+          border-radius: 10px;
+          background: #e8f3ff;
+          color: #1677e8;
+          font-size: 15px;
+          font-weight: 950;
+        }
+
+
+        .v26PortalOpen {
+          color: #1677e8;
+          font-size: 8px;
+          font-weight: 900;
+        }
+
+
+        .v26PortalBody {
+          padding: 0 12px 12px;
+        }
+
+
+        @media (max-width: 1100px) {
+
+          .v26PremiumHero {
+            grid-template-columns: 1fr;
+          }
+
+
+          .v26HeroRight {
+            justify-content: space-between;
+          }
+        }
+
+
+        @media (max-width: 720px) {
+
+          .v26PremiumHero {
+            padding: 18px;
+          }
+
+
+          .v26HeroTitleRow {
+            align-items: flex-start;
+            flex-direction: column;
+          }
+
+
+          .v26HeroRight {
+            align-items: stretch;
+            flex-direction: column;
+          }
+
+
+          .v26HeroScene {
+            display: none;
+          }
+
+
+          .v26HeroActions {
+            width: 100%;
+          }
+
+
+          .v26TodayStatus {
+            display: none;
+          }
+        }
+
+
+        /*
+         * ========================================
+         * MOCKUP_MATCH_V27
+         * final visual overrides
+         * ========================================
+         */
+
+
+        /*
+         * TOP TOOLBAR
+         */
+
+        .v2Topbar {
+          min-height: 72px !important;
+          padding:
+            13px 28px !important;
+          border-bottom:
+            1px solid #e6edf5 !important;
+          background:
+            rgba(
+              255,
+              255,
+              255,
+              .98
+            ) !important;
+          box-shadow:
+            0 4px 18px
+            rgba(15,43,72,.045) !important;
+          backdrop-filter:
+            blur(16px);
+        }
+
+
+        .v2Search {
+          width:
+            min(
+              590px,
+              57vw
+            ) !important;
+          min-height:
+            46px !important;
+          padding:
+            0 16px !important;
+          border:
+            1px solid
+            #dde7f1 !important;
+          border-radius:
+            13px !important;
+          background:
+            #ffffff !important;
+          box-shadow:
+            0 6px 18px
+            rgba(29,57,86,.05) !important;
+        }
+
+
+        .v2Search > span {
+          color:
+            #52708f !important;
+        }
+
+
+        .v2Search input {
+          color:
+            #182b44 !important;
+          font-size:
+            12px !important;
+        }
+
+
+        .v2MarketPill,
+        .v2TopProfile {
+          border-radius:
+            12px !important;
+          box-shadow:
+            0 4px 14px
+            rgba(26,58,92,.05);
+        }
+
+
+        /*
+         * HERO
+         */
+
+        .v26PremiumHero {
+          min-height:
+            152px !important;
+
+          grid-template-columns:
+            minmax(
+              0,
+              1.45fr
+            )
+            minmax(
+              440px,
+              .8fr
+            ) !important;
+
+          gap:
+            14px !important;
+
+          padding:
+            23px 32px !important;
+
+          border-radius:
+            22px !important;
+
+          background:
+            radial-gradient(
+              circle at 74% 18%,
+              rgba(73,210,239,.34),
+              transparent 27%
+            ),
+            linear-gradient(
+              112deg,
+              #061a30 0%,
+              #07345a 51%,
+              #068aaa 100%
+            ) !important;
+
+          box-shadow:
+            0 18px 44px
+            rgba(16,55,91,.17) !important;
+        }
+
+
+        .v26HeroCopy {
+          min-width: 0;
+        }
+
+
+        .v26HeroTitleRow {
+          flex-wrap:
+            nowrap !important;
+        }
+
+
+        .v26HeroTitleRow h1 {
+          max-width:
+            none !important;
+
+          color:
+            #ffffff !important;
+
+          font-size:
+            clamp(
+              27px,
+              2.45vw,
+              38px
+            ) !important;
+
+          font-weight:
+            800 !important;
+
+          letter-spacing:
+            -.035em !important;
+
+          line-height:
+            1.04 !important;
+
+          white-space:
+            nowrap !important;
+        }
+
+
+        .v26HeroCopy > p {
+          margin-top:
+            11px !important;
+
+          color:
+            rgba(
+              241,
+              248,
+              255,
+              .84
+            ) !important;
+
+          font-size:
+            12px !important;
+        }
+
+
+        .v26HeroRight {
+          gap:
+            15px !important;
+        }
+
+
+        .v26HeroScene {
+          width:
+            210px !important;
+
+          height:
+            104px !important;
+        }
+
+
+        .v26HeroScene > span {
+          margin-top:
+            8px !important;
+
+          font-size:
+            18px !important;
+
+          text-shadow:
+            0 2px 10px
+            rgba(3,37,64,.25);
+        }
+
+
+        .v26MountainBack {
+          right:
+            72px !important;
+
+          bottom:
+            -17px !important;
+
+          width:
+            135px !important;
+
+          height:
+            73px !important;
+
+          opacity:
+            .68 !important;
+        }
+
+
+        .v26MountainFront {
+          right:
+            0 !important;
+
+          bottom:
+            -17px !important;
+
+          width:
+            152px !important;
+
+          height:
+            94px !important;
+
+          filter:
+            drop-shadow(
+              0 8px 9px
+              rgba(4,61,82,.16)
+            );
+        }
+
+
+        .v26HeroActions {
+          width:
+            188px !important;
+
+          flex-basis:
+            188px !important;
+        }
+
+
+        .v26HeroPrimary {
+          min-height:
+            52px !important;
+
+          border-radius:
+            13px !important;
+
+          background:
+            linear-gradient(
+              135deg,
+              #ffd44d,
+              #ff9e1b
+            ) !important;
+
+          color:
+            #111827 !important;
+
+          font-size:
+            12px !important;
+
+          box-shadow:
+            0 13px 30px
+            rgba(255,158,27,.34) !important;
+        }
+
+
+        .v26HeroPrimary:hover {
+          transform:
+            translateY(-1px);
+
+          filter:
+            brightness(1.025);
+        }
+
+
+        .v26HeroSecondary {
+          color:
+            #e7f3ff !important;
+        }
+
+
+        /*
+         * DAILY HEADER
+         */
+
+        .v22Daily {
+          margin-top:
+            14px !important;
+
+          padding:
+            19px 20px 20px !important;
+
+          border-radius:
+            20px !important;
+
+          background:
+            #ffffff !important;
+
+          box-shadow:
+            0 13px 35px
+            rgba(21,57,91,.065) !important;
+        }
+
+
+        .v22DailyHeader {
+          min-height:
+            50px;
+
+          align-items:
+            center !important;
+        }
+
+
+        .v22DailyHeader >
+        div:first-child {
+          position:
+            relative;
+
+          min-height:
+            48px;
+
+          padding-left:
+            57px;
+        }
+
+
+        .v22DailyHeader >
+        div:first-child::before {
+          content:
+            "▣";
+
+          position:
+            absolute;
+
+          top:
+            2px;
+
+          left:
+            0;
+
+          display:
+            grid;
+
+          width:
+            43px;
+
+          height:
+            43px;
+
+          place-items:
+            center;
+
+          border-radius:
+            12px;
+
+          background:
+            linear-gradient(
+              135deg,
+              #147fe9,
+              #36c8db
+            );
+
+          color:
+            #ffffff;
+
+          font-size:
+            17px;
+
+          font-weight:
+            900;
+
+          box-shadow:
+            0 7px 18px
+            rgba(20,127,233,.22);
+        }
+
+
+        .v22DailyHeader h2 {
+          font-size:
+            20px !important;
+
+          line-height:
+            1.08 !important;
+        }
+
+
+        .v2Eyebrow.dark {
+          color:
+            #4c6684 !important;
+        }
+
+
+        .v26TodayStatus {
+          padding-left:
+            22px !important;
+        }
+
+
+        .v26TodaySun {
+          font-size:
+            25px !important;
+        }
+
+
+        /*
+         * KPI CARDS
+         */
+
+        .v22KpiGrid {
+          gap:
+            12px !important;
+        }
+
+
+        .v22KpiGrid article {
+          position:
+            relative;
+
+          min-height:
+            93px !important;
+
+          gap:
+            12px !important;
+
+          padding:
+            14px 15px !important;
+
+          border-radius:
+            14px !important;
+
+          transition:
+            transform .16s ease,
+            box-shadow .16s ease;
+        }
+
+
+        .v22KpiGrid article:hover {
+          transform:
+            translateY(-2px);
+
+          box-shadow:
+            0 9px 20px
+            rgba(22,62,100,.07) !important;
+        }
+
+
+        .v22KpiIcon {
+          width:
+            46px !important;
+
+          height:
+            46px !important;
+
+          flex-basis:
+            46px !important;
+
+          box-shadow:
+            inset 0 0 0
+            8px
+            rgba(255,255,255,.32);
+        }
+
+
+        .v22KpiGrid strong {
+          font-size:
+            23px !important;
+        }
+
+
+        .v22KpiGrid article
+        div span {
+          color:
+            #20344e !important;
+
+          font-weight:
+            850 !important;
+        }
+
+
+        /*
+         * TWO WORK CARDS
+         */
+
+        .v22DailyMain {
+          grid-template-columns:
+            minmax(0,1.05fr)
+            minmax(0,1fr) !important;
+
+          gap:
+            12px !important;
+
+          margin-top:
+            11px !important;
+        }
+
+
+        .v22NextAction,
+        .v22ActivityCard {
+          position:
+            relative;
+
+          min-height:
+            177px !important;
+
+          border-radius:
+            16px !important;
+
+          border:
+            1px solid
+            #e4ecf4 !important;
+
+          box-shadow:
+            0 7px 21px
+            rgba(22,55,89,.04) !important;
+        }
+
+
+        /*
+         * Fake thumbnail only when no
+         * real image is shown yet.
+         */
+
+        .v22NextAction::before {
+          content:
+            "⌂";
+
+          position:
+            absolute;
+
+          top:
+            57px;
+
+          left:
+            16px;
+
+          display:
+            grid;
+
+          width:
+            88px;
+
+          height:
+            74px;
+
+          place-items:
+            center;
+
+          overflow:
+            hidden;
+
+          border:
+            1px solid
+            #d7e7f4;
+
+          border-radius:
+            11px;
+
+          background:
+            linear-gradient(
+              155deg,
+              #a7dcff 0%,
+              #e6f5ff 45%,
+              #8bc68a 46%,
+              #5d9d69 100%
+            );
+
+          color:
+            #153c61;
+
+          font-size:
+            41px;
+
+          text-shadow:
+            0 2px 2px
+            rgba(255,255,255,.4);
+        }
+
+
+        .v22NextAction
+        .v22CardTitle h3 {
+          margin-left:
+            102px;
+        }
+
+
+        .v22NextAction >
+        p {
+          margin-left:
+            102px !important;
+        }
+
+
+        .v22NextAction
+        .v22ActionMeta {
+          margin-left:
+            102px !important;
+        }
+
+
+        .v22NextAction
+        .v22PrimaryAction {
+          margin-left:
+            102px !important;
+
+          background:
+            transparent !important;
+
+          color:
+            #0874df !important;
+
+          box-shadow:
+            none !important;
+
+          padding:
+            0 !important;
+
+          justify-content:
+            flex-start !important;
+
+          font-size:
+            10px !important;
+        }
+
+
+        /*
+         * ACTIVITY EMPTY STATE
+         */
+
+        .v22ActivityCard
+        .v22ActivityEmpty {
+          position:
+            relative;
+
+          min-height:
+            102px;
+
+          display:
+            flex;
+
+          align-items:
+            flex-end;
+
+          justify-content:
+            center;
+
+          padding:
+            56px 14px 14px !important;
+
+          border-radius:
+            12px !important;
+
+          background:
+            linear-gradient(
+              180deg,
+              #fbfdff,
+              #f3f8fd
+            ) !important;
+
+          text-align:
+            center;
+        }
+
+
+        .v22ActivityCard
+        .v22ActivityEmpty::before {
+          content:
+            "⌄";
+
+          position:
+            absolute;
+
+          top:
+            13px;
+
+          left:
+            50%;
+
+          display:
+            grid;
+
+          width:
+            43px;
+
+          height:
+            31px;
+
+          place-items:
+            center;
+
+          border:
+            3px solid
+            #bfd4e8;
+
+          border-radius:
+            8px 8px 12px 12px;
+
+          color:
+            #1383eb;
+
+          font-size:
+            17px;
+
+          font-weight:
+            900;
+
+          transform:
+            translateX(-50%);
+        }
+
+
+        /*
+         * FOLDS
+         */
+
+        .v24Section,
+        .v25Fold,
+        .v26PortalFold {
+          margin-top:
+            9px !important;
+
+          border-radius:
+            14px !important;
+        }
+
+
+        /*
+         * RESPONSIVE
+         */
+
+        @media
+        (max-width: 1280px) {
+
+          .v26PremiumHero {
+            grid-template-columns:
+              minmax(0,1fr)
+              390px !important;
+          }
+
+
+          .v26HeroTitleRow h1 {
+            font-size:
+              28px !important;
+          }
+
+
+          .v26HeroScene {
+            width:
+              175px !important;
+          }
+        }
+
+
+        @media
+        (max-width: 1050px) {
+
+          .v26HeroTitleRow h1 {
+            white-space:
+              normal !important;
+          }
+
+
+          .v22NextAction::before {
+            display:
+              none;
+          }
+
+
+          .v22NextAction
+          .v22CardTitle h3,
+          .v22NextAction >
+          p,
+          .v22NextAction
+          .v22ActionMeta,
+          .v22NextAction
+          .v22PrimaryAction {
+            margin-left:
+              0 !important;
+          }
+        }
+
+
+        /*
+         * ========================================
+         * MOCKUP_MATCH_V28
+         * ========================================
+         */
+
+
+        /*
+         * INSERT AI 3D PRIMARY CTA
+         */
+
+        .v26HeroActions {
+          width:
+            206px !important;
+
+          flex-basis:
+            206px !important;
+        }
+
+
+        .v26HeroPrimary {
+          position:
+            relative !important;
+
+          isolation:
+            isolate;
+
+          min-height:
+            58px !important;
+
+          gap:
+            11px !important;
+
+          overflow:
+            visible !important;
+
+          padding:
+            0 17px !important;
+
+          border:
+            1px solid
+            rgba(
+              255,
+              224,
+              104,
+              .95
+            ) !important;
+
+          border-radius:
+            15px !important;
+
+          background:
+            linear-gradient(
+              180deg,
+              #ffe878 0%,
+              #ffd348 38%,
+              #ffae21 72%,
+              #f18b08 100%
+            ) !important;
+
+          color:
+            #121923 !important;
+
+          font-size:
+            13px !important;
+
+          font-weight:
+            950 !important;
+
+          letter-spacing:
+            -.015em;
+
+          text-shadow:
+            0 1px 0
+            rgba(255,255,255,.45);
+
+          box-shadow:
+            0 2px 0
+            #fff2a6 inset,
+
+            0 -5px 0
+            rgba(174,83,0,.33)
+            inset,
+
+            0 7px 0
+            #b55b00,
+
+            0 14px 22px
+            rgba(255,157,14,.32),
+
+            0 0 25px
+            rgba(255,196,56,.28) !important;
+
+          transform:
+            translateY(-3px);
+
+          transition:
+            transform .15s ease,
+            box-shadow .15s ease,
+            filter .15s ease;
+        }
+
+
+        .v26HeroPrimary::before {
+          content:
+            "";
+
+          position:
+            absolute;
+
+          z-index:
+            -1;
+
+          top:
+            3px;
+
+          right:
+            6px;
+
+          bottom:
+            17px;
+
+          left:
+            6px;
+
+          border-radius:
+            11px;
+
+          background:
+            linear-gradient(
+              180deg,
+              rgba(255,255,255,.50),
+              rgba(255,255,255,0)
+            );
+
+          pointer-events:
+            none;
+        }
+
+
+        .v26HeroPrimary::after {
+          content:
+            "";
+
+          position:
+            absolute;
+
+          z-index:
+            -2;
+
+          right:
+            -8px;
+
+          bottom:
+            -13px;
+
+          left:
+            -8px;
+
+          height:
+            23px;
+
+          border-radius:
+            50%;
+
+          background:
+            radial-gradient(
+              ellipse at center,
+              rgba(255,164,23,.44),
+              rgba(255,164,23,0) 70%
+            );
+
+          filter:
+            blur(5px);
+
+          pointer-events:
+            none;
+        }
+
+
+        .v26HeroPrimary:hover {
+          transform:
+            translateY(-5px)
+            scale(1.018) !important;
+
+          filter:
+            saturate(1.06)
+            brightness(1.025);
+
+          box-shadow:
+            0 2px 0
+            #fff6bd inset,
+
+            0 -5px 0
+            rgba(174,83,0,.30)
+            inset,
+
+            0 9px 0
+            #ac5600,
+
+            0 18px 27px
+            rgba(255,157,14,.36),
+
+            0 0 32px
+            rgba(255,200,65,.38) !important;
+        }
+
+
+        .v26HeroPrimary:active {
+          transform:
+            translateY(2px)
+            scale(.995) !important;
+
+          box-shadow:
+            0 2px 0
+            #fff1a5 inset,
+
+            0 -3px 0
+            rgba(174,83,0,.25)
+            inset,
+
+            0 2px 0
+            #a95400,
+
+            0 7px 12px
+            rgba(255,157,14,.24) !important;
+        }
+
+
+        .v28CtaIcon {
+          display:
+            grid !important;
+
+          width:
+            35px !important;
+
+          height:
+            35px !important;
+
+          flex:
+            0 0 35px !important;
+
+          place-items:
+            center;
+
+          border:
+            1px solid
+            rgba(53,28,0,.30);
+
+          border-radius:
+            10px !important;
+
+          background:
+            linear-gradient(
+              180deg,
+              #522e04,
+              #241300
+            ) !important;
+
+          color:
+            #ffe368 !important;
+
+          font-size:
+            24px !important;
+
+          font-weight:
+            500 !important;
+
+          line-height:
+            1;
+
+          text-shadow:
+            0 0 9px
+            rgba(255,207,57,.55);
+
+          box-shadow:
+            0 2px 0
+            rgba(255,255,255,.14)
+            inset,
+
+            0 4px 7px
+            rgba(64,31,0,.26);
+        }
+
+
+        .v28CtaText {
+          display:
+            block;
+
+          white-space:
+            nowrap;
+        }
+
+
+        /*
+         * SECONDARY CTA
+         */
+
+        .v26HeroSecondary {
+          min-height:
+            34px !important;
+
+          margin-top:
+            4px;
+
+          border:
+            1px solid
+            rgba(199,236,255,.34) !important;
+
+          border-radius:
+            13px !important;
+
+          background:
+            linear-gradient(
+              180deg,
+              rgba(255,255,255,.12),
+              rgba(255,255,255,.035)
+            ) !important;
+
+          color:
+            #ffffff !important;
+
+          box-shadow:
+            0 1px 0
+            rgba(255,255,255,.10)
+            inset;
+        }
+
+
+        /*
+         * PORTAL CONNECTION CARD
+         */
+
+        .v26PortalFold {
+          overflow:
+            hidden;
+
+          margin-top:
+            11px !important;
+
+          border:
+            1px solid
+            #dfe9f3 !important;
+
+          border-radius:
+            18px !important;
+
+          background:
+            linear-gradient(
+              180deg,
+              #ffffff,
+              #fbfdff
+            ) !important;
+
+          box-shadow:
+            0 12px 29px
+            rgba(25,63,99,.055) !important;
+        }
+
+
+        .v26PortalSummary {
+          min-height:
+            66px !important;
+
+          padding:
+            12px 17px !important;
+        }
+
+
+        .v26PortalIcon {
+          width:
+            39px !important;
+
+          height:
+            39px !important;
+
+          border-radius:
+            11px !important;
+
+          background:
+            linear-gradient(
+              135deg,
+              #e8f5ff,
+              #dbeeff
+            ) !important;
+
+          color:
+            #0d7fe8 !important;
+
+          font-size:
+            18px !important;
+        }
+
+
+        .v26PortalSummary strong {
+          color:
+            #10233e !important;
+
+          font-size:
+            13px !important;
+
+          font-weight:
+            900 !important;
+        }
+
+
+        .v26PortalSummary small {
+          color:
+            #76889d !important;
+
+          font-size:
+            9px !important;
+        }
+
+
+        .v26PortalOpen {
+          color:
+            #0878e4 !important;
+
+          font-size:
+            9px !important;
+
+          font-weight:
+            900 !important;
+        }
+
+
+        /*
+         * ALWAYS VISIBLE PORTAL LOGOS
+         */
+
+        .v28PortalLogoStrip {
+          display:
+            grid;
+
+          grid-template-columns:
+            repeat(
+              5,
+              minmax(0,1fr)
+            );
+
+          gap:
+            10px;
+
+          padding:
+            0 17px 16px;
+        }
+
+
+        .v28PortalLogoTile {
+          display:
+            flex;
+
+          min-width:
+            0;
+
+          min-height:
+            62px;
+
+          align-items:
+            center;
+
+          justify-content:
+            center;
+
+          padding:
+            8px 10px;
+
+          overflow:
+            hidden;
+
+          border:
+            1px solid
+            #dfe8f1;
+
+          border-radius:
+            12px;
+
+          background:
+            linear-gradient(
+              180deg,
+              #ffffff,
+              #f8fbfe
+            );
+
+          box-shadow:
+            0 3px 10px
+            rgba(35,71,105,.035);
+
+          transition:
+            transform .15s ease,
+            box-shadow .15s ease,
+            border-color .15s ease;
+        }
+
+
+        .v28PortalLogoTile:hover {
+          transform:
+            translateY(-2px);
+
+          border-color:
+            #c8dced;
+
+          box-shadow:
+            0 8px 17px
+            rgba(35,71,105,.075);
+        }
+
+
+        /*
+         * IMMOSCOUT24
+         */
+
+        .v28Scout {
+          display:
+            inline-flex;
+
+          align-items:
+            center;
+
+          color:
+            #26313e;
+
+          font-size:
+            18px;
+
+          font-weight:
+            650;
+
+          letter-spacing:
+            -.045em;
+
+          white-space:
+            nowrap;
+        }
+
+
+        .v28Scout b {
+          display:
+            inline-block;
+
+          margin-right:
+            -1px;
+
+          padding:
+            3px 5px;
+
+          background:
+            #43e0cb;
+
+          color:
+            #087a77;
+
+          font-weight:
+            600;
+
+          transform:
+            skew(-7deg);
+        }
+
+
+        .v28Scout span {
+          font-weight:
+            650;
+        }
+
+
+        /*
+         * HOMEGATE
+         */
+
+        .v28Homegate {
+          display:
+            inline-flex;
+
+          align-items:
+            center;
+
+          gap:
+            8px;
+
+          color:
+            #232936;
+
+          font-size:
+            19px;
+
+          font-weight:
+            650;
+
+          letter-spacing:
+            -.04em;
+
+          white-space:
+            nowrap;
+        }
+
+
+        .v28Homegate b {
+          color:
+            #ef3340;
+
+          font-size:
+            27px;
+
+          font-weight:
+            950;
+
+          line-height:
+            1;
+        }
+
+
+        /*
+         * IMMOWELT
+         */
+
+        .v28Immowelt {
+          display:
+            inline-flex;
+
+          align-items:
+            center;
+
+          overflow:
+            hidden;
+
+          border-radius:
+            999px;
+
+          background:
+            #383d42;
+
+          color:
+            #ffffff;
+
+          font-size:
+            16px;
+
+          font-weight:
+            850;
+
+          line-height:
+            1;
+
+          white-space:
+            nowrap;
+        }
+
+
+        .v28Immowelt b {
+          padding:
+            7px 3px 7px 11px;
+
+          font-weight:
+            850;
+        }
+
+
+        .v28Immowelt span {
+          padding:
+            7px 11px 7px 3px;
+
+          border-radius:
+            999px;
+
+          background:
+            #ffc32b;
+
+          color:
+            #373434;
+
+          font-weight:
+            900;
+        }
+
+
+        /*
+         * KLEINANZEIGEN
+         */
+
+        .v28Kleinanzeigen {
+          display:
+            inline-flex;
+
+          align-items:
+            center;
+
+          gap:
+            7px;
+
+          color:
+            #30753b;
+
+          font-size:
+            16px;
+
+          font-weight:
+            650;
+
+          letter-spacing:
+            -.035em;
+
+          white-space:
+            nowrap;
+        }
+
+
+        .v28Kleinanzeigen b {
+          color:
+            #68aa59;
+
+          font-size:
+            28px;
+
+          font-weight:
+            400;
+
+          line-height:
+            1;
+        }
+
+
+        /*
+         * COMPARIS
+         */
+
+        .v28Comparis {
+          display:
+            inline-flex;
+
+          align-items:
+            center;
+
+          color:
+            #49ad23;
+
+          font-size:
+            20px;
+
+          font-weight:
+            650;
+
+          letter-spacing:
+            -.045em;
+
+          white-space:
+            nowrap;
+        }
+
+
+        .v28Comparis b {
+          margin-right:
+            -2px;
+
+          color:
+            #49ad23;
+
+          font-size:
+            22px;
+        }
+
+
+        /*
+         * TECH DETAILS STAY COLLAPSIBLE
+         */
+
+        .v26PortalBody {
+          padding:
+            0 14px 14px !important;
+        }
+
+
+        .v26PortalFold:not([open])
+        .v26PortalBody {
+          display:
+            none;
+        }
+
+
+        /*
+         * HERO BALANCE
+         */
+
+        .v26HeroScene {
+          filter:
+            drop-shadow(
+              0 10px 18px
+              rgba(0,56,81,.13)
+            );
+        }
+
+
+        .v26HeroScene > span {
+          font-size:
+            19px !important;
+
+          line-height:
+            1.16 !important;
+        }
+
+
+        /*
+         * RESPONSIVE
+         */
+
+        @media
+        (max-width: 1180px) {
+
+          .v28PortalLogoStrip {
+            grid-template-columns:
+              repeat(
+                3,
+                minmax(0,1fr)
+              );
+          }
+        }
+
+
+        @media
+        (max-width: 760px) {
+
+          .v28PortalLogoStrip {
+            grid-template-columns:
+              repeat(
+                2,
+                minmax(0,1fr)
+              );
+          }
+
+
+          .v26HeroActions {
+            width:
+              100% !important;
+
+            flex-basis:
+              auto !important;
+          }
+
+
+          .v26HeroPrimary {
+            width:
+              100%;
+          }
+        }
+
+
+        @media
+        (max-width: 480px) {
+
+          .v28PortalLogoStrip {
+            grid-template-columns:
+              1fr;
+          }
+        }
+
       `}</style>
     </div>
   );
