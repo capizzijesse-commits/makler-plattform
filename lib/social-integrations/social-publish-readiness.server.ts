@@ -511,9 +511,8 @@ export async function inspectSocialPublishReadiness(
         credentialExpiryUnknown +=
           1;
 
-        issues.add(
-          "META_CREDENTIAL_EXPIRY_UNKNOWN"
-        );
+        credentialReady +=
+          1;
 
         continue;
       }
