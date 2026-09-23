@@ -6532,6 +6532,375 @@ export default function CockpitOverviewV3View({
           }
         }
       `}</style>
+
+      <style jsx global>{`
+        /* ========================================
+           COCKPIT_MOBILE_GLOBAL_POLISH_V31
+           Cross-component mobile app polish
+           ======================================== */
+
+        @media screen and (max-width: 650px) {
+
+          /* ======================================
+             TOP APP BAR
+             ====================================== */
+
+          .v2Shell .v2Topbar {
+            position: sticky !important;
+            z-index: 120 !important;
+            top: 0 !important;
+            display: flex !important;
+            min-height: 0 !important;
+            align-items: center !important;
+            gap: 7px !important;
+            padding: 7px 9px !important;
+            background:
+              rgba(247, 251, 255, .96) !important;
+            border-bottom:
+              1px solid rgba(15, 39, 72, .07) !important;
+            box-shadow:
+              0 5px 18px rgba(15, 39, 72, .05) !important;
+            backdrop-filter:
+              blur(16px) !important;
+          }
+
+          .v2Shell .v2Search {
+            display: flex !important;
+            min-width: 0 !important;
+            min-height: 42px !important;
+            height: 42px !important;
+            flex: 1 1 auto !important;
+            align-items: center !important;
+            gap: 7px !important;
+            margin: 0 !important;
+            padding: 0 10px !important;
+            border:
+              1px solid rgba(110, 137, 167, .20) !important;
+            border-radius: 13px !important;
+            background: #ffffff !important;
+            box-shadow:
+              0 2px 8px rgba(15, 39, 72, .035) !important;
+          }
+
+          .v2Shell .v2Search > span {
+            flex: 0 0 auto !important;
+            font-size: 21px !important;
+            line-height: 1 !important;
+          }
+
+          .v2Shell .v2Search input {
+            width: 100% !important;
+            min-width: 0 !important;
+            height: 40px !important;
+            padding: 0 !important;
+            border: 0 !important;
+            outline: 0 !important;
+            background: transparent !important;
+            font-size: 14px !important;
+            line-height: 1 !important;
+            text-overflow: ellipsis !important;
+          }
+
+          .v2Shell .v2TopActions {
+            display: flex !important;
+            flex: 0 0 auto !important;
+            align-items: center !important;
+            gap: 6px !important;
+          }
+
+          .v2Shell .v2MarketPill,
+          .v2Shell .v2TopProfile {
+            display: grid !important;
+            width: 42px !important;
+            min-width: 42px !important;
+            height: 42px !important;
+            min-height: 42px !important;
+            place-items: center !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border-radius: 12px !important;
+          }
+
+          .v2Shell .v2Avatar {
+            width: 36px !important;
+            height: 36px !important;
+            min-width: 36px !important;
+            min-height: 36px !important;
+            font-size: 12px !important;
+          }
+
+
+          /* ======================================
+             REMOVE DUPLICATE FLOATING SUPPORT
+             Bottom navigation owns mobile actions
+             ====================================== */
+
+          .supportDock,
+          .guide-launcher {
+            display: none !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+          }
+
+
+          /* ======================================
+             BOTTOM APP NAV - LIGHTER + SMALLER
+             ====================================== */
+
+          .iaMobileAppNav {
+            left: 8px !important;
+            right: 8px !important;
+            bottom:
+              calc(
+                6px + env(safe-area-inset-bottom)
+              ) !important;
+            min-height: 62px !important;
+            padding: 5px 5px 4px !important;
+            border-radius: 20px !important;
+          }
+
+          .iaMobileNavItem {
+            min-height: 48px !important;
+            gap: 3px !important;
+            padding: 4px 1px !important;
+            border-radius: 12px !important;
+          }
+
+          .iaMobileNavItem > span {
+            width: 22px !important;
+            height: 22px !important;
+          }
+
+          .iaMobileNavItem svg {
+            width: 21px !important;
+            height: 21px !important;
+          }
+
+          .iaMobileNavItem small,
+          .iaMobileNavCreate small {
+            font-size: 8.5px !important;
+          }
+
+          .iaMobileNavCreate {
+            gap: 3px !important;
+            padding-bottom: 4px !important;
+          }
+
+          .iaMobileNavCreate > span {
+            width: 48px !important;
+            height: 48px !important;
+            margin-top: -21px !important;
+            border-width: 3px !important;
+          }
+
+          .iaMobileNavCreate svg {
+            width: 23px !important;
+            height: 23px !important;
+          }
+
+
+          /* ======================================
+             PUBLISHING MAPPE - MOBILE COMPACT
+             ====================================== */
+
+          .cockpitV3 .batch23 {
+            margin-top: 0 !important;
+            padding: 14px !important;
+            border-radius: 16px !important;
+          }
+
+          .cockpitV3 .batch23Header {
+            display: grid !important;
+            grid-template-columns:
+              minmax(0, 1fr) 58px !important;
+            min-height: 0 !important;
+            align-items: start !important;
+            gap: 9px !important;
+            padding-left: 45px !important;
+          }
+
+          .cockpitV3 .batch23Header::before {
+            top: 0 !important;
+            width: 35px !important;
+            height: 35px !important;
+            border-radius: 10px !important;
+            font-size: 19px !important;
+          }
+
+          .cockpitV3 .batch23Header h2 {
+            font-size: 18px !important;
+            line-height: 1.08 !important;
+            letter-spacing: -.025em !important;
+          }
+
+          .cockpitV3 .batch23Header p {
+            margin-top: 4px !important;
+            font-size: 9px !important;
+            line-height: 1.35 !important;
+          }
+
+          .cockpitV3 .batch23Eyebrow {
+            margin-bottom: 3px !important;
+            font-size: 8px !important;
+          }
+
+          .cockpitV3 .batch23Ready {
+            min-width: 58px !important;
+            width: 58px !important;
+            padding: 6px 5px !important;
+            border-radius: 10px !important;
+          }
+
+          .cockpitV3 .batch23Ready strong {
+            font-size: 18px !important;
+            line-height: 1 !important;
+          }
+
+          .cockpitV3 .batch23Ready span {
+            font-size: 8px !important;
+          }
+
+          .cockpitV3 .batch23Toolbar {
+            display: block !important;
+            margin-top: 11px !important;
+          }
+
+          .cockpitV3 .batch23Scopes {
+            display: grid !important;
+            grid-template-columns:
+              repeat(4, minmax(0,1fr)) !important;
+            gap: 5px !important;
+          }
+
+          .cockpitV3 .batch23Scopes button {
+            width: 100% !important;
+            min-width: 0 !important;
+            min-height: 36px !important;
+            padding: 0 3px !important;
+            border-radius: 9px !important;
+            font-size: 9px !important;
+          }
+
+          .cockpitV3 .batch23Tools {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            gap: 5px !important;
+            margin-top: 7px !important;
+          }
+
+          .cockpitV3 .batch23Tools button {
+            width: 100% !important;
+            min-height: 36px !important;
+            padding: 0 8px !important;
+            font-size: 9px !important;
+          }
+
+          .cockpitV3 .batch23Summary {
+            display: grid !important;
+            grid-template-columns:
+              repeat(2, minmax(0,1fr)) !important;
+            gap: 5px !important;
+            margin-top: 9px !important;
+          }
+
+          .cockpitV3 .batch23Summary span,
+          .cockpitV3 .batch23Summary strong {
+            display: flex !important;
+            min-width: 0 !important;
+            min-height: 29px !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 4px 6px !important;
+            font-size: 8.5px !important;
+            text-align: center !important;
+          }
+
+          .cockpitV3 .batch23Empty {
+            margin-top: 9px !important;
+            padding: 16px 10px !important;
+            border-radius: 10px !important;
+            font-size: 9px !important;
+          }
+
+          .cockpitV3 .batch23Rows {
+            margin-top: 9px !important;
+          }
+
+          .cockpitV3 .batch23Row {
+            min-height: 0 !important;
+            gap: 7px !important;
+            padding: 9px 6px !important;
+          }
+
+          .cockpitV3 .batch23Footer {
+            display: flex !important;
+            align-items: stretch !important;
+            flex-direction: column !important;
+            gap: 8px !important;
+            margin-top: 10px !important;
+            padding-top: 10px !important;
+          }
+
+          .cockpitV3 .batch23Footer strong {
+            font-size: 10px !important;
+          }
+
+          .cockpitV3 .batch23Footer span {
+            font-size: 8px !important;
+          }
+
+          .cockpitV3 .batch23Footer button {
+            width: 100% !important;
+            min-height: 43px !important;
+            border-radius: 11px !important;
+          }
+
+
+          /* Mobile publishing preview */
+          .cockpitV3 .batch23Backdrop {
+            padding: 9px !important;
+          }
+
+          .cockpitV3 .batch23Modal {
+            width: calc(100vw - 18px) !important;
+            max-height: calc(100dvh - 24px) !important;
+            padding: 14px !important;
+            border-radius: 16px !important;
+          }
+
+          .cockpitV3 .batch23PreviewRows > div {
+            gap: 7px !important;
+            padding: 9px !important;
+          }
+
+
+          /* keep final content clear of bottom navigation */
+          .cockpitV3 {
+            padding-bottom:
+              calc(
+                96px + env(safe-area-inset-bottom)
+              ) !important;
+          }
+        }
+
+        @media screen and (max-width: 370px) {
+          .v2Shell .v2Search input {
+            font-size: 13px !important;
+          }
+
+          .v2Shell .v2MarketPill,
+          .v2Shell .v2TopProfile {
+            width: 39px !important;
+            min-width: 39px !important;
+            height: 39px !important;
+            min-height: 39px !important;
+          }
+
+          .cockpitV3 .batch23Header h2 {
+            font-size: 17px !important;
+          }
+        }
+      `}</style>
     </main>
   );
 }
