@@ -31,6 +31,27 @@ import {
 } from "@/lib/portal-integrations/portal-publish-trigger.server";
 
 
+const SWISS_PORTALS =
+  new Set<string>([
+    "immoscout24_ch",
+    "homegate_ch",
+    "comparis_ch",
+    "flatfox_ch",
+    "newhome_ch",
+  ]);
+
+
+function isSwissPortalId(
+  value:
+    string
+): boolean {
+
+  return SWISS_PORTALS.has(
+    value
+  );
+}
+
+
 type AutopilotState =
   | "not_eligible"
   | "market_not_supported"
@@ -236,7 +257,9 @@ export async function runPublicationAutopilotAfterApproval(
 
   if (
     listing.countryCode !==
-    "DE"
+      "DE" &&
+    listing.countryCode !==
+      "CH"
   ) {
 
     return {
@@ -313,8 +336,21 @@ export async function runPublicationAutopilotAfterApproval(
   const connections =
     allConnections.filter(
       (connection) =>
-        isGermanPortalId(
-          connection.portal
+        (
+          (
+            listing.countryCode ===
+              "DE" &&
+            isGermanPortalId(
+              connection.portal
+            )
+          ) ||
+          (
+            listing.countryCode ===
+              "CH" &&
+            isSwissPortalId(
+              connection.portal
+            )
+          )
         ) &&
         (
           connection.status ===
@@ -550,7 +586,13 @@ export async function runPublicationAutopilotAfterApproval(
     );
 
 
+  const marketTransportSupported =
+    listing.countryCode ===
+      "DE";
+
+
   const canExecuteNow =
+    marketTransportSupported &&
     everyConnectionExecutable &&
     isPublicationOrchestratorDispatchEnabled() &&
     gates.queueEnabled &&
