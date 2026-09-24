@@ -3027,43 +3027,36 @@ export default function CockpitOverviewV2({
               {portalNavOpen ? (
                 <div className="v2PortalSubnav">
                   <div className="v2PortalCountry">
-                    Deutschland
+                    {market === "DE"
+                      ? "Deutschland"
+                      : "Schweiz"}
                   </div>
 
-                  <Link
-                    href="/cockpit#portale"
-                    className="v2PortalSubitem"
-                  >
-                    ImmoScout24 DE
-                  </Link>
-
-                  <Link
-                    href="/cockpit#portale"
-                    className="v2PortalSubitem"
-                  >
-                    Immowelt
-                  </Link>
-
-                  <Link
-                    href="/cockpit#portale"
-                    className="v2PortalSubitem"
-                  >
-                    Kleinanzeigen
-                  </Link>
-
-                  <Link
-                    href="/cockpit#portale"
-                    className="v2PortalSubitem"
-                  >
-                    Immobilien.de
-                  </Link>
-
-                  <Link
-                    href="/cockpit#portale"
-                    className="v2PortalSubitem"
-                  >
-                    WG-Gesucht
-                  </Link>
+                  {(
+                    market === "DE"
+                      ? [
+                          "ImmoScout24 DE",
+                          "Immowelt",
+                          "Kleinanzeigen",
+                          "Immobilien.de",
+                          "WG-Gesucht",
+                        ]
+                      : [
+                          "ImmoScout24 CH",
+                          "Homegate",
+                          "Comparis",
+                          "newhome",
+                          "Flatfox",
+                        ]
+                  ).map((portalName) => (
+                    <Link
+                      key={portalName}
+                      href="/cockpit#portale"
+                      className="v2PortalSubitem"
+                    >
+                      {portalName}
+                    </Link>
+                  ))}
                 </div>
               ) : null}
             </div>
