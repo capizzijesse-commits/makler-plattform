@@ -739,16 +739,16 @@ export default function SupportActionDock() {
           position: relative;
 
           display: flex;
-          width: 196px;
+          width: 56px;
           height: 56px;
 
           align-items: center;
           justify-content:
-            flex-start;
+            center;
 
-          gap: 9px;
+          gap: 0;
 
-          padding: 0 15px 0 8px;
+          padding: 0;
 
           border:
             1px solid
@@ -895,6 +895,8 @@ export default function SupportActionDock() {
         }
 
         .supportLauncherText {
+          display: none;
+
           overflow: visible;
 
           font-size: 11px;

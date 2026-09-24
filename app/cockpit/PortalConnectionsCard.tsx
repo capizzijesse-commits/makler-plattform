@@ -1554,7 +1554,7 @@ export default function PortalConnectionsCard({
     <section
       className="
         overflow-hidden
-        rounded-[28px]
+        rounded-[22px]
         border
         border-amber-400/15
         bg-[#101010]
@@ -1569,7 +1569,7 @@ export default function PortalConnectionsCard({
           border-b
           border-white/8
           px-5
-          py-5
+          py-4
           sm:px-6
           lg:flex-row
           lg:items-end
@@ -1647,9 +1647,9 @@ export default function PortalConnectionsCard({
 
       <div
         className="
-          p-4
-          sm:p-5
-          lg:p-6
+          p-3
+          sm:p-4
+          lg:p-4
         "
       >
         {loading ? (
@@ -1730,7 +1730,7 @@ export default function PortalConnectionsCard({
             {portalPageCount > 1 ? (
               <div
                 className="
-                  mb-4
+                  mb-3
                   flex
                   items-center
                   justify-end
@@ -2000,7 +2000,7 @@ export default function PortalConnectionsCard({
                       rounded-2xl
                       border
                       bg-white/[0.025]
-                      p-4
+                      p-3
                       sm:p-5
                     "
                     style={{
@@ -2201,7 +2201,7 @@ export default function PortalConnectionsCard({
 
                     <div
                       className="
-                        mt-5
+                        mt-3
                         flex-1
                       "
                     >
@@ -2224,7 +2224,7 @@ export default function PortalConnectionsCard({
                               rounded-xl
                               border
                               px-3
-                              py-4
+                              py-3
                             "
                             style={{
                               borderColor:
@@ -2276,7 +2276,7 @@ export default function PortalConnectionsCard({
                               border-emerald-400/15
                               bg-emerald-400/[0.035]
                               px-3
-                              py-4
+                              py-3
                             "
                           >
                             <div
@@ -2318,7 +2318,7 @@ export default function PortalConnectionsCard({
                               border-amber-400/25
                               bg-amber-400/[0.055]
                               px-3
-                              py-4
+                              py-3
                             "
                           >
                             <div
@@ -2361,7 +2361,7 @@ export default function PortalConnectionsCard({
                     "verified" ? (
                       <div
                         className="
-                          mt-4
+                          mt-3
                           rounded-xl
                           border
                           border-white/10
@@ -2407,9 +2407,9 @@ export default function PortalConnectionsCard({
                           target="_blank"
                           rel="noopener noreferrer"
                           className="
-                            mt-3
+                            mt-2
                             inline-flex
-                            min-h-[44px]
+                            min-h-[40px]
                             w-full
                             items-center
                             justify-center
@@ -2460,10 +2460,10 @@ export default function PortalConnectionsCard({
 
                         <details
                           className="
-                            mt-3
+                            mt-2
                             border-t
                             border-white/8
-                            pt-3
+                            pt-2
                           "
                         >
                           <summary
