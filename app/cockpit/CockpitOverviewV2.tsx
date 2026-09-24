@@ -4315,7 +4315,7 @@ export default function CockpitOverviewV2({
               }}
             >
               {/* PREMIUM_PORTALS_V26 */}
-              <details className="v26PortalFold">
+              <details className="v26PortalFold" open>
                 <summary className="v26PortalSummary">
                   <div>
                     <span className="v26PortalIcon">
