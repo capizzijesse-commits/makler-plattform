@@ -201,6 +201,90 @@ const PORTAL_THEMES:
 };
 
 
+
+type PortalSignupConfig = {
+  href: string;
+  mode:
+    | "account"
+    | "partner";
+};
+
+
+const PORTAL_SIGNUP:
+  Record<PortalId, PortalSignupConfig> = {
+
+  immoscout24_ch: {
+    href:
+      "https://www.immoscout24.ch/de/insertion/inserat-online-erfassen",
+    mode:
+      "account",
+  },
+
+  homegate_ch: {
+    href:
+      "https://www.homegate.ch/de/insertion/inserat-online-erfassen",
+    mode:
+      "account",
+  },
+
+  comparis_ch: {
+    href:
+      "https://www.comparis.ch/immobilien/partner-werden/",
+    mode:
+      "partner",
+  },
+
+  flatfox_ch: {
+    href:
+      "https://flatfox.ch/business",
+    mode:
+      "partner",
+  },
+
+  newhome_ch: {
+    href:
+      "https://www.newhome.ch/de/anmelden",
+    mode:
+      "account",
+  },
+
+  immoscout24_de: {
+    href:
+      "https://www.immobilienscout24.de/anbieten/gewerbliche-anbieter/lp/mitgliedschaften.html",
+    mode:
+      "partner",
+  },
+
+  immowelt_de: {
+    href:
+      "https://www.immowelt.de/immobilienprofis/partner-werden",
+    mode:
+      "partner",
+  },
+
+  kleinanzeigen_de: {
+    href:
+      "https://themen.kleinanzeigen.de/immobilienprofis/",
+    mode:
+      "partner",
+  },
+
+  wg_gesucht_de: {
+    href:
+      "https://www.wg-gesucht.de/",
+    mode:
+      "account",
+  },
+
+  immobilien_de: {
+    href:
+      "https://www.immobilien.de/anbieten/profi",
+    mode:
+      "partner",
+  },
+};
+
+
 function getPortalTheme(
   portal: PortalId
 ): PortalTheme {
@@ -1765,6 +1849,31 @@ export default function PortalConnectionsCard({
                   );
 
 
+
+                const signup =
+                  PORTAL_SIGNUP[
+                    portal.portal
+                  ];
+
+
+                const signupAction =
+                  language === "it"
+                    ? signup.mode === "partner"
+                      ? "Richiedi accesso partner"
+                      : "Apri account portale"
+                    : language === "fr"
+                      ? signup.mode === "partner"
+                        ? "Demander un accès partenaire"
+                        : "Créer un compte portail"
+                      : language === "en"
+                        ? signup.mode === "partner"
+                          ? "Request partner access"
+                          : "Open portal account"
+                        : signup.mode === "partner"
+                          ? "Partnerzugang anfragen"
+                          : "Portal-Konto eröffnen";
+
+
                 const swissSetupPortal =
                   portal.portal ===
                     "immoscout24_ch" ||
@@ -2245,6 +2354,154 @@ export default function PortalConnectionsCard({
                         </div>
                       )}
                     </div>
+
+
+
+                    {portal.status !==
+                    "verified" ? (
+                      <div
+                        className="
+                          mt-4
+                          rounded-xl
+                          border
+                          border-white/10
+                          bg-white/[0.025]
+                          p-3
+                        "
+                      >
+                        <p
+                          className="
+                            text-xs
+                            font-semibold
+                            text-white/80
+                          "
+                        >
+                          {language === "it"
+                            ? "Non hai ancora un account sul portale?"
+                            : language === "fr"
+                              ? "Pas encore de compte sur le portail ?"
+                              : language === "en"
+                                ? "No portal account yet?"
+                                : "Noch kein Portal-Konto?"}
+                        </p>
+
+                        <p
+                          className="
+                            mt-1
+                            text-[11px]
+                            leading-relaxed
+                            text-white/45
+                          "
+                        >
+                          {language === "de"
+                            ? "Starte die offizielle Registrierung oder Partneranfrage beim Portal und kehre danach zu Inserat-AI zurück."
+                            : language === "it"
+                              ? "Avvia la registrazione ufficiale presso il portale e poi torna su Inserat-AI."
+                              : language === "fr"
+                                ? "Démarrez l’inscription officielle auprès du portail puis revenez sur Inserat-AI."
+                                : "Start the official portal registration and then return to Inserat-AI."}
+                        </p>
+
+                        <a
+                          href={signup.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="
+                            mt-3
+                            inline-flex
+                            min-h-[44px]
+                            w-full
+                            items-center
+                            justify-center
+                            gap-2
+                            rounded-xl
+                            border
+                            px-4
+                            py-2.5
+                            text-sm
+                            font-semibold
+                            transition
+                            hover:brightness-110
+                          "
+                          style={{
+                            borderColor:
+                              theme.border,
+
+                            backgroundColor:
+                              theme.soft,
+
+                            color:
+                              theme.accent,
+                          }}
+                        >
+                          {signupAction}
+
+                          <span aria-hidden="true">
+                            ↗
+                          </span>
+                        </a>
+
+                        <p
+                          className="
+                            mt-2
+                            text-[10px]
+                            leading-relaxed
+                            text-white/35
+                          "
+                        >
+                          {language === "de"
+                            ? "Registrierung und Vertrag erfolgen direkt beim Portal. Inserat-AI speichert keine Portal-Passwörter."
+                            : language === "it"
+                              ? "Registrazione e contratto avvengono direttamente con il portale. Inserat-AI non memorizza password."
+                              : language === "fr"
+                                ? "L’inscription et le contrat sont gérés directement par le portail. Inserat-AI ne stocke aucun mot de passe."
+                                : "Registration and contracts are handled directly by the portal. Inserat-AI does not store portal passwords."}
+                        </p>
+
+                        <details
+                          className="
+                            mt-3
+                            border-t
+                            border-white/8
+                            pt-3
+                          "
+                        >
+                          <summary
+                            className="
+                              cursor-pointer
+                              text-xs
+                              font-medium
+                              text-white/65
+                            "
+                          >
+                            {language === "de"
+                              ? "Ich habe bereits ein Portal-Konto"
+                              : language === "it"
+                                ? "Ho già un account sul portale"
+                                : language === "fr"
+                                  ? "J’ai déjà un compte sur le portail"
+                                  : "I already have a portal account"}
+                          </summary>
+
+                          <p
+                            className="
+                              mt-2
+                              text-[11px]
+                              leading-relaxed
+                              text-white/45
+                            "
+                          >
+                            {language === "de"
+                              ? "Nutze die vorhandene Verbindungs-Einrichtung direkt unter diesem Bereich. Gib niemals dein Portal-Passwort bei Inserat-AI ein."
+                              : language === "it"
+                                ? "Usa la configurazione della connessione qui sotto. Non inserire mai la password del portale in Inserat-AI."
+                                : language === "fr"
+                                  ? "Utilisez la configuration de connexion ci-dessous. Ne saisissez jamais votre mot de passe du portail dans Inserat-AI."
+                                  : "Use the existing connection setup below. Never enter your portal password in Inserat-AI."}
+                          </p>
+                        </details>
+                      </div>
+                    ) : null}
 
 
                     {requiresOpenImmoProviderId ? (
