@@ -1140,7 +1140,7 @@ export default function CockpitOverviewV3View({
             </div>
           </div>
 
-          <a href="#batch-publishing">
+          <a href="#portale">
             Portale verwalten →
           </a>
         </header>
