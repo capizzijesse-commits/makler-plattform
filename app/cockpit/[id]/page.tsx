@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ListingActions from "./ListingActions";
+import BrokerWorkflowPanel from "./BrokerWorkflowPanel";
+import PortalPublishingPanel from "./PortalPublishingPanel";
 import WorkspaceFrame from "../../components/WorkspaceFrame";
 import { useAppDialog } from "../../../components/AppDialogProvider";
 import {
@@ -778,6 +780,25 @@ function showNextImage() {
     "admin",
   ].includes(listing.viewerPlan);
 
+  const hasCoreWorkflowData =
+    Boolean(
+      listing.location?.trim() &&
+      listing.postalCode?.trim() &&
+      listing.propertyType?.trim() &&
+      typeof listing.livingArea ===
+        "number" &&
+      listing.livingArea > 0 &&
+      typeof listing.rooms ===
+        "number" &&
+      listing.rooms > 0
+    );
+
+  const hasWorkflowImages =
+    galleryImages.length > 0;
+
+  const hasWorkflowListingText =
+    variants.length > 0;
+
   return (
     <WorkspaceFrame
       market={market}
@@ -869,6 +890,20 @@ function showNextImage() {
     <strong>{formatPrice(listing.price)}</strong>
   </div>
 </header>
+
+        <BrokerWorkflowPanel
+          listingId={listing.id}
+          market={market}
+          coreDataReady={
+            hasCoreWorkflowData
+          }
+          imagesReady={
+            hasWorkflowImages
+          }
+          listingTextReady={
+            hasWorkflowListingText
+          }
+        />
 
         <div className="layout">
           <div className="mainColumn">
@@ -1250,6 +1285,33 @@ function showNextImage() {
               >
                 Objekt bearbeiten
               </Link>
+
+              {market === "CH" && (
+                <Link
+                  href={`/bewertung?listingId=${listing.id}`}
+                  style={{
+                    display: "inline-flex",
+                    width: "100%",
+                    minHeight: "48px",
+                    marginTop: "10px",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    border: "1px solid rgba(34, 211, 238, 0.38)",
+                    borderRadius: "11px",
+                    background:
+                      "linear-gradient(135deg, rgba(8, 145, 178, 0.22), rgba(34, 211, 238, 0.08))",
+                    color: "#67e8f9",
+                    fontWeight: 900,
+                    textDecoration: "none",
+                    boxShadow:
+                      "0 10px 24px rgba(6, 182, 212, 0.14)",
+                  }}
+                >
+                  Immobilie bewerten
+                </Link>
+              )}
+
 <Link
   href={`/dashboard/social-media?listingId=${listing.id}`}
   style={{
@@ -1439,6 +1501,19 @@ function showNextImage() {
   </Link>
 )}
 
+              <div
+                id="portal-publishing"
+                style={{
+                  scrollMarginTop:
+                    "110px",
+                }}
+              >
+                <PortalPublishingPanel
+                  listingId={listing.id}
+                  countryCode={listing.countryCode}
+                  unlockStatus={listing.unlockStatus}
+                />
+              </div>
               <ListingActions
                 listingId={listing.id}
                 archived={Boolean(listing.archivedAt)}

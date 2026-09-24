@@ -41,15 +41,214 @@ model User {
   passwordResetExpires     DateTime?
   passwordResetRequestedAt DateTime?
 
-  listings   Listing[]
-  sessions   Session[]
-  valuations Valuation[]
-
-  socialConnections SocialConnection[]
-  socialCredentials SocialCredential[]
-  socialPublishJobs SocialPublishJob[]
+  listings                                                                Listing[]
+  sessions                                                                Session[]
+  valuations                                                              Valuation[]
+  portalConnections                                                       PortalConnection[]
+  portalCredentials                                                       PortalCredential[]
+  socialConnections                                                       SocialConnection[]
+  socialCredentials                                                       SocialCredential[]
+  socialPublishJobs                                                       SocialPublishJob[]
+  portalPublishJobs                                                       PortalPublishJob[]
+  publicationRuns                                                         PublicationRun[]
+  MaklerChatBlock_MaklerChatBlock_blockedUserIdToUser                     MaklerChatBlock[]          @relation("MaklerChatBlock_blockedUserIdToUser")
+  MaklerChatBlock_MaklerChatBlock_blockerUserIdToUser                     MaklerChatBlock[]          @relation("MaklerChatBlock_blockerUserIdToUser")
+  MaklerChatBranding                                                      MaklerChatBranding?
+  MaklerChatContactRequest_MaklerChatContactRequest_requesterUserIdToUser MaklerChatContactRequest[] @relation("MaklerChatContactRequest_requesterUserIdToUser")
+  MaklerChatContactRequest_MaklerChatContactRequest_targetUserIdToUser    MaklerChatContactRequest[] @relation("MaklerChatContactRequest_targetUserIdToUser")
 
   createdAt DateTime @default(now())
+}
+
+model MaklerChatBlock {
+  blockerUserId                            String
+  blockedUserId                            String
+  createdAt                                DateTime @default(now())
+  User_MaklerChatBlock_blockedUserIdToUser User     @relation("MaklerChatBlock_blockedUserIdToUser", fields: [blockedUserId], references: [id], onDelete: Cascade)
+  User_MaklerChatBlock_blockerUserIdToUser User     @relation("MaklerChatBlock_blockerUserIdToUser", fields: [blockerUserId], references: [id], onDelete: Cascade)
+
+  @@id([blockerUserId, blockedUserId])
+  @@index([blockedUserId])
+}
+
+model MaklerChatBranding {
+  userId     String   @id
+  brandColor String   @default("#F59E0B")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MaklerChatContactRequest {
+  id                                                  String                  @id
+  requesterUserId                                     String
+  targetUserId                                        String
+  pairKey                                             String
+  initialMessage                                      String?
+  status                                              String                  @default("PENDING")
+  countryCode                                         String                  @default("CH")
+  languageCode                                        String                  @default("de")
+  conversationId                                      String?
+  createdAt                                           DateTime                @default(now())
+  updatedAt                                           DateTime                @default(now())
+  respondedAt                                         DateTime?
+  MaklerChatConversation                              MaklerChatConversation? @relation(fields: [conversationId], references: [id])
+  User_MaklerChatContactRequest_requesterUserIdToUser User                    @relation("MaklerChatContactRequest_requesterUserIdToUser", fields: [requesterUserId], references: [id], onDelete: Cascade)
+  User_MaklerChatContactRequest_targetUserIdToUser    User                    @relation("MaklerChatContactRequest_targetUserIdToUser", fields: [targetUserId], references: [id], onDelete: Cascade)
+
+  @@index([requesterUserId, status, createdAt], map: "MaklerChatContactRequest_requester_status_createdAt_idx")
+  @@index([targetUserId, status, createdAt], map: "MaklerChatContactRequest_target_status_createdAt_idx")
+}
+
+model MaklerChatConversation {
+  id                       String                     @id
+  kind                     String                     @default("AI")
+  title                    String?
+  market                   String                     @default("CH")
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @default(now())
+  visibility               String                     @default("PRIVATE")
+  countryCode              String                     @default("CH")
+  languageCode             String                     @default("de")
+  directKey                String?                    @unique
+  MaklerChatContactRequest MaklerChatContactRequest[]
+  MaklerChatMessage        MaklerChatMessage[]
+  MaklerChatParticipant    MaklerChatParticipant[]
+
+  @@index([kind, updatedAt])
+  @@index([visibility, countryCode, updatedAt], map: "MaklerChatConversation_visibility_countryCode_idx")
+}
+
+model MaklerChatMessage {
+  id                     String                 @id
+  conversationId         String
+  senderUserId           String?
+  senderType             String
+  content                String
+  createdAt              DateTime               @default(now())
+  MaklerChatConversation MaklerChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
+
+model MaklerChatParticipant {
+  conversationId         String
+  userId                 String
+  role                   String                 @default("MEMBER")
+  joinedAt               DateTime               @default(now())
+  lastReadAt             DateTime               @default(now())
+  participantType        String                 @default("USER")
+  MaklerChatConversation MaklerChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@id([conversationId, userId])
+  @@index([userId, conversationId])
+  @@index([userId])
+}
+
+model PublicGuideQuestionLog {
+  id        String   @id
+  market    String
+  pagePath  String?
+  question  String
+  answer    String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([market, createdAt])
+}
+
+model PortalConnection {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /**
+   * Beispiel:
+   * provider = "smg"
+   * portal   = "immoscout24_ch"
+   * portal   = "homegate_ch"
+   */
+  provider String
+  portal   String
+
+  /**
+   * test | production
+   */
+  environment String @default("test")
+
+  /**
+   * Externe IDs dürfen gespeichert
+   * werden. Keine Passwörter,
+   * Client Secrets oder Access Tokens.
+   */
+  externalOwnerId String?
+  externalUserId  String?
+
+  /**
+   * not_configured
+   * configured
+   * verified
+   * error
+   */
+  status String @default("not_configured")
+
+  /**
+   * Woher Credentials kommen,
+   * z.B. "env" für unseren Testzugang
+   * oder später "vault".
+   */
+  credentialSource String?
+
+  lastVerifiedAt DateTime?
+  publishJobs    PortalPublishJob[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, portal])
+  @@index([userId])
+  @@index([provider, portal])
+}
+
+model PortalCredential {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /**
+   * Portal-spezifische Zuordnung.
+   * Beispiel:
+   * provider = "immoscout24"
+   * portal   = "immoscout24_de"
+   */
+  provider String
+  portal   String
+
+  /**
+   * sandbox | test | production
+   * Environment ist Teil des Unique Keys,
+   * damit Test- und Production-Credentials
+   * niemals denselben Datensatz verwenden.
+   */
+  environment String
+
+  /**
+   * Ausschliesslich AES-256-GCM verschluesselter
+   * Payload.
+   * Niemals Access Token oder Token Secret
+   * im Klartext speichern.
+   */
+  encryptedPayload String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, portal, environment])
+  @@index([userId])
+  @@index([provider, portal])
+  @@index([portal, environment])
 }
 
 model SocialConnection {
@@ -280,12 +479,10 @@ model SocialPublishJob {
 
   /**
    * Dauerhafter Provider-Operationszustand.
-   *
    * Beispiel Instagram:
    * providerOperationType  = "instagram_reel_container"
    * providerOperationId    = Meta Container ID
    * providerOperationState = "container_created"
-   *
    * Damit kann ein Retry eine bereits
    * gestartete Provider-Operation fortsetzen,
    * statt blind eine zweite zu erzeugen.
@@ -319,19 +516,129 @@ model SocialPublishJob {
   @@index([provider, providerOperationState])
 }
 
+model PortalPublishJob {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  listingId String?
+  listing   Listing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+
+  connectionId String?
+  connection   PortalConnection? @relation(fields: [connectionId], references: [id], onDelete: SetNull)
+
+  provider String
+  portal   String
+
+  environment String @default("test")
+
+  action String @default("publish")
+
+  externalObjectId String?
+
+  listingUpdatedAtSnapshot DateTime?
+
+  payloadSnapshot    Json?
+  payloadFingerprint String?
+
+  status String @default("queued")
+
+  scheduledFor DateTime?
+
+  idempotencyKey String @unique
+
+  attemptCount  Int       @default(0)
+  maxAttempts   Int       @default(5)
+  nextAttemptAt DateTime?
+  lastAttemptAt DateTime?
+
+  lockedAt DateTime?
+  lockedBy String?
+
+  providerOperationId        String?
+  providerOperationType      String?
+  providerOperationState     String?
+  providerOperationUpdatedAt DateTime?
+
+  externalPublicationId  String?
+  externalPublicationUrl String?
+
+  resultSnapshot Json?
+
+  completedAt DateTime?
+  failedAt    DateTime?
+
+  errorCode    String?
+  errorMessage String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status, createdAt])
+  @@index([connectionId, status])
+  @@index([listingId])
+  @@index([status, scheduledFor])
+  @@index([status, nextAttemptAt])
+  @@index([provider, portal, status])
+  @@index([provider, providerOperationState])
+  @@index([listingId, portal, status])
+
+  /*
+   * COMMAND_CENTER_TRANSITION_HISTORY_V1
+   *
+   * Append-only Statushistorie.
+   */
+  transitions PortalPublishJobTransition[]
+}
+
+
+model PortalPublishJobTransition {
+  id Int @id @default(autoincrement())
+
+  jobId String
+  job   PortalPublishJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  userId    String
+  listingId String?
+  provider  String
+  portal    String
+
+  fromStatus String?
+  toStatus   String
+
+  attemptCount Int
+  maxAttempts  Int
+
+  nextAttemptAt DateTime?
+
+  errorCode    String?
+  errorMessage String?
+
+  providerOperationState String?
+
+  createdAt DateTime @default(now())
+
+  @@index([jobId, createdAt])
+  @@index([userId, createdAt])
+  @@index([listingId, createdAt])
+  @@index([toStatus, createdAt])
+}
+
+
 model Listing {
   id String @id @default(cuid())
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  projectName  String?
-  street       String?
-  location     String
-  postalCode   String?
-  latitude     Float?
-  longitude    Float?
-  market       String?
+  projectName String?
+  street      String?
+  location    String
+  postalCode  String?
+  latitude    Float?
+  longitude   Float?
+  market      String?
 
   countryCode  String?
   propertyType String
@@ -359,16 +666,157 @@ model Listing {
   homeStagingImages HomeStagingImage[]
   floorPlans        FloorPlan[]
   finance           ListingFinance?
+  brokerWorkflow    BrokerWorkflow?
+  valuations        Valuation[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   listingViewEvents ListingViewEvent[]
-
   socialPublishJobs SocialPublishJob[]
+  portalPublishJobs PortalPublishJob[]
+  publicationRuns   PublicationRun[]
 
   @@index([userId])
   @@index([userId, archivedAt])
   @@index([userId, unlockStatus])
   @@index([countryCode])
+}
+
+model BrokerWorkflow {
+  id String @id @default(cuid())
+
+  listingId String  @unique
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  currentStage String @default("valuation")
+
+  valuationId          String?
+  valuationCompletedAt DateTime?
+
+  mandateConfirmedAt DateTime?
+
+  packagePreparedAt DateTime?
+
+  marketingApprovedAt DateTime?
+
+  publicationStartedAt DateTime?
+  publishedAt          DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([currentStage])
+  @@index([updatedAt])
+}
+
+/*
+ * PUBLICATION ORCHESTRATOR V1
+ *
+ * Ein Run entspricht genau einem bewusst
+ * gestarteten Vermarktungs-/Publishing-Vorgang.
+ *
+ * Die einzelnen Ziele bleiben dauerhaft
+ * nachvollziehbar, auch wenn ein Portal-
+ * oder Social-Job spaeter fehlschlaegt.
+ */
+model PublicationRun {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  /*
+   * draft
+   * ready
+   * publishing
+   * partial
+   * published
+   * action_required
+   * cancelled
+   */
+  status String @default("draft")
+
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  targets PublicationTarget[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status, createdAt])
+  @@index([listingId, createdAt])
+  @@index([listingId, status])
+}
+
+model PublicationTarget {
+  id String @id @default(cuid())
+
+  runId String
+  run   PublicationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  /*
+   * Eindeutig innerhalb eines Runs:
+   *
+   * portal:immowelt_de
+   * social:<connectionId>
+   */
+  targetKey String
+
+  /*
+   * portal | social
+   */
+  kind String
+
+  /*
+   * Snapshot des Zielsystems.
+   */
+  provider          String?
+  destination       String
+  connectionId      String?
+  externalAccountId String?
+  environment       String?
+
+  /*
+   * Einheitlicher Orchestrator-Status:
+   *
+   * pending
+   * publishing
+   * published
+   * failed
+   * action_required
+   * skipped
+   */
+  status String @default("pending")
+
+  /*
+   * Bewusst zunaechst nur IDs und keine
+   * Foreign Keys:
+   *
+   * Der Run-/Target-Verlauf soll bestehen
+   * bleiben, selbst wenn Publish-Jobs
+   * spaeter archiviert oder entfernt werden.
+   */
+  portalJobId String?
+  socialJobId String?
+
+  externalId  String?
+  externalUrl String?
+
+  errorCode    String?
+  errorMessage String?
+
+  publishedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([runId, targetKey])
+  @@index([runId, status])
+  @@index([portalJobId])
+  @@index([socialJobId])
 }
 
 model FloorPlan {
@@ -538,6 +986,9 @@ model Valuation {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  listingId String?
+  listing   Listing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+
   status String @default("draft")
 
   // BestÃ¤tigte Schweizer Adresse
@@ -586,6 +1037,8 @@ model Valuation {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([listingId])
+  @@index([listingId, status])
   @@index([userId])
   @@index([userId, createdAt])
   @@index([userId, status])

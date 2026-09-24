@@ -1,0 +1,16 @@
+CREATE TABLE IF NOT EXISTS "MaklerChatBranding" (
+  "userId" TEXT NOT NULL,
+  "brandColor" TEXT NOT NULL DEFAULT '#F59E0B',
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT "MaklerChatBranding_pkey"
+    PRIMARY KEY ("userId")
+);
+
+ALTER TABLE "MaklerChatBranding"
+ADD CONSTRAINT "MaklerChatBranding_userId_fkey"
+FOREIGN KEY ("userId")
+REFERENCES "User"("id")
+ON DELETE CASCADE
+ON UPDATE CASCADE;

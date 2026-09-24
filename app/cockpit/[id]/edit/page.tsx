@@ -32,6 +32,8 @@ type ListingImage = {
 };
 type Listing = {
   id: string;
+  market?: string | null;
+  countryCode?: string | null;
   location: string;
   postalCode: string | null;
   propertyType: string;
@@ -159,6 +161,19 @@ useEffect(() => {
         }
 
         const listing = data.listing as Listing;
+
+        const listingMarket: InseratAiMarket | null =
+          listing.market === "DE" ||
+          listing.countryCode === "DE"
+            ? "DE"
+            : listing.market === "CH" ||
+                listing.countryCode === "CH"
+              ? "CH"
+              : null;
+
+        if (listingMarket) {
+          setMarket(listingMarket);
+        }
 
         const normalizedViewerPlan =
           (listing.viewerPlan || "free")
@@ -625,7 +640,11 @@ async function deleteListingImage(imageId: string) {
           </p>
         </header>
 
-        <form className="editCard" onSubmit={handleSubmit}>
+        <form
+          className="editCard"
+          onSubmit={handleSubmit}
+          autoComplete="off"
+        >
           <div className="formSection">
             <div className="sectionHeading">
               <span>GRUNDDATEN</span>
@@ -636,6 +655,8 @@ async function deleteListingImage(imageId: string) {
               <label>
                 <span>Ort *</span>
                 <input
+                  name="listing-location"
+                  autoComplete="off"
                   value={form.location}
                   onChange={(event) =>
                     updateField("location", event.target.value)
@@ -652,11 +673,17 @@ async function deleteListingImage(imageId: string) {
               <label>
                 <span>PLZ</span>
                 <input
+                  name="listing-postal-code"
+                  autoComplete="off"
                   value={form.postalCode}
                   onChange={(event) =>
                     updateField("postalCode", event.target.value)
                   }
-                  placeholder="z. B. 8400"
+                  placeholder={
+                    market === "DE"
+                      ? "z. B. 10115"
+                      : "z. B. 8400"
+                  }
                   inputMode="numeric"
                 />
               </label>

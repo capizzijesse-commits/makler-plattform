@@ -9,6 +9,7 @@ import {
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { trackAnalyticsEvent } from "@/lib/analytics";
+import { PRO_PUBLIC_LAUNCH_ENABLED } from "@/lib/pro-public-launch";
 import { getInseratAiMarketFromHostname } from "@/lib/inserat-ai-market";
 import GoogleSignInButton from "@/app/components/GoogleSignInButton";
 import {
@@ -173,7 +174,7 @@ function handleRegisterFormStart() {
 
   const normalizedPlan: RequestedPlan =
     plan === "founder" ||
-    plan === "pro" ||
+    (plan === "pro" && PRO_PUBLIC_LAUNCH_ENABLED) ||
     plan === "single-object"
       ? plan
       : "";
@@ -257,7 +258,7 @@ function handleRegisterFormStart() {
                 t("plans.founder.statAfterTrial"),
             },
             {
-              value: "50",
+              value: "Founder",
               label:
                 t("plans.founder.statPlaces"),
             },
@@ -277,14 +278,14 @@ function handleRegisterFormStart() {
                   ),
             submit:
               isGermany
-                ? "Pro starten"
+                ? "30 Tage kostenlos starten"
                 : pricingT(
                     "plans.pro.button"
                   ),
             note:
               isGermany
-                ? "79,90 € pro Monat. Jederzeit kündbar."
-                : "CHF 79.90 pro Monat.",
+                ? "30 Tage kostenlos. Danach 79,90 € pro Monat. Jederzeit kündbar."
+                : "30 Tage kostenlos. Danach CHF 79.90 pro Monat. Jederzeit kündbar.",
 
             stats: [
               {

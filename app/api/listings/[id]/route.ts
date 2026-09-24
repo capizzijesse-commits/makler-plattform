@@ -3,6 +3,11 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { normalizeUserPlan } from "@/lib/plans";
+import { isDevelopmentE2EListing } from "@/lib/development-e2e-access";
+
+/*
+ * DEVELOPMENT_E2E_ACCESS_V1
+ */
 import { getAuthenticatedUser } from "@/lib/session";
 
 export const runtime = "nodejs";
@@ -136,6 +141,9 @@ export async function GET(
     const userPlan = normalizeUserPlan(user.plan);
 
     const hasCoreAccess =
+      isDevelopmentE2EListing(
+        listing.projectName
+      ) ||
       userPlan !== "free" ||
       listing.unlockStatus === "paid" ||
       listing.unlockStatus === "included";
@@ -227,6 +235,9 @@ export async function PATCH(
     const userPlan = normalizeUserPlan(user.plan);
 
     const hasCoreAccess =
+      isDevelopmentE2EListing(
+        existingListing.projectName
+      ) ||
       userPlan !== "free" ||
       existingListing.unlockStatus === "paid" ||
       existingListing.unlockStatus === "included";

@@ -6,6 +6,11 @@ import sharp from "sharp";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/session";
 import { normalizeUserPlan } from "@/lib/plans";
+import { isDevelopmentE2EListing } from "@/lib/development-e2e-access";
+
+/*
+ * DEVELOPMENT_E2E_IMAGE_ACCESS_V1
+ */
 
 export const runtime = "nodejs";
 
@@ -132,6 +137,7 @@ const requestedPosition =
       },
       select: {
         id: true,
+        projectName: true,
         paymentModel: true,
         unlockStatus: true,
         paidAt: true,
@@ -170,8 +176,13 @@ const requestedPosition =
           listing.stripeCheckoutSessionId.startsWith(
             "cs_"
           );
+    const hasDevelopmentE2EImageAccess =
+      isDevelopmentE2EListing(
+        listing.projectName
+      );
 
     if (
+      !hasDevelopmentE2EImageAccess &&
       !hasSubscriptionImageAccess &&
           !hasPaidSingleObjectImageAccess &&
           !hasPendingSingleObjectCheckout

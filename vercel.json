@@ -4,6 +4,14 @@
     {
       "path": "/api/internal/social-publish-worker",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/internal/publication-autopilot-recovery",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/internal/portal-publish-worker",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

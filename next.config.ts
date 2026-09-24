@@ -34,6 +34,17 @@ const nextConfig: NextConfig = {
 
   devIndicators: false,
 
+  /*
+   * Dokumentenanalyse: Route limitiert
+   * Nutzdaten selbst auf 30 MB.
+   * Proxy braucht etwas Reserve fuer
+   * Multipart-Metadaten und Boundaries.
+   */
+  experimental: {
+    proxyClientMaxBodySize:
+      "35mb",
+  },
+
   allowedDevOrigins: [
     "192.168.0.18",
   ],
