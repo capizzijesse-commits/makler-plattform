@@ -80,6 +80,20 @@ type WorkflowResponse = {
 
   valuation?:
     ValuationSummary | null;
+
+  publicationAutomation?:
+    | {
+        state?:
+          string;
+
+        runId?:
+          string |
+          null;
+
+        message?:
+          string;
+      }
+    | null;
 };
 
 function formatValuationMoney(
@@ -231,6 +245,25 @@ export default function BrokerWorkflowPanel({
   ] =
     useState("");
 
+
+  const [
+    fastApprovalResult,
+    setFastApprovalResult,
+  ] =
+    useState<{
+      state:
+        string;
+
+      runId:
+        string |
+        null;
+
+      elapsedMs:
+        number;
+    } | null>(
+      null
+    );
+
   /*
    * Verhindert Endlosschleifen,
    * falls ein automatischer
@@ -378,6 +411,9 @@ export default function BrokerWorkflowPanel({
           data.valuation ??
             null
         );
+
+
+        return data;
       } catch (error) {
         setWorkflowError(
           error instanceof Error
@@ -388,6 +424,54 @@ export default function BrokerWorkflowPanel({
         setWorkflowBusy(false);
       }
     };
+
+  const approveAndContinue =
+    async () => {
+
+      if (workflowBusy) {
+        return;
+      }
+
+
+      const startedAt =
+        performance.now();
+
+
+      const data =
+        await updateWorkflow(
+          "marketing_approved"
+        );
+
+
+      if (!data?.workflow) {
+        return;
+      }
+
+
+      const automation =
+        data.publicationAutomation;
+
+
+      setFastApprovalResult({
+        state:
+          automation?.state ??
+          "approval_saved",
+
+        runId:
+          automation?.runId ??
+          null,
+
+        elapsedMs:
+          Math.max(
+            0,
+            Math.round(
+              performance.now() -
+              startedAt
+            )
+          ),
+      });
+    };
+
 
   const objectPackageReady =
     coreDataReady &&
@@ -1225,16 +1309,14 @@ export default function BrokerWorkflowPanel({
               disabled={
                 workflowBusy
               }
-              onClick={() =>
-                void updateWorkflow(
-                  "marketing_approved"
-                )
-              }
+              onClick={() => {
+                void approveAndContinue();
+              }}
               className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-xl bg-cyan-300 px-3 py-2 text-xs font-black text-slate-950 transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {workflowBusy
                 ? "Wird gespeichert ..."
-                : "Vermarktung freigeben"}
+                : "Freigeben & Veröffentlichung vorbereiten"}
             </button>
           ) : (
             <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-2 text-center text-[11px] font-bold text-slate-500">
@@ -1242,6 +1324,124 @@ export default function BrokerWorkflowPanel({
             </div>
           )}
         </div>
+
+        {fastApprovalResult ? (
+          <div
+            className="
+              rounded-2xl
+              border
+              border-emerald-400/20
+              bg-emerald-400/[0.05]
+              p-4
+            "
+            role="status"
+            aria-live="polite"
+          >
+            <div
+              className="
+                flex
+                items-start
+                justify-between
+                gap-3
+              "
+            >
+              <div>
+                <p
+                  className="
+                    text-[10px]
+                    font-black
+                    uppercase
+                    tracking-[0.14em]
+                    text-emerald-300
+                  "
+                >
+                  Inserat-AI bestätigt
+                </p>
+
+                <h3
+                  className="
+                    mt-2
+                    text-sm
+                    font-black
+                    text-white
+                  "
+                >
+                  {fastApprovalResult.state ===
+                  "published"
+                    ? "Veröffentlicht"
+                    : fastApprovalResult.state ===
+                        "publishing"
+                      ? "Übertragung gestartet"
+                      : fastApprovalResult.state ===
+                          "ready"
+                        ? "Bereit zur Veröffentlichung"
+                        : fastApprovalResult.state ===
+                            "no_portal_connections"
+                          ? "Freigabe gespeichert – Portalzugang fehlt"
+                          : fastApprovalResult.state ===
+                              "error"
+                            ? "Freigabe gespeichert – Automatisierung prüfen"
+                            : "Freigabe gespeichert"}
+                </h3>
+
+                <p
+                  className="
+                    mt-2
+                    text-xs
+                    font-semibold
+                    text-slate-300
+                  "
+                >
+                  Bestätigung nach{" "}
+                  {(
+                    fastApprovalResult.elapsedMs /
+                    1000
+                  ).toFixed(2)}
+                  {" "}Sekunden.
+                </p>
+              </div>
+
+              <span
+                className="
+                  rounded-full
+                  bg-emerald-300/10
+                  px-2.5
+                  py-1
+                  text-[10px]
+                  font-black
+                  text-emerald-200
+                "
+              >
+                ✓ FERTIG
+              </span>
+            </div>
+
+            <Link
+              href="/dashboard"
+              className="
+                mt-4
+                inline-flex
+                min-h-11
+                w-full
+                items-center
+                justify-center
+                rounded-xl
+                bg-emerald-300
+                px-4
+                py-2.5
+                text-xs
+                font-black
+                text-emerald-950
+                no-underline
+                transition
+                hover:brightness-105
+              "
+            >
+              Nächstes Objekt →
+            </Link>
+          </div>
+        ) : null}
+
 
         <div className="rounded-2xl border border-violet-300/20 bg-violet-300/[0.04] p-4">
           <div className="flex items-center justify-between gap-3">
