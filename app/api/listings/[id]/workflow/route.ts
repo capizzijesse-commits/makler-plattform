@@ -14,6 +14,10 @@ import {
   getAuthenticatedUser,
 } from "@/lib/session";
 
+import {
+  runPublicationAutopilotAfterApproval,
+} from "@/lib/publication-orchestrator/publication-autopilot.server";
+
 export const runtime =
   "nodejs";
 
@@ -941,10 +945,85 @@ export async function PATCH(
         workflow.valuationId
       );
 
+    /*
+     * PUBLICATION_AUTOPILOT_V1
+     *
+     * "Vermarktung freigeben" ist ab jetzt
+     * der letzte notwendige manuelle Schritt.
+     *
+     * Danach:
+     *
+     * - automatisch veröffentlichen, wenn möglich
+     * - sonst automatisch READY setzen
+     *
+     * Ein Autopilot-Fehler darf die bereits
+     * gespeicherte Maklerfreigabe nicht zerstören.
+     */
+    let publicationAutomation:
+      Awaited<
+        ReturnType<
+          typeof runPublicationAutopilotAfterApproval
+        >
+      > |
+      {
+        state:
+          "error";
+
+        message:
+          string;
+      } |
+      null =
+        null;
+
+
+    if (
+      body.action ===
+      "marketing_approved"
+    ) {
+
+      try {
+
+        publicationAutomation =
+          await runPublicationAutopilotAfterApproval({
+            userId:
+              user.id,
+
+            listingId:
+              listing.id,
+
+            plan:
+              user.plan,
+          });
+      }
+      catch (
+        automationError
+      ) {
+
+        console.error(
+          "[publication-autopilot] failed",
+          automationError
+        );
+
+
+        publicationAutomation = {
+          state:
+            "error",
+
+          message:
+            automationError instanceof
+              Error
+              ? automationError.message
+              : "Publication Autopilot konnte nicht gestartet werden.",
+        };
+      }
+    }
+
+
     return NextResponse.json({
       success: true,
       workflow,
       valuation,
+      publicationAutomation,
     });
   } catch (error) {
     console.error(
