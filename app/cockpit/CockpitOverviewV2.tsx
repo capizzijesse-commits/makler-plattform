@@ -4308,14 +4308,14 @@ export default function CockpitOverviewV2({
           </details>
           {marketResolved ? (
             <div
-              id="portale"
+              id="portale-legacy"
               style={{
                 paddingTop: 34,
                 scrollMarginTop: 24,
               }}
             >
               {/* PREMIUM_PORTALS_V26 */}
-              <details className="v26PortalFold" open>
+              <details className="v26PortalFold">
                 <summary className="v26PortalSummary">
                   <div>
                     <span className="v26PortalIcon">

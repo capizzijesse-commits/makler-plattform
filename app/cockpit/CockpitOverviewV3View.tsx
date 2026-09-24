@@ -15,6 +15,9 @@ import type {
 import BatchPublishingV23
   from "./BatchPublishingV23";
 
+import PortalConnectionsCard
+  from "./PortalConnectionsCard";
+
 
 type ActivityItem = {
   id?:
@@ -1122,7 +1125,7 @@ export default function CockpitOverviewV3View({
       </section>
 
 
-      <section className="v3Portals">
+      <section className="v3Portals" id="portale">
         <header>
           <div className="v3PortalTitle">
             <span className="v3PortalIcon">
@@ -1247,7 +1250,18 @@ export default function CockpitOverviewV3View({
             </>
           )}
         </div>
-      </section>
+
+        <div
+          className="v3PortalManagement"
+          style={{
+            marginTop: "18px",
+          }}
+        >
+          <PortalConnectionsCard
+            market={market}
+          />
+        </div>
+</section>
 
 
       <section className="v3Publishing">
