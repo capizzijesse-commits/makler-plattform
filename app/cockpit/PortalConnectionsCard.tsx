@@ -10,6 +10,9 @@ import {
 } from "next-intl";
 
 
+import CustomerPortalAccessPanel from "./CustomerPortalAccessPanel";
+
+
 type PortalId =
   | "immoscout24_ch"
   | "homegate_ch"
@@ -2450,12 +2453,12 @@ export default function PortalConnectionsCard({
                           "
                         >
                           {language === "de"
-                            ? "Registrierung und Vertrag erfolgen direkt beim Portal. Inserat-AI speichert keine Portal-Passwörter."
+                            ? "Registrierung und Vertrag erfolgen direkt beim Portal. Wo technisch unterstützt, können offizielle API-, Feed- oder FTP-Zugangsdaten unten verschlüsselt hinterlegt werden."
                             : language === "it"
-                              ? "Registrazione e contratto avvengono direttamente con il portale. Inserat-AI non memorizza password."
+                              ? "Registrazione e contratto avvengono direttamente con il portale. Dove supportato, i dati tecnici API, feed o FTP possono essere salvati in forma crittografata."
                               : language === "fr"
-                                ? "L’inscription et le contrat sont gérés directement par le portail. Inserat-AI ne stocke aucun mot de passe."
-                                : "Registration and contracts are handled directly by the portal. Inserat-AI does not store portal passwords."}
+                                ? "L’inscription et le contrat sont gérés directement par le portail. Lorsque cela est pris en charge, les accès techniques API, feed ou FTP peuvent être enregistrés de manière chiffrée."
+                                : "Registration and contracts are handled directly by the portal. Where supported, official API, feed or FTP credentials can be stored encrypted below."}
                         </p>
 
                         <details
@@ -2492,16 +2495,26 @@ export default function PortalConnectionsCard({
                             "
                           >
                             {language === "de"
-                              ? "Nutze die vorhandene Verbindungs-Einrichtung direkt unter diesem Bereich. Gib niemals dein Portal-Passwort bei Inserat-AI ein."
+                              ? "Nutze die Verbindungs-Einrichtung unten. Verwende nur offizielle technische API-, Feed- oder FTP-Zugangsdaten – nicht dein normales Website-Login."
                               : language === "it"
-                                ? "Usa la configurazione della connessione qui sotto. Non inserire mai la password del portale in Inserat-AI."
+                                ? "Usa la configurazione qui sotto. Inserisci solo credenziali tecniche API, feed o FTP ufficiali, non la normale password del sito."
                                 : language === "fr"
-                                  ? "Utilisez la configuration de connexion ci-dessous. Ne saisissez jamais votre mot de passe du portail dans Inserat-AI."
-                                  : "Use the existing connection setup below. Never enter your portal password in Inserat-AI."}
+                                  ? "Utilisez la configuration ci-dessous. Saisissez uniquement les accès techniques API, feed ou FTP officiels, pas votre mot de passe normal du site."
+                                  : "Use the connection setup below. Enter only official technical API, feed or FTP credentials, not your normal website login password."}
                           </p>
                         </details>
                       </div>
                     ) : null}
+
+
+                    <CustomerPortalAccessPanel
+                      portal={
+                        portal.portal
+                      }
+                      language={
+                        language
+                      }
+                    />
 
 
                     {requiresOpenImmoProviderId ? (
