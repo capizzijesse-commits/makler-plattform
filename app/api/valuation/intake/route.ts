@@ -26,8 +26,13 @@ const MAX_PDF_SIZE =
 const MAX_IMAGE_SIZE =
   8 * 1024 * 1024;
 
+/*
+ * Direkter Function-Upload.
+ * Für grössere Dokumentpakete folgt
+ * Direct-to-Blob Upload.
+ */
 const MAX_TOTAL_UPLOAD_SIZE =
-  30 * 1024 * 1024;
+  4 * 1024 * 1024;
 
 
 const ALLOWED_IMAGE_TYPES =
@@ -724,7 +729,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Die hochgeladenen Dateien sind zusammen zu gross.",
+            "Die hochgeladenen Dateien dürfen zusammen maximal 4 MB gross sein.",
         },
         {
           status: 400,

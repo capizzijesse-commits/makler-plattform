@@ -220,6 +220,16 @@ const steps = [
   "Ausstattung",
 ];
 
+/*
+ * VALUATION DIRECT UPLOAD LIMIT V1
+ *
+ * Direkte Function-Requests müssen
+ * unter der Hosting-Payload-Grenze bleiben.
+ * Multipart-Overhead ist einkalkuliert.
+ */
+const MAX_VALUATION_INTAKE_UPLOAD_BYTES =
+  4 * 1024 * 1024;
+
 export default function BewertungPage() {
   const [step, setStep] = useState(1);
 
@@ -741,6 +751,28 @@ export default function BewertungPage() {
 
       setIntakeExtraction(null);
 
+      const totalUploadBytes =
+        intakeFiles.reduce(
+          (total, file) =>
+            total + file.size,
+          0
+        );
+
+      if (
+        totalUploadBytes >
+        MAX_VALUATION_INTAKE_UPLOAD_BYTES
+      ) {
+        setIntakeStatus(
+          "error"
+        );
+
+        setIntakeMessage(
+          "Die ausgewählten Dokumente sind zusammen zu gross. Bitte für einen Analysevorgang maximal 4 MB auswählen."
+        );
+
+        return;
+      }
+
       try {
         const payload =
           new FormData();
@@ -772,18 +804,36 @@ export default function BewertungPage() {
             }
           );
 
+        if (
+          response.status ===
+          413
+        ) {
+          throw new Error(
+            "Die hochgeladenen Dokumente sind für einen einzelnen Analysevorgang zu gross. Bitte maximal 4 MB auswählen."
+          );
+        }
+
         const data =
-          (await response.json()) as
-            ValuationIntakeResponse;
+          (await response
+            .json()
+            .catch(
+              () => null
+            )) as
+              | ValuationIntakeResponse
+              | null;
 
         if (
           !response.ok ||
-          !data.success ||
-          !data.extraction
+          !data?.success ||
+          !data?.extraction
         ) {
           throw new Error(
-            data.error ||
-              "Die Unterlagen konnten nicht automatisch analysiert werden."
+            data?.error ||
+              (
+                response.ok
+                  ? "Die Unterlagen konnten nicht automatisch analysiert werden."
+                  : `Die Analyse konnte nicht gestartet werden (HTTP ${response.status}).`
+              )
           );
         }
 
