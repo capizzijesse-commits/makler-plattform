@@ -3168,6 +3168,16 @@ export default function CockpitOverviewV2({
             activeCount={activeCount}
             readyCount={readyForReviewListings.length}
             actionCount={actionNeededListings.length}
+            readyHref={
+              readyForReviewListings[0]
+                ? `/cockpit/${readyForReviewListings[0].id}#portal-publishing`
+                : null
+            }
+            actionHref={
+              actionNeededListings[0]
+                ? `/cockpit/${actionNeededListings[0].id}/edit`
+                : null
+            }
             viewsToday={
               analyticsLoading
                 ? null

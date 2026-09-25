@@ -189,6 +189,12 @@ type Props = {
   actionCount:
     number;
 
+  readyHref:
+    string | null;
+
+  actionHref:
+    string | null;
+
   viewsToday:
     number | null;
 
@@ -228,6 +234,8 @@ export default function CockpitOverviewV3View({
   activeCount,
   readyCount,
   actionCount,
+  readyHref,
+  actionHref,
   viewsToday,
   automaticWorkItems,
   resolvedWorkItems,
@@ -694,7 +702,7 @@ export default function CockpitOverviewV3View({
 
 
         <div className="v3Kpis">
-          <article className="blue">
+          <Link href="#batch-publishing" className="v3KpiLink blue">
             <span className="v3KpiIcon">
               ▤
             </span>
@@ -714,10 +722,10 @@ export default function CockpitOverviewV3View({
             </div>
 
             <i>›</i>
-          </article>
+          </Link>
 
 
-          <article className="green">
+          <Link href={readyHref ?? "#batch-publishing"} className="v3KpiLink green">
             <span className="v3KpiIcon">
               ✓
             </span>
@@ -737,10 +745,10 @@ export default function CockpitOverviewV3View({
             </div>
 
             <i>›</i>
-          </article>
+          </Link>
 
 
-          <article className="orange">
+          <Link href={actionHref ?? "#batch-publishing"} className="v3KpiLink orange">
             <span className="v3KpiIcon">
               !
             </span>
@@ -760,10 +768,10 @@ export default function CockpitOverviewV3View({
             </div>
 
             <i>›</i>
-          </article>
+          </Link>
 
 
-          <article className="violet">
+          <Link href="#cockpit-activity" className="v3KpiLink violet">
             <span className="v3KpiIcon">
               ◉
             </span>
@@ -783,7 +791,7 @@ export default function CockpitOverviewV3View({
             </div>
 
             <i>›</i>
-          </article>
+          </Link>
         </div>
       </section>
 
@@ -1029,7 +1037,7 @@ export default function CockpitOverviewV3View({
           )}
         </article>
 
-        <article className="v3Activity">
+        <article className="v3Activity" id="cockpit-activity">
           <header className="v3CardHeader">
             <div>
               <span className="v3Bars">
@@ -1574,7 +1582,7 @@ export default function CockpitOverviewV3View({
           margin-top: 18px;
         }
 
-        .v3Kpis article {
+        .v3Kpis .v3KpiLink {
           display: grid;
           min-height: 94px;
           grid-template-columns:
@@ -1584,6 +1592,27 @@ export default function CockpitOverviewV3View({
           padding: 14px 15px;
           border: 1px solid;
           border-radius: 14px;
+        }
+
+        .v3Kpis .v3KpiLink {
+          color: inherit;
+          text-decoration: none;
+          cursor: pointer;
+          transition:
+            transform .16s ease,
+            box-shadow .16s ease;
+        }
+
+        .v3Kpis .v3KpiLink:hover {
+          transform: translateY(-2px);
+          box-shadow:
+            0 10px 24px rgba(22,57,90,.10);
+        }
+
+        .v3Kpis .v3KpiLink:focus-visible {
+          outline:
+            3px solid rgba(245,158,11,.45);
+          outline-offset: 2px;
         }
 
         .v3Kpis .blue {
@@ -1642,30 +1671,30 @@ export default function CockpitOverviewV3View({
           color: #8b4de8;
         }
 
-        .v3Kpis article > div {
+        .v3Kpis .v3KpiLink > div {
           display: flex;
           flex-direction: column;
         }
 
-        .v3Kpis article strong {
+        .v3Kpis .v3KpiLink strong {
           color: #10233e;
           font-size: 23px;
           line-height: 1;
         }
 
-        .v3Kpis article b {
+        .v3Kpis .v3KpiLink b {
           margin-top: 4px;
           color: #223750;
           font-size: 10px;
         }
 
-        .v3Kpis article small {
+        .v3Kpis .v3KpiLink small {
           margin-top: 3px;
           color: #8797aa;
           font-size: 8px;
         }
 
-        .v3Kpis article > i {
+        .v3Kpis .v3KpiLink > i {
           font-size: 24px;
           font-style: normal;
         }
@@ -2630,7 +2659,7 @@ export default function CockpitOverviewV3View({
         }
 
 
-        .v3Kpis article {
+        .v3Kpis .v3KpiLink {
           min-height:
             89px !important;
         }
@@ -3128,7 +3157,7 @@ export default function CockpitOverviewV3View({
         }
 
 
-        .v3Kpis article {
+        .v3Kpis .v3KpiLink {
           min-height:
             84px !important;
 
@@ -3149,7 +3178,7 @@ export default function CockpitOverviewV3View({
         }
 
 
-        .v3Kpis article strong {
+        .v3Kpis .v3KpiLink strong {
           font-size:
             21px !important;
         }
@@ -5707,7 +5736,7 @@ export default function CockpitOverviewV3View({
           gap: 11px !important;
         }
 
-        .v3Kpis article {
+        .v3Kpis .v3KpiLink {
           position: relative;
           overflow: hidden;
           border: 1px solid #c6d8e7 !important;
@@ -5721,7 +5750,7 @@ export default function CockpitOverviewV3View({
             rgba(7,24,45,.045) !important;
         }
 
-        .v3Kpis article::after {
+        .v3Kpis .v3KpiLink::after {
           content: "";
           position: absolute;
           top: -40px;
@@ -5748,16 +5777,16 @@ export default function CockpitOverviewV3View({
           background: #805ad5;
         }
 
-        .v3Kpis article strong,
-        .v3Kpis article b {
+        .v3Kpis .v3KpiLink strong,
+        .v3Kpis .v3KpiLink b {
           color: #07182d !important;
         }
 
-        .v3Kpis article small {
+        .v3Kpis .v3KpiLink small {
           color: #6f839b !important;
         }
 
-        .v3Kpis article > i {
+        .v3Kpis .v3KpiLink > i {
           color: #173f69 !important;
         }
 
@@ -6329,7 +6358,7 @@ export default function CockpitOverviewV3View({
             margin-top: 11px !important;
           }
 
-          .v3Kpis article {
+          .v3Kpis .v3KpiLink {
             min-width: 0 !important;
             min-height: 78px !important;
             grid-template-columns:
@@ -6346,22 +6375,22 @@ export default function CockpitOverviewV3View({
             font-size: 14px !important;
           }
 
-          .v3Kpis article strong {
+          .v3Kpis .v3KpiLink strong {
             font-size: 20px !important;
           }
 
-          .v3Kpis article b {
+          .v3Kpis .v3KpiLink b {
             margin-top: 3px !important;
             font-size: 10px !important;
             line-height: 1.2 !important;
           }
 
-          .v3Kpis article small {
+          .v3Kpis .v3KpiLink small {
             font-size: 8px !important;
             line-height: 1.25 !important;
           }
 
-          .v3Kpis article > i {
+          .v3Kpis .v3KpiLink > i {
             font-size: 17px !important;
           }
 
