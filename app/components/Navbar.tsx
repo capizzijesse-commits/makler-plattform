@@ -84,17 +84,7 @@ export default function Navbar() {
   const t = useTranslations("Navbar");
 
 
-  // INSERAT_AI_HOME_STAGING_NAVBAR_V2
-  const homeStagingListingMatch =
-    pathname?.match(
-      /^\/cockpit\/([^/]+)/
-    );
-
-  const homeStagingHref =
-    homeStagingListingMatch?.[1]
-      ? `/cockpit/${homeStagingListingMatch[1]}/home-staging`
-      : "/cockpit";
-  const menuItems: MenuItem[] = [
+    const menuItems: MenuItem[] = [
     {
       label: t("items.dashboard.label"),
       description: t("items.dashboard.description"),
@@ -144,22 +134,6 @@ export default function Navbar() {
       icon: "\u{1F4F1}",
       href: "/dashboard/social-media",
       accent: "violet",
-    },
-    {
-      label: t("items.tour.label"),
-      description: t("items.tour.description"),
-      icon: "\u{1F3AC}",
-      href: "/dashboard/tour-guide",
-      accent: "cyan",
-      proOnly: true,
-    },
-    {
-      label: t("items.homeStaging.label"),
-      description: t("items.homeStaging.description"),
-      icon: "\u{1F6CB}\uFE0F",
-      href: homeStagingHref,
-      accent: "cyan",
-      proOnly: true,
     },
     {
       label: t("items.publishing.label"),

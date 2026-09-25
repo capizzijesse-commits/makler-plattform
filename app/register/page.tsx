@@ -272,7 +272,7 @@ function handleRegisterFormStart() {
               "Inserat-AI Pro",
             description:
               isGermany
-                ? "Premium-Zugang für Makler mit erweiterten KI-, Home-Staging- und Automatisierungsfunktionen."
+                ? "Premium-Zugang für Makler mit erweiterten KI- und Automatisierungsfunktionen."
                 : pricingT(
                     "plans.pro.description"
                   ),
@@ -293,20 +293,6 @@ function handleRegisterFormStart() {
                 label:
                   pricingT(
                     "plans.pro.cadence"
-                  ),
-              },
-              {
-                value: "Home Staging",
-                label:
-                  pricingT(
-                    "plans.pro.features.staging"
-                  ),
-              },
-              {
-                value: "3D-Video-Tour",
-                label:
-                  pricingT(
-                    "plans.pro.features.tour"
                   ),
               },
             ],

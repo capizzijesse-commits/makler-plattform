@@ -38,9 +38,9 @@ const DE_LANDING_COPY = {
   parking:
     "Tiefgaragenstellplatz",
   marketingHubDescription:
-    "Der Inserat-AI Marketing Hub verbindet Inserat, Bilder, Social Media, 3D-Video-Tour und Finanzierung. Er zeigt, was bereits fertig ist und welcher Schritt als Nächstes sinnvoll ist.",
+    "Der Inserat-AI Marketing Hub verbindet Inserat, Bilder, Social Media und Finanzierung. Er zeigt, was bereits fertig ist und welcher Schritt als Nächstes sinnvoll ist.",
   marketingHubCentral:
-    "Social Media, Bilder, Video-Tour und Finanzierung lassen sich direkt aus einer zentralen Übersicht öffnen.",
+    "Social Media, Bilder und Finanzierung lassen sich direkt aus einer zentralen Übersicht öffnen.",
 } as const;
 
 export default function HomePageClient({

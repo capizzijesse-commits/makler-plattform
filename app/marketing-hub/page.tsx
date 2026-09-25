@@ -733,7 +733,7 @@ export default function MarketingHubPage() {
             </section>
 
             <section className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {cards.map((card) => {
+              {cards.filter((card) => card.number !== "02").map((card) => {
                 const content = (
                   <>
                     <div className="flex items-start justify-between gap-4">
