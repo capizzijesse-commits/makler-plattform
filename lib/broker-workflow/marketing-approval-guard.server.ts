@@ -10,14 +10,11 @@ export const BROKER_MARKETING_APPROVAL_REQUIRED =
 
 
 function hasGeneratedListingText(
-  generatedText:
-    string | null,
   generatedVariants:
     string | null
 ) {
   return Boolean(
-    generatedText?.trim() ||
-      generatedVariants?.trim()
+    generatedVariants?.trim()
   );
 }
 
@@ -74,9 +71,6 @@ export async function isBrokerMarketingApproved(
           true,
 
         highlights:
-          true,
-
-        generatedText:
           true,
 
         generatedVariants:
@@ -147,10 +141,10 @@ export async function isBrokerMarketingApproved(
       "number" &&
     listing.price >
       0 &&
-    listing.highlights.length >
-      0 &&
+    Boolean(
+      listing.highlights?.trim()
+    ) &&
     hasGeneratedListingText(
-      listing.generatedText,
       listing.generatedVariants
     ) &&
     listing._count.images >
