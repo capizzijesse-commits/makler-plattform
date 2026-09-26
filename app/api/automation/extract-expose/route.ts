@@ -1,13 +1,19 @@
 import OpenAI from "openai";
+import { del } from "@vercel/blob";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { getAuthenticatedUser } from "@/lib/session";
 
-export const runtime = "nodejs";
-
 const MODEL = process.env.OPENAI_LISTING_MODEL?.trim() || "gpt-4.1-mini";
-const MAX_FILE_BYTES = 4_000_000;
+const EXPOSE_PREFIX = "/automation-exposes/";
+
+const ALLOWED_CONTENT_TYPES = new Set([
+  "application/pdf",
+  "text/plain",
+  "text/markdown",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+]);
 
 type ExtractedExpose = {
   projectName: string;
@@ -23,6 +29,12 @@ type ExtractedExpose = {
   styleText: string;
   sourceSummary: string;
   missingFields: string[];
+};
+
+type ExtractRequest = {
+  fileUrl?: unknown;
+  fileName?: unknown;
+  fileType?: unknown;
 };
 
 function emptyResult(): ExtractedExpose {
@@ -48,9 +60,10 @@ function cleanString(value: unknown): string {
 }
 
 function normalizeResult(value: unknown): ExtractedExpose {
-  const raw = value && typeof value === "object"
-    ? (value as Record<string, unknown>)
-    : {};
+  const raw =
+    value && typeof value === "object"
+      ? (value as Record<string, unknown>)
+      : {};
 
   const country = cleanString(raw.countryCode).toUpperCase();
   const countryCode: ExtractedExpose["countryCode"] =
@@ -111,7 +124,7 @@ function friendlyOpenAiError(error: unknown) {
       status: 503,
       code: "AI_TEMPORARILY_UNAVAILABLE",
       message:
-        "Die KI-Auswertung ist derzeit nicht verfügbar. Deine Dateien bleiben unverändert – bitte später erneut versuchen.",
+        "Die KI-Auswertung ist derzeit nicht verfügbar. Deine Datei wurde sicher verarbeitet und nicht dauerhaft gespeichert. Bitte später erneut versuchen.",
     };
   }
 
@@ -123,46 +136,56 @@ function friendlyOpenAiError(error: unknown) {
   };
 }
 
+function isTrustedBlobUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+
+    return (
+      url.protocol === "https:" &&
+      url.hostname.endsWith(".blob.vercel-storage.com") &&
+      url.pathname.startsWith(EXPOSE_PREFIX)
+    );
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(request: NextRequest) {
   const user = await getAuthenticatedUser(request);
 
   if (!user) {
     return NextResponse.json(
-      { success: false, code: "UNAUTHORIZED", error: "Bitte zuerst anmelden." },
+      {
+        success: false,
+        code: "UNAUTHORIZED",
+        error: "Bitte zuerst anmelden.",
+      },
       { status: 401 }
     );
   }
 
-  try {
-    const formData = await request.formData();
-    const file = formData.get("file");
+  let cleanupUrl = "";
 
-    if (!(file instanceof File)) {
+  try {
+    const body = (await request.json()) as ExtractRequest;
+    const fileUrl = cleanString(body.fileUrl);
+    const fileName = cleanString(body.fileName) || "expose.pdf";
+    const fileType = cleanString(body.fileType);
+
+    if (!fileUrl || !isTrustedBlobUrl(fileUrl)) {
       return NextResponse.json(
-        { success: false, code: "FILE_REQUIRED", error: "Bitte ein Exposé auswählen." },
+        {
+          success: false,
+          code: "INVALID_FILE_URL",
+          error: "Das hochgeladene Exposé konnte nicht verifiziert werden.",
+        },
         { status: 400 }
       );
     }
 
-    if (file.size <= 0 || file.size > MAX_FILE_BYTES) {
-      return NextResponse.json(
-        {
-          success: false,
-          code: "FILE_TOO_LARGE",
-          error: "Das Exposé darf für diesen ersten Automationslauf maximal 4 MB gross sein.",
-        },
-        { status: 413 }
-      );
-    }
+    cleanupUrl = fileUrl;
 
-    const allowed = new Set([
-      "application/pdf",
-      "text/plain",
-      "text/markdown",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ]);
-
-    if (!allowed.has(file.type)) {
+    if (!ALLOWED_CONTENT_TYPES.has(fileType)) {
       return NextResponse.json(
         {
           success: false,
@@ -173,10 +196,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const bytes = Buffer.from(await file.arrayBuffer());
-    const fileData = `data:${file.type};base64,${bytes.toString("base64")}`;
-
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
 
     const response = await openai.responses.create({
       model: MODEL,
@@ -186,8 +208,8 @@ export async function POST(request: NextRequest) {
           content: [
             {
               type: "input_file",
-              filename: file.name || "expose.pdf",
-              file_data: fileData,
+              filename: fileName,
+              file_url: fileUrl,
             },
             {
               type: "input_text",
@@ -227,16 +249,34 @@ Regeln:
       max_output_tokens: 1200,
     });
 
-    const extracted = normalizeResult(parseJsonObject(response.output_text || ""));
+    const extracted = normalizeResult(
+      parseJsonObject(response.output_text || "")
+    );
 
-    return NextResponse.json({ success: true, extracted });
+    return NextResponse.json({
+      success: true,
+      extracted,
+    });
   } catch (error) {
     console.error("AUTOMATION EXPOSE EXTRACTION ERROR:", error);
     const friendly = friendlyOpenAiError(error);
 
     return NextResponse.json(
-      { success: false, code: friendly.code, error: friendly.message },
+      {
+        success: false,
+        code: friendly.code,
+        error: friendly.message,
+      },
       { status: friendly.status }
     );
+  } finally {
+    if (cleanupUrl) {
+      await del(cleanupUrl).catch((cleanupError) => {
+        console.warn(
+          "AUTOMATION EXPOSE CLEANUP WARNING:",
+          cleanupError
+        );
+      });
+    }
   }
 }
