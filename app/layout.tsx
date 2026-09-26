@@ -8,6 +8,7 @@ import AppDialogProvider from "@/components/AppDialogProvider";
 import CookieConsentBanner from "@/app/components/CookieConsentBanner";
 import GoogleAnalytics from "@/app/components/GoogleAnalytics";
 import AppShell from "@/app/components/AppShell";
+import AutomationNavigationBridge from "@/app/components/AutomationNavigationBridge";
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
@@ -51,6 +52,7 @@ export default async function RootLayout({
         <GoogleAnalytics />
         <NextIntlClientProvider>
           <AppDialogProvider>
+            <AutomationNavigationBridge />
             <AppShell>{children}</AppShell>
             <CookieConsentBanner />
           </AppDialogProvider>
