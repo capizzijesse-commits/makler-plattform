@@ -2,7 +2,7 @@ import type {
   ReactNode,
 } from "react";
 
-import DirectPublicationDock from "./DirectPublicationDock";
+import DirectPublicationDockV2 from "./DirectPublicationDockV2";
 
 
 type CockpitListingLayoutProps = {
@@ -28,7 +28,7 @@ export default async function CockpitListingLayout({
 
   return (
     <>
-      <DirectPublicationDock
+      <DirectPublicationDockV2
         listingId={id}
       />
 
