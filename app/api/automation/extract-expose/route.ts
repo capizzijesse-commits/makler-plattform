@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import OpenAI, { toFile } from "openai";
 import { del } from "@vercel/blob";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -7,6 +7,7 @@ import { getAuthenticatedUser } from "@/lib/session";
 
 const MODEL = process.env.OPENAI_LISTING_MODEL?.trim() || "gpt-4.1-mini";
 const EXPOSE_PREFIX = "/automation-exposes/";
+const MAX_EXPOSE_BYTES = 25 * 1024 * 1024;
 
 const ALLOWED_CONTENT_TYPES = new Set([
   "application/pdf",
@@ -112,19 +113,36 @@ function friendlyOpenAiError(error: unknown) {
   const candidate = error as {
     status?: number;
     code?: string;
+    type?: string;
     message?: string;
   };
 
+  const signal = [
+    candidate?.code,
+    candidate?.type,
+    candidate?.message,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   if (
     candidate?.status === 429 ||
-    candidate?.code === "insufficient_quota" ||
-    /credits|quota|billing/i.test(candidate?.message || "")
+    /insufficient_quota|billing_hard_limit|credits|quota|billing|429/i.test(signal)
   ) {
     return {
       status: 503,
       code: "AI_TEMPORARILY_UNAVAILABLE",
       message:
-        "Die KI-Auswertung ist derzeit nicht verfügbar. Deine Datei wurde sicher verarbeitet und nicht dauerhaft gespeichert. Bitte später erneut versuchen.",
+        "Die KI-Auswertung ist momentan nicht verfügbar. Deine Datei wurde nicht dauerhaft gespeichert. Sobald der API-Zugang wieder aktiv ist, kannst du denselben Ablauf erneut starten.",
+    };
+  }
+
+  if (/file|pdf|document|download|fetch/i.test(signal)) {
+    return {
+      status: 502,
+      code: "EXPOSE_FILE_PROCESSING_FAILED",
+      message:
+        "Das Exposé konnte technisch nicht gelesen werden. Bitte denselben Upload erneut versuchen.",
     };
   }
 
@@ -165,12 +183,14 @@ export async function POST(request: NextRequest) {
   }
 
   let cleanupUrl = "";
+  let openAiFileId = "";
+  let openai: OpenAI | null = null;
 
   try {
     const body = (await request.json()) as ExtractRequest;
     const fileUrl = cleanString(body.fileUrl);
     const fileName = cleanString(body.fileName) || "expose.pdf";
-    const fileType = cleanString(body.fileType);
+    const fileType = cleanString(body.fileType) || "application/pdf";
 
     if (!fileUrl || !isTrustedBlobUrl(fileUrl)) {
       return NextResponse.json(
@@ -196,9 +216,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const openai = new OpenAI({
+    const sourceResponse = await fetch(fileUrl, {
+      cache: "no-store",
+    });
+
+    if (!sourceResponse.ok) {
+      throw new Error(
+        `EXPOSE_BLOB_DOWNLOAD_FAILED_${sourceResponse.status}`
+      );
+    }
+
+    const bytes = new Uint8Array(await sourceResponse.arrayBuffer());
+
+    if (bytes.byteLength <= 0 || bytes.byteLength > MAX_EXPOSE_BYTES) {
+      return NextResponse.json(
+        {
+          success: false,
+          code: "INVALID_FILE_SIZE",
+          error: "Das Exposé darf maximal 25 MB gross sein.",
+        },
+        { status: 413 }
+      );
+    }
+
+    openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
+
+    const uploadable = await toFile(bytes, fileName, {
+      type: fileType,
+    });
+
+    const uploaded = await openai.files.create({
+      file: uploadable,
+      purpose: "user_data",
+    });
+
+    openAiFileId = uploaded.id;
 
     const response = await openai.responses.create({
       model: MODEL,
@@ -208,8 +262,7 @@ export async function POST(request: NextRequest) {
           content: [
             {
               type: "input_file",
-              filename: fileName,
-              file_url: fileUrl,
+              file_id: uploaded.id,
             },
             {
               type: "input_text",
@@ -270,6 +323,15 @@ Regeln:
       { status: friendly.status }
     );
   } finally {
+    if (openai && openAiFileId) {
+      await openai.files.delete(openAiFileId).catch((cleanupError) => {
+        console.warn(
+          "AUTOMATION OPENAI FILE CLEANUP WARNING:",
+          cleanupError
+        );
+      });
+    }
+
     if (cleanupUrl) {
       await del(cleanupUrl).catch((cleanupError) => {
         console.warn(
