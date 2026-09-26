@@ -126,6 +126,8 @@ export default function CustomerPortalAccessPanel({
             "Produzione",
           error:
             "Impossibile salvare l’accesso.",
+          warning:
+            "Non inserire qui il login di Inserat-AI o il normale login del portale. Usa solo le credenziali tecniche fornite per il trasferimento dati.",
         }
       : language === "fr"
         ? {
@@ -145,6 +147,8 @@ export default function CustomerPortalAccessPanel({
               "Production",
             error:
               "Impossible d’enregistrer l’accès.",
+            warning:
+              "N’utilisez pas ici votre connexion Inserat-AI ni votre connexion normale au portail. Utilisez uniquement les accès techniques fournis pour le transfert de données.",
           }
         : language === "en"
           ? {
@@ -164,6 +168,8 @@ export default function CustomerPortalAccessPanel({
                 "Production",
               error:
                 "The access could not be saved.",
+              warning:
+                "Do not enter your Inserat-AI login or normal portal login here. Use only the technical credentials supplied for data transfer.",
             }
           : {
               title:
@@ -182,6 +188,8 @@ export default function CustomerPortalAccessPanel({
                 "Produktion",
               error:
                 "Der Zugang konnte nicht gespeichert werden.",
+              warning:
+                "Hier niemals dein Inserat-AI-Login oder dein normales Portal-Login eintragen. Verwende nur die technischen Zugangsdaten, die dir für den Datentransfer bereitgestellt wurden.",
             };
 
 
@@ -198,6 +206,8 @@ export default function CustomerPortalAccessPanel({
     async function load() {
 
       try {
+
+        setLoading(true);
 
         const response =
           await fetch(
@@ -259,6 +269,11 @@ export default function CustomerPortalAccessPanel({
             "AbortError"
         ) {
           return;
+        }
+      }
+      finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
         }
       }
     }
@@ -543,7 +558,9 @@ export default function CustomerPortalAccessPanel({
 
 
       {open ? (
-        <div
+        <form
+          autoComplete="off"
+          onSubmit={(event) => event.preventDefault()}
           className="
             mt-3
             border-t
@@ -560,6 +577,10 @@ export default function CustomerPortalAccessPanel({
           >
             {text.intro}
           </p>
+
+          <div className="mt-3 rounded-xl border border-sky-400/20 bg-sky-400/[0.05] px-3 py-2.5 text-[11px] leading-relaxed text-sky-100">
+            <strong>{text.warning}</strong>
+          </div>
 
 
           <label
@@ -600,283 +621,144 @@ export default function CustomerPortalAccessPanel({
 
           {swiss ? (
             <>
-              <label
-                className="
-                  mt-3
-                  block
-                  text-[11px]
-                  font-medium
-                  text-white/60
-                "
-              >
-                SwissRETS API URL
-
+              <label className="mt-3 block text-[11px] font-medium text-white/60">
+                SwissRETS API URL – vom Portal erhalten
                 <input
                   type="url"
-                  value={
-                    fields.baseUrl ?? ""
-                  }
-                  onChange={(event) =>
-                    updateField(
-                      "baseUrl",
-                      event.target.value
-                    )
-                  }
+                  name="portal-swissrets-url"
+                  value={fields.baseUrl ?? ""}
+                  onChange={(event) => updateField("baseUrl", event.target.value)}
                   className={inputClass}
                   autoComplete="off"
+                  spellCheck={false}
                 />
               </label>
 
-
-              <label
-                className="
-                  mt-3
-                  block
-                  text-[11px]
-                  font-medium
-                  text-white/60
-                "
-              >
-                Client ID
-
+              <label className="mt-3 block text-[11px] font-medium text-white/60">
+                Client ID – vom Portal erhalten
                 <input
                   type="text"
-                  value={
-                    fields.clientId ?? ""
-                  }
-                  onChange={(event) =>
-                    updateField(
-                      "clientId",
-                      event.target.value
-                    )
-                  }
+                  name="portal-client-identifier"
+                  value={fields.clientId ?? ""}
+                  onChange={(event) => updateField("clientId", event.target.value)}
                   className={inputClass}
                   autoComplete="off"
+                  data-1p-ignore="true"
+                  data-lpignore="true"
+                  spellCheck={false}
                 />
               </label>
 
-
-              <label
-                className="
-                  mt-3
-                  block
-                  text-[11px]
-                  font-medium
-                  text-white/60
-                "
-              >
-                Client Secret
-
+              <label className="mt-3 block text-[11px] font-medium text-white/60">
+                Client Secret – vom Portal erhalten
                 <input
                   type="password"
-                  value={
-                    fields.clientSecret ?? ""
-                  }
-                  onChange={(event) =>
-                    updateField(
-                      "clientSecret",
-                      event.target.value
-                    )
-                  }
+                  name="portal-client-secret"
+                  value={fields.clientSecret ?? ""}
+                  onChange={(event) => updateField("clientSecret", event.target.value)}
                   className={inputClass}
                   autoComplete="new-password"
+                  data-1p-ignore="true"
+                  data-lpignore="true"
                 />
               </label>
 
-
-              <label
-                className="
-                  mt-3
-                  block
-                  text-[11px]
-                  font-medium
-                  text-white/60
-                "
-              >
-                SwissRETS Benutzername
-
+              <label className="mt-3 block text-[11px] font-medium text-white/60">
+                SwissRETS Benutzername – vom Portal erhalten
                 <input
                   type="text"
-                  value={
-                    fields.userName ?? ""
-                  }
-                  onChange={(event) =>
-                    updateField(
-                      "userName",
-                      event.target.value
-                    )
-                  }
+                  name="portal-swissrets-account"
+                  value={fields.userName ?? ""}
+                  onChange={(event) => updateField("userName", event.target.value)}
                   className={inputClass}
                   autoComplete="off"
+                  data-1p-ignore="true"
+                  data-lpignore="true"
+                  spellCheck={false}
                 />
               </label>
 
-
-              <label
-                className="
-                  mt-3
-                  block
-                  text-[11px]
-                  font-medium
-                  text-white/60
-                "
-              >
-                SwissRETS Passwort
-
+              <label className="mt-3 block text-[11px] font-medium text-white/60">
+                SwissRETS Passwort – vom Portal erhalten
                 <input
                   type="password"
-                  value={
-                    fields.password ?? ""
-                  }
-                  onChange={(event) =>
-                    updateField(
-                      "password",
-                      event.target.value
-                    )
-                  }
+                  name="portal-swissrets-secret"
+                  value={fields.password ?? ""}
+                  onChange={(event) => updateField("password", event.target.value)}
                   className={inputClass}
                   autoComplete="new-password"
+                  data-1p-ignore="true"
+                  data-lpignore="true"
                 />
               </label>
 
-
-              <label
-                className="
-                  mt-3
-                  block
-                  text-[11px]
-                  font-medium
-                  text-white/60
-                "
-              >
-                Owner ID
-
+              <label className="mt-3 block text-[11px] font-medium text-white/60">
+                Owner ID – vom Portal erhalten
                 <input
                   type="text"
-                  value={
-                    fields.ownerId ?? ""
-                  }
-                  onChange={(event) =>
-                    updateField(
-                      "ownerId",
-                      event.target.value
-                    )
-                  }
+                  name="portal-owner-identifier"
+                  value={fields.ownerId ?? ""}
+                  onChange={(event) => updateField("ownerId", event.target.value)}
                   className={inputClass}
                   autoComplete="off"
+                  spellCheck={false}
                 />
               </label>
             </>
           ) : (
             <>
-              <label
-                className="
-                  mt-3
-                  block
-                  text-[11px]
-                  font-medium
-                  text-white/60
-                "
-              >
-                FTP / FTPS Host
-
+              <label className="mt-3 block text-[11px] font-medium text-white/60">
+                FTP-/FTPS-Server – vom Portal erhalten
                 <input
                   type="text"
-                  value={
-                    fields.host ?? ""
-                  }
-                  onChange={(event) =>
-                    updateField(
-                      "host",
-                      event.target.value
-                    )
-                  }
+                  name="portal-transfer-server"
+                  value={fields.host ?? ""}
+                  onChange={(event) => updateField("host", event.target.value)}
                   className={inputClass}
                   autoComplete="off"
+                  spellCheck={false}
                 />
               </label>
 
-
-              <label
-                className="
-                  mt-3
-                  block
-                  text-[11px]
-                  font-medium
-                  text-white/60
-                "
-              >
-                FTP Benutzername
-
+              <label className="mt-3 block text-[11px] font-medium text-white/60">
+                FTP-Benutzername – vom Portal erhalten
                 <input
                   type="text"
-                  value={
-                    fields.username ?? ""
-                  }
-                  onChange={(event) =>
-                    updateField(
-                      "username",
-                      event.target.value
-                    )
-                  }
+                  name="portal-transfer-account"
+                  value={fields.username ?? ""}
+                  onChange={(event) => updateField("username", event.target.value)}
                   className={inputClass}
                   autoComplete="off"
+                  data-1p-ignore="true"
+                  data-lpignore="true"
+                  spellCheck={false}
                 />
               </label>
 
-
-              <label
-                className="
-                  mt-3
-                  block
-                  text-[11px]
-                  font-medium
-                  text-white/60
-                "
-              >
-                FTP Passwort
-
+              <label className="mt-3 block text-[11px] font-medium text-white/60">
+                FTP-Passwort – vom Portal erhalten
                 <input
                   type="password"
-                  value={
-                    fields.password ?? ""
-                  }
-                  onChange={(event) =>
-                    updateField(
-                      "password",
-                      event.target.value
-                    )
-                  }
+                  name="portal-transfer-secret"
+                  value={fields.password ?? ""}
+                  onChange={(event) => updateField("password", event.target.value)}
                   className={inputClass}
                   autoComplete="new-password"
+                  data-1p-ignore="true"
+                  data-lpignore="true"
                 />
               </label>
 
-
-              <label
-                className="
-                  mt-3
-                  block
-                  text-[11px]
-                  font-medium
-                  text-white/60
-                "
-              >
-                OpenImmo Anbieter-ID
-
+              <label className="mt-3 block text-[11px] font-medium text-white/60">
+                OpenImmo Anbieter-ID / ANID – vom Portal erhalten
                 <input
                   type="text"
-                  value={
-                    fields.providerId ?? ""
-                  }
-                  onChange={(event) =>
-                    updateField(
-                      "providerId",
-                      event.target.value
-                    )
-                  }
+                  name="portal-provider-identifier"
+                  value={fields.providerId ?? ""}
+                  onChange={(event) => updateField("providerId", event.target.value)}
                   className={inputClass}
                   autoComplete="off"
+                  spellCheck={false}
                 />
               </label>
             </>
@@ -900,7 +782,8 @@ export default function CustomerPortalAccessPanel({
             type="button"
             disabled={
               !complete ||
-              saving
+              saving ||
+              loading
             }
             onClick={() => {
               void save();
@@ -927,7 +810,7 @@ export default function CustomerPortalAccessPanel({
               ? text.saving
               : text.save}
           </button>
-        </div>
+        </form>
       ) : null}
     </div>
   );
