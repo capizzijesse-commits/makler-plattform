@@ -102,14 +102,31 @@ export default function DirectPublicationDockV2({
 
 
   useLayoutEffect(() => {
-    setCameFromDashboardSave(
+    const shouldContinueToPublishing =
       Boolean(
         window.sessionStorage.getItem(
           "inserat-ai:dashboard-save-start"
         )
-      )
+      );
+
+    setCameFromDashboardSave(
+      shouldContinueToPublishing
     );
-  }, []);
+
+    if (
+      shouldContinueToPublishing &&
+      pathname === `/cockpit/${listingId}`
+    ) {
+      setOpen(true);
+
+      window.sessionStorage.removeItem(
+        "inserat-ai:dashboard-save-start"
+      );
+    }
+  }, [
+    pathname,
+    listingId,
+  ]);
 
 
   useEffect(() => {
@@ -253,13 +270,14 @@ export default function DirectPublicationDockV2({
   useEffect(() => {
     if (
       cameFromDashboardSave &&
-      directReady
+      pathname === `/cockpit/${listingId}`
     ) {
       setOpen(true);
     }
   }, [
     cameFromDashboardSave,
-    directReady,
+    pathname,
+    listingId,
   ]);
 
 
@@ -361,7 +379,7 @@ export default function DirectPublicationDockV2({
                   onClick={() => setOpen(false)}
                   className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-amber-300 px-4 py-2.5 text-xs font-black text-amber-950 no-underline transition hover:brightness-105"
                 >
-                  Objektpaket fertigstellen
+                  Fehlende Angaben ergänzen →
                 </Link>
               </div>
             ) : null}
