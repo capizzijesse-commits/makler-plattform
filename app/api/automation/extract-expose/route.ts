@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 
 import { getAuthenticatedUser } from "@/lib/session";
 
+export const runtime = "nodejs";
+
 const MODEL = process.env.OPENAI_LISTING_MODEL?.trim() || "gpt-4.1-mini";
 const MAX_FILE_BYTES = 4_000_000;
 
@@ -186,7 +188,6 @@ export async function POST(request: NextRequest) {
               type: "input_file",
               filename: file.name || "expose.pdf",
               file_data: fileData,
-              ...(file.type === "application/pdf" ? { detail: "low" as const } : {}),
             },
             {
               type: "input_text",
