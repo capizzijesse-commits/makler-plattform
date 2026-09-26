@@ -58,6 +58,9 @@ export async function isBrokerMarketingApproved(
         location:
           true,
 
+        postalCode:
+          true,
+
         propertyType:
           true,
 
@@ -68,9 +71,6 @@ export async function isBrokerMarketingApproved(
           true,
 
         price:
-          true,
-
-        highlights:
           true,
 
         generatedVariants:
@@ -114,17 +114,18 @@ export async function isBrokerMarketingApproved(
   /*
    * DIRECT PUBLICATION V1
    *
-   * Der Automationsweg darf direkt in die
-   * Veröffentlichung wechseln, sobald das
-   * echte Objektpaket vollständig ist.
-   *
-   * Bewertung, Auftrag und CRM-Freigabe
-   * werden dabei weder vorausgesetzt noch
-   * künstlich als erledigt gespeichert.
+   * Direkte Veröffentlichung folgt derselben
+   * Objektpaket-Logik wie das Cockpit:
+   * Kernangaben + Bilder + Inserattext.
+   * Highlights sind hilfreich, aber kein
+   * technischer Blocker für diesen Weg.
    */
   const directPublicationReady =
     Boolean(
       listing.location?.trim()
+    ) &&
+    Boolean(
+      listing.postalCode?.trim()
     ) &&
     Boolean(
       listing.propertyType?.trim()
@@ -141,9 +142,6 @@ export async function isBrokerMarketingApproved(
       "number" &&
     listing.price >
       0 &&
-    Boolean(
-      listing.highlights?.trim()
-    ) &&
     hasGeneratedListingText(
       listing.generatedVariants
     ) &&
