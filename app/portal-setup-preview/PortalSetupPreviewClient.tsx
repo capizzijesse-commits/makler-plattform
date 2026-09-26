@@ -34,8 +34,19 @@ const portals: Portal[] = [
   },
 ];
 
-const supportText =
-  "Guten Tag, wir möchten unseren Immobilienbestand über eine externe Software per OpenImmo übertragen. Bitte senden Sie uns die dafür benötigten technischen Zugangsdaten (FTP/FTPS, Benutzername, Passwort) sowie unsere Anbieter-ID/ANID und bestätigen Sie das vorgesehene Transportprofil. Vielen Dank.";
+const supportText = `Guten Tag,
+
+wir möchten unseren Immobilienbestand über Inserat-AI per OpenImmo übertragen.
+
+Bitte senden Sie uns dafür die technischen Zugangsdaten für den Datentransfer:
+• FTP-/FTPS-Server
+• FTP-Benutzername
+• FTP-Passwort
+• Anbieter-ID / ANID
+
+Bitte bestätigen Sie uns zusätzlich das vorgesehene Transportprofil für OpenImmo.
+
+Vielen Dank.`;
 
 function StatusBadge({ status }: { status: Portal["status"] }) {
   const label =
@@ -61,7 +72,7 @@ function StatusBadge({ status }: { status: Portal["status"] }) {
 
 export default function PortalSetupPreviewClient() {
   const [selectedPortal, setSelectedPortal] = useState<PortalId>("immowelt_de");
-  const [showIdHelp, setShowIdHelp] = useState(true);
+  const [showIdHelp, setShowIdHelp] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
   const [providerId, setProviderId] = useState("");
@@ -75,24 +86,31 @@ export default function PortalSetupPreviewClient() {
     [selectedPortal]
   );
 
-  const complete =
-    providerId.trim().length > 0 &&
-    host.trim().length > 0 &&
-    username.trim().length > 0 &&
-    password.length > 0;
+  const missingFields = useMemo(() => {
+    const missing: string[] = [];
+
+    if (!providerId.trim()) missing.push("Anbieter-ID / ANID");
+    if (!host.trim()) missing.push("FTP-/FTPS-Server");
+    if (!username.trim()) missing.push("FTP-Benutzername");
+    if (!password) missing.push("FTP-Passwort");
+
+    return missing;
+  }, [providerId, host, username, password]);
+
+  const complete = missingFields.length === 0;
 
   async function copySupportText() {
     try {
       await navigator.clipboard.writeText(supportText);
       setCopied(true);
-      window.setTimeout(() => setCopied(false), 1800);
+      window.setTimeout(() => setCopied(false), 2200);
     } catch {
       setCopied(false);
     }
   }
 
   return (
-    <WorkspaceFrame market="DE" active="objects" title="Portale verbinden">
+    <WorkspaceFrame market="DE" active="marketing" title="Portale verbinden">
       <main className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-[#06172c] via-[#0a2342] to-[#102744] px-4 py-6 text-white sm:px-6">
         <div className="mx-auto max-w-6xl">
           <section className="rounded-[26px] border border-amber-400/15 bg-[#0b1830]/90 p-5 shadow-[0_24px_70px_rgba(0,0,0,.26)] sm:p-7">
@@ -133,9 +151,13 @@ export default function PortalSetupPreviewClient() {
                     type="button"
                     onClick={() => {
                       setSelectedPortal(portal.id);
-                      setShowIdHelp(portal.id === "immowelt_de" || portal.id === "kleinanzeigen_de");
+                      setShowIdHelp(false);
                       setShowAdvanced(false);
                       setShowSupport(false);
+                      setProviderId("");
+                      setHost("");
+                      setUsername("");
+                      setPassword("");
                     }}
                     className={`w-full rounded-2xl border p-4 text-left transition ${
                       selectedPortal === portal.id
@@ -190,6 +212,8 @@ export default function PortalSetupPreviewClient() {
 
                     <input
                       id="provider-id"
+                      name="portal-provider-identifier"
+                      autoComplete="off"
                       value={providerId}
                       onChange={(event) => setProviderId(event.target.value)}
                       placeholder="z. B. die vom Portal bereitgestellte ANID"
@@ -221,7 +245,7 @@ export default function PortalSetupPreviewClient() {
                         onClick={() => void copySupportText()}
                         className="mt-3 rounded-xl border border-amber-400/25 bg-amber-400/[0.08] px-4 py-2 text-xs font-black text-amber-200"
                       >
-                        {copied ? "✓ Text kopiert" : "Support-Text kopieren"}
+                        {copied ? "✓ Kopiert – jetzt an den Portal-Support senden" : "Support-Text kopieren"}
                       </button>
                     </div>
                   ) : null}
@@ -235,33 +259,60 @@ export default function PortalSetupPreviewClient() {
                   </button>
 
                   {showAdvanced ? (
-                    <div className="mt-2 grid gap-3 rounded-2xl border border-white/8 bg-black/10 p-4 sm:grid-cols-2">
-                      <label className="text-xs font-bold text-white/65">
-                        FTP / FTPS Host
-                        <input
-                          value={host}
-                          onChange={(event) => setHost(event.target.value)}
-                          className="mt-1 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-white outline-none focus:border-amber-400/45"
-                        />
-                      </label>
-                      <label className="text-xs font-bold text-white/65">
-                        Benutzername
-                        <input
-                          value={username}
-                          onChange={(event) => setUsername(event.target.value)}
-                          className="mt-1 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-white outline-none focus:border-amber-400/45"
-                        />
-                      </label>
-                      <label className="text-xs font-bold text-white/65 sm:col-span-2">
-                        Passwort
-                        <input
-                          type="password"
-                          value={password}
-                          onChange={(event) => setPassword(event.target.value)}
-                          className="mt-1 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-white outline-none focus:border-amber-400/45"
-                        />
-                      </label>
-                    </div>
+                    <form
+                      autoComplete="off"
+                      onSubmit={(event) => event.preventDefault()}
+                      className="mt-2 rounded-2xl border border-white/8 bg-black/10 p-4"
+                    >
+                      <div className="mb-4 rounded-xl border border-sky-400/20 bg-sky-400/[0.05] p-3 text-xs leading-5 text-sky-100">
+                        <strong>Wichtig:</strong> Hier niemals dein Inserat-AI-Login oder dein normales Portal-Login eintragen. Verwende nur die technischen FTP-/OpenImmo-Daten, die dir der Portal-Support ausdrücklich für den Datentransfer geschickt hat.
+                      </div>
+
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <label className="text-xs font-bold text-white/65 sm:col-span-2">
+                          FTP-/FTPS-Server – vom Portal erhalten
+                          <input
+                            name="portal-transfer-server"
+                            autoComplete="off"
+                            spellCheck={false}
+                            value={host}
+                            onChange={(event) => setHost(event.target.value)}
+                            placeholder="z. B. ftp.portal.de"
+                            className="mt-1 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-white outline-none placeholder:text-white/25 focus:border-amber-400/45"
+                          />
+                        </label>
+
+                        <label className="text-xs font-bold text-white/65">
+                          FTP-Benutzername – vom Portal erhalten
+                          <input
+                            name="portal-transfer-account"
+                            autoComplete="off"
+                            data-1p-ignore="true"
+                            data-lpignore="true"
+                            spellCheck={false}
+                            value={username}
+                            onChange={(event) => setUsername(event.target.value)}
+                            placeholder="Technischer Benutzername"
+                            className="mt-1 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-white outline-none placeholder:text-white/25 focus:border-amber-400/45"
+                          />
+                        </label>
+
+                        <label className="text-xs font-bold text-white/65">
+                          FTP-Passwort – vom Portal erhalten
+                          <input
+                            type="password"
+                            name="portal-transfer-secret"
+                            autoComplete="new-password"
+                            data-1p-ignore="true"
+                            data-lpignore="true"
+                            value={password}
+                            onChange={(event) => setPassword(event.target.value)}
+                            placeholder="Technisches FTP-Passwort"
+                            className="mt-1 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-white outline-none placeholder:text-white/25 focus:border-amber-400/45"
+                          />
+                        </label>
+                      </div>
+                    </form>
                   ) : null}
 
                   <button
@@ -271,6 +322,17 @@ export default function PortalSetupPreviewClient() {
                   >
                     Portal sicher verbinden →
                   </button>
+
+                  {!complete ? (
+                    <div className="mt-2 rounded-xl border border-white/8 bg-white/[0.025] px-3 py-2.5 text-xs leading-5 text-white/50">
+                      <strong className="text-white/72">Noch benötigt:</strong>{" "}
+                      {missingFields.join(" · ")}
+                    </div>
+                  ) : (
+                    <div className="mt-2 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.05] px-3 py-2.5 text-xs font-bold text-emerald-200">
+                      ✓ Alle technischen Angaben vorhanden. Die Verbindung kann jetzt gespeichert werden.
+                    </div>
+                  )}
 
                   <p className="mt-2 text-center text-[10px] leading-4 text-white/35">
                     Technische Zugangsdaten werden im echten Produkt verschlüsselt gespeichert. Das normale Portal-Passwort für die Website gehört hier nicht hinein.
