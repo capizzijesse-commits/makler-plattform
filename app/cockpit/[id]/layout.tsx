@@ -3,6 +3,7 @@ import type {
 } from "react";
 
 import DirectPublicationDockV2 from "./DirectPublicationDockV2";
+import EditAutomationBridge from "./EditAutomationBridge";
 
 
 type CockpitListingLayoutProps = {
@@ -28,6 +29,8 @@ export default async function CockpitListingLayout({
 
   return (
     <>
+      <EditAutomationBridge />
+
       <DirectPublicationDockV2
         listingId={id}
       />
