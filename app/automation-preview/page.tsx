@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import PreviewAutomationClient from "./PreviewAutomationClient";
+import PreviewAutomationClientV2 from "./PreviewAutomationClientV2";
 
 export default function AutomationPreviewPage() {
   const previewAllowed =
@@ -11,5 +11,5 @@ export default function AutomationPreviewPage() {
     notFound();
   }
 
-  return <PreviewAutomationClient />;
+  return <PreviewAutomationClientV2 />;
 }
