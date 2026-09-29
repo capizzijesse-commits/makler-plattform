@@ -367,10 +367,49 @@ export async function POST(
           id: true,
           emailVerified: true,
           emailVerificationExpires: true,
+          plan: true,
+          trialPlan: true,
+          trialStartedAt: true,
+          trialEndsAt: true,
         },
       });
 
     if (existingUser?.emailVerified) {
+      const canStartExistingProTrial =
+        requestedPlan === "pro" &&
+        existingUser.plan === "free" &&
+        existingUser.trialStartedAt === null;
+
+      if (canStartExistingProTrial) {
+        const now = new Date();
+        const trialEndsAt = new Date(
+          now.getTime() +
+            30 * 24 * 60 * 60 * 1000
+        );
+
+        const startedTrial =
+          await prisma.user.updateMany({
+            where: {
+              id: existingUser.id,
+              plan: "free",
+              trialStartedAt: null,
+            },
+            data: {
+              trialPlan: "pro",
+              trialStartedAt: now,
+              trialEndsAt,
+            },
+          });
+
+        if (startedTrial.count === 1) {
+          return NextResponse.json({
+            success: true,
+            message: copy[locale].success,
+            trialStarted: true,
+          });
+        }
+      }
+
       return NextResponse.json({
         success: true,
         message: copy[locale].success,
