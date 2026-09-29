@@ -11,15 +11,12 @@ import {
 } from "@/lib/listing-text-quality";
 import { canUseListingCoreForUser } from "@/lib/listing-access";
 import { prisma } from "@/lib/prisma";
-import { normalizeUserPlan } from "@/lib/plans";
 import { getAuthenticatedUser } from "@/lib/session";
 import {
   createUltraSpeedFingerprint,
   invalidateUltraSpeedCache,
   runUltraSpeedTask,
 } from "@/lib/ultra-speed";
-
-const DEMO_GENERATION_LIMIT = 1;
 
 const LISTING_GENERATION_MODEL =
   process.env.OPENAI_LISTING_MODEL
@@ -5140,37 +5137,9 @@ function getTotalWordCount(
   );
 }
 
-async function releaseDemoGeneration(
-  userId: string | null
-) {
-  if (!userId) {
-    return;
-  }
-
-  await prisma.user
-    .updateMany({
-      where: {
-        id: userId,
-        freeGenerationsUsed: {
-          gt: 0,
-        },
-      },
-      data: {
-        freeGenerationsUsed: {
-          decrement: 1,
-        },
-      },
-    })
-    .catch(() => undefined);
-}
-
 export async function POST(
   req: NextRequest
 ) {
-  let demoReservationUserId:
-    | string
-    | null = null;
-
   try {
     const user =
       await getAuthenticatedUser(req);
@@ -5232,48 +5201,19 @@ export async function POST(
         listingId,
       });
 
-    const isDemoPlan =
-      normalizeUserPlan(user.plan) ===
-      "free";
-
-    if (
-      isDemoPlan &&
-      !hasListingAccess
-    ) {
-      const reservation =
-        await prisma.user.updateMany({
-          where: {
-            id: user.id,
-            freeGenerationsUsed: {
-              lt:
-                DEMO_GENERATION_LIMIT,
-            },
-          },
-          data: {
-            freeGenerationsUsed: {
-              increment: 1,
-            },
-          },
-        });
-
-      if (reservation.count !== 1) {
-        return NextResponse.json(
-          {
-            error:
-              "Die kostenlose Demo-Generierung wurde bereits verwendet. Schalte eine Immobilie fÃ¼r CHF 9.90 frei oder wÃ¤hle den Founder-Plan.",
-            code:
-              "DEMO_LIMIT_REACHED",
-          },
-          {
-            status: 403,
-          }
-        );
-      }
-
-      demoReservationUserId =
-        user.id;
+    if (!hasListingAccess) {
+      return NextResponse.json(
+        {
+          error:
+            "Für dieses Inserat ist eine Freischaltung oder ein aktiver Pro-Zugang erforderlich.",
+          code:
+            "LISTING_ACCESS_REQUIRED",
+        },
+        {
+          status: 403,
+        }
+      );
     }
-
     const openai = new OpenAI({
       apiKey,
     });
@@ -5386,27 +5326,6 @@ export async function POST(
           ...variant,
         })
       );
-
-    /*
-     * Ein Cache-Treffer oder zusammengeführter
-     * Doppelaufruf verbraucht keine zusätzliche Demo.
-     */
-    if (
-      (
-        ultraSpeedTask.metric
-          .cacheHit ||
-        ultraSpeedTask.metric
-          .deduplicated
-      ) &&
-      demoReservationUserId
-    ) {
-      await releaseDemoGeneration(
-        demoReservationUserId
-      );
-
-      demoReservationUserId =
-        null;
-    }
 
     const initialQuality =
       evaluateListingQuality(
@@ -6112,13 +6031,6 @@ export async function POST(
         ultraSpeedKey
       );
 
-      await releaseDemoGeneration(
-        demoReservationUserId
-      );
-
-      demoReservationUserId =
-        null;
-
       return NextResponse.json(
         {
           error:
@@ -6462,10 +6374,6 @@ export async function POST(
       },
     });
   } catch (error) {
-    await releaseDemoGeneration(
-      demoReservationUserId
-    );
-
     console.error(
       "GENERATE ERROR:",
       error

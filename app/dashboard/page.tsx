@@ -1645,7 +1645,7 @@ return null;
     setSavingListing(false);
   }
 };
-const startSingleObjectCheckoutFromDemo =
+const startSingleObjectCheckout =
   async () => {
     if (savingListing) {
       return;
@@ -1797,6 +1797,36 @@ const startSingleObjectCheckoutFromDemo =
     }
   };
 
+const offerListingAccessOptions = async () => {
+  const choice = await chooseAction({
+    title: "Inserat freischalten",
+    message:
+      market === "DE"
+        ? "Starte Inserat-AI Pro 30 Tage kostenlos – ohne Kreditkarte. Alternativ kannst du dieses einzelne Inserat für 9,90 € freischalten."
+        : "Starte Inserat-AI Pro 30 Tage kostenlos – ohne Kreditkarte. Alternativ kannst du dieses einzelne Inserat für CHF 9.90 freischalten.",
+    confirmLabel:
+      "30 Tage Pro kostenlos starten",
+    secondaryLabel:
+      market === "DE"
+        ? "Einzelobjekt für 9,90 €"
+        : "Einzelobjekt für CHF 9.90",
+    cancelLabel: "Später weiterarbeiten",
+  });
+
+  if (choice === "confirm") {
+    window.location.assign(
+      "/login?plan=pro"
+    );
+    return "trial";
+  }
+
+  if (choice === "secondary") {
+    await startSingleObjectCheckout();
+    return "single-object";
+  }
+
+  return "cancel";
+};
 const saveListingAndOpenCockpit = async () => {
   if (savingListing) {
     return;
@@ -1816,7 +1846,7 @@ const saveListingAndOpenCockpit = async () => {
   ].includes(normalizedPlan);
 
   if (!hasSubscriptionAccess) {
-    await startSingleObjectCheckoutFromDemo();
+    await offerListingAccessOptions();
     return;
   }
 
@@ -2321,40 +2351,9 @@ localStorage.setItem(getTodayKey(), String(newDailyCount));
 
   if (
     requestError.code ===
-      "DEMO_LIMIT_REACHED"
+      "LISTING_ACCESS_REQUIRED"
   ) {
-    const choice =
-      await chooseAction({
-        title:
-          t("demo.limitTitle"),
-        message:
-          locale === "de" &&
-          market === "DE"
-            ? "Sichere jetzt dieses Inserat inklusive bis zu 5 Bildern, Standard-Bildanalyse, Social-Media-Texten und Marketing Hub für einmalig 9,90 €."
-            : t("demo.limitMessage"),
-        confirmLabel:
-          locale === "de" &&
-          market === "DE"
-            ? "Für 9,90 € freischalten"
-            : t("demo.unlock"),
-        secondaryLabel:
-          t("demo.compareFounder"),
-        cancelLabel:
-          t("demo.later"),
-        tone: "warning",
-        emphasizeConfirmAfterMs: 2500,
-      });
-
-    if (choice === "confirm") {
-      await startSingleObjectCheckoutFromDemo();
-      return;
-    }
-
-    if (choice === "secondary") {
-      router.push("/#preise");
-      return;
-    }
-
+    await offerListingAccessOptions();
     return;
   }
 
