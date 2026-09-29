@@ -21,10 +21,6 @@ import {
 } from "@/lib/prisma";
 
 import {
-  extractPdfImages,
-} from "@/lib/pdf-extract-images.server";
-
-import {
   getAuthenticatedUser,
 } from "@/lib/session";
 
@@ -389,6 +385,12 @@ export async function POST(
                   );
 
                 if (remainingSlots > 0) {
+                  const {
+                    extractPdfImages,
+                  } = await import(
+                    "@/lib/pdf-extract-images.server"
+                  );
+
                   const extracted =
                     await extractPdfImages(
                       pdfBuffer,
