@@ -371,6 +371,7 @@ export default function LoginPage() {
         body: JSON.stringify({
           email: email.trim().toLowerCase(),
           password,
+          plan: requestedPlan,
         }),
       });
 

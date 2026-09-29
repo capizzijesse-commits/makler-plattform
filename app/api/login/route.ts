@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { getEffectiveUserPlan } from "@/lib/plans";
 import { prisma } from "@/lib/prisma";
 import {
   hashPassword,
@@ -17,6 +18,7 @@ export const runtime = "nodejs";
 type LoginBody = {
   email?: string;
   password?: string;
+  plan?: string;
 };
 
 type LoginUser = {
@@ -71,6 +73,7 @@ export async function POST(request: Request) {
 
     const email = body.email?.trim().toLowerCase();
     const password = body.password ?? "";
+    const requestedPlan = body.plan === "pro" ? "pro" : "";
 
     if (!email || !password) {
       return NextResponse.json(
@@ -166,7 +169,48 @@ export async function POST(request: Request) {
       });
     }
 
-    return createLoginResponse(user);
+    if (
+      requestedPlan === "pro" &&
+      user.plan === "free" &&
+      user.trialStartedAt === null
+    ) {
+      const now = new Date();
+      const trialEndsAt = new Date(
+        now.getTime() +
+          30 * 24 * 60 * 60 * 1000
+      );
+
+      await prisma.user.updateMany({
+        where: {
+          id: user.id,
+          plan: "free",
+          trialStartedAt: null,
+        },
+        data: {
+          trialPlan: "pro",
+          trialStartedAt: now,
+          trialEndsAt,
+        },
+      });
+    }
+
+    const currentUser =
+      await prisma.user.findUnique({
+        where: {
+          id: user.id,
+        },
+      });
+
+    if (!currentUser) {
+      throw new Error(
+        "Authenticated user disappeared before session creation."
+      );
+    }
+
+    return createLoginResponse({
+      ...currentUser,
+      plan: getEffectiveUserPlan(currentUser),
+    });
   } catch (error) {
     console.error("LOGIN API ERROR:", error);
 
