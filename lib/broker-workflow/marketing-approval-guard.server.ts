@@ -9,6 +9,16 @@ export const BROKER_MARKETING_APPROVAL_REQUIRED =
   "BROKER_MARKETING_APPROVAL_REQUIRED";
 
 
+function hasGeneratedListingText(
+  generatedVariants:
+    string | null
+) {
+  return Boolean(
+    generatedVariants?.trim()
+  );
+}
+
+
 export async function isBrokerMarketingApproved(
   input: {
     userId:
@@ -45,9 +55,37 @@ export async function isBrokerMarketingApproved(
       },
 
       select: {
+        location:
+          true,
+
+        postalCode:
+          true,
+
+        propertyType:
+          true,
+
+        livingArea:
+          true,
+
+        rooms:
+          true,
+
+        price:
+          true,
+
+        generatedVariants:
+          true,
+
         brokerWorkflow: {
           select: {
             marketingApprovedAt:
+              true,
+          },
+        },
+
+        _count: {
+          select: {
+            images:
               true,
           },
         },
@@ -55,9 +93,61 @@ export async function isBrokerMarketingApproved(
     });
 
 
-  return Boolean(
-    listing
-      ?.brokerWorkflow
-      ?.marketingApprovedAt
-  );
+  if (!listing) {
+    return false;
+  }
+
+
+  const explicitlyApproved =
+    Boolean(
+      listing
+        .brokerWorkflow
+        ?.marketingApprovedAt
+    );
+
+
+  if (explicitlyApproved) {
+    return true;
+  }
+
+
+  /*
+   * DIRECT PUBLICATION V1
+   *
+   * Direkte Veröffentlichung folgt derselben
+   * Objektpaket-Logik wie das Cockpit:
+   * Kernangaben + Bilder + Inserattext.
+   * Highlights sind hilfreich, aber kein
+   * technischer Blocker für diesen Weg.
+   */
+  const directPublicationReady =
+    Boolean(
+      listing.location?.trim()
+    ) &&
+    Boolean(
+      listing.postalCode?.trim()
+    ) &&
+    Boolean(
+      listing.propertyType?.trim()
+    ) &&
+    typeof listing.livingArea ===
+      "number" &&
+    listing.livingArea >
+      0 &&
+    typeof listing.rooms ===
+      "number" &&
+    listing.rooms >
+      0 &&
+    typeof listing.price ===
+      "number" &&
+    listing.price >
+      0 &&
+    hasGeneratedListingText(
+      listing.generatedVariants
+    ) &&
+    listing._count.images >
+      0;
+
+
+  return directPublicationReady;
 }
