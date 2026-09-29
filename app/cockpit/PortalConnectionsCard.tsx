@@ -2611,130 +2611,16 @@ export default function PortalConnectionsCard({
                     ) : null}
 
 
-                    <button
-                      type="button"
-                      disabled={
-                        !canPrepareTestConfiguration ||
-                        isSaving
-                      }
-                      onClick={() => {
-
-                        if (
-                          portal.portal ===
-                            "immoscout24_ch" ||
-                          portal.portal ===
-                            "homegate_ch" ||
-                          portal.portal ===
-                            "immoscout24_de" ||
-                          portal.portal ===
-                            "immowelt_de" ||
-                          portal.portal ===
-                            "kleinanzeigen_de" ||
-                          portal.portal ===
-                            "wg_gesucht_de" ||
-                          portal.portal ===
-                            "immobilien_de"
-                        ) {
-                          void preparePortalTestConnection(
-                            portal.portal,
-                            portal.portal ===
-                              "immowelt_de"
-                              ? immoweltOpenImmoAnid
-                              : portal.portal ===
-                                  "kleinanzeigen_de"
-                                ? kleinanzeigenOpenImmoAnid
-                                : undefined
-                          );
-                        }
-                      }}
-                      title={
-                        openImmoAnidMissing
-                          ? (
-                              language === "it"
-                                ? "ID fornitore richiesta"
-                                : language === "fr"
-                                  ? "ID fournisseur requis"
-                                  : language === "en"
-                                    ? "Provider ID required"
-                                    : "Anbieter-ID erforderlich"
-                            )
-                          : openImmoAnidNeedsSave
-                            ? (
-                                language === "de"
-                                  ? "OpenImmo Anbieter-ID speichern"
-                                  : "Save OpenImmo provider ID"
-                              )
-                            : testConfigurationPrepared
-                              ? copy.testPrepared
-                              : canPrepareTestConfiguration
-                                ? copy.prepareTest
-                                : comingSoon
-                                  ? copy.comingSoon
-                                  : copy.connectSoon
-                      }
-                      className={`
-                        mt-5
-                        w-full
-                        rounded-xl
-                        border
-                        px-4
-                        py-2.5
-                        text-sm
-                        font-medium
-                        transition
-                        ${
-                          canPrepareTestConfiguration &&
-                          !isSaving
-                            ? `
-                              cursor-pointer
-                              border-amber-400/30
-                              bg-amber-400/[0.08]
-                              text-amber-100
-                              hover:bg-amber-400/[0.13]
-                            `
-                            : `
-                              cursor-not-allowed
-                              border-white/8
-                              bg-white/[0.035]
-                              text-white/35
-                            `
-                        }
-                      `}
-                    >
-                      {isSaving
-                        ? (
-                            openImmoAnidNeedsSave
-                              ? (
-                                  language === "de"
-                                    ? "Anbieter-ID wird gespeichert ..."
-                                    : "Saving provider ID ..."
-                                )
-                              : copy.preparingTest
-                          )
-                        : openImmoAnidMissing
-                          ? (
-                              language === "it"
-                                ? "ID fornitore richiesta"
-                                : language === "fr"
-                                  ? "ID fournisseur requis"
-                                  : language === "en"
-                                    ? "Provider ID required"
-                                    : "Anbieter-ID erforderlich"
-                            )
-                          : openImmoAnidNeedsSave
-                            ? (
-                                language === "de"
-                                  ? "Anbieter-ID speichern"
-                                  : "Save provider ID"
-                              )
-                            : testConfigurationPrepared
-                              ? copy.testPrepared
-                              : canPrepareTestConfiguration
-                                ? copy.prepareTest
-                                : comingSoon
-                                  ? copy.comingSoon
-                                  : copy.connectSoon}
-                    </button>
+                    {
+                      /*
+                       * Internal portal test/setup controls
+                       * are intentionally not rendered in
+                       * the customer-facing cockpit.
+                       *
+                       * Real customer access is handled by
+                       * CustomerPortalAccessPanel.
+                       */
+                    }
 
                     {portalActionError ===
                     portal.portal ? (

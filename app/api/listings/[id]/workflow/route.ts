@@ -35,6 +35,7 @@ type WorkflowAction =
 /* BROKER WORKFLOW VALUATION SUMMARY V1 */
 type WorkflowValuationSummary = {
   id: string;
+  status: string;
   addressLabel: string;
   currency: string;
   salePrice: number | null;
@@ -65,12 +66,18 @@ async function loadWorkflowValuation(
 
       listingId,
 
-      status:
-        "completed",
+      status: {
+        in: [
+          "completed",
+          "provider_unavailable",
+        ],
+      },
     },
 
     select: {
       id: true,
+
+      status: true,
 
       addressLabel:
         true,
@@ -206,10 +213,7 @@ async function loadPackageReadiness(
       listing.propertyType?.trim() &&
       typeof listing.livingArea ===
         "number" &&
-      listing.livingArea > 0 &&
-      typeof listing.rooms ===
-        "number" &&
-      listing.rooms > 0
+      listing.livingArea > 0
     );
 
   const imagesReady =
@@ -649,28 +653,11 @@ export async function PATCH(
         );
       }
     }
-
-    if (
-      body.action ===
-        "mandate_confirmed" &&
-      (
-        !current
-          ?.valuationCompletedAt ||
-        !current
-          ?.valuationId
-      )
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            "Der Vermarktungsauftrag kann erst nach einer abgeschlossenen Bewertung best\u00e4tigt werden.",
-        },
-        {
-          status: 409,
-        }
-      );
-    }
+    /*
+     * ASYNC VALUATION WORKFLOW V1
+     * Bewertung darf parallel laufen.
+     * Der Vermarktungsauftrag bleibt eine manuelle Best?tigung.
+     */
 
     if (
       body.action ===

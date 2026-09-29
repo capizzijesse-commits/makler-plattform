@@ -58,6 +58,7 @@ type WorkflowData = {
 
 type ValuationSummary = {
   id: string;
+  status: string;
   addressLabel: string;
   currency: string;
   salePrice: number | null;
@@ -484,6 +485,15 @@ export default function BrokerWorkflowPanel({
         ?.valuationCompletedAt
     );
 
+  const valuationProviderUnavailable =
+    valuationSummary?.status ===
+      "provider_unavailable";
+
+  const valuationAllowsMandate =
+    objectPackageReady ||
+    valuationDone ||
+    valuationProviderUnavailable;
+
   const mandateDone =
     Boolean(
       workflow
@@ -644,6 +654,17 @@ export default function BrokerWorkflowPanel({
 
     void updateWorkflow(
       desiredAction
+    ).then(
+      (data) => {
+        if (
+          !data?.workflow &&
+          packageSyncAttemptRef.current ===
+            syncKey
+        ) {
+          packageSyncAttemptRef.current =
+            "";
+        }
+      }
     );
   }, [
     listingId,
@@ -733,22 +754,6 @@ export default function BrokerWorkflowPanel({
         item.ready
     ).length;
 
-  const completedWorkflowSteps =
-    1 +
-    Number(valuationDone) +
-    Number(mandateDone) +
-    Number(packageDone) +
-    Number(approvalDone) +
-    Number(published);
-
-  const workflowProgress =
-    Math.round(
-      (
-        completedWorkflowSteps /
-        6
-      ) *
-        100
-    );
 
   const workflowPhaseLabel =
     published
@@ -851,28 +856,6 @@ export default function BrokerWorkflowPanel({
             </p>
           </div>
 
-          <div className="min-w-[170px]">
-            <div className="flex items-center justify-between text-[11px] font-bold text-slate-400">
-              <span>
-                Fortschritt
-              </span>
-
-              <span className="text-cyan-200">
-                {completedWorkflowSteps}/6
-              </span>
-            </div>
-
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/[0.07]">
-              <div
-                className="h-full rounded-full bg-cyan-300 transition-all"
-                style={{
-                  width:
-                    workflowProgress +
-                    "%",
-                }}
-              />
-            </div>
-          </div>
         </div>
 
         {valuationDone &&
@@ -1054,447 +1037,205 @@ export default function BrokerWorkflowPanel({
         ) : null}
       </div>
 
-      <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.045] p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-xl border border-emerald-400/20 bg-emerald-400/[0.08] text-sm font-black text-emerald-200">
-              1
+      <div className="mt-5">
+        <div className="rounded-3xl border border-amber-300/25 bg-gradient-to-br from-amber-300/[0.08] via-white/[0.035] to-cyan-300/[0.05] p-5 sm:p-6">
+          <div className="flex flex-col gap-5">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-300">
+                Inserat-AI Autopilot
+              </p>
+
+              <h2 className="mt-2 text-xl font-black text-white sm:text-2xl">
+                {published
+                  ? "Veröffentlicht"
+                  : approvalDone
+                    ? "Bereit zur Veröffentlichung"
+                    : packageDone
+                      ? "Bereit zur Veröffentlichung"
+                      : mandateDone
+                        ? "Inserat-AI bereitet Ihr Objekt vor"
+                        : valuationAllowsMandate
+                          ? "Vermarktungsauftrag bestätigen"
+                          : "Objekt wird vorbereitet"}
+              </h2>
+
+              <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-slate-300">
+                {published
+                  ? "Die Veröffentlichung wurde bestätigt."
+                  : approvalDone
+                    ? "Freigabe gespeichert. Die Veröffentlichung ist vorbereitet. Der tatsächliche Portalstatus wird nach der Übertragung bestätigt."
+                    : packageDone
+                      ? "Inserat-AI hat Ihr Objekt vorbereitet. Prüfen Sie kurz und starten Sie anschließend die Veröffentlichung."
+                      : mandateDone
+                        ? "Objektdaten und Inserat werden automatisch für die Veröffentlichung vorbereitet."
+                        : valuationAllowsMandate
+                          ? "Die Objektdaten sind vorbereitet. Bestätigen Sie den Vermarktungsauftrag, sobald dieser tatsächlich vorliegt."
+                          : "Inserat-AI analysiert und vervollständigt die notwendigen Objektdaten."}
+              </p>
             </div>
 
-            <StateBadge
-              state="done"
-            />
-          </div>
-
-          <h3 className="mt-4 text-sm font-black text-white">
-            Akquise
-          </h3>
-
-          <p className="mt-1 text-xs font-medium leading-5 text-slate-400">
-            Kunde gewonnen und Objekt
-            im Cockpit angelegt.
-          </p>
-        </div>
-
-        <div
-          className={
-            valuationDone
-              ? "rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.045] p-4"
-              : "rounded-2xl border border-cyan-300/30 bg-cyan-300/[0.055] p-4 shadow-[0_10px_30px_rgba(34,211,238,0.08)]"
-          }
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-xl border border-cyan-300/30 bg-cyan-300/[0.1] text-sm font-black text-cyan-100">
-              2
-            </div>
-
-            <StateBadge
-              state={
-                valuationState
-              }
-            />
-          </div>
-
-          <h3 className="mt-4 text-sm font-black text-white">
-            Bewertung
-          </h3>
-
-          <p className="mt-1 text-xs font-medium leading-5 text-slate-400">
-            {valuationDone
-              ? "Marktwert wurde ermittelt und dem Objekt-Workflow zugeordnet."
-              : "Unterlagen und Objektdaten analysieren und Marktwert vorbereiten."}
-          </p>
-
-          {market === "CH" ? (
-            <Link
-              href={
-                "/bewertung?listingId=" +
-                listingId
-              }
-              className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-xl border border-cyan-300/30 bg-cyan-300/[0.09] px-3 py-2 text-xs font-black text-cyan-100 no-underline transition hover:bg-cyan-300/[0.14]"
-            >
-              {valuationDone
-                ? "Bewertung \u00f6ffnen"
-                : "Bewertung starten"}
-            </Link>
-          ) : (
-            <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-2 text-center text-[11px] font-bold text-slate-400">
-              {valuationDone ? "Bewertung vorhanden" : "Bewertung Deutschland folgt"}
-            </div>
-          )}
-        </div>
-
-        <div
-          className={
-            mandateDone
-              ? "rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.045] p-4"
-              : valuationDone
-                ? "rounded-2xl border border-cyan-300/30 bg-cyan-300/[0.055] p-4"
-                : "rounded-2xl border border-white/[0.08] bg-white/[0.025] p-4"
-          }
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-sm font-black text-slate-300">
-              3
-            </div>
-
-            <StateBadge
-              state={
-                mandateState
-              }
-            />
-          </div>
-
-          <h3 className="mt-4 text-sm font-black text-white">
-            Auftrag
-          </h3>
-
-          <p className="mt-1 text-xs font-medium leading-5 text-slate-400">
-            {mandateDone
-              ? "Vermarktungsauftrag wurde best\u00e4tigt und dauerhaft gespeichert."
-              : "Eigent&uuml;mer gibt den Vermarktungsauftrag frei. Danach wird dasselbe Datenpaket weiterverwendet."}
-          </p>
-
-          {mandateDone ? (
-            <button
-              type="button"
-              disabled={
-                workflowBusy
-              }
-              onClick={() =>
-                void updateWorkflow(
-                  "mandate_revoked"
-                )
-              }
-              className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2 text-xs font-black text-slate-300 transition hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {workflowBusy
-                ? "Wird gespeichert ..."
-                : "Auftrag zur\u00fccknehmen"}
-            </button>
-          ) : valuationDone ? (
-            <button
-              type="button"
-              disabled={
-                workflowBusy
-              }
-              onClick={() =>
-                void updateWorkflow(
-                  "mandate_confirmed"
-                )
-              }
-              className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-xl border border-cyan-300/30 bg-cyan-300/[0.1] px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/[0.15] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {workflowBusy
-                ? "Wird gespeichert ..."
-                : "Auftrag erhalten"}
-            </button>
-          ) : (
-            <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-2 text-center text-[11px] font-bold text-slate-500">
-              Nach abgeschlossener Bewertung
-            </div>
-          )}
-        </div>
-
-        <div
-          className={
-            packageDone
-              ? "rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.045] p-4"
-              : mandateDone
-                ? "rounded-2xl border border-cyan-300/30 bg-cyan-300/[0.055] p-4"
-                : objectPackageReady
-                  ? "rounded-2xl border border-amber-300/20 bg-amber-300/[0.04] p-4"
-                  : "rounded-2xl border border-white/[0.08] bg-white/[0.025] p-4"
-          }
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-sm font-black text-slate-200">
-              4
-            </div>
-
-            <StateBadge
-              state={
-                packageState
-              }
-            />
-          </div>
-
-          <h3 className="mt-4 text-sm font-black text-white">
-            Objektpaket
-          </h3>
-
-          <p className="mt-1 text-xs font-medium leading-5 text-slate-400">
-            Inserat, Bilder, Expos&eacute; und
-            Social-Inhalte werden aus
-            denselben Objektdaten
-            erzeugt.
-          </p>
-
-          {mandateDone ? (
-            <Link
-              href={
-                "/cockpit/" +
-                listingId +
-                "/edit"
-              }
-              className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-xl border border-cyan-300/30 bg-cyan-300/[0.09] px-3 py-2 text-xs font-black text-cyan-100 no-underline transition hover:bg-cyan-300/[0.14]"
-            >
-              Vermarktung vorbereiten
-            </Link>
-          ) : (
-            <Link
-              href={
-                "/cockpit/" +
-                listingId +
-                "/edit"
-              }
-              className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-xl border border-amber-300/25 bg-amber-300/[0.07] px-3 py-2 text-xs font-black text-amber-100 no-underline transition hover:bg-amber-300/[0.11]"
-            >
-              Objektpaket pr&uuml;fen
-            </Link>
-          )}
-        </div>
-
-        <div
-          className={
-            approvalDone
-              ? "rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.045] p-4"
-              : packageDone
-                ? "rounded-2xl border border-cyan-300/30 bg-cyan-300/[0.055] p-4"
-                : "rounded-2xl border border-white/[0.08] bg-white/[0.025] p-4"
-          }
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-sm font-black text-slate-300">
-              5
-            </div>
-
-            <StateBadge
-              state={
-                approvalState
-              }
-            />
-          </div>
-
-          <h3 className="mt-4 text-sm font-black text-white">
-            Freigabe
-          </h3>
-
-          <p className="mt-1 text-xs font-medium leading-5 text-slate-400">
-            {approvalDone
-              ? "Die Vermarktung wurde vom Makler freigegeben."
-              : "Makler kontrolliert das fertige Paket und gibt die Vermarktung bewusst frei."}
-          </p>
-
-          {approvalDone ? (
-            <button
-              type="button"
-              disabled={
-                workflowBusy
-              }
-              onClick={() =>
-                void updateWorkflow(
-                  "marketing_revoked"
-                )
-              }
-              className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2 text-xs font-black text-slate-300 transition hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {workflowBusy
-                ? "Wird gespeichert ..."
-                : "Freigabe zur\u00fccknehmen"}
-            </button>
-          ) : packageDone ? (
-            <button
-              type="button"
-              disabled={
-                workflowBusy
-              }
-              onClick={() => {
-                void approveAndContinue();
-              }}
-              className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-xl bg-cyan-300 px-3 py-2 text-xs font-black text-slate-950 transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {workflowBusy
-                ? "Wird gespeichert ..."
-                : "Freigeben & Veröffentlichung vorbereiten"}
-            </button>
-          ) : (
-            <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-2 text-center text-[11px] font-bold text-slate-500">
-              Sobald das Objektpaket bereit ist
-            </div>
-          )}
-        </div>
-
-        {fastApprovalResult ? (
-          <div
-            className="
-              rounded-2xl
-              border
-              border-emerald-400/20
-              bg-emerald-400/[0.05]
-              p-4
-            "
-            role="status"
-            aria-live="polite"
-          >
-            <div
-              className="
-                flex
-                items-start
-                justify-between
-                gap-3
-              "
-            >
-              <div>
-                <p
-                  className="
-                    text-[10px]
-                    font-black
-                    uppercase
-                    tracking-[0.14em]
-                    text-emerald-300
-                  "
-                >
-                  Inserat-AI bestätigt
+            {valuationSummary?.salePrice !== null &&
+            valuationSummary?.salePrice !== undefined &&
+            !valuationProviderUnavailable ? (
+              <div className="rounded-2xl border border-amber-300/20 bg-slate-950/30 p-4 sm:p-5">
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-amber-300">
+                  Automatisch bewerteter Marktwert
                 </p>
 
-                <h3
-                  className="
-                    mt-2
-                    text-sm
-                    font-black
-                    text-white
-                  "
-                >
-                  {fastApprovalResult.state ===
-                  "published"
-                    ? "Veröffentlicht"
-                    : fastApprovalResult.state ===
-                        "publishing"
-                      ? "Übertragung gestartet"
-                      : fastApprovalResult.state ===
-                          "ready"
-                        ? "Bereit zur Veröffentlichung"
-                        : fastApprovalResult.state ===
-                            "no_portal_connections"
-                          ? "Freigabe gespeichert – Portalzugang fehlt"
-                          : fastApprovalResult.state ===
-                              "error"
-                            ? "Freigabe gespeichert – Automatisierung prüfen"
-                            : "Freigabe gespeichert"}
-                </h3>
+                <p className="mt-2 text-3xl font-black tracking-tight text-white sm:text-4xl">
+                  {formatValuationMoney(
+                    valuationSummary.salePrice,
+                    valuationSummary.currency
+                  )}
+                </p>
 
-                <p
-                  className="
-                    mt-2
-                    text-xs
-                    font-semibold
-                    text-slate-300
-                  "
-                >
-                  Bestätigung nach{" "}
-                  {(
-                    fastApprovalResult.elapsedMs /
-                    1000
-                  ).toFixed(2)}
-                  {" "}Sekunden.
+                <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-xs font-bold text-slate-300">
+                  {valuationSummary.salePriceLower !== null &&
+                  valuationSummary.salePriceUpper !== null ? (
+                    <span>
+                      Bandbreite{" "}
+                      {formatValuationMoney(
+                        valuationSummary.salePriceLower,
+                        valuationSummary.currency
+                      )}{" "}
+                      –{" "}
+                      {formatValuationMoney(
+                        valuationSummary.salePriceUpper,
+                        valuationSummary.currency
+                      )}
+                    </span>
+                  ) : null}
+
+                  {valuationSummary.pricePerSqm !== null ? (
+                    <span>
+                      {formatValuationMoney(
+                        valuationSummary.pricePerSqm,
+                        valuationSummary.currency
+                      )}
+                      /m²
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+            ) : valuationProviderUnavailable ? (
+              <div className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.05] px-4 py-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-amber-300">
+                  Automatische Bewertung
+                </p>
+
+                <p className="mt-1 text-sm font-black text-white">
+                  Bewertung derzeit nicht verfügbar
+                </p>
+
+                <p className="mt-1 text-xs font-semibold leading-5 text-slate-400">
+                  Der externe Bewertungsdienst konnte keinen Marktwert liefern. Es wird kein Preis erfunden.
                 </p>
               </div>
+            ) : null}
+            <div className="flex flex-wrap gap-2 text-[11px] font-black">
+              <span className="rounded-full border border-emerald-400/20 bg-emerald-400/[0.07] px-3 py-1.5 text-emerald-200">
+                ✓ Objektdaten analysiert
+              </span>
 
               <span
-                className="
-                  rounded-full
-                  bg-emerald-300/10
-                  px-2.5
-                  py-1
-                  text-[10px]
-                  font-black
-                  text-emerald-200
-                "
+                className={
+                  mandateDone
+                    ? "rounded-full border border-emerald-400/20 bg-emerald-400/[0.07] px-3 py-1.5 text-emerald-200"
+                    : "rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 text-slate-400"
+                }
               >
-                ✓ FERTIG
+                {mandateDone ? "✓ Auftrag bestätigt" : "Auftrag offen"}
+              </span>
+
+              <span
+                className={
+                  packageDone
+                    ? "rounded-full border border-emerald-400/20 bg-emerald-400/[0.07] px-3 py-1.5 text-emerald-200"
+                    : "rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 text-slate-400"
+                }
+              >
+                {packageDone ? "✓ Inserat erstellt" : "Inserat wird vorbereitet"}
               </span>
             </div>
 
-            <Link
-              href="/dashboard"
-              className="
-                mt-4
-                inline-flex
-                min-h-11
-                w-full
-                items-center
-                justify-center
-                rounded-xl
-                bg-emerald-300
-                px-4
-                py-2.5
-                text-xs
-                font-black
-                text-emerald-950
-                no-underline
-                transition
-                hover:brightness-105
-              "
-            >
-              Nächstes Objekt →
-            </Link>
+            {!mandateDone && valuationAllowsMandate ? (
+              <button
+                type="button"
+                disabled={workflowBusy}
+                onClick={() => void updateWorkflow("mandate_confirmed")}
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 px-5 py-3 text-sm font-black text-slate-950 shadow-[0_10px_30px_rgba(245,158,11,0.22)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+              >
+                {workflowBusy ? "Wird gespeichert ..." : "Auftrag bestätigen & weiter"}
+              </button>
+            ) : null}
+
+            {!approvalDone && packageDone ? (
+              <button
+                type="button"
+                disabled={workflowBusy}
+                onClick={() => void approveAndContinue()}
+                className="inline-flex min-h-14 w-full items-center justify-center rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 px-6 py-3 text-base font-black text-slate-950 shadow-[0_12px_35px_rgba(245,158,11,0.25)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+              >
+                {workflowBusy ? "Veröffentlichung wird gestartet ..." : "🚀 Jetzt veröffentlichen"}
+              </button>
+            ) : null}
+
+            {approvalDone ? (
+              <div className="grid gap-3">
+                <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.055] px-4 py-3">
+                  <div className="flex items-start gap-3">
+                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-emerald-400/10 text-sm font-black text-emerald-200">
+                      ✓
+                    </div>
+
+                    <div>
+                      <p className="text-sm font-black text-white">
+                        Freigabe gespeichert
+                      </p>
+
+                      <p className="mt-1 text-xs font-semibold leading-5 text-slate-300">
+                        Die Veröffentlichung ist vorbereitet. Der tatsächliche Portalstatus wird nach der Übertragung bestätigt.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <details className="group rounded-2xl border border-white/[0.07] bg-slate-950/20">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-xs font-black text-slate-400 transition hover:text-slate-200">
+                    <span>Technische Details anzeigen</span>
+                    <span className="transition group-open:rotate-180">↓</span>
+                  </summary>
+
+                  <div className="border-t border-white/[0.06] p-4">
+                    <PublicationOrchestratorPanel
+                      listingId={listingId}
+                      market={market}
+                      onPublicationStateChange={handlePublicationStateChange}
+                    />
+                  </div>
+                </details>
+              </div>
+            ) : null}
+
+            {fastApprovalResult ? (
+              <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/[0.06] px-4 py-3 text-sm font-bold text-emerald-100" role="status" aria-live="polite">
+                {fastApprovalResult.state === "published"
+                  ? "✓ Veröffentlichung bestätigt"
+                  : fastApprovalResult.state === "publishing"
+                    ? "Übertragung wurde gestartet."
+                    : fastApprovalResult.state === "ready"
+                      ? "✓ Freigabe gespeichert. Veröffentlichung ist vorbereitet."
+                      : fastApprovalResult.state === "no_portal_connections"
+                        ? "Freigabe gespeichert. Für die Übertragung fehlt noch eine Portalverbindung."
+                        : fastApprovalResult.state === "error"
+                          ? "Freigabe gespeichert. Die Veröffentlichungsautomatik benötigt noch eine Prüfung."
+                          : "✓ Freigabe gespeichert."}
+              </div>
+            ) : null}
           </div>
-        ) : null}
-
-
-        <div className="rounded-2xl border border-violet-300/20 bg-violet-300/[0.04] p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-xl border border-violet-300/20 bg-violet-300/[0.07] text-sm font-black text-violet-200">
-              6
-            </div>
-
-            <StateBadge
-              state={
-                publicationState
-              }
-            />
-          </div>
-
-          <h3 className="mt-4 text-sm font-black text-white">
-            Ver&ouml;ffentlichung
-          </h3>
-
-          <p className="mt-1 text-xs font-medium leading-5 text-slate-400">
-            Immobilienportale und
-            Social Media aus einem
-            Vorgang steuern.
-          </p>
-
-          {approvalDone ? (
-            <PublicationOrchestratorPanel
-              listingId={
-                listingId
-              }
-              market={
-                market
-              }
-              onPublicationStateChange={
-                handlePublicationStateChange
-              }
-            />
-          ) : (
-            <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-2 text-center text-[11px] font-bold text-slate-500">
-              Nach Vermarktungsfreigabe verf&uuml;gbar
-            </div>
-          )}
         </div>
       </div>
 
-      <div className="mt-5 rounded-2xl border border-cyan-300/15 bg-cyan-300/[0.035] px-4 py-3">
-        <p className="text-xs font-semibold leading-5 text-slate-300">
-          Ziel: Beim Kunden aufnehmen,
-          bewerten, Auftrag erhalten,
-          Paket automatisch erstellen,
-          freigeben und noch aus dem
-          Auto ver&ouml;ffentlichen.
-        </p>
-      </div>
     </section>
   );
 }

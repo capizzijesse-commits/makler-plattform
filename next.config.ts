@@ -32,6 +32,10 @@ if (process.env.NODE_ENV === "production") {
 const nextConfig: NextConfig = {
   poweredByHeader: false,
 
+  serverExternalPackages: [
+    "pdfjs-dist",
+  ],
+
   devIndicators: false,
 
   /*

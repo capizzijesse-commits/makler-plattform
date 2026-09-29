@@ -93,13 +93,7 @@ export default function CustomerPortalAccessPanel({
       null
     );
 
-  const [environment, setEnvironment] =
-    useState<
-      "test" |
-      "production"
-    >(
-      "production"
-    );
+
 
   const [fields, setFields] =
     useState<
@@ -111,13 +105,13 @@ export default function CustomerPortalAccessPanel({
     language === "it"
       ? {
           title:
-            "Usa il tuo accesso tecnico al portale",
+            "Configura l'accesso al portale",
           intro:
             "Inserisci i dati API, feed o FTP ufficiali forniti dal portale. Non usare la normale password del sito web.",
           configured:
-            "Accesso tecnico salvato in modo sicuro",
+            "Accesso configurato",
           save:
-            "Salva in modo sicuro",
+            "Salva accesso",
           saving:
             "Salvataggio ...",
           test:
@@ -130,13 +124,13 @@ export default function CustomerPortalAccessPanel({
       : language === "fr"
         ? {
             title:
-              "Utiliser votre propre accès technique au portail",
+              "Configurer l'accès au portail",
             intro:
               "Saisissez uniquement les identifiants API, feed ou FTP officiels fournis par le portail. N’utilisez pas votre mot de passe normal du site.",
             configured:
-              "Accès technique enregistré en sécurité",
+              "Accès configuré",
             save:
-              "Enregistrer en sécurité",
+              "Enregistrer l'accès",
             saving:
               "Enregistrement ...",
             test:
@@ -149,13 +143,13 @@ export default function CustomerPortalAccessPanel({
         : language === "en"
           ? {
               title:
-                "Use your own technical portal access",
+                "Set up portal access",
               intro:
                 "Enter only official API, feed or FTP credentials supplied by the portal. Do not use your normal website login password.",
               configured:
-                "Technical access stored securely",
+                "Access configured",
               save:
-                "Save securely",
+                "Save access",
               saving:
                 "Saving ...",
               test:
@@ -167,13 +161,13 @@ export default function CustomerPortalAccessPanel({
             }
           : {
               title:
-                "Eigenen technischen Portalzugang verwenden",
+                "Portalzugang einrichten",
               intro:
                 "Nur offizielle API-, Feed- oder FTP-Zugangsdaten verwenden, die das Portal für den Datentransfer bereitstellt. Nicht das normale Website-Login-Passwort eingeben.",
               configured:
-                "Technischer Zugang sicher gespeichert",
+                "Zugang eingerichtet",
               save:
-                "Sicher speichern",
+                "Zugang sicher speichern",
               saving:
                 "Wird gespeichert ...",
               test:
@@ -409,8 +403,7 @@ export default function CustomerPortalAccessPanel({
                     ? "smg_swissrets"
                     : "openimmo_ftp",
 
-                environment,
-
+                environment: "production",
                 credentials,
               }),
           }
@@ -562,41 +555,8 @@ export default function CustomerPortalAccessPanel({
           </p>
 
 
-          <label
-            className="
-              mt-3
-              block
-              text-[11px]
-              font-medium
-              text-white/60
-            "
-          >
-            Umgebung
-
-            <select
-              value={
-                environment
-              }
-              onChange={(event) =>
-                setEnvironment(
-                  event.target.value ===
-                    "test"
-                    ? "test"
-                    : "production"
-                )
-              }
-              className={inputClass}
-            >
-              <option value="production">
-                {text.production}
-              </option>
-
-              <option value="test">
-                {text.test}
-              </option>
-            </select>
-          </label>
-
+          {/* Portal test environments are intentionally hidden
+              from the customer onboarding flow. */}
 
           {swiss ? (
             <>

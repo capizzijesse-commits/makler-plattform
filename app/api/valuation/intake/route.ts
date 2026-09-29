@@ -1,3 +1,8 @@
+import {
+  issueSignedToken,
+  presignUrl,
+} from "@vercel/blob";
+
 import type {
   NextRequest,
 } from "next/server";
@@ -28,11 +33,14 @@ const MAX_IMAGE_SIZE =
 
 /*
  * Direkter Function-Upload.
- * Für grössere Dokumentpakete folgt
+ * FÃƒÂ¼r grÃƒÂ¶ssere Dokumentpakete folgt
  * Direct-to-Blob Upload.
  */
 const MAX_TOTAL_UPLOAD_SIZE =
   4 * 1024 * 1024;
+
+const MAX_BLOB_TOTAL_UPLOAD_SIZE =
+  50 * 1024 * 1024;
 
 
 const ALLOWED_IMAGE_TYPES =
@@ -41,6 +49,278 @@ const ALLOWED_IMAGE_TYPES =
     "image/png",
     "image/webp",
   ]);
+
+
+type UploadedFileReference = {
+  pathname: string;
+  name: string;
+  contentType: string;
+  size: number;
+};
+
+type ResolvedUploadedFile = {
+  pathname: string;
+  name: string;
+  contentType: string;
+  size: number;
+  isPdf: boolean;
+  fileUrl: string;
+};
+
+
+function normalizeContentType(
+  value: unknown
+) {
+  return typeof value ===
+    "string"
+    ? value
+        .split(";")[0]
+        .trim()
+        .toLowerCase()
+    : "";
+}
+
+
+function parseUploadedReference(
+  value: unknown
+): UploadedFileReference | null {
+  if (
+    !value ||
+    typeof value !== "object"
+  ) {
+    return null;
+  }
+
+  const candidate =
+    value as Record<
+      string,
+      unknown
+    >;
+
+  const pathname =
+    requiredText(
+      candidate.pathname
+    );
+
+  const name =
+    requiredText(
+      candidate.name
+    ).slice(
+      0,
+      250
+    );
+
+  const contentType =
+    normalizeContentType(
+      candidate.contentType
+    );
+
+  const size =
+    typeof candidate.size ===
+      "number"
+      ? candidate.size
+      : Number(
+          candidate.size
+        );
+
+  if (
+    !pathname ||
+    !name ||
+    !contentType ||
+    !Number.isFinite(size) ||
+    size <= 0
+  ) {
+    return null;
+  }
+
+  return {
+    pathname,
+    name,
+    contentType,
+    size,
+  };
+}
+
+
+async function resolveUploadedReference(
+  reference: UploadedFileReference,
+  listingId: string
+): Promise<ResolvedUploadedFile> {
+  const expectedPrefix =
+    "valuation-intake/" +
+    listingId +
+    "/";
+
+  if (
+    !reference.pathname.startsWith(
+      expectedPrefix
+    )
+  ) {
+    throw new Error(
+      "UngÃƒÂ¼ltige Upload-Referenz."
+    );
+  }
+
+  const validUntil =
+    Date.now() +
+    15 * 60 * 1000;
+
+  const token =
+    await issueSignedToken({
+      pathname:
+        reference.pathname,
+
+      operations: [
+        "head",
+        "get",
+      ],
+
+      validUntil,
+    });
+
+  const headSigned =
+    await presignUrl(
+      token,
+      {
+        operation:
+          "head",
+
+        pathname:
+          reference.pathname,
+
+        access:
+          "private",
+
+        validUntil,
+      }
+    );
+
+  const headResponse =
+    await fetch(
+      headSigned.presignedUrl,
+      {
+        method:
+          "HEAD",
+
+        cache:
+          "no-store",
+      }
+    );
+
+  if (!headResponse.ok) {
+    throw new Error(
+      "Ein hochgeladenes Dokument konnte nicht verifiziert werden."
+    );
+  }
+
+  const actualSize =
+    Number(
+      headResponse.headers.get(
+        "content-length"
+      )
+    );
+
+  if (
+    !Number.isFinite(
+      actualSize
+    ) ||
+    actualSize <= 0
+  ) {
+    throw new Error(
+      "Die DateigrÃƒÂ¶sse konnte nicht verifiziert werden."
+    );
+  }
+
+  const actualType =
+    normalizeContentType(
+      headResponse.headers.get(
+        "content-type"
+      )
+    ) ||
+    reference.contentType;
+
+  const isPdf =
+    actualType ===
+      "application/pdf" ||
+    reference.name
+      .toLowerCase()
+      .endsWith(
+        ".pdf"
+      );
+
+  const isImage =
+    ALLOWED_IMAGE_TYPES.has(
+      actualType
+    );
+
+  if (
+    !isPdf &&
+    !isImage
+  ) {
+    throw new Error(
+      "Erlaubt sind PDF, JPG, PNG und WEBP."
+    );
+  }
+
+  if (
+    isPdf &&
+    actualSize >
+      MAX_PDF_SIZE
+  ) {
+    throw new Error(
+      "Eine PDF-Datei darf maximal 15 MB gross sein."
+    );
+  }
+
+  if (
+    isImage &&
+    actualSize >
+      MAX_IMAGE_SIZE
+  ) {
+    throw new Error(
+      "Ein Bild darf maximal 8 MB gross sein."
+    );
+  }
+
+  const getSigned =
+    await presignUrl(
+      token,
+      {
+        operation:
+          "get",
+
+        pathname:
+          reference.pathname,
+
+        access:
+          "private",
+
+        validUntil,
+
+        useCache:
+          false,
+      }
+    );
+
+  return {
+    pathname:
+      reference.pathname,
+
+    name:
+      reference.name,
+
+    contentType:
+      actualType,
+
+    size:
+      actualSize,
+
+    isPdf,
+
+    fileUrl:
+      getSigned.presignedUrl,
+  };
+}
 
 
 type IntakeField<T> = {
@@ -607,30 +887,118 @@ export async function POST(
     }
 
 
-    const formData =
-      await request.formData();
-
-    const listingId =
-      requiredText(
-        formData.get(
-          "listingId"
+    const requestContentType =
+      request.headers
+        .get(
+          "content-type"
         )
-      );
+        ?.toLowerCase() ||
+      "";
 
+    let listingId =
+      "";
 
-    const files =
-      formData
-        .getAll("files")
-        .filter(
-          (
-            value
-          ): value is File =>
-            value instanceof File
+    let files:
+      File[] = [];
+
+    let uploadedReferences:
+      UploadedFileReference[] = [];
+
+    if (
+      requestContentType.includes(
+        "application/json"
+      )
+    ) {
+      const body =
+        (await request.json()) as {
+          listingId?: unknown;
+          uploadedFiles?: unknown;
+        };
+
+      listingId =
+        requiredText(
+          body.listingId
         );
+
+      const rawUploadedFiles =
+        Array.isArray(
+          body.uploadedFiles
+        )
+          ? body.uploadedFiles
+          : [];
+
+      uploadedReferences =
+        rawUploadedFiles
+          .map(
+            parseUploadedReference
+          )
+          .filter(
+            (
+              value
+            ): value is
+              UploadedFileReference =>
+                value !== null
+          );
+
+      if (
+        rawUploadedFiles.length !==
+        uploadedReferences.length
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "Mindestens eine Upload-Referenz ist ungÃƒÂ¼ltig.",
+          },
+          {
+            status: 400,
+          }
+        );
+      }
+
+      if (
+        uploadedReferences.length &&
+        !listingId
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "Der sichere Direktupload benÃƒÂ¶tigt einen Objektbezug.",
+          },
+          {
+            status: 400,
+          }
+        );
+      }
+    } else {
+      const formData =
+        await request.formData();
+
+      listingId =
+        requiredText(
+          formData.get(
+            "listingId"
+          )
+        );
+
+      files =
+        formData
+          .getAll(
+            "files"
+          )
+          .filter(
+            (
+              value
+            ): value is File =>
+              value instanceof File
+          );
+    }
 
 
     if (
-      files.length >
+      files.length +
+        uploadedReferences.length >
       MAX_FILES
     ) {
       return NextResponse.json(
@@ -729,7 +1097,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Die hochgeladenen Dateien dürfen zusammen maximal 4 MB gross sein.",
+            "Die hochgeladenen Dateien dÃƒÂ¼rfen zusammen maximal 4 MB gross sein.",
         },
         {
           status: 400,
@@ -786,24 +1154,6 @@ export async function POST(
                   },
                 },
 
-                floorPlans: {
-                  orderBy: {
-                    sortOrder:
-                      "asc",
-                  },
-
-                  take: 6,
-
-                  select: {
-                    id: true,
-                    floorLevel: true,
-                    fileName: true,
-                    mimeType: true,
-                    url: true,
-                    analysis: true,
-                    geometry: true,
-                  },
-                },
               },
             })
         : null;
@@ -821,6 +1171,93 @@ export async function POST(
         },
         {
           status: 404,
+        }
+      );
+    }
+
+    const floorPlans =
+      listing
+        ? await prisma.floorPlan
+            .findMany({
+              where: {
+                listingId: listing.id,
+              },
+
+              orderBy: {
+                sortOrder: "asc",
+              },
+
+              take: 6,
+
+              select: {
+                id: true,
+                floorLevel: true,
+                fileName: true,
+                mimeType: true,
+                url: true,
+                analysis: true,
+                geometry: true,
+              },
+            })
+            .catch((error: unknown) => {
+              const code =
+                typeof error === "object" &&
+                error !== null &&
+                "code" in error
+                  ? (error as { code?: unknown }).code
+                  : undefined;
+
+              if (code === "P2021") {
+                console.warn(
+                  "[valuation/intake] FloorPlan table missing; continuing without stored floor plans."
+                );
+
+                return [];
+              }
+
+              throw error;
+            })
+        : [];
+
+
+
+    const resolvedUploadedFiles =
+      listingId
+        ? await Promise.all(
+            uploadedReferences.map(
+              (
+                reference
+              ) =>
+                resolveUploadedReference(
+                  reference,
+                  listingId
+                )
+            )
+          )
+        : [];
+
+    const blobTotalUploadSize =
+      resolvedUploadedFiles.reduce(
+        (
+          total,
+          file
+        ) =>
+          total + file.size,
+        0
+      );
+
+    if (
+      blobTotalUploadSize >
+      MAX_BLOB_TOTAL_UPLOAD_SIZE
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Dokumente und Bilder dÃƒÂ¼rfen zusammen maximal 50 MB gross sein.",
+        },
+        {
+          status: 400,
         }
       );
     }
@@ -865,7 +1302,8 @@ export async function POST(
 
     if (
       !listing &&
-      files.length === 0
+      files.length === 0 &&
+      resolvedUploadedFiles.length === 0
     ) {
       return NextResponse.json(
         {
@@ -1032,10 +1470,42 @@ export async function POST(
     }
 
 
+    for (
+      const file
+      of resolvedUploadedFiles
+    ) {
+      if (file.isPdf) {
+        content.push({
+          type:
+            "input_file",
+
+          filename:
+            file.name,
+
+          file_url:
+            file.fileUrl,
+        });
+
+        continue;
+      }
+
+      content.push({
+        type:
+          "input_image",
+
+        image_url:
+          file.fileUrl,
+
+        detail:
+          "high",
+      });
+    }
+
+
     if (listing) {
       for (
         const floorPlan
-        of listing.floorPlans
+        of floorPlans
       ) {
         if (!floorPlan.url) {
           continue;
@@ -1105,7 +1575,7 @@ export async function POST(
             })),
 
         floorPlanAnalyses:
-          listing.floorPlans
+          floorPlans
             .filter(
               (plan) =>
                 plan.analysis != null ||
@@ -1317,14 +1787,15 @@ export async function POST(
           Boolean(listing),
 
         uploadedFiles:
-          files.length,
+          files.length +
+          resolvedUploadedFiles.length,
 
         listingImages:
           listing?.images
             .length || 0,
 
         floorPlans:
-          listing?.floorPlans
+          floorPlans
             .length || 0,
       },
 

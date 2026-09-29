@@ -10,6 +10,7 @@ import GuideAssistant from "@/app/components/GuideAssistant";
 import MaklerCommunicationHub from "@/app/components/MaklerCommunicationHub";
 import GlobalWorkspaceLauncher from "@/app/components/GlobalWorkspaceLauncher";
 import SupportActionDock from "@/app/components/SupportActionDock";
+import AutomationPublishOverlay from "@/app/components/AutomationPublishOverlay";
 import MobileAppNav from "@/app/components/MobileAppNav";
 import FeedbackButton from "@/components/FeedbackButton";
 
@@ -68,6 +69,7 @@ export default function AppShell({
           <WhatsAppButton />
           <FeedbackButton />
           <GuideAssistant />
+          <AutomationPublishOverlay />
           <SupportActionDock />
         </div>
       ) : null}

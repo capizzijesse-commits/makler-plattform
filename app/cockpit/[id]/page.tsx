@@ -787,10 +787,7 @@ function showNextImage() {
       listing.propertyType?.trim() &&
       typeof listing.livingArea ===
         "number" &&
-      listing.livingArea > 0 &&
-      typeof listing.rooms ===
-        "number" &&
-      listing.rooms > 0
+      listing.livingArea > 0
     );
 
   const hasWorkflowImages =

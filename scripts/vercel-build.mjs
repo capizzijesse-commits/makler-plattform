@@ -22,15 +22,26 @@ function run(name, args) {
     `\n[build] ${name} ${args.join(" ")}`
   );
 
+  const executable = localBin(name);
+
   const result =
-    spawnSync(
-      localBin(name),
-      args,
-      {
-        stdio: "inherit",
-        env: process.env,
-      }
-    );
+    process.platform === "win32"
+      ? spawnSync(
+          process.env.ComSpec || "cmd.exe",
+          ["/d", "/s", "/c", executable, ...args],
+          {
+            stdio: "inherit",
+            env: process.env,
+          }
+        )
+      : spawnSync(
+          executable,
+          args,
+          {
+            stdio: "inherit",
+            env: process.env,
+          }
+        );
 
   if (
     result.error ||

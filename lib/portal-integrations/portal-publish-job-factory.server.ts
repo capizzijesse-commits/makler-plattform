@@ -15,6 +15,7 @@ import {
 
 import type {
   GermanPortalId,
+  SwissPortalId,
 } from "@/lib/portal-integrations/types";
 
 
@@ -73,6 +74,19 @@ export class GermanPortalJobCreationError
     this.httpStatus =
       httpStatus;
   }
+}
+
+
+export function isSwissPortalId(
+  value: string
+): value is SwissPortalId {
+  return (
+    value === "immoscout24_ch" ||
+    value === "homegate_ch" ||
+    value === "comparis_ch" ||
+    value === "flatfox_ch" ||
+    value === "newhome_ch"
+  );
 }
 
 

@@ -37,6 +37,8 @@ export type PortalConnectionSnapshot<
 > = {
   portal: TPortal;
 
+  connectionId: string | null;
+
   provider: string | null;
   environment: string | null;
 
@@ -388,6 +390,10 @@ function buildSnapshot<
   return {
     portal,
 
+    connectionId:
+      connection?.id ??
+      null,
+
     provider:
       connection?.provider ??
       (
@@ -692,6 +698,100 @@ export async function configureGermanLaunchPortalConnection(
   return buildSnapshot(
     portal,
     connection
+  );
+}
+
+
+
+/*
+ * INTERNAL VERIFICATION STATE WRITER
+ *
+ * This function does NOT verify portal
+ * credentials and performs NO network call.
+ *
+ * It may only be called after a portal-
+ * specific server-side verifier has actually
+ * confirmed the connection successfully.
+ *
+ * Browser and setup endpoints must never call
+ * this function merely because credentials
+ * were stored.
+ */
+export async function markPortalConnectionVerified(
+  input: {
+    userId: string;
+    portal: PortalId;
+  }
+): Promise<
+  PortalConnectionSnapshot
+> {
+
+  const userId =
+    requireUserId(
+      input.userId
+    );
+
+  const portal =
+    requirePortal(
+      input.portal
+    );
+
+  const existing =
+    await prisma.portalConnection.findUnique({
+      where: {
+        userId_portal: {
+          userId,
+          portal,
+        },
+      },
+    });
+
+  if (!existing) {
+    throw new Error(
+      `PortalConnection existiert nicht: ${portal}`
+    );
+  }
+
+  /*
+   * Nur eine bereits eingerichtete
+   * Connection darf verifiziert werden.
+   *
+   * "not_configured" kann hier nicht
+   * entstehen, weil ein DB-Datensatz
+   * existieren muss.
+   */
+  const currentStatus =
+    normalizeDatabaseStatus(
+      existing.status
+    );
+
+  if (
+    currentStatus !== "configured" &&
+    currentStatus !== "verified"
+  ) {
+    throw new Error(
+      `PortalConnection kann aus Status "${currentStatus}" nicht verifiziert werden: ${portal}`
+    );
+  }
+
+  const verified =
+    await prisma.portalConnection.update({
+      where: {
+        id: existing.id,
+      },
+
+      data: {
+        status:
+          "verified",
+
+        lastVerifiedAt:
+          new Date(),
+      },
+    });
+
+  return buildSnapshot(
+    portal,
+    verified
   );
 }
 

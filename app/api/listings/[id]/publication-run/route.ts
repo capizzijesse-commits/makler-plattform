@@ -9,6 +9,9 @@ import {
 import {
   prisma,
 } from "@/lib/prisma";
+import {
+  createPreparedPublicationRun,
+} from "@/lib/publication-orchestrator/publication-run-preparation.server";
 
 import {
   getAuthenticatedUser,
@@ -29,6 +32,7 @@ import {
 
 import {
   isGermanPortalId,
+  isSwissPortalId,
   isPortalPublishQueueEnabled,
 } from "@/lib/portal-integrations/portal-publish-job-factory.server";
 
@@ -1098,8 +1102,13 @@ export async function POST(
 
         if (
           !portal ||
-          !isGermanPortalId(
-            portal
+          (
+            !isGermanPortalId(
+              portal
+            ) &&
+            !isSwissPortalId(
+              portal
+            )
           )
         ) {
 
@@ -1233,29 +1242,60 @@ export async function POST(
 
 
     if (
-      portalIds.length > 0 &&
-      listing.countryCode !==
-        "DE"
+      portalIds.length > 0
     ) {
+      const listingCountry =
+        listing.countryCode
+          ?.trim()
+          .toUpperCase();
 
-      return noStore(
-        NextResponse.json(
-          {
-            success:
-              false,
+      const invalidPortalForMarket =
+        portalIds.find(
+          (portal) =>
+            (
+              listingCountry === "DE" &&
+              !isGermanPortalId(
+                portal
+              )
+            ) ||
+            (
+              listingCountry === "CH" &&
+              !isSwissPortalId(
+                portal
+              )
+            ) ||
+            (
+              listingCountry !== "DE" &&
+              listingCountry !== "CH"
+            )
+        );
 
-            error:
-              "PORTAL_TARGET_MARKET_NOT_SUPPORTED",
+      if (invalidPortalForMarket) {
+        return noStore(
+          NextResponse.json(
+            {
+              success:
+                false,
 
-            message:
-              "Die aktuelle Portal-Publish-Foundation unterstuetzt in diesem Orchestrator-Schritt nur Deutschland.",
-          },
-          {
-            status:
-              409,
-          }
-        )
-      );
+              error:
+                "PORTAL_TARGET_MARKET_NOT_SUPPORTED",
+
+              message:
+                "Das gewaehlte Portal passt nicht zum Markt des Objekts.",
+
+              target:
+                invalidPortalForMarket,
+
+              countryCode:
+                listingCountry ?? null,
+            },
+            {
+              status:
+                409,
+            }
+          )
+        );
+      }
     }
 
 
@@ -1414,8 +1454,12 @@ export async function POST(
           (
             connection.status !==
               "verified" ||
-            connection.environment !==
-              "test"
+            (
+              connection.environment !==
+                "test" &&
+              connection.environment !==
+                "production"
+            )
           )
         ) {
 
@@ -1604,31 +1648,14 @@ export async function POST(
 
 
     const run =
-      await prisma.publicationRun.create({
-        data: {
-          userId:
-            user.id,
+      await createPreparedPublicationRun({
+        userId:
+          user.id,
 
-          listingId:
-            listing.id,
+        listingId:
+          listing.id,
 
-          status:
-            "ready",
-
-          targets: {
-            create:
-              targets,
-          },
-        },
-
-        include: {
-          targets: {
-            orderBy: {
-              createdAt:
-                "asc",
-            },
-          },
-        },
+        targets,
       });
 
 

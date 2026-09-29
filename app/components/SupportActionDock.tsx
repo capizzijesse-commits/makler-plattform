@@ -30,6 +30,17 @@ export default function SupportActionDock() {
   const pathname = usePathname() || "/";
   const showGuide = isGuidePage(pathname);
 
+  const isCockpitObjectPage =
+    pathname.startsWith("/cockpit/");
+
+  const showAutomationLauncher =
+    !isCockpitObjectPage &&
+    ["/dashboard", "/cockpit", "/objekte", "/workspaces"].some(
+      (route) =>
+        pathname === route ||
+        pathname.startsWith(`${route}/`)
+    );
+
   const [isDockOpen, setIsDockOpen] =
     useState(false);
 
@@ -67,7 +78,7 @@ export default function SupportActionDock() {
           : 0
       );
     } catch {
-      // Auf öffentlichen Seiten oder
+      // Auf Ã¶ffentlichen Seiten oder
       // ohne Login bleibt der Badge leer.
     }
   }
@@ -170,7 +181,7 @@ export default function SupportActionDock() {
             40
           );
         }}
-        aria-label="Inserat-AI Chat öffnen"
+        aria-label="Inserat-AI Chat Ã¶ffnen"
       >
         <span
           className="supportIcon"
@@ -209,7 +220,7 @@ export default function SupportActionDock() {
           type="button"
           className="supportAction supportGuide"
           onClick={() => openAction("guide")}
-          aria-label="Inserat-AI Guide öffnen"
+          aria-label="Inserat-AI Guide Ã¶ffnen"
         >
           <span className="supportIcon" aria-hidden="true">
             <svg viewBox="0 0 24 24">
@@ -236,7 +247,7 @@ export default function SupportActionDock() {
         type="button"
         className="supportAction supportFeedback"
         onClick={() => openAction("feedback")}
-        aria-label="Feedback öffnen"
+        aria-label="Feedback Ã¶ffnen"
       >
         <span className="supportIcon" aria-hidden="true">
           <svg viewBox="0 0 24 24">
@@ -261,7 +272,7 @@ export default function SupportActionDock() {
         type="button"
         className="supportAction supportContact"
         onClick={() => openAction("contact")}
-        aria-label="WhatsApp Kontakt öffnen"
+        aria-label="WhatsApp Kontakt Ã¶ffnen"
       >
         <span className="supportIcon" aria-hidden="true">
           <svg viewBox="0 0 24 24">
@@ -288,7 +299,33 @@ export default function SupportActionDock() {
 
       </div>
 
-      <button
+      {showAutomationLauncher && (
+        <button
+        type="button"
+        className="automationLauncher"
+        onClick={() => {
+          setIsDockOpen(false);
+          sendWindowEvent(
+            "inserat-ai:open-automation"
+          );
+        }}
+        aria-label="Automatisch veröffentlichen"
+      >
+        <span
+          className="automationLauncherIcon"
+          aria-hidden="true"
+        >
+          <svg viewBox="0 0 24 24">
+            <path d="M13 2 5 13h6l-1 9 9-13h-6V2Z" />
+          </svg>
+        </span>
+
+        <span className="automationLauncherText">
+          Automatisch veröffentlichen
+        </span>
+      </button>
+      )}
+<button
         type="button"
         className="supportLauncher"
         data-unread={
@@ -307,8 +344,8 @@ export default function SupportActionDock() {
         aria-expanded={isDockOpen}
         aria-label={
           isDockOpen
-            ? "Inserat-AI Menü schließen"
-            : "Inserat-AI Connect öffnen"
+            ? "Inserat-AI MenÃ¼ schlieÃŸen"
+            : "Inserat-AI Connect Ã¶ffnen"
         }
       >
         <span
@@ -349,7 +386,7 @@ export default function SupportActionDock() {
 
         <span className="supportLauncherText">
           {isDockOpen
-            ? "Schließen"
+            ? "SchlieÃŸen"
             : "Inserat-AI Connect"}
         </span>
       </button>
@@ -735,7 +772,114 @@ export default function SupportActionDock() {
           font-size: 8px;
         }
 
-        .supportLauncher {
+                .automationLauncher {
+          position: fixed;
+          right: 20px;
+          bottom: 86px;
+          z-index: 8999;
+
+          display: flex;
+          min-height: 56px;
+          align-items: center;
+          gap: 10px;
+
+          padding: 7px 15px 7px 8px;
+
+          border: 1px solid rgba(251, 191, 36, 0.72);
+          border-radius: 999px;
+
+          background:
+            linear-gradient(
+              135deg,
+              #78350f,
+              #d97706,
+              #f59e0b
+            );
+
+          color: #ffffff;
+          cursor: pointer;
+          font: inherit;
+
+          box-shadow:
+            0 16px 40px rgba(2, 8, 23, 0.42),
+            0 0 26px rgba(251, 191, 36, 0.20);
+
+          transition:
+            transform 160ms ease,
+            filter 160ms ease,
+            box-shadow 160ms ease;
+        }
+
+        .automationLauncher:hover {
+          transform: translateY(-2px);
+          filter: brightness(1.08);
+
+          box-shadow:
+            0 20px 46px rgba(2, 8, 23, 0.46),
+            0 0 32px rgba(251, 191, 36, 0.28);
+        }
+
+        .automationLauncher:focus-visible {
+          outline: 2px solid #ffffff;
+          outline-offset: 3px;
+        }
+
+        .automationLauncherIcon {
+          display: grid;
+          width: 40px;
+          height: 40px;
+          flex: 0 0 40px;
+          place-items: center;
+
+          border: 1px solid rgba(255, 255, 255, 0.30);
+          border-radius: 50%;
+
+          background: rgba(255, 255, 255, 0.15);
+        }
+
+        .automationLauncherIcon svg {
+          width: 20px;
+          height: 20px;
+          fill: currentColor;
+          stroke: none;
+        }
+
+        .automationLauncherText {
+          font-size: 11px;
+          font-weight: 950;
+          line-height: 1;
+          white-space: nowrap;
+        }
+
+        @media (max-width: 640px) {
+          .automationLauncher {
+            right: 10px;
+
+            bottom: calc(
+              76px + env(safe-area-inset-bottom)
+            );
+
+            width: 52px;
+            height: 52px;
+            min-height: 52px;
+
+            justify-content: center;
+            padding: 0;
+
+            border-radius: 50%;
+          }
+
+          .automationLauncherIcon {
+            width: 38px;
+            height: 38px;
+            flex: 0 0 38px;
+          }
+
+          .automationLauncherText {
+            display: none;
+          }
+        }
+.supportLauncher {
           position: relative;
 
           display: flex;

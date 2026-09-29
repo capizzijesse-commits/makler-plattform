@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 
 import {
+  uploadPresigned,
+} from "@vercel/blob/client";
+
+import {
   downloadValuationPdf,
 } from "@/lib/valuation-pdf";
 
@@ -221,14 +225,105 @@ const steps = [
 ];
 
 /*
- * VALUATION DIRECT UPLOAD LIMIT V1
+ * AUTOPILOT OBJECT UPLOAD V1
  *
- * Direkte Function-Requests müssen
- * unter der Hosting-Payload-Grenze bleiben.
- * Multipart-Overhead ist einkalkuliert.
+ * Dokumente und Bilder werden im
+ * normalen Flow direkt in privaten
+ * Blob Storage geladen.
  */
+const MAX_VALUATION_INTAKE_FILES =
+  10;
+
+const MAX_VALUATION_PDF_BYTES =
+  15 * 1024 * 1024;
+
+const MAX_VALUATION_IMAGE_BYTES =
+  8 * 1024 * 1024;
+
 const MAX_VALUATION_INTAKE_UPLOAD_BYTES =
-  4 * 1024 * 1024;
+  50 * 1024 * 1024;
+
+const VALUATION_IMAGE_TYPES =
+  new Set([
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+  ]);
+
+function valuationIntakeContentType(
+  file: File
+) {
+  const declared =
+    file.type
+      .trim()
+      .toLowerCase();
+
+  if (
+    declared ===
+      "application/pdf" ||
+    VALUATION_IMAGE_TYPES.has(
+      declared
+    )
+  ) {
+    return declared;
+  }
+
+  const name =
+    file.name.toLowerCase();
+
+  if (
+    name.endsWith(".pdf")
+  ) {
+    return "application/pdf";
+  }
+
+  if (
+    name.endsWith(".jpg") ||
+    name.endsWith(".jpeg")
+  ) {
+    return "image/jpeg";
+  }
+
+  if (
+    name.endsWith(".png")
+  ) {
+    return "image/png";
+  }
+
+  if (
+    name.endsWith(".webp")
+  ) {
+    return "image/webp";
+  }
+
+  return "";
+}
+
+function safeValuationFileName(
+  value: string
+) {
+  return (
+    value
+      .normalize("NFKD")
+      .replace(
+        /[^a-zA-Z0-9._-]+/g,
+        "-"
+      )
+      .replace(
+        /-+/g,
+        "-"
+      )
+      .replace(
+        /^[-.]+|[-.]+$/g,
+        ""
+      )
+      .slice(
+        0,
+        120
+      ) ||
+    "dokument"
+  );
+}
 
 export default function BewertungPage() {
   const [step, setStep] = useState(1);
@@ -759,6 +854,21 @@ export default function BewertungPage() {
         );
 
       if (
+        intakeFiles.length >
+        MAX_VALUATION_INTAKE_FILES
+      ) {
+        setIntakeStatus(
+          "error"
+        );
+
+        setIntakeMessage(
+          "Maximal 10 Dokumente oder Bilder pro Objekt."
+        );
+
+        return;
+      }
+
+      if (
         totalUploadBytes >
         MAX_VALUATION_INTAKE_UPLOAD_BYTES
       ) {
@@ -767,51 +877,211 @@ export default function BewertungPage() {
         );
 
         setIntakeMessage(
-          "Die ausgewählten Dokumente sind zusammen zu gross. Bitte für einen Analysevorgang maximal 4 MB auswählen."
+          "Dokumente und Bilder dürfen zusammen maximal 50 MB gross sein."
+        );
+
+        return;
+      }
+
+      for (
+        const file
+        of intakeFiles
+      ) {
+        const contentType =
+          valuationIntakeContentType(
+            file
+          );
+
+        if (!contentType) {
+          setIntakeStatus(
+            "error"
+          );
+
+          setIntakeMessage(
+            "Erlaubt sind PDF, JPG, PNG und WEBP."
+          );
+
+          return;
+        }
+
+        if (
+          contentType ===
+            "application/pdf" &&
+          (
+            file.size <= 0 ||
+            file.size >
+              MAX_VALUATION_PDF_BYTES
+          )
+        ) {
+          setIntakeStatus(
+            "error"
+          );
+
+          setIntakeMessage(
+            "Eine PDF-Datei darf maximal 15 MB gross sein."
+          );
+
+          return;
+        }
+
+        if (
+          contentType !==
+            "application/pdf" &&
+          (
+            file.size <= 0 ||
+            file.size >
+              MAX_VALUATION_IMAGE_BYTES
+          )
+        ) {
+          setIntakeStatus(
+            "error"
+          );
+
+          setIntakeMessage(
+            "Ein Bild darf maximal 8 MB gross sein."
+          );
+
+          return;
+        }
+      }
+
+      /*
+       * Der sichere grosse Direktupload
+       * ist bewusst an ein eigenes
+       * Cockpit-Objekt gebunden.
+       */
+      if (
+        intakeFiles.length > 0 &&
+        !listingId
+      ) {
+        setIntakeStatus(
+          "error"
+        );
+
+        setIntakeMessage(
+          "Bitte die Unterlagen über ein Objekt im Makler-Cockpit analysieren."
         );
 
         return;
       }
 
       try {
-        const payload =
-          new FormData();
+        let uploadedCount =
+          0;
 
-        if (listingId) {
-          payload.append(
-            "listingId",
-            listingId
+        const uploadedFiles =
+          await Promise.all(
+            intakeFiles.map(
+              async (
+                file,
+                index
+              ) => {
+                const contentType =
+                  valuationIntakeContentType(
+                    file
+                  );
+
+                if (!contentType) {
+                  throw new Error(
+                    "Ungültiger Dateityp."
+                  );
+                }
+
+                const pathname =
+                  [
+                    "valuation-intake",
+                    listingId,
+                    crypto.randomUUID() +
+                      "-" +
+                      String(
+                        index + 1
+                      ) +
+                      "-" +
+                      safeValuationFileName(
+                        file.name
+                      ),
+                  ].join("/");
+
+                const blob =
+                  await uploadPresigned(
+                    pathname,
+                    file,
+                    {
+                      access:
+                        "private",
+
+                      handleUploadUrl:
+                        "/api/valuation/intake-upload",
+
+                      contentType,
+
+                      clientPayload:
+                        JSON.stringify({
+                          listingId,
+
+                          size:
+                            file.size,
+
+                          contentType,
+                        }),
+
+                      multipart:
+                        file.size >
+                        5 *
+                          1024 *
+                          1024,
+                    }
+                  );
+
+                uploadedCount +=
+                  1;
+
+                setIntakeMessage(
+                  `Unterlagen werden sicher hochgeladen: ${uploadedCount}/${intakeFiles.length}`
+                );
+
+                return {
+                  pathname:
+                    blob.pathname,
+
+                  name:
+                    file.name,
+
+                  contentType,
+
+                  size:
+                    file.size,
+                };
+              }
+            )
           );
-        }
 
-        intakeFiles.forEach(
-          (file) => {
-            payload.append(
-              "files",
-              file,
-              file.name
-            );
-          }
+        setIntakeMessage(
+          "Upload abgeschlossen. Inserat-AI analysiert das Objekt automatisch ..."
         );
 
         const response =
           await fetch(
             "/api/valuation/intake",
             {
-              method: "POST",
-              body: payload,
-              cache: "no-store",
+              method:
+                "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body:
+                JSON.stringify({
+                  listingId,
+                  uploadedFiles,
+                }),
+
+              cache:
+                "no-store",
             }
           );
-
-        if (
-          response.status ===
-          413
-        ) {
-          throw new Error(
-            "Die hochgeladenen Dokumente sind für einen einzelnen Analysevorgang zu gross. Bitte maximal 4 MB auswählen."
-          );
-        }
 
         const data =
           (await response
