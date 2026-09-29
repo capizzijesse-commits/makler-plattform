@@ -115,7 +115,7 @@ export default function PricingSection({
         ? "pro Monat"
         : t("plans.pro.cadence"),
       text: isGermany
-        ? "Für Makler mit erweiterten KI-, Home-Staging- und Automatisierungsfunktionen."
+        ? "Für Makler mit erweiterten Automatisierungsfunktionen."
         : t("plans.pro.description"),
       button: isGermany
         ? "Pro starten"
@@ -532,32 +532,22 @@ export default function PricingSection({
                 </button>
               ) : plan.id === "pro" ? (
                 isGermany ? (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      startSubscriptionCheckout(
-                        "pro"
-                      )
-                    }
-                    disabled={checkoutLoading}
+                  <a
+                    href="/register?plan=pro"
                     className="planButton"
                     style={{
                       border: 0,
-                      cursor: checkoutLoading
-                        ? "wait"
-                        : "pointer",
+                      cursor: "pointer",
                       opacity: 1,
                       font: "inherit",
                     }}
                   >
-                    {checkoutLoading
-                      ? "Checkout wird geöffnet …"
-                      : plan.button}
+                    30 Tage kostenlos starten
 
                     <span aria-hidden="true">
                       {"\u2192"}
                     </span>
-                  </button>
+                  </a>
                 ) : (
                   <button
                     type="button"
