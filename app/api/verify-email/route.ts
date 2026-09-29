@@ -92,6 +92,8 @@ export async function GET(request: Request) {
       },
       select: {
         id: true,
+        trialPlan: true,
+        trialStartedAt: true,
       },
     });
 
@@ -103,6 +105,18 @@ export async function GET(request: Request) {
      * Atomare Aktualisierung verhindert, dass derselbe Link
      * durch parallele Anfragen mehrfach verwendet wird.
      */
+    const shouldStartProTrial =
+      user.trialPlan === "pro" &&
+      user.trialStartedAt === null;
+
+    const trialEndsAt =
+      shouldStartProTrial
+        ? new Date(
+            now.getTime() +
+              30 * 24 * 60 * 60 * 1000
+          )
+        : null;
+
     const verifiedUser = await prisma.user.updateMany({
       where: {
         id: user.id,
@@ -116,6 +130,12 @@ export async function GET(request: Request) {
         emailVerified: true,
         emailVerificationToken: null,
         emailVerificationExpires: null,
+        ...(shouldStartProTrial
+          ? {
+              trialStartedAt: now,
+              trialEndsAt,
+            }
+          : {}),
       },
     });
 

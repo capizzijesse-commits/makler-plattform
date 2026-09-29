@@ -20,6 +20,9 @@ model User {
   password            String?
   role                String  @default("user")
   plan                String  @default("free")
+  trialPlan      String?
+  trialStartedAt DateTime?
+  trialEndsAt    DateTime?
   freeGenerationsUsed Int     @default(0)
   freeGenerationLimit Int     @default(50)
 

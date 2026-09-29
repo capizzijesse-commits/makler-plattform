@@ -486,6 +486,10 @@ function handleRegisterFormStart() {
           },
           body: JSON.stringify({
             credential,
+            requestedPlan:
+              requestedPlan === "pro"
+                ? "pro"
+                : null,
           }),
         }
       );
@@ -578,8 +582,7 @@ function handleRegisterFormStart() {
       );
 
       if (
-        requestedPlan === "founder" ||
-        requestedPlan === "pro"
+        requestedPlan === "founder"
       ) {
         const checkoutResponse =
           await fetch(

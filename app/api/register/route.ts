@@ -418,6 +418,7 @@ export async function POST(
             emailVerificationToken:
               verificationTokenHash,
             emailVerificationExpires,
+          trialPlan: requestedPlan === "pro" ? "pro" : null,
           },
           select: {
             id: true,
@@ -437,6 +438,7 @@ export async function POST(
             password: passwordHash,
             role: "user",
             plan: "free",
+            trialPlan: requestedPlan === "pro" ? "pro" : null,
             freeGenerationsUsed: 0,
             freeGenerationLimit: 1,
             isFounder: false,

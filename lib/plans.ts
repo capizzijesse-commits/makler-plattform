@@ -69,6 +69,64 @@ export function normalizeUserPlan(value: unknown): UserPlan {
   return "free";
 }
 
+export type TrialPlanInput = {
+  plan?: unknown;
+  trialPlan?: unknown;
+  trialStartedAt?: Date | string | null;
+  trialEndsAt?: Date | string | null;
+};
+
+export function getEffectiveUserPlan(
+  user: TrialPlanInput,
+  now: Date = new Date()
+): UserPlan {
+  const storedPlan = normalizeUserPlan(user.plan);
+
+  // Bezahlte und administrative Plaene haben Vorrang.
+  if (storedPlan !== "free") {
+    return storedPlan;
+  }
+
+  const trialPlan = normalizeUserPlan(user.trialPlan);
+
+  // Der kartenlose Testzugang ist ausschliesslich Pro.
+  if (trialPlan !== "pro") {
+    return storedPlan;
+  }
+
+  const startedAt =
+    user.trialStartedAt instanceof Date
+      ? user.trialStartedAt
+      : user.trialStartedAt
+        ? new Date(user.trialStartedAt)
+        : null;
+
+  const endsAt =
+    user.trialEndsAt instanceof Date
+      ? user.trialEndsAt
+      : user.trialEndsAt
+        ? new Date(user.trialEndsAt)
+        : null;
+
+  if (
+    !startedAt ||
+    !endsAt ||
+    Number.isNaN(startedAt.getTime()) ||
+    Number.isNaN(endsAt.getTime())
+  ) {
+    return storedPlan;
+  }
+
+  if (
+    startedAt.getTime() > now.getTime() ||
+    endsAt.getTime() <= now.getTime()
+  ) {
+    return storedPlan;
+  }
+
+  return "pro";
+}
+
 export function getPlanCapabilities(
   value: unknown
 ): PlanCapabilities {

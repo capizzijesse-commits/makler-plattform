@@ -1,6 +1,7 @@
 ﻿import { createHash, randomBytes } from "node:crypto";
 import type { NextRequest } from "next/server";
 
+import { getEffectiveUserPlan } from "@/lib/plans";
 import { prisma } from "@/lib/prisma";
 
 export const SESSION_COOKIE_NAME = "inserat_ai_session";
@@ -52,6 +53,12 @@ export async function getAuthenticatedUser(request: NextRequest) {
   phone: true,
   role: true,
   plan: true,
+
+  trialPlan: true,
+
+  trialStartedAt: true,
+
+  trialEndsAt: true,
   emailVerified: true,
   isFounder: true,
   founderNumber: true,
@@ -78,8 +85,10 @@ export async function getAuthenticatedUser(request: NextRequest) {
 
     return null;
   }
-
-  return session.user;
+  return {
+    ...session.user,
+    plan: getEffectiveUserPlan(session.user),
+  };
 }
 
 export async function deleteUserSession(token?: string) {

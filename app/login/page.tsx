@@ -246,15 +246,12 @@ export default function LoginPage() {
       );
 
       if (
-        requestedPlan === "founder" ||
-        requestedPlan === "pro"
+        requestedPlan === "founder"
       ) {
         setMessage(
-          requestedPlan === "pro"
-            ? "Pro-Checkout wird geöffnet …"
-            : t(
-                "messages.founderCheckoutOpening"
-              )
+          t(
+            "messages.founderCheckoutOpening"
+          )
         );
 
         setMessageType("info");
@@ -318,14 +315,8 @@ export default function LoginPage() {
         ) {
           throw new Error(
             checkoutData?.error ||
-              (
-                requestedPlan === "pro"
-                  ? t(
-                      "messages.genericError"
-                    )
-                  : t(
-                      "messages.founderCheckoutError"
-                    )
+              t(
+                "messages.founderCheckoutError"
               )
           );
         }
@@ -439,15 +430,12 @@ export default function LoginPage() {
       );
 
       if (
-        requestedPlan === "founder" ||
-        requestedPlan === "pro"
+        requestedPlan === "founder"
       ) {
         setMessage(
-          requestedPlan === "pro"
-            ? "Pro-Checkout wird geöffnet …"
-            : t(
-                "messages.founderCheckoutOpening"
-              )
+          t(
+            "messages.founderCheckoutOpening"
+          )
         );
         setMessageType("info");
 
@@ -502,14 +490,8 @@ export default function LoginPage() {
         ) {
           throw new Error(
             checkoutData?.error ||
-              (
-                requestedPlan === "pro"
-                  ? t(
-                      "messages.genericError"
-                    )
-                  : t(
-                      "messages.founderCheckoutError"
-                    )
+              t(
+                "messages.founderCheckoutError"
               )
           );
         }

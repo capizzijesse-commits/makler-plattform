@@ -1,6 +1,7 @@
 import { OAuth2Client } from "google-auth-library";
 import { NextResponse } from "next/server";
 
+import { getEffectiveUserPlan } from "@/lib/plans";
 import { prisma } from "@/lib/prisma";
 import {
   createUserSession,
@@ -12,6 +13,7 @@ export const runtime = "nodejs";
 
 type GoogleAuthBody = {
   credential?: string;
+  requestedPlan?: string;
 };
 
 const googleClient = new OAuth2Client();
@@ -67,6 +69,11 @@ export async function POST(
 
     const credential =
       body.credential?.trim();
+
+    const requestedPlan =
+      body.requestedPlan === "pro"
+        ? "pro"
+        : null;
 
     if (!credential) {
       return errorResponse(
@@ -130,6 +137,14 @@ export async function POST(
     /*
      * Zuerst über die stabile Google-ID suchen.
      */
+    const googleTrialStartedAt = new Date();
+
+    const googleTrialEndsAt =
+      new Date(
+        googleTrialStartedAt.getTime() +
+          30 * 24 * 60 * 60 * 1000
+      );
+
     let user =
       await prisma.user.findUnique({
         where: {
@@ -202,6 +217,18 @@ export async function POST(
               password: null,
               role: "user",
               plan: "free",
+              trialPlan:
+                requestedPlan === "pro"
+                  ? "pro"
+                  : null,
+              trialStartedAt:
+                requestedPlan === "pro"
+                  ? googleTrialStartedAt
+                  : null,
+              trialEndsAt:
+                requestedPlan === "pro"
+                  ? googleTrialEndsAt
+                  : null,
               freeGenerationsUsed: 0,
               freeGenerationLimit: 1,
               isFounder: false,
@@ -253,7 +280,7 @@ export async function POST(
           name: user.name,
           email: user.email,
           role: user.role,
-          plan: user.plan,
+          plan: getEffectiveUserPlan(user),
           isFounder:
             user.isFounder,
           founderNumber:
