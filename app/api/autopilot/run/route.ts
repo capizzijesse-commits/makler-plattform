@@ -1,6 +1,7 @@
 ﻿import OpenAI from "openai";
 
 import {
+  del,
   head,
   put,
 } from "@vercel/blob";
@@ -3313,6 +3314,50 @@ console.info(
       postprocessSeconds: Number((postprocessDurationMs / 1000).toFixed(2)),
       totalSeconds: Number((autopilotTotalDurationMs / 1000).toFixed(2)),
     });
+
+    /*
+     * AUTOPILOT TEMP DOCUMENT CLEANUP:
+     * Only processed source documents are removed.
+     * Persistent ListingImage blobs remain untouched.
+     */
+    const processedDocumentPathnames =
+      registeredDocuments
+        .map((document) => document.pathname)
+        .filter(
+          (pathname): pathname is string =>
+            Boolean(pathname) &&
+            pathname.startsWith(
+              `autopilot/${listing.id}/`
+            )
+        );
+
+    if (processedDocumentPathnames.length > 0) {
+      after(async () => {
+        try {
+          await del(processedDocumentPathnames);
+
+          console.info(
+            "[AUTOPILOT_TEMP_DOCUMENT_CLEANUP]",
+            {
+              listingId: listing.id,
+              deletedCount:
+                processedDocumentPathnames.length,
+            }
+          );
+        } catch (cleanupError) {
+          console.error(
+            "[AUTOPILOT_TEMP_DOCUMENT_CLEANUP_ERROR]",
+            {
+              listingId: listing.id,
+              error:
+                cleanupError instanceof Error
+                  ? cleanupError.message
+                  : String(cleanupError),
+            }
+          );
+        }
+      });
+    }
 
     return NextResponse.json({
       success:
