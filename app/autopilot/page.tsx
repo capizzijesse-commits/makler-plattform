@@ -4,6 +4,8 @@ import {
   upload,
 } from "@vercel/blob/client";
 
+import { prepareAutopilotImageForUpload } from "@/lib/autopilot-image-compression";
+
 import Link from "next/link";
 
 import {
@@ -279,18 +281,24 @@ if (invalidFile) {
               file,
               index
             ) => {
+              const uploadFile =
+                file.type === "application/pdf"
+                  ? file
+                  : await prepareAutopilotImageForUpload(
+                      file
+                    );
               const pathname =
                 `autopilot/${nextListingId}/` +
                 `${crypto.randomUUID()}-` +
                 `${index + 1}-` +
                 safeFileName(
-                  file.name
+                  uploadFile.name
                 );
 
               const blob =
                 await upload(
                   pathname,
-                  file,
+                  uploadFile,
                   {
                     access:
                       "public",
@@ -303,8 +311,7 @@ if (invalidFile) {
                         listingId:
                           nextListingId,
 
-                        fileName:
-                          file.name,
+                        fileName: uploadFile.name,
                       }),
                   }
                 );
@@ -318,8 +325,7 @@ if (invalidFile) {
                 pathname:
                   blob.pathname,
 
-                fileName:
-                  file.name,
+                fileName: uploadFile.name,
               };
             }
           )
