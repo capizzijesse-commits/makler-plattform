@@ -272,7 +272,7 @@ function handleRegisterFormStart() {
               "Inserat-AI Pro",
             description:
               isGermany
-                ? "Premium-Zugang für Makler mit erweiterten KI- und Automatisierungsfunktionen."
+                ? "Premium-Zugang für Makler mit zentraler Immobilienvermarktung und Automatisierung."
                 : pricingT(
                     "plans.pro.description"
                   ),
