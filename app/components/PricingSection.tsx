@@ -108,12 +108,10 @@ export default function PricingSection({
       id: "pro",
       name: "Pro",
       label: t("plans.pro.label"),
-      price: isGermany
-        ? "79,90 €"
-        : "79.90 CHF",
+      price: "30 Tage kostenlos",
       cadence: isGermany
-        ? "pro Monat"
-        : t("plans.pro.cadence"),
+        ? "danach 79,90 € / Monat"
+        : "danach 79.90 CHF / Monat",
       text: isGermany
         ? "Für Makler mit erweiterten Automatisierungsfunktionen."
         : t("plans.pro.description"),

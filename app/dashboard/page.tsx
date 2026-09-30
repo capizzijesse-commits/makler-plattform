@@ -191,64 +191,53 @@ const [userName, setUserName] = useState("");
 useEffect(() => {
   let active = true;
 
-  async function loadSessionPlan() {
+  async function loadSession() {
     try {
       const response = await fetch("/api/session", {
         credentials: "include",
         cache: "no-store",
       });
 
-      const data = await response
-        .json()
-        .catch(() => ({}));
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
+
+      if (!response.ok) {
+        return;
+      }
+
+      const data = await response.json();
+
+      if (!active) {
+        return;
+      }
 
       const nextPlan =
         typeof data?.user?.plan === "string"
           ? data.user.plan
           : "free";
 
-      if (active) {
-        setUserPlan(nextPlan);
+      setUserPlan(nextPlan);
+
+      if (
+        typeof data?.user?.name === "string"
+      ) {
+        setUserName(data.user.name.trim());
       }
     } catch (error) {
       console.error(
-        "PLAN KONNTE NICHT GELADEN WERDEN:",
+        "SESSION KONNTE NICHT GELADEN WERDEN:",
         error
       );
-
-      if (active) {
-        setUserPlan("free");
-      }
     }
   }
 
-  loadSessionPlan();
+  void loadSession();
 
   return () => {
     active = false;
   };
-}, []);
-
-useEffect(() => {
-  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-const loginExpiresAt = Number(localStorage.getItem("loginExpiresAt"));
-
-if (!isLoggedIn || !loginExpiresAt || Date.now() > loginExpiresAt) {
-  localStorage.removeItem("isLoggedIn");
-  localStorage.removeItem("userEmail");
-  localStorage.removeItem("userName");
-  localStorage.removeItem("loginExpiresAt");
-
-  window.location.href = "/login";
-  return;
-}
-const nextLoginExpiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
-localStorage.setItem("loginExpiresAt", nextLoginExpiresAt.toString());
-
-  const savedName = localStorage.getItem("userName");
-  if (savedName) {
-    setUserName(savedName);
-  }
 }, []);
 
 async function getImageFileForAnalysis(
