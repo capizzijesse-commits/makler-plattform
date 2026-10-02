@@ -1,0 +1,218 @@
+﻿import sharp from "sharp";
+
+export type ExtractedPdfImage = {
+  buffer: Buffer;
+  width: number;
+  height: number;
+};
+
+type PdfImageObject = {
+  width?: number;
+  height?: number;
+  data?: Uint8Array | Uint8ClampedArray;
+};
+
+function getPdfObject(
+  objs: {
+    get: (
+      id: string,
+      callback?: (value: PdfImageObject) => void
+    ) => PdfImageObject | undefined;
+  },
+  id: string
+): Promise<PdfImageObject | undefined> {
+  return new Promise((resolve) => {
+    let settled = false;
+
+    const finish = (
+      value: PdfImageObject | undefined
+    ) => {
+      if (settled) return;
+      settled = true;
+      resolve(value);
+    };
+
+    try {
+      const immediate = objs.get(
+        id,
+        (value) => finish(value)
+      );
+
+      if (immediate) {
+        finish(immediate);
+      }
+    } catch {
+      finish(undefined);
+    }
+
+    setTimeout(
+      () => finish(undefined),
+      3000
+    );
+  });
+}
+
+export async function extractPdfImages(
+  pdfBuffer: Buffer,
+  maximumImages = 20
+): Promise<ExtractedPdfImage[]> {
+  const pdfjs = await import(
+    "pdfjs-dist/legacy/build/pdf.mjs"
+  );
+
+  const loadingTask = pdfjs.getDocument({
+    data: new Uint8Array(pdfBuffer),
+    disableWorker: true,
+    useSystemFonts: false,
+  });
+
+  const pdf = await loadingTask.promise;
+
+  const results: ExtractedPdfImage[] = [];
+  const fingerprints = new Set<string>();
+
+  try {
+    for (
+      let pageNumber = 1;
+      pageNumber <= pdf.numPages &&
+      results.length < maximumImages;
+      pageNumber += 1
+    ) {
+      const page = await pdf.getPage(pageNumber);
+      const operatorList =
+        await page.getOperatorList();
+
+      for (
+        let index = 0;
+        index < operatorList.fnArray.length &&
+        results.length < maximumImages;
+        index += 1
+      ) {
+        if (
+          operatorList.fnArray[index] !==
+          pdfjs.OPS.paintImageXObject
+        ) {
+          continue;
+        }
+
+        const args =
+          operatorList.argsArray[index];
+
+        const objectId =
+          Array.isArray(args) &&
+          typeof args[0] === "string"
+            ? args[0]
+            : null;
+
+        if (!objectId) continue;
+
+        const image = await getPdfObject(
+          page.objs as Parameters<
+            typeof getPdfObject
+          >[0],
+          objectId
+        );
+
+        const width = Number(
+          image?.width || 0
+        );
+
+        const height = Number(
+          image?.height || 0
+        );
+
+        if (
+          !image?.data ||
+          width < 500 ||
+          height < 350 ||
+          width * height < 300000
+        ) {
+          continue;
+        }
+
+        const data = Buffer.from(
+          image.data.buffer,
+          image.data.byteOffset,
+          image.data.byteLength
+        );
+
+        const pixels = width * height;
+        const channels =
+          data.length === pixels * 4
+            ? 4
+            : data.length === pixels * 3
+              ? 3
+              : data.length === pixels
+                ? 1
+                : 0;
+
+        if (!channels) continue;
+
+        let pipeline = sharp(
+          data,
+          {
+            raw: {
+              width,
+              height,
+              channels,
+            },
+          }
+        );
+
+        if (channels === 4) {
+          pipeline =
+            pipeline.flatten({
+              background: "#ffffff",
+            });
+        }
+
+        const output =
+          await pipeline
+            .rotate()
+            .resize({
+              width: 1800,
+              height: 1800,
+              fit: "inside",
+              withoutEnlargement: true,
+            })
+            .jpeg({
+              quality: 84,
+              mozjpeg: true,
+            })
+            .toBuffer();
+
+        /*
+         * Cheap duplicate protection.
+         * Same embedded image normally produces
+         * the same compressed byte size here.
+         */
+        const fingerprint =
+          width +
+          "x" +
+          height +
+          ":" +
+          output.length;
+
+        if (
+          fingerprints.has(fingerprint)
+        ) {
+          continue;
+        }
+
+        fingerprints.add(fingerprint);
+
+        results.push({
+          buffer: output,
+          width,
+          height,
+        });
+      }
+
+      page.cleanup();
+    }
+  } finally {
+    await pdf.destroy();
+  }
+
+  return results;
+}

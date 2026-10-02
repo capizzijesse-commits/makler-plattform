@@ -1,9 +1,5 @@
 "use client";
 
-import {
-  upload,
-} from "@vercel/blob/client";
-
 import { prepareAutopilotImageForUpload } from "@/lib/autopilot-image-compression";
 
 import Link from "next/link";
@@ -16,8 +12,8 @@ import {
 } from "react";
 
 
-const MAX_IMAGE_COUNT = 10;
-const MAX_DOCUMENT_COUNT = 1;
+const MAX_IMAGE_COUNT = 20;
+const MAX_DOCUMENT_COUNT = 10;
 const MAX_FILES =
   MAX_IMAGE_COUNT +
   MAX_DOCUMENT_COUNT;
@@ -26,7 +22,7 @@ const MAX_IMAGE_SIZE =
   10 * 1024 * 1024;
 
 const MAX_DOCUMENT_SIZE =
-  15 * 1024 * 1024;
+  50 * 1024 * 1024;
 
 const ALLOWED_TYPES =
   new Set([
@@ -127,7 +123,7 @@ export default function AutopilotPage() {
       MAX_FILES
     ) {
       setError(
-        "Maximal 1 ExposÃƒÂ©-PDF und 10 Bilder pro Objekt."
+        "Maximal 10 PDF-Dokumente und 20 Bilder pro Objekt."
       );
 
       return;
@@ -155,19 +151,29 @@ export default function AutopilotPage() {
       MAX_DOCUMENT_COUNT
     ) {
       setError(
-        "Bitte maximal ein ExposÃƒÂ©-PDF hochladen."
+        "Bitte maximal 10 PDF-Dokumente hochladen."
       );
 
       return;
     }
 
     if (
-      imageFiles.length === 0 ||
       imageFiles.length >
       MAX_IMAGE_COUNT
     ) {
       setError(
-        "Bitte 1 bis 10 Bilder hochladen."
+        "Bitte maximal 20 Bilder hochladen."
+      );
+
+      return;
+    }
+
+    if (
+      pdfFiles.length === 0 &&
+      imageFiles.length === 0
+    ) {
+      setError(
+        "Bitte ein Expose-PDF oder Bilder hochladen."
       );
 
       return;
@@ -198,8 +204,17 @@ export default function AutopilotPage() {
         }
       );
 if (invalidFile) {
+      console.error(
+        "[AUTOPILOT_INVALID_FILE]",
+        {
+          name: invalidFile.name,
+          type: invalidFile.type,
+          size: invalidFile.size,
+        }
+      );
+
       setError(
-        "Erlaubt sind JPEG, PNG und WebP mit maximal 10 MB pro Bild."
+        "PDF maximal 50 MB, Bilder maximal 10 MB. Erlaubt: PDF, JPEG, PNG und WebP."
       );
 
       return;
@@ -209,7 +224,7 @@ if (invalidFile) {
       setRunning(true);
 
       setStage(
-        "Objekt wird automatisch vorbereitet ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦"
+        "Objekt wird automatisch vorbereitet …"
       );
 
       const draftResponse =
@@ -271,7 +286,7 @@ if (invalidFile) {
       );
 
       setStage(
-        `${selectedFiles.length} Dateien werden parallel hochgeladen ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦`
+        `${selectedFiles.length} Dateien werden parallel hochgeladen …`
       );
 
       const uploadedRefs =
@@ -287,34 +302,113 @@ if (invalidFile) {
                   : await prepareAutopilotImageForUpload(
                       file
                     );
-              const pathname =
-                `autopilot/${nextListingId}/` +
-                `${crypto.randomUUID()}-` +
-                `${index + 1}-` +
-                safeFileName(
-                  uploadFile.name
-                );
-
-              const blob =
-                await upload(
-                  pathname,
-                  uploadFile,
+              const presignResponse =
+                await fetch(
+                  "/api/autopilot/upload-presign",
                   {
-                    access:
-                      "public",
-
-                    handleUploadUrl:
-                      "/api/autopilot/upload",
-
-                    clientPayload:
-                      JSON.stringify({
-                        listingId:
-                          nextListingId,
-
-                        fileName: uploadFile.name,
-                      }),
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                      "Content-Type":
+                        "application/json",
+                    },
+                    body: JSON.stringify({
+                      listingId:
+                        nextListingId,
+                      fileName:
+                        uploadFile.name,
+                      contentType:
+                        uploadFile.type,
+                      size:
+                        uploadFile.size,
+                    }),
                   }
                 );
+
+              const presign =
+                (await presignResponse
+                  .json()
+                  .catch(() => ({}))) as {
+                  success?: boolean;
+                  pathname?: string;
+                  uploadUrl?: string;
+                  error?: string;
+                };
+
+              if (
+                !presignResponse.ok ||
+                !presign.success ||
+                !presign.pathname ||
+                !presign.uploadUrl
+              ) {
+                throw new Error(
+                  presign.error ||
+                    "R2-Upload konnte nicht vorbereitet werden."
+                );
+              }
+
+              const putResponse =
+                await fetch(
+                  presign.uploadUrl,
+                  {
+                    method: "PUT",
+                    headers: {
+                      "Content-Type":
+                        uploadFile.type,
+                    },
+                    body:
+                      uploadFile,
+                  }
+                );
+
+              if (!putResponse.ok) {
+                throw new Error(
+                  "R2-Upload fehlgeschlagen (" + putResponse.status + ")."
+                );
+              }
+
+              const completeResponse =
+                await fetch(
+                  "/api/autopilot/upload-complete",
+                  {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                      "Content-Type":
+                        "application/json",
+                    },
+                    body: JSON.stringify({
+                      listingId:
+                        nextListingId,
+                      pathname:
+                        presign.pathname,
+                      fileName:
+                        uploadFile.name,
+                      contentType:
+                        uploadFile.type,
+                    }),
+                  }
+                );
+
+              const complete =
+                (await completeResponse
+                  .json()
+                  .catch(() => ({}))) as {
+                  success?: boolean;
+                  pathname?: string;
+                  error?: string;
+                };
+
+              if (
+                !completeResponse.ok ||
+                !complete.success ||
+                !complete.pathname
+              ) {
+                throw new Error(
+                  complete.error ||
+                    "R2-Upload konnte nicht best?tigt werden."
+                );
+              }
 
               setProgress(
                 (current) =>
@@ -323,7 +417,7 @@ if (invalidFile) {
 
               return {
                 pathname:
-                  blob.pathname,
+                  complete.pathname,
 
                 fileName: uploadFile.name,
               };
@@ -332,7 +426,7 @@ if (invalidFile) {
         );
 
       setStage(
-        "Inserat-AI analysiert jetzt alle Bilder und erstellt das Inserat ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦"
+        "Inserat-AI analysiert jetzt alle Bilder und erstellt das Inserat …"
       );
 
       const runResponse =
@@ -425,7 +519,7 @@ if (invalidFile) {
             missingFields.length === 1
               ? "Angabe"
               : "Angaben"
-          } bestÃƒÆ’Ã‚Â¤tigen.`
+          } bestätigen.`
         );
       }
     } catch (
@@ -568,7 +662,7 @@ if (invalidFile) {
           >
             Keine Formulare.
             Keine einzelnen Schritte.
-            Inserat-AI ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼bernimmt.
+            Inserat-AI übernimmt.
           </p>
         </header>
 
@@ -646,7 +740,7 @@ if (invalidFile) {
               shadow-amber-500/20
             "
           >
-            ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã‹Å“
+            ⚡
           </div>
 
           <div
@@ -657,7 +751,7 @@ if (invalidFile) {
           >
             {running
               ? stage
-              : "ExposÃƒÂ© + Bilder hier hineinziehen"}
+              : "Exposé + Bilder hier hineinziehen"}
           </div>
 
           {!running && (
@@ -679,8 +773,8 @@ if (invalidFile) {
                   text-neutral-500
                 "
               >
-                ExposÃƒÂ© + bis zu 10 Bilder ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â·
-                PDF, JPEG, PNG oder WebP ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â·
+                Bis zu 10 PDFs + 20 Bilder -
+                PDF, JPEG, PNG oder WebP ·
                 maximal 10 MB je Bild
               </p>
             </>
@@ -706,13 +800,13 @@ if (invalidFile) {
                 "
               >
                 <span>
-                  Autopilot lÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤uft
+                  Autopilot läuft
                 </span>
 
                 <span>
                   {progress} /{" "}
                   {progress === 0
-                    ? "ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦"
+                    ? "…"
                     : progress}
                 </span>
               </div>
@@ -816,7 +910,7 @@ if (invalidFile) {
                   text-black
                 "
               >
-                Objekt ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¶ffnen
+                Objekt öffnen
               </Link>
             </div>
           )}

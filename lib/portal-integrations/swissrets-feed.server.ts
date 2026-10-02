@@ -135,15 +135,60 @@ export async function buildSwissRetsFeedForUser(
     );
 
 
-  const validationErrors =
-    validateSwissRetsListings(
-      listings
-    );
+  /*
+   * Ein unvollstaendiges Listing darf
+   * niemals den gesamten SwissRETS-Feed
+   * oder das Portal-Cockpit zerstoeren.
+   *
+   * Jedes Listing wird isoliert geprueft.
+   * Nur SwissRETS-faehige Listings
+   * gelangen ins Inventory.
+   */
+  const validListings =
+    [] as typeof listings;
+
+  const validationErrors:
+    unknown[] = [];
+
+
+  for (const listing of listings) {
+
+    try {
+
+      const errors =
+        validateSwissRetsListings(
+          [listing]
+        );
+
+
+      if (errors.length > 0) {
+
+        validationErrors.push(
+          ...errors
+        );
+
+        continue;
+      }
+
+
+      validListings.push(
+        listing
+      );
+    }
+    catch (error) {
+
+      validationErrors.push(
+        error instanceof Error
+          ? error.message
+          : String(error)
+      );
+    }
+  }
 
 
   const inventory =
     buildSwissRetsInventory(
-      listings
+      validListings
     );
 
 

@@ -170,7 +170,6 @@ export async function POST(request: Request) {
     }
 
     if (
-      requestedPlan === "pro" &&
       user.plan === "free" &&
       user.trialStartedAt === null
     ) {

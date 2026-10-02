@@ -376,7 +376,6 @@ export async function POST(
 
     if (existingUser?.emailVerified) {
       const canStartExistingProTrial =
-        requestedPlan === "pro" &&
         existingUser.plan === "free" &&
         existingUser.trialStartedAt === null;
 

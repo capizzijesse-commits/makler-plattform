@@ -889,6 +889,12 @@ ASSIGNED EDITORIAL ANGLE:
 ${variantTask.angle}
 
 IMPORTANT:
+- LANGUAGE LOCK: Write the TITLE and the complete DESCRIPTION strictly in ${prompt.targetLanguage}.
+- Never switch the title, subtitle, heading or description to English or another language.
+- The English editorial-angle instructions are internal only and must never determine the output language.
+- Use natural professional real-estate language appropriate to the selected market.
+- The final copy must read like professionally written broker copy, not generic AI-generated marketing text.
+- Avoid generic AI filler, repetitive praise, exaggerated adjectives and formulaic sales phrases.
 - Return exactly one complete listing.
 - Write approximately 220 to 320 useful words when the verified facts support that length.
 - Quality, coherence and factual accuracy are more important than maximum speed.

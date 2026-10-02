@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/session";
 import { normalizeUserPlan } from "@/lib/plans";
 import { resolveListingAddress } from "@/lib/listing-location";
+import { createStorageReadUrl } from "@/lib/storage/storage.server";
 
 export const runtime = "nodejs";
 
@@ -77,11 +78,34 @@ const listings = await prisma.listing.findMany({
   },
 });
 
+
+    const listingsWithDisplayImages =
+      await Promise.all(
+        listings.map(async (listing) => ({
+          ...listing,
+          images: await Promise.all(
+            listing.images.map(
+              async (image) => ({
+                ...image,
+                url:
+                  image.url ||
+                  (image.storageKey
+                    ? await createStorageReadUrl(
+                        image.storageKey,
+                        3600
+                      )
+                    : ""),
+              })
+            )
+          ),
+        }))
+      );
+
     const userPlan = normalizeUserPlan(user.plan);
 
     return NextResponse.json({
       success: true,
-      listings: listings.map((listing) => {
+      listings: listingsWithDisplayImages.map((listing) => {
         const hasCoreAccess =
           userPlan !== "free" ||
           listing.unlockStatus === "paid" ||

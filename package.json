@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1143.0",
+    "@aws-sdk/s3-request-presigner": "^3.1143.0",
     "@next/third-parties": "^16.2.10",
     "@prisma/client": "^6.19.3",
     "@qualipool/swissrets-json": "^3.6.0",
@@ -30,8 +32,9 @@
     "react-dom": "19.2.3",
     "resend": "^6.17.2",
     "server-only": "0.0.1",
-    "sharp": "^0.35.5",
-    "stripe": "^22.3.2"
+    "sharp": "0.34.5",
+    "stripe": "^22.3.2",
+    "unzipper": "^0.12.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

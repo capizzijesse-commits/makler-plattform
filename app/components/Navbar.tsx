@@ -106,14 +106,16 @@ export default function Navbar() {
   href: "/marketing-hub",
   accent: "gold",
 },
-    {
-      label: t("items.valuations.label"),
-      description: t("items.valuations.description"),
-      icon: "\u{1F4CA}",
-      href: "/bewertungen",
-      accent: "gold",
-      chOnly: true,
-    },
+    /*
+{
+  label: t("items.valuations.label"),
+  description: t("items.valuations.description"),
+  icon: "\u{1F4CA}",
+  href: "/bewertungen",
+  accent: "gold",
+  chOnly: true,
+},
+*/
     {
       label: t("items.about.label"),
       description: t("items.about.description"),

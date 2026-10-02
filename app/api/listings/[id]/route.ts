@@ -2,13 +2,14 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
-import { normalizeUserPlan } from "@/lib/plans";
+import { getEffectiveUserPlan, normalizeUserPlan } from "@/lib/plans";
 import { isDevelopmentE2EListing } from "@/lib/development-e2e-access";
 
 /*
  * DEVELOPMENT_E2E_ACCESS_V1
  */
 import { getAuthenticatedUser } from "@/lib/session";
+import { createStorageReadUrl } from "@/lib/storage/storage.server";
 
 export const runtime = "nodejs";
 
@@ -26,7 +27,7 @@ function optionalNumber(value: unknown): number | null {
 
   const normalized =
     typeof value === "string"
-      ? value.replace(/['’\s]/g, "").replace(",", ".")
+      ? value.replace(/['â€™\s]/g, "").replace(",", ".")
       : value;
 
   const number = Number(normalized);
@@ -138,7 +139,32 @@ export async function GET(
       );
     }
 
-    const userPlan = normalizeUserPlan(user.plan);
+
+    const listingWithDisplayImages = {
+      ...listing,
+      images: await Promise.all(
+        listing.images.map(
+          async (image) => ({
+            ...image,
+            url:
+              image.url ||
+              (image.storageKey
+                ? await createStorageReadUrl(
+                    image.storageKey,
+                    3600
+                  )
+                : ""),
+          })
+        )
+      ),
+    };
+
+    const userPlan = getEffectiveUserPlan({
+      plan: user.plan,
+      trialPlan: user.trialPlan,
+      trialStartedAt: user.trialStartedAt,
+      trialEndsAt: user.trialEndsAt,
+    });
 
     const hasCoreAccess =
       isDevelopmentE2EListing(
@@ -151,12 +177,12 @@ export async function GET(
     return NextResponse.json({
       success: true,
       listing: {
-        ...listing,
+        ...listingWithDisplayImages,
         viewerPlan: userPlan,
         generatedVariants: hasCoreAccess
           ? parseJsonValue(listing.generatedVariants)
           : null,
-        // Social Media ist für alle angemeldeten Nutzer kostenlos.
+        // Social Media ist fÃ¼r alle angemeldeten Nutzer kostenlos.
         socialVariants: parseJsonValue(listing.socialVariants),
         imageAnalysis: hasCoreAccess
           ? listing.imageAnalysis
@@ -232,7 +258,12 @@ export async function PATCH(
 
     const body = await request.json();
 
-    const userPlan = normalizeUserPlan(user.plan);
+    const userPlan = getEffectiveUserPlan({
+      plan: user.plan,
+      trialPlan: user.trialPlan,
+      trialStartedAt: user.trialStartedAt,
+      trialEndsAt: user.trialEndsAt,
+    });
 
     const hasCoreAccess =
       isDevelopmentE2EListing(
@@ -253,7 +284,7 @@ export async function PATCH(
         {
           success: false,
           error:
-            "Diese Inhalte sind für das Objekt erst nach der Freischaltung verfügbar.",
+            "Diese Inhalte sind fÃ¼r das Objekt erst nach der Freischaltung verfÃ¼gbar.",
           code: "LISTING_PAYMENT_REQUIRED",
         },
         {
@@ -390,7 +421,7 @@ export async function POST(
       return NextResponse.json(
         {
           success: false,
-          error: "Ungültiger Archivstatus.",
+          error: "UngÃ¼ltiger Archivstatus.",
         },
         { status: 400 }
       );
@@ -456,7 +487,7 @@ export async function POST(
     return NextResponse.json(
       {
         success: false,
-        error: "Der Objektstatus konnte nicht geändert werden.",
+        error: "Der Objektstatus konnte nicht geÃ¤ndert werden.",
       },
       { status: 500 }
     );
@@ -507,15 +538,15 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
-      message: "Objekt wurde dauerhaft gelöscht.",
+      message: "Objekt wurde dauerhaft gelÃ¶scht.",
     });
   } catch (error) {
-    console.error("Fehler beim Löschen des Objekts:", error);
+    console.error("Fehler beim LÃ¶schen des Objekts:", error);
 
     return NextResponse.json(
       {
         success: false,
-        error: "Das Objekt konnte nicht gelöscht werden.",
+        error: "Das Objekt konnte nicht gelÃ¶scht werden.",
       },
       { status: 500 }
     );
