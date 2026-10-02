@@ -581,47 +581,6 @@ export default function PricingSection({
           ))}
         </div>
 
-        {isGermany ? (
-          <div className="demoTeaser">
-            <div>
-              <span className="demoTeaserLabel">
-                KOSTENLOS KENNENLERNEN
-              </span>
-
-              <strong>
-                Noch unsicher? Teste Inserat-AI kostenlos.
-              </strong>
-
-              <p>
-                Keine Kreditkarte. Eine kostenlose
-                Textgenerierung mit drei Varianten.
-              </p>
-            </div>
-
-            <a
-              href="/register"
-              className="demoTeaserButton"
-              onClick={() => {
-                trackAnalyticsEvent(
-                  "register_cta_click",
-                  {
-                    cta_page:
-                      window.location.pathname,
-                    requested_plan: "demo",
-                    cta_text: "Kostenlos testen",
-                    transport_type: "beacon",
-                  }
-                );
-              }}
-            >
-              Kostenlos testen
-              <span aria-hidden="true">
-                {"\u2192"}
-              </span>
-            </a>
-          </div>
-        ) : null}
-
         <div className="agencyTeaser">
           {isGermany ? (
             <>

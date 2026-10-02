@@ -197,32 +197,7 @@ export default function LandingAssistant({
               ))}
             </div>
 
-            <a
-              href={
-                isGermany
-                  ? "/register?plan=founder"
-                  : "/register"
-              }
-              onClick={() =>
-                trackAnalyticsEvent("register_cta_click", {
-                  cta_page: window.location.pathname,
-                  cta_text: isGermany
-                    ? "Founder kostenlos testen"
-                    : "Kostenlos starten",
-                  requested_plan: isGermany
-                    ? "founder"
-                    : "none",
-                })
-              }
-              className="mt-8 inline-flex min-h-12 items-center justify-center rounded-xl bg-gradient-to-r from-amber-300 to-amber-500 px-6 font-black text-slate-950 shadow-lg shadow-amber-500/20 transition hover:-translate-y-0.5"
-            >
-              {isGermany
-                ? "Founder kostenlos testen"
-                : "Kostenlos starten"}
-              <span className="ml-2" aria-hidden="true">
-                →
-              </span>
-            </a>
+
           </div>
         </div>
 

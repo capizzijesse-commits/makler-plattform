@@ -71,7 +71,7 @@ export default function SocialProofSection({
         {
           number: "01",
           title: "Ohne Kreditkarte ausprobieren",
-          text: "Starte kostenlos und teste Inserat-AI direkt mit einer eigenen Immobilie – bevor du dich für einen Tarif entscheidest.",
+          text: "Teste Inserat-AI direkt mit einer eigenen Immobilie – bevor du dich für einen Tarif entscheidest.",
         },
         {
           number: "02",
@@ -129,7 +129,7 @@ export default function SocialProofSection({
 
             <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
               {isGermany
-                ? "Teste Inserat-AI zuerst kostenlos mit einer eigenen Immobilie und entscheide danach, welcher Einstieg zu deinem Alltag passt."
+                ? "Teste Inserat-AI mit einer eigenen Immobilie und erlebe den Ablauf direkt im eigenen Arbeitsalltag."
                 : "Inserat-AI unterstützt Immobilienprofis dabei, hochwertige Inhalte schneller zu erstellen und den Vermarktungsprozess übersichtlich zu organisieren."}
             </p>
           </div>
@@ -176,21 +176,21 @@ export default function SocialProofSection({
                         window.location.pathname,
                       requested_plan: "demo",
                       cta_text:
-                        "Kostenlos ausprobieren",
+                        "30 Tage kostenlos testen",
                       transport_type: "beacon",
                     }
                   );
                 }}
                 className="inline-flex min-h-12 items-center justify-center rounded-xl bg-gradient-to-r from-amber-300 to-amber-500 px-6 font-black text-slate-950 shadow-lg shadow-amber-500/20 transition hover:-translate-y-0.5"
               >
-                Kostenlos ausprobieren
+                30 Tage kostenlos testen
                 <span className="ml-2" aria-hidden="true">
                   {"\u2192"}
                 </span>
               </a>
 
               <span className="text-sm font-bold text-slate-400">
-                Keine Kreditkarte für den kostenlosen Einstieg.
+                Keine Kreditkarte erforderlich.
               </span>
             </div>
           )}

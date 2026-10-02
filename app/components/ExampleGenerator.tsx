@@ -291,7 +291,7 @@ export default function ExampleGenerator({
 
                     <div>
                       <p className="font-bold text-white">
-                        Kostenlos starten
+                        Inserat erstellen
                       </p>
                       <p className="mt-1 text-sm leading-5 text-slate-400">
                         Danach echte AI-Texte und 3 Varianten erstellen.
