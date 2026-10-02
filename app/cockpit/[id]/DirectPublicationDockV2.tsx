@@ -238,7 +238,6 @@ export default function DirectPublicationDockV2({
 
       const core =
         Boolean(listing.location?.trim()) &&
-        Boolean(listing.postalCode?.trim()) &&
         Boolean(listing.propertyType?.trim()) &&
         typeof listing.livingArea === "number" &&
         listing.livingArea > 0 &&
