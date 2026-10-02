@@ -1914,6 +1914,7 @@ console.info(
       Record<string, string> = {
         "house": "Einfamilienhaus",
         "single-family house": "Einfamilienhaus",
+        "single-family-house": "Einfamilienhaus",
         "singlefamilyhouse": "Einfamilienhaus",
         "single family house": "Einfamilienhaus",
         "detached house": "Einfamilienhaus",

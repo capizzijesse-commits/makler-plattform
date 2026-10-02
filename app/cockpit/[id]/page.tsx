@@ -796,7 +796,6 @@ function showNextImage() {
   const hasCoreWorkflowData =
     Boolean(
       listing.location?.trim() &&
-      listing.postalCode?.trim() &&
       listing.propertyType?.trim() &&
       typeof listing.livingArea ===
         "number" &&
@@ -889,7 +888,18 @@ function showNextImage() {
     {listing.rooms !== null
       ? `${formatNumber(listing.rooms)}-Zimmer-`
       : ""}
-    {listing.propertyType} in {listing.location}
+    {({
+      "single-family-house": "Einfamilienhaus",
+      "single-family house": "Einfamilienhaus",
+      "singlefamilyhouse": "Einfamilienhaus",
+      "house": "Einfamilienhaus",
+      "apartment": "Wohnung",
+      "condominium": "Eigentumswohnung",
+      "row-house": "Reihenhaus",
+      "semi-detached": "Doppeleinfamilienhaus",
+      "multi-family": "Mehrfamilienhaus",
+    } as Record<string, string>)[listing.propertyType.trim().toLowerCase()] ??
+      listing.propertyType} in {listing.location}
   </h1>
 
   <div className="listingIntroMeta">
