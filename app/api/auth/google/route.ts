@@ -254,6 +254,49 @@ export async function POST(
      * Google-ID und E-Mail dürfen nicht
      * unerwartet auseinanderlaufen.
      */
+    /*
+     * GOOGLE_TRIAL_EXISTING_ACCOUNT_V1
+     * Same one-time 30-day Pro trial as password login.
+     */
+    if (
+      user.plan === "free" &&
+      user.trialStartedAt === null
+    ) {
+      const now = new Date();
+
+      const trialEndsAt = new Date(
+        now.getTime() +
+          30 * 24 * 60 * 60 * 1000
+      );
+
+      await prisma.user.updateMany({
+        where: {
+          id: user.id,
+          plan: "free",
+          trialStartedAt: null,
+        },
+        data: {
+          trialPlan: "pro",
+          trialStartedAt: now,
+          trialEndsAt,
+        },
+      });
+
+      const refreshedUser =
+        await prisma.user.findUnique({
+          where: {
+            id: user.id,
+          },
+        });
+
+      if (!refreshedUser) {
+        throw new Error(
+          "Google user disappeared after trial activation."
+        );
+      }
+
+      user = refreshedUser;
+    }
     if (
       user.googleSub !== googleSub
     ) {
