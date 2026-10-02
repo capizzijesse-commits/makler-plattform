@@ -630,18 +630,17 @@ export default function PricingSection({
                   FÜR WACHSENDE TEAMS
                 </span>
 
-                <strong>Pro & Agency</strong>
+                <strong>Agency & Teams</strong>
 
                 <p>
-                  Mehr Automatisierung und
-                  Premium-Funktionen für größere
-                  Immobilien-Teams.
+                  Für Teams mit bis zu 5 Benutzern,
+                  Team-Funktionen und Automatisierung.
                 </p>
               </div>
 
               <div className="agencyStatus">
-                <span>ab 79,90 € / Monat</span>
-                <strong>In Vorbereitung</strong>
+                <span>149,90 € / Monat</span>
+                <strong>Bis zu 5 Benutzer</strong>
               </div>
             </>
           ) : (
