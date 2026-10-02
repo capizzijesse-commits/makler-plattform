@@ -3916,6 +3916,7 @@ return (
 
 
 
+  <div className="rightColumn">
   <section className="rightCard">
 
   <div className="outputShell">
@@ -4004,12 +4005,108 @@ return (
 
 
 
-  </div>
+  
+
+
+</div>
+
+
+
 </section>
+
+    <button
+      type="button"
+      onClick={saveListingAndOpenCockpit}
+      disabled={savingListing}
+      className="outputPublishButton"
+    >
+      <span className="outputPublishButtonLabel">
+        AUTOMATISCH
+      </span>
+
+      <span className="outputPublishButtonText">
+        {savingListing
+          ? "Objekt wird vorbereitet ..."
+          : "Automatisch ver\u00f6ffentlichen \u2192"}
+      </span>
+    </button>
+  </div>
+
         </div>
       </div>
 
       <style jsx>{`
+
+      .rightColumn {
+  min-width: 0;
+  width: 100%;
+  align-self: start;
+}
+
+.rightColumn > .rightCard {
+  width: 100%;
+}
+
+      .outputPublishButton {
+  width: 100%;
+  margin-top: 12px;
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid rgba(251, 191, 36, 0.72);
+  border-radius: 16px;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #111827;
+  box-shadow: 0 12px 28px rgba(245, 158, 11, 0.22);
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.outputPublishButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 34px rgba(245, 158, 11, 0.3);
+}
+
+.outputPublishButton:disabled {
+  cursor: not-allowed;
+  opacity: 1;
+  background: linear-gradient(135deg, #d9b75f 0%, #c99a32 100%);
+  color: rgba(15, 23, 42, 0.55);
+  box-shadow: none;
+}
+
+.outputPublishButtonLabel {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  opacity: 0.72;
+}
+
+.outputPublishButtonText {
+  font-size: 15px;
+  font-weight: 900;
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .outputPublishButton {
+    width: calc(100% - 24px);
+    margin: 16px 12px 0;
+    min-height: 56px;
+    padding: 11px 14px;
+    border-radius: 14px;
+  }
+
+  .outputPublishButtonText {
+    font-size: 14px;
+  }
+}
 
       .topStats {
   display: grid;
@@ -4493,6 +4590,22 @@ return (
         }
 
         @media (max-width: 900px) {
+
+          /* MOBILE FULL INPUT FLOW */
+          .leftCard {
+            height: auto !important;
+            min-height: 0 !important;
+            overflow: visible !important;
+          }
+
+          .leftCardScroll {
+            flex: none !important;
+            height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+            padding-right: 0 !important;
+          }
+
           .grid {
             grid-template-columns: 1fr;
           }
@@ -5176,6 +5289,83 @@ return (
           display:
             none !important;
         }
+
+        /* =============================================
+           FINAL MOBILE DASHBOARD FLOW
+           Ausgabe kommt nach der kompletten Eingabe.
+           ============================================= */
+
+        @media (max-width: 900px) {
+
+          .dashboardPage .grid {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) !important;
+            grid-auto-flow: row !important;
+            align-items: start !important;
+          }
+
+          .dashboardPage .leftCard {
+            grid-column: 1 !important;
+            grid-row: 1 !important;
+
+            width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+
+            overflow: visible !important;
+          }
+
+          .dashboardPage .leftCardScroll {
+            flex: none !important;
+
+            width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+
+            overflow: visible !important;
+            padding-right: 0 !important;
+          }
+
+          .dashboardPage .rightColumn {
+            grid-column: 1 !important;
+            grid-row: 2 !important;
+
+            width: 100% !important;
+            min-width: 0 !important;
+
+            position: static !important;
+            transform: none !important;
+          }
+
+          .dashboardPage .rightCard {
+            width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+
+            position: static !important;
+          }
+
+          .dashboardPage .outputShell {
+            height: auto !important;
+            min-height: 0 !important;
+          }
+
+          .dashboardPage .outputCard {
+            height: auto !important;
+            min-height: 220px !important;
+            max-height: none !important;
+          }
+
+          .dashboardPage .outputPublishButton {
+            position: static !important;
+            width: 100% !important;
+            margin: 12px 0 0 !important;
+          }
+        }
+
 `}</style>
     </main>
 </WorkspaceFrame>
