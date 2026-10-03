@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import AccountMenu from "./AccountMenu";
 import MarketBadge from "./MarketBadge";
 import { useLocale } from "next-intl";
@@ -234,6 +234,9 @@ export default function WorkspaceFrame({
   const locale =
     useLocale();
 
+  const [mobileMenuOpen, setMobileMenuOpen] =
+    useState(false);
+
   const isGerman =
     locale === "de";
 
@@ -342,7 +345,22 @@ export default function WorkspaceFrame({
 
   return (
     <div className="iaWorkspace">
-      <aside className="iaSidebar">
+      <aside
+        className={
+          mobileMenuOpen
+            ? "iaSidebar mobileOpen"
+            : "iaSidebar"
+        }
+      >
+        <button
+          type="button"
+          className="iaMobileMenuClose"
+          aria-label="Men? schlie?en"
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          ?
+        </button>
+
         <Link
           href="/"
           className="iaBrand"
@@ -381,6 +399,7 @@ export default function WorkspaceFrame({
                   item.key === "workspace"
                     ? (event) => {
                         event.preventDefault();
+                        setMobileMenuOpen(false);
 
                         window.dispatchEvent(
                           new Event(
@@ -388,7 +407,7 @@ export default function WorkspaceFrame({
                           )
                         );
                       }
-                    : undefined
+                    : () => setMobileMenuOpen(false)
                 }
                 className={
                   active === item.key
@@ -488,8 +507,29 @@ export default function WorkspaceFrame({
         </div>
       </aside>
 
+      {mobileMenuOpen ? (
+        <button
+          type="button"
+          className="iaMobileMenuBackdrop"
+          aria-label="Men? schlie?en"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      ) : null}
+
       <div className="iaWorkspaceMain">
         <header className="iaWorkspaceTopbar" data-workspace-section={active}>
+          <button
+            type="button"
+            className="iaMobileMenuButton"
+            aria-label="Men? ?ffnen"
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen(true)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+
           <div className="iaWorkspaceTitle">
             <small>
               INSERAT-AI
@@ -1503,6 +1543,111 @@ export default function WorkspaceFrame({
 
           box-shadow:
             none !important;
+        }
+
+
+        @media (max-width: 900px) {
+          .iaSidebar {
+            position: fixed !important;
+            z-index: 120 !important;
+            inset: 0 auto 0 0 !important;
+            width: min(86vw, 320px) !important;
+            min-height: 100dvh !important;
+            transform: translateX(-105%) !important;
+            transition: transform 220ms ease !important;
+            box-shadow:
+              18px 0 44px rgba(2,6,23,.32) !important;
+          }
+
+          .iaSidebar.mobileOpen {
+            transform: translateX(0) !important;
+          }
+
+          .iaWorkspaceMain {
+            margin-left: 0 !important;
+          }
+
+          .iaNav {
+            display: flex !important;
+            grid-template-columns: none !important;
+            flex-direction: column !important;
+          }
+
+          .iaSidebarBottom {
+            display: flex !important;
+            margin-top: auto !important;
+          }
+
+          .iaMobileMenuButton {
+            display: flex !important;
+            width: 42px;
+            height: 42px;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 42px;
+            flex-direction: column;
+            gap: 4px;
+            padding: 0;
+            border: 1px solid rgba(148,163,184,.18);
+            border-radius: 11px;
+            background: rgba(255,255,255,.07);
+            cursor: pointer;
+          }
+
+          .iaMobileMenuButton span {
+            display: block;
+            width: 18px;
+            height: 2px;
+            border-radius: 999px;
+            background: #f8fafc;
+          }
+
+          .iaMobileMenuClose {
+            position: absolute;
+            z-index: 2;
+            top: 14px;
+            right: 14px;
+            display: grid !important;
+            width: 38px;
+            height: 38px;
+            place-items: center;
+            padding: 0;
+            border: 1px solid rgba(148,163,184,.16);
+            border-radius: 50%;
+            background: rgba(255,255,255,.06);
+            color: white;
+            font-size: 25px;
+            cursor: pointer;
+          }
+
+          .iaMobileMenuBackdrop {
+            position: fixed;
+            z-index: 110;
+            inset: 0;
+            display: block !important;
+            width: 100%;
+            height: 100dvh;
+            padding: 0;
+            border: 0;
+            background: rgba(2,6,23,.58);
+            backdrop-filter: blur(2px);
+          }
+
+          .iaWorkspaceTopbar {
+            position: sticky !important;
+            min-height: 64px !important;
+            gap: 10px !important;
+            padding: 9px 12px !important;
+          }
+
+          .iaWorkspaceTitle {
+            min-width: 0;
+            flex: 1;
+          }
+
+          .iaWorkspaceTopActions {
+            flex: 0 0 auto;
+          }
         }
 
       `}</style>

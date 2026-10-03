@@ -202,6 +202,7 @@ export default function Navbar() {
 
  const isLoggedInArea =
   pathname?.startsWith("/dashboard") ||
+  pathname?.startsWith("/automation") ||
   pathname?.startsWith("/cockpit") ||
   pathname?.startsWith("/marketing-hub") ||
   pathname?.startsWith("/finanzierung") ||
@@ -557,8 +558,17 @@ export default function Navbar() {
 
   return (
     <>
-      <header
-        className={`siteNavbar appCentralNavbar ${
+            {/* MOBILE_AUTOMATION_NAVBAR_V1 */}
+      <style jsx global>{`
+        @media (max-width: 900px) {
+          .appAutomationNavbar {
+            display: none !important;
+          }
+        }
+      `}</style>
+
+<header
+        className={`siteNavbar appCentralNavbar ${pathname?.startsWith("/automation") ? "appAutomationNavbar" : ""} ${
           isLoggedInArea
             ? "appLoggedInNavbar"
             : "appPublicNavbar"

@@ -1,7 +1,7 @@
 "use client";
 
 import { upload } from "@vercel/blob/client";
-import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 
 import WorkspaceFrame from "../components/WorkspaceFrame";
@@ -110,6 +110,10 @@ export default function AutomationFlowV2() {
   const [statusText, setStatusText] = useState("");
   const [error, setError] = useState("");
   const [publishing, setPublishing] = useState(false);
+  // AUTOMATION_ABORT_V1
+  const automationAbortRef = useRef<AbortController | null>(null);
+  // MOBILE_AUTOMATION_FACTS_TOGGLE_V1
+  const [showMobileFacts, setShowMobileFacts] = useState(false);
 
   useEffect(() => {
     const detected = getInseratAiMarketFromHostname(window.location.hostname);
@@ -117,6 +121,13 @@ export default function AutomationFlowV2() {
     const next = detected || (saved === "DE" ? "DE" : "CH");
     setMarket(next);
     setData((current) => ({ ...current, countryCode: next }));
+  }, []);
+
+  // AUTOMATION_ABORT_CLEANUP_FIX_V1
+  useEffect(() => {
+    return () => {
+      automationAbortRef.current?.abort();
+    };
   }, []);
 
   useEffect(() => {
@@ -193,7 +204,7 @@ export default function AutomationFlowV2() {
     }
   }
 
-  async function extractExpose(file: File | null): Promise<Extracted> {
+  async function extractExpose(file: File | null, signal: AbortSignal): Promise<Extracted> {
     if (!file) {
       return { ...data };
     }
@@ -204,6 +215,15 @@ export default function AutomationFlowV2() {
 
     setStatusText("Exposé wird gelesen …");
 
+    // AUTOMATION_EXPOSE_CLIENT_PROFILE_V1
+    const exposeClientStartedAt = performance.now();
+
+    console.log("[AUTOMATION CLIENT] expose-upload-start", {
+      name: file.name,
+      bytes: file.size,
+      type: file.type,
+    });
+
     const blob = await upload(
       `automation-exposes/${crypto.randomUUID()}-${safeFileName(file.name)}`,
       file,
@@ -212,12 +232,23 @@ export default function AutomationFlowV2() {
         handleUploadUrl: "/api/automation/expose-upload",
         multipart: file.size > 8 * 1024 * 1024,
         contentType: file.type || "application/pdf",
+        abortSignal: signal,
       }
     );
+
+    console.log("[AUTOMATION CLIENT] expose-upload-done", {
+      durationMs: Math.round(
+        performance.now() - exposeClientStartedAt
+      ),
+      url: blob.url,
+    });
+
+    console.log("[AUTOMATION CLIENT] expose-extract-fetch-start");
 
     const response = await fetch("/api/automation/extract-expose", {
       method: "POST",
       credentials: "include",
+      signal,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         fileUrl: blob.url,
@@ -252,20 +283,40 @@ export default function AutomationFlowV2() {
     return extracted;
   }
 
-  async function analyzeImages(files: File[]): Promise<ImageAnalysis[]> {
+  async function analyzeImages(files: File[], signal: AbortSignal): Promise<ImageAnalysis[]> {
     if (!files.length) return [];
 
     setStatusText(`${files.length} Bilder werden gleichzeitig analysiert …`);
 
     return Promise.all(
       files.map(async (original) => {
+        // AUTOMATION_CLIENT_STEP_PROFILE_V1
+        const imageClientStartedAt = performance.now();
+
+        console.log("[AUTOMATION CLIENT] image-prepare-start", {
+          name: original.name,
+          bytes: original.size,
+          type: original.type,
+        });
+
         const file = await prepareImage(original);
+
+        console.log("[AUTOMATION CLIENT] image-prepare-done", {
+          durationMs: Math.round(
+            performance.now() - imageClientStartedAt
+          ),
+          bytes: file.size,
+          type: file.type,
+        });
         const form = new FormData();
         form.append("image", file, file.name);
+
+        console.log("[AUTOMATION CLIENT] image-fetch-start");
 
         const response = await fetch("/api/analyze-image", {
           method: "POST",
           credentials: "include",
+          signal,
           body: form,
         });
 
@@ -284,7 +335,8 @@ export default function AutomationFlowV2() {
 
   async function generateListing(
     facts: Extracted,
-    analyses: ImageAnalysis[]
+    analyses: ImageAnalysis[],
+    signal: AbortSignal
   ): Promise<Variant[]> {
     if (!facts.location.trim() || !facts.propertyType.trim()) {
       return [];
@@ -295,6 +347,7 @@ export default function AutomationFlowV2() {
     const response = await fetch("/api/generate", {
       method: "POST",
       credentials: "include",
+      signal,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         locale: "de",
@@ -335,6 +388,12 @@ export default function AutomationFlowV2() {
   async function processFiles(nextExpose: File | null, nextImages: File[]) {
     if (!nextExpose && nextImages.length === 0) return;
 
+    // AUTOMATION_ABORT_SIGNAL_V1
+    automationAbortRef.current?.abort();
+
+    const controller = new AbortController();
+    automationAbortRef.current = controller;
+
     setError("");
     setVariants([]);
     setActiveVariant(0);
@@ -342,13 +401,73 @@ export default function AutomationFlowV2() {
     setStatusText("Inserat-AI übernimmt. Du musst nichts tun …");
 
     try {
+      // AUTOMATION_PARTIAL_RESULTS_V1
+      // AUTOMATION_BRANCH_PROFILE_V1
+      const automationBranchStartedAt = performance.now();
+
+      console.log("[AUTOMATION SPEED] branches-start", {
+        expose: Boolean(nextExpose),
+        images: nextImages.length,
+      });
+
+      const factsPromise = extractExpose(
+        nextExpose,
+        controller.signal
+      ).then((facts) => {
+        if (
+          !controller.signal.aborted &&
+          automationAbortRef.current === controller
+        ) {
+          setData(facts);
+        }
+
+        console.log("[AUTOMATION SPEED] expose-done", {
+          durationMs: Math.round(
+            performance.now() - automationBranchStartedAt
+          ),
+        });
+
+        return facts;
+      });
+
+      const analysesPromise = analyzeImages(
+        nextImages,
+        controller.signal
+      ).then((analyses) => {
+        if (
+          !controller.signal.aborted &&
+          automationAbortRef.current === controller
+        ) {
+          setImageAnalyses(analyses);
+        }
+
+        console.log("[AUTOMATION SPEED] images-done", {
+          durationMs: Math.round(
+            performance.now() - automationBranchStartedAt
+          ),
+          images: analyses.length,
+        });
+
+        return analyses;
+      });
+
+      console.log("[AUTOMATION SPEED] waiting-for-both", {
+        durationMs: Math.round(
+          performance.now() - automationBranchStartedAt
+        ),
+      });
+
       const [facts, analyses] = await Promise.all([
-        extractExpose(nextExpose),
-        analyzeImages(nextImages),
+        factsPromise,
+        analysesPromise,
       ]);
 
-      setData(facts);
-      setImageAnalyses(analyses);
+      if (
+        controller.signal.aborted ||
+        automationAbortRef.current !== controller
+      ) {
+        return;
+      }
 
       if (!facts.location.trim() || !facts.propertyType.trim()) {
         setStage("edit");
@@ -356,11 +475,15 @@ export default function AutomationFlowV2() {
         return;
       }
 
-      const nextVariants = await generateListing(facts, analyses);
+      const nextVariants = await generateListing(facts, analyses, controller.signal);
       setVariants(nextVariants);
       setStage("publish");
       setStatusText("Bereit zur Veröffentlichung.");
     } catch (runError) {
+      if (controller.signal.aborted) {
+        return;
+      }
+
       console.error("AUTOMATION V2 ERROR:", runError);
       setStage("edit");
       setError(
@@ -369,6 +492,32 @@ export default function AutomationFlowV2() {
           : "Die Automation konnte gerade nicht abgeschlossen werden."
       );
     }
+  }
+
+  // MOBILE_AUTOMATION_STOP_V1
+  function stopAutomation() {
+    automationAbortRef.current?.abort();
+    automationAbortRef.current = null;
+
+    setError("");
+    setStage("receive");
+    setStatusText("Verarbeitung gestoppt. Deine Dateien bleiben ausgew?hlt.");
+  }
+
+  function improveManually() {
+    automationAbortRef.current?.abort();
+    automationAbortRef.current = null;
+
+    setError("");
+    setStage("edit");
+    setStatusText("Du kannst die erkannten Angaben jetzt selbst verbessern.");
+  }
+
+  // AUTOMATION_RESTART_V1
+  async function restartAutomation() {
+    if (!exposeFile && images.length === 0) return;
+
+    await processFiles(exposeFile, images);
   }
 
   async function handleIncomingFiles(event: ChangeEvent<HTMLInputElement>) {
@@ -394,11 +543,25 @@ export default function AutomationFlowV2() {
     setStage("working");
 
     try {
-      const nextVariants = await generateListing(data, imageAnalyses);
+      automationAbortRef.current?.abort();
+
+      const controller = new AbortController();
+      automationAbortRef.current = controller;
+
+      const nextVariants = await generateListing(
+        data,
+        imageAnalyses,
+        controller.signal
+      );
       setVariants(nextVariants);
       setStage("publish");
       setStatusText("Bereit zur Veröffentlichung.");
     } catch (generationError) {
+      // MANUAL_AUTOMATION_ABORT_V1
+      if (automationAbortRef.current?.signal.aborted) {
+        return;
+      }
+
       setStage("edit");
       setError(
         generationError instanceof Error
@@ -573,13 +736,66 @@ export default function AutomationFlowV2() {
                   </div>
                 </label>
 
+                {stage === "working" && (
+                  <div className="workingActions">
+                    <button
+                      type="button"
+                      className="workingStop"
+                      onClick={stopAutomation}
+                    >
+                      Verarbeitung stoppen
+                    </button>
+
+                    <button
+                      type="button"
+                      className="workingImprove"
+                      onClick={improveManually}
+                    >
+                      Angaben selbst verbessern
+                    </button>
+                  </div>
+                )}
+
                 {(exposeFile || images.length > 0) && (
                   <div className="received">
                     <span>{exposeFile ? `✓ ${exposeFile.name}` : "Kein Exposé"}</span>
                     <span>✓ {images.length} Bilder</span>
                   </div>
                 )}
+
+                {stage === "receive" &&
+                  statusText.startsWith("Verarbeitung gestoppt") &&
+                  (exposeFile || images.length > 0) && (
+                    <button
+                      type="button"
+                      className="restartAutomation"
+                      onClick={restartAutomation}
+                    >
+                      Mit diesen Dateien erneut starten
+                    </button>
+                  )}
               </>
+            )}
+
+            {stage === "receive" && (
+              <div className="mobileAutomationNext">
+                {/* MOBILE_AUTOMATION_NEXT_V1 */}
+                <div className="mobileAutomationNextTitle">
+                  <span className="mobileAutomationSpark" />
+                  <div>
+                    <strong>Danach &uuml;bernimmt Inserat-AI</strong>
+                    <small>Alles l&auml;uft automatisch im Hintergrund.</small>
+                  </div>
+                </div>
+
+                <div className="mobileAutomationTasks">
+                  <span>Expos&eacute; lesen</span>
+                  <span>Objektdaten erkennen</span>
+                  <span>Bilder analysieren &amp; sortieren</span>
+                  <span>Inserat erstellen</span>
+                  <span>F&uuml;r Portale vorbereiten</span>
+                </div>
+              </div>
             )}
 
             {imagePreviews.length > 0 && (
@@ -607,7 +823,33 @@ export default function AutomationFlowV2() {
                   <span className="badge">{requiredMissing.length ? `${requiredMissing.length} offen` : "✓ vollständig"}</span>
                 </div>
 
-                <div className="facts">
+                {stage === "publish" && (
+                  <div className="mobileFactsSummary">
+                    <div>
+                      <strong>{data.propertyType || "Immobilie"}</strong>
+                      <span>
+                        {[data.rooms ? `${data.rooms} Zimmer` : "", data.livingArea, data.location]
+                          .filter(Boolean)
+                          .join(" ? ")}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowMobileFacts((current) => !current)}
+                    >
+                      {showMobileFacts ? "Angaben schliessen" : "Angaben bearbeiten"}
+                    </button>
+                  </div>
+                )}
+
+                <div
+                  className={`facts ${
+                    stage === "publish" && !showMobileFacts
+                      ? "mobileFactsCollapsed"
+                      : ""
+                  }`}
+                >
                   <Field label="Objektname" value={data.projectName} onChange={(value) => setData({ ...data, projectName: value })} />
                   <Field label="Objektart" value={data.propertyType} required onChange={(value) => setData({ ...data, propertyType: value })} />
                   <Field label="Strasse" value={data.street} onChange={(value) => setData({ ...data, street: value })} />
@@ -686,6 +928,51 @@ export default function AutomationFlowV2() {
           .drop h2 { margin:0; font-size:24px; }
           .drop p { margin:8px 0 0; color:#aebbd0; line-height:1.55; }
           .received { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+          .mobileAutomationNext { display:none; }
+
+        .restartAutomation {
+          width: 100%;
+          min-height: 44px;
+          margin-top: 10px;
+          padding: 10px 12px;
+          border: 1px solid rgba(251,191,36,.32);
+          border-radius: 11px;
+          background: rgba(245,158,11,.1);
+          color: #fbbf24;
+          font: inherit;
+          font-size: 11px;
+          font-weight: 900;
+          cursor: pointer;
+        }
+
+        .workingActions {
+          display: flex;
+          gap: 8px;
+          margin-top: 10px;
+        }
+
+        .workingActions button {
+          min-height: 42px;
+          padding: 9px 12px;
+          border-radius: 11px;
+          font: inherit;
+          font-size: 11px;
+          font-weight: 850;
+          cursor: pointer;
+        }
+
+        .workingStop {
+          border: 1px solid rgba(248,113,113,.28);
+          background: rgba(239,68,68,.08);
+          color: #fca5a5;
+        }
+
+        .workingImprove {
+          border: 1px solid rgba(251,191,36,.28);
+          background: rgba(245,158,11,.08);
+          color: #fbbf24;
+        }
+          .mobileFactsSummary { display:none; }
           .received span,.badge { padding:7px 10px; border-radius:999px; border:1px solid rgba(52,211,153,.24); background:rgba(16,185,129,.08); color:#86efac; font-size:11px; font-weight:900; }
           .previews { display:flex; gap:8px; margin-top:14px; overflow-x:auto; }
           .previews img { width:92px; height:68px; flex:0 0 auto; object-fit:cover; border-radius:12px; border:1px solid rgba(255,255,255,.12); }
@@ -708,7 +995,284 @@ export default function AutomationFlowV2() {
           .publish { font-size:17px; box-shadow:0 16px 38px rgba(249,115,22,.25); }
           .publish span { margin-left:10px; font-size:22px; }
           .publishHint { margin:10px 0 0; text-align:center; color:#94a3b8; font-size:12px; }
-          @media (max-width:760px) { .page{padding:10px}.hero,.card{padding:18px;border-radius:18px}.steps,.facts{grid-template-columns:1fr}.drop{min-height:180px;padding:20px;align-items:flex-start}.reviewTop,.resultTop{flex-direction:column} }
+          @media (max-width:760px) {
+            .page {
+              padding: 8px;
+            }
+
+            .hero,
+            .card {
+              border-radius: 16px;
+            }
+
+            .hero {
+              padding: 16px;
+            }
+
+            .card {
+              margin-top: 10px;
+              padding: 14px;
+            }
+
+            h1 {
+              margin: 6px 0 8px;
+              font-size: 30px;
+              line-height: 1.02;
+            }
+
+            .hero > p {
+              font-size: 13px;
+              line-height: 1.5;
+            }
+
+            .steps {
+              grid-template-columns: repeat(3, minmax(0, 1fr));
+              gap: 5px;
+              margin-top: 14px;
+            }
+
+            .step {
+              min-width: 0;
+              gap: 5px;
+              padding: 8px 5px;
+              justify-content: center;
+            }
+
+            .step span {
+              width: 22px;
+              height: 22px;
+              flex: 0 0 22px;
+              font-size: 10px;
+            }
+
+            .step strong {
+              min-width: 0;
+              font-size: 9px;
+              white-space: nowrap;
+            }
+
+            .drop {
+              min-height: 164px;
+              padding: 16px;
+              gap: 14px;
+              align-items: center;
+            }
+
+            .dropIcon {
+              width: 50px;
+              height: 50px;
+              flex-basis: 50px;
+              border-radius: 14px;
+              font-size: 28px;
+            }
+
+            .drop h2 {
+              font-size: 19px;
+              line-height: 1.25;
+            }
+
+            .drop p {
+              margin-top: 5px;
+              font-size: 12px;
+              line-height: 1.45;
+            }
+
+            .mobileAutomationNext {
+              display: block;
+              margin-top: 10px;
+              padding: 15px;
+              border: 1px solid rgba(96,165,250,.18);
+              border-radius: 16px;
+              background: rgba(37,99,235,.07);
+            }
+
+            .mobileAutomationNextTitle {
+              display: flex;
+              align-items: center;
+              gap: 10px;
+            }
+
+            .mobileAutomationNextTitle > span {
+              display: grid;
+              width: 34px;
+              height: 34px;
+              place-items: center;
+              flex: 0 0 34px;
+              border-radius: 10px;
+              background: rgba(251,191,36,.12);
+              color: #fbbf24;
+              font-size: 17px;
+            }
+
+            .mobileAutomationNextTitle strong,
+            .mobileAutomationNextTitle small {
+              display: block;
+            }
+
+            .mobileAutomationNextTitle strong {
+              color: #fff;
+              font-size: 13px;
+            }
+
+            .mobileAutomationNextTitle small {
+              margin-top: 2px;
+              color: #94a3b8;
+              font-size: 10px;
+            }
+
+            .mobileAutomationTasks {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 7px;
+              margin-top: 12px;
+            }
+
+            .mobileAutomationSpark::before {
+              content: "*";
+              color: #fbbf24;
+              font-weight: 900;
+            }
+
+            .mobileAutomationTasks span {
+              min-width: 0;
+              padding: 8px 9px;
+              border-radius: 10px;
+              background: rgba(255,255,255,.035);
+              color: #cbd5e1;
+              font-size: 10px;
+              font-weight: 750;
+              line-height: 1.3;
+            }
+
+            .mobileAutomationTasks span::before {
+              content: "";
+              display: inline-block;
+              width: 6px;
+              height: 3px;
+              margin-right: 6px;
+              border-left: 2px solid #86efac;
+              border-bottom: 2px solid #86efac;
+              transform: translateY(-1px) rotate(-45deg);
+            }
+
+            .facts {
+              grid-template-columns: 1fr;
+            }
+
+            .mobileFactsSummary {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              gap: 10px;
+              margin-top: 12px;
+              padding: 11px 12px;
+              border: 1px solid rgba(52,211,153,.18);
+              border-radius: 12px;
+              background: rgba(16,185,129,.06);
+            }
+
+            .mobileFactsSummary > div {
+              min-width: 0;
+            }
+
+            .mobileFactsSummary strong,
+            .mobileFactsSummary span {
+              display: block;
+            }
+
+            .mobileFactsSummary strong {
+              color: #fff;
+              font-size: 12px;
+            }
+
+            .mobileFactsSummary span {
+              margin-top: 3px;
+              color: #94a3b8;
+              font-size: 10px;
+              line-height: 1.35;
+            }
+
+            .mobileFactsSummary button {
+              flex: 0 0 auto;
+              padding: 7px 9px;
+              border: 1px solid rgba(251,191,36,.3);
+              border-radius: 9px;
+              background: rgba(245,158,11,.1);
+              color: #fbbf24;
+              font-size: 9px;
+              font-weight: 900;
+              cursor: pointer;
+            }
+
+            .facts.mobileFactsCollapsed {
+              display: none;
+            }
+
+            .reviewTop,
+            .resultTop {
+              flex-direction: column;
+            }
+
+            /* MOBILE_AUTOMATION_PUBLISH_V1 */
+            .review,
+            .result {
+              margin-top: 10px;
+              padding: 14px;
+              border-radius: 16px;
+            }
+
+            .review h2,
+            .result h2 {
+              margin-top: 3px;
+              font-size: 19px;
+              line-height: 1.2;
+            }
+
+            .reviewTop,
+            .resultTop {
+              gap: 9px;
+            }
+
+            .facts {
+              gap: 8px;
+              margin-top: 12px;
+            }
+
+            .result .tabs {
+              width: 100%;
+            }
+
+            .result .tabs button {
+              flex: 1;
+              height: 38px;
+            }
+
+            .titleEdit {
+              margin-top: 12px;
+              min-height: 44px;
+              font-size: 15px;
+            }
+
+            .textEdit {
+              min-height: 180px;
+              max-height: 260px;
+              padding: 13px;
+              font-size: 13px;
+              line-height: 1.55;
+            }
+
+            .publish {
+              min-height: 54px;
+              margin-top: 12px;
+              font-size: 16px;
+            }
+
+            .publishHint {
+              margin-top: 8px;
+              font-size: 10px;
+              line-height: 1.4;
+            }
+          }
         `}</style>
       </main>
     </WorkspaceFrame>

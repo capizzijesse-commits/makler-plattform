@@ -216,6 +216,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // EXPOSE_SPEED_PROFILE_V1
+    const exposeProfileStartedAt = performance.now();
+    let exposeProfileStepAt = exposeProfileStartedAt;
+
     const sourceResponse = await fetch(fileUrl, {
       cache: "no-store",
     });
@@ -227,6 +231,12 @@ export async function POST(request: NextRequest) {
     }
 
     const bytes = new Uint8Array(await sourceResponse.arrayBuffer());
+
+    console.log("[EXPOSE SPEED] blob-download", {
+      durationMs: Math.round(performance.now() - exposeProfileStepAt),
+      bytes: bytes.byteLength,
+    });
+    exposeProfileStepAt = performance.now();
 
     if (bytes.byteLength <= 0 || bytes.byteLength > MAX_EXPOSE_BYTES) {
       return NextResponse.json(
@@ -253,6 +263,11 @@ export async function POST(request: NextRequest) {
     });
 
     openAiFileId = uploaded.id;
+
+    console.log("[EXPOSE SPEED] openai-file-upload", {
+      durationMs: Math.round(performance.now() - exposeProfileStepAt),
+    });
+    exposeProfileStepAt = performance.now();
 
     const response = await openai.responses.create({
       model: MODEL,
@@ -302,9 +317,19 @@ Regeln:
       max_output_tokens: 1200,
     });
 
+    console.log("[EXPOSE SPEED] ai-extraction", {
+      durationMs: Math.round(performance.now() - exposeProfileStepAt),
+    });
+    exposeProfileStepAt = performance.now();
+
     const extracted = normalizeResult(
       parseJsonObject(response.output_text || "")
     );
+
+    console.log("[EXPOSE SPEED] completed", {
+      parseMs: Math.round(performance.now() - exposeProfileStepAt),
+      totalMs: Math.round(performance.now() - exposeProfileStartedAt),
+    });
 
     return NextResponse.json({
       success: true,

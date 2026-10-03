@@ -21,13 +21,53 @@ function optionalNumber(value: unknown): number | null {
     return null;
   }
 
-  const normalized =
-    typeof value === "string"
-      ? value.replace(/['’\s]/g, "").replace(",", ".")
-      : value;
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
 
-  const number = Number(normalized);
-  return Number.isFinite(number) ? number : null;
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  let text = value
+    .trim()
+    .replace(/[?']/g, "")
+    .replace(/\s+/g, "")
+    .replace(/[^0-9.,+-]/g, "");
+
+  if (!text) {
+    return null;
+  }
+
+  const lastComma = text.lastIndexOf(",");
+  const lastDot = text.lastIndexOf(".");
+
+  if (lastComma >= 0 && lastDot >= 0) {
+    if (lastComma > lastDot) {
+      text = text.replace(/\./g, "").replace(",", ".");
+    } else {
+      text = text.replace(/,/g, "");
+    }
+  } else if (lastComma >= 0) {
+    const decimals = text.length - lastComma - 1;
+
+    text =
+      decimals === 3
+        ? text.replace(/,/g, "")
+        : text.replace(",", ".");
+  } else if (lastDot >= 0) {
+    const decimals = text.length - lastDot - 1;
+
+    if (decimals === 3) {
+      text = text.replace(/\./g, "");
+    }
+  }
+
+  const number = Number(text);
+
+  return Number.isFinite(number)
+    ? number
+    : null;
 }
 
 function parseJsonValue(value: string | null): unknown {

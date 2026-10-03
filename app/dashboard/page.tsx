@@ -4010,13 +4010,13 @@ return (
 
 </div>
 
-
-
 </section>
 
     <button
       type="button"
-      onClick={saveListingAndOpenCockpit}
+      onClick={() => {
+        window.location.href = "/automation";
+      }}
       disabled={savingListing}
       className="outputPublishButton"
     >
@@ -4030,6 +4030,7 @@ return (
           : "Automatisch ver\u00f6ffentlichen \u2192"}
       </span>
     </button>
+
   </div>
 
         </div>
@@ -5346,6 +5347,7 @@ return (
             max-height: none !important;
 
             position: static !important;
+            overflow: visible !important;
           }
 
           .dashboardPage .outputShell {

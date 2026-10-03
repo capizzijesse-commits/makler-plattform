@@ -152,6 +152,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // IMAGE_ANALYSIS_PROFILE_V1
+    const imageProfileStartedAt = performance.now();
+
+    console.log("[IMAGE SPEED] route-processing", {
+      imageName: image.name,
+      imageBytes: image.size,
+      imageType: image.type,
+    });
+
     const analysisStartedAt =
       Date.now();
 
@@ -209,6 +218,12 @@ export async function POST(request: NextRequest) {
           "Gib ausschliesslich ein gültiges kompaktes JSON-Objekt aus. " +
           "Kein Markdown und keine Erklärungen ausserhalb des JSON.";
 
+    console.log("[IMAGE SPEED] before-ultra-speed", {
+      durationMs: Math.round(
+        performance.now() - imageProfileStartedAt
+      ),
+    });
+
     const ultraSpeedTask =
       await runUltraSpeedTask<string>({
         key:
@@ -218,6 +233,12 @@ export async function POST(request: NextRequest) {
         memoryTtlMs:
           10 * 60 * 1000,
         task: async () => {
+            console.log("[IMAGE SPEED] openai-start", {
+              durationMs: Math.round(
+                performance.now() - imageProfileStartedAt
+              ),
+            });
+
           const response =
             await openai.chat.completions.create({
               model:
@@ -403,6 +424,12 @@ export async function POST(request: NextRequest) {
               ),
           ].join("\\n\\n");
 
+          console.log("[IMAGE SPEED] openai-finished", {
+            durationMs: Math.round(
+              performance.now() - imageProfileStartedAt
+            ),
+          });
+
           return analysis;
         },
         onMetric: (metric) => {
@@ -421,6 +448,14 @@ export async function POST(request: NextRequest) {
           );
         },
       });
+
+    console.log("[IMAGE SPEED] route-finished", {
+      durationMs: Math.round(
+        performance.now() - imageProfileStartedAt
+      ),
+      cacheHit: ultraSpeedTask.metric.cacheHit,
+      deduplicated: ultraSpeedTask.metric.deduplicated,
+    });
 
     return NextResponse.json({
       success:
