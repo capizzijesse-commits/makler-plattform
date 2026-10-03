@@ -218,6 +218,29 @@ useEffect(() => {
           ? data.user.plan
           : "free";
 
+      const normalizedPlan =
+        nextPlan.trim().toLowerCase();
+
+      /*
+       * AUTOMATION_PLAN_ENTRY_V1
+       *
+       * Pro and Agency use the automation workspace as their
+       * primary listing-creation experience.
+       *
+       * Active Pro trials are included because /api/session
+       * already returns the effective plan.
+       *
+       * Admin deliberately remains on the manual dashboard
+       * for development and testing.
+       */
+      if (
+        normalizedPlan === "pro" ||
+        normalizedPlan === "agency"
+      ) {
+        window.location.replace("/automation");
+        return;
+      }
+
       setUserPlan(nextPlan);
 
       if (
@@ -3916,6 +3939,8 @@ return (
 
 
 
+
+
   <div className="rightColumn">
   <section className="rightCard">
 
@@ -4012,24 +4037,7 @@ return (
 
 </section>
 
-    <button
-      type="button"
-      onClick={() => {
-        window.location.href = "/automation";
-      }}
-      disabled={savingListing}
-      className="outputPublishButton"
-    >
-      <span className="outputPublishButtonLabel">
-        AUTOMATISCH
-      </span>
 
-      <span className="outputPublishButtonText">
-        {savingListing
-          ? "Objekt wird vorbereitet ..."
-          : "Automatisch ver\u00f6ffentlichen \u2192"}
-      </span>
-    </button>
 
   </div>
 
@@ -4046,67 +4054,6 @@ return (
 
 .rightColumn > .rightCard {
   width: 100%;
-}
-
-      .outputPublishButton {
-  width: 100%;
-  margin-top: 12px;
-  min-height: 58px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 16px;
-  border: 1px solid rgba(251, 191, 36, 0.72);
-  border-radius: 16px;
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-  color: #111827;
-  box-shadow: 0 12px 28px rgba(245, 158, 11, 0.22);
-  cursor: pointer;
-  transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    opacity 0.18s ease;
-}
-
-.outputPublishButton:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 16px 34px rgba(245, 158, 11, 0.3);
-}
-
-.outputPublishButton:disabled {
-  cursor: not-allowed;
-  opacity: 1;
-  background: linear-gradient(135deg, #d9b75f 0%, #c99a32 100%);
-  color: rgba(15, 23, 42, 0.55);
-  box-shadow: none;
-}
-
-.outputPublishButtonLabel {
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  opacity: 0.72;
-}
-
-.outputPublishButtonText {
-  font-size: 15px;
-  font-weight: 900;
-  text-align: right;
-}
-
-@media (max-width: 640px) {
-  .outputPublishButton {
-    width: calc(100% - 24px);
-    margin: 16px 12px 0;
-    min-height: 56px;
-    padding: 11px 14px;
-    border-radius: 14px;
-  }
-
-  .outputPublishButtonText {
-    font-size: 14px;
-  }
 }
 
       .topStats {
@@ -5361,11 +5308,6 @@ return (
             max-height: none !important;
           }
 
-          .dashboardPage .outputPublishButton {
-            position: static !important;
-            width: 100% !important;
-            margin: 12px 0 0 !important;
-          }
         }
 
 `}</style>
