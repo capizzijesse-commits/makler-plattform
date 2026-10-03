@@ -885,8 +885,9 @@ export default function AutomationFlowV2() {
                   </div>
                 </div>
 
-                <input
+                <textarea
                   className="titleEdit"
+                  rows={2}
                   value={variants[activeVariant]?.title || ""}
                   onChange={(event) => updateVariant("title", event.target.value)}
                 />
@@ -1249,8 +1250,13 @@ export default function AutomationFlowV2() {
 
             .titleEdit {
               margin-top: 12px;
-              min-height: 44px;
-              font-size: 15px;
+              min-height: 58px;
+              padding: 9px 11px;
+              font-size: 14px;
+              line-height: 1.35;
+              resize: none;
+              overflow: hidden;
+              font-family: inherit;
             }
 
             .textEdit {

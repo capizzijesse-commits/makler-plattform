@@ -4035,7 +4035,7 @@ function neutralPropertyTitle(
     facts.livingArea &&
     facts.livingArea !==
       LANGUAGE_CONFIG[locale].emptyValue
-      ? facts.livingArea
+      ? ensureSquareMetres(facts.livingArea)
       : "";
 
   if (locale === "de") {
@@ -4090,11 +4090,17 @@ function ensureSquareMetres(
     return "";
   }
 
-  return /(?:m\u00b2|m2|qm)\b/i.test(
+  // LIVING_AREA_UNIT_NORMALIZATION_V1
+  const normalized =
     trimmed
-  )
-    ? trimmed
-    : `${trimmed} m\u00b2`;
+      .replace(/\b(?:m2|qm)\b/gi, "m\u00b2")
+      .replace(/(?:\s*m\u00b2){2,}/gi, " m\u00b2")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  return /m\u00b2\b/i.test(normalized)
+    ? normalized
+    : `${normalized} m\u00b2`;
 }
 
 function joinFeatureLabels(
