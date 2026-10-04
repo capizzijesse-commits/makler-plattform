@@ -1735,7 +1735,7 @@ export default function AutomationFlowV2() {
 
                     {copiedListing
                       ? "Kopiert"
-                      : "Text kopieren"}
+                      : "Inserat kopieren"}
                   </button>
 
                   <button
