@@ -3111,12 +3111,12 @@ export default function AutomationFlowV2() {
 
             .titleEdit {
               margin-top: 12px;
-              min-height: 58px;
+              min-height: 82px;
               padding: 9px 11px;
               font-size: 14px;
               line-height: 1.35;
               resize: none;
-              overflow: hidden;
+              overflow: auto;
               font-family: inherit;
             }
 
