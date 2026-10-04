@@ -98,18 +98,96 @@ function isExposeFile(file: File) {
 
 export default function AutomationFlowV2() {
   const router = useRouter();
+  // AUTOMATION_PLAN_GUARD_V1
+  const [automationAccessReady, setAutomationAccessReady] =
+    useState(false);
   const [market, setMarket] = useState<InseratAiMarket>("CH");
   const [stage, setStage] = useState<Stage>("receive");
   const [exposeFile, setExposeFile] = useState<File | null>(null);
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [imageAnalyses, setImageAnalyses] = useState<ImageAnalysis[]>([]);
+  // AUTOMATION_NEARBY_FACTS_CLIENT_V1
+  type NearbyFact = {
+    category:
+      | "transport"
+      | "education"
+      | "shopping";
+    label: string;
+    name: string;
+    distanceMetres: number;
+    durationSeconds: number;
+  };
+
+  type NearbyFacts = {
+    transport: NearbyFact | null;
+    education: NearbyFact | null;
+    shopping: NearbyFact | null;
+  };
+
   const [data, setData] = useState<Extracted>(EMPTY);
+
+  const [nearbyFacts, setNearbyFacts] =
+    useState<NearbyFacts | null>(null);
   const [variants, setVariants] = useState<Variant[]>([]);
   const [activeVariant, setActiveVariant] = useState(0);
+
+  // TEXT_VARIANTS_KEEP_IMAGE_V1
+  // Text variants never change the selected title image.
+  const [manualHero, setManualHero] =
+    useState<string | null>(null);
+
+  // LISTING_IMAGE_VIEWER_V1
+  const [imageViewerOpen, setImageViewerOpen] =
+    useState(false);
+  const [imageViewerIndex, setImageViewerIndex] =
+    useState(0);
+
   const [statusText, setStatusText] = useState("");
   const [error, setError] = useState("");
   const [publishing, setPublishing] = useState(false);
+
+  // LISTING_EXPORT_ACTIONS_V1
+  const [copiedListing, setCopiedListing] =
+    useState(false);
+
+  async function copyCurrentListing() {
+    const variant =
+      variants[activeVariant];
+
+    if (!variant) {
+      return;
+    }
+
+    const content = [
+      variant.title?.trim(),
+      variant.text?.trim(),
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
+    if (!content) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(
+        content
+      );
+
+      setCopiedListing(true);
+
+      window.setTimeout(() => {
+        setCopiedListing(false);
+      }, 1800);
+    } catch {
+      setCopiedListing(false);
+    }
+  }
+
+  function printCurrentListing() {
+    window.print();
+  }
   // AUTOMATION_ABORT_V1
   const automationAbortRef = useRef<AbortController | null>(null);
   // MOBILE_AUTOMATION_FACTS_TOGGLE_V1
@@ -122,6 +200,62 @@ export default function AutomationFlowV2() {
     setMarket(next);
     setData((current) => ({ ...current, countryCode: next }));
   }, []);
+
+  // AUTOMATION_PLAN_GUARD_V1
+  useEffect(() => {
+    let active = true;
+
+    async function verifyAutomationAccess() {
+      try {
+        const response = await fetch("/api/session", {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          if (active) {
+            router.replace("/dashboard");
+          }
+          return;
+        }
+
+        const session = await response.json();
+
+        const normalizedPlan = String(
+          session?.user?.plan ?? ""
+        )
+          .trim()
+          .toLowerCase();
+
+        const allowed =
+          normalizedPlan === "pro" ||
+          normalizedPlan === "agency" ||
+          normalizedPlan === "admin";
+
+        if (!allowed) {
+          if (active) {
+            router.replace("/dashboard");
+          }
+          return;
+        }
+
+        if (active) {
+          setAutomationAccessReady(true);
+        }
+      } catch {
+        if (active) {
+          router.replace("/dashboard");
+        }
+      }
+    }
+
+    void verifyAutomationAccess();
+
+    return () => {
+      active = false;
+    };
+  }, [router]);
 
   // AUTOMATION_ABORT_CLEANUP_FIX_V1
   useEffect(() => {
@@ -156,6 +290,159 @@ export default function AutomationFlowV2() {
 
   const readyToPublish =
     requiredMissing.length === 0 && variants.length > 0;
+
+
+
+  // AUTOMATION_VARIANT_IMAGE_ORDER_V1
+  const variantImagePreviews = useMemo(() => {
+    if (!imagePreviews.length) {
+      return [];
+    }
+
+    const scored = imagePreviews.map((src, index) => {
+      const analysis =
+        imageAnalyses[index]?.analysis
+          ?.toLowerCase() ?? "";
+
+      let score = 0;
+
+      const add = (
+        terms: string[],
+        value: number
+      ) => {
+        if (
+          terms.some((term) =>
+            analysis.includes(term)
+          )
+        ) {
+          score += value;
+        }
+      };
+
+      add(
+        [
+          "wohnzimmer",
+          "wohnbereich",
+          "wohnraum",
+          "living",
+        ],
+        100
+      );
+
+      add(
+        [
+          "fassade",
+          "aussenansicht",
+          "außenansicht",
+          "garten",
+          "terrasse",
+          "balkon",
+          "aussenbereich",
+          "außenbereich",
+        ],
+        90
+      );
+
+      add(
+        [
+          "küche",
+          "kueche",
+          "küchenbereich",
+        ],
+        75
+      );
+
+      add(
+        [
+          "esszimmer",
+          "essbereich",
+        ],
+        70
+      );
+
+      add(
+        [
+          "schlafzimmer",
+          "schlafbereich",
+        ],
+        55
+      );
+
+      add(
+        [
+          "bad",
+          "badezimmer",
+          "dusche",
+          "wc",
+        ],
+        35
+      );
+
+      add(
+        [
+          "grundriss",
+          "grundrissplan",
+        ],
+        -80
+      );
+
+      const fallbackScore =
+        imagePreviews.length - index;
+
+      return {
+        src,
+        index,
+        score:
+          score === 0
+            ? fallbackScore
+            : score,
+      };
+    });
+
+    const ranked =
+      [...scored].sort(
+        (a, b) =>
+          b.score - a.score ||
+          a.index - b.index
+      );
+
+    if (ranked.length <= 1) {
+      return ranked.map(
+        (item) => item.src
+      );
+    }
+
+    const hero =
+      ranked[0];
+
+    const automaticOrder = [
+      hero,
+      ...ranked.filter(
+        (item) =>
+          item.index !== hero.index
+      ),
+    ].map(
+      (item) => item.src
+    );
+
+    if (
+      !manualHero ||
+      !automaticOrder.includes(manualHero)
+    ) {
+      return automaticOrder;
+    }
+
+    return [
+      manualHero,
+      ...automaticOrder.filter(
+        (src) => src !== manualHero
+      ),
+    ];
+  }, [
+    imagePreviews,
+    imageAnalyses,
+    manualHero,
+  ]);
 
   function setPreviewFiles(nextImages: File[]) {
     imagePreviews.forEach((url) => URL.revokeObjectURL(url));
@@ -204,9 +491,49 @@ export default function AutomationFlowV2() {
     }
   }
 
-  async function extractExpose(file: File | null, signal: AbortSignal): Promise<Extracted> {
+  // PDF_EXTRACTED_PHOTOS_CLIENT_V1
+  type ExtractedPdfPhotoPayload = {
+    fileName: string;
+    mimeType: string;
+    width: number;
+    height: number;
+    pageNumber: number;
+    imageIndex: number;
+    confidence: number;
+    reason: string;
+    base64: string;
+  };
+
+  type ExtractExposeResult = {
+    facts: Extracted;
+    pdfImages: File[];
+  };
+
+  function pdfPhotoPayloadToFile(
+    photo: ExtractedPdfPhotoPayload
+  ): File {
+    const binary = atob(photo.base64);
+    const bytes = new Uint8Array(binary.length);
+
+    for (let index = 0; index < binary.length; index += 1) {
+      bytes[index] = binary.charCodeAt(index);
+    }
+
+    return new File(
+      [bytes],
+      photo.fileName || "expose-photo.jpg",
+      {
+        type: photo.mimeType || "image/jpeg",
+      }
+    );
+  }
+
+  async function extractExpose(file: File | null, signal: AbortSignal): Promise<ExtractExposeResult> {
     if (!file) {
-      return { ...data };
+      return {
+        facts: { ...data },
+        pdfImages: [],
+      };
     }
 
     if (file.size > MAX_EXPOSE_BYTES) {
@@ -280,7 +607,25 @@ export default function AutomationFlowV2() {
       extracted.projectName = fallbackName;
     }
 
-    return extracted;
+    const extractedPhotoPayloads =
+      Array.isArray(payload?.extractedPhotos)
+        ? (payload.extractedPhotos as ExtractedPdfPhotoPayload[])
+        : [];
+
+    const pdfImages =
+      extractedPhotoPayloads
+        .slice(0, 10)
+        .map(pdfPhotoPayloadToFile);
+
+    console.log("[AUTOMATION PDF PHOTOS CLIENT]", {
+      received: extractedPhotoPayloads.length,
+      usable: pdfImages.length,
+    });
+
+    return {
+      facts: extracted,
+      pdfImages,
+    };
   }
 
   async function analyzeImages(files: File[], signal: AbortSignal): Promise<ImageAnalysis[]> {
@@ -385,6 +730,73 @@ export default function AutomationFlowV2() {
     return nextVariants;
   }
 
+  async function loadNearbyFacts(
+    facts: Extracted
+  ) {
+    const countryCode =
+      String(
+        facts.countryCode || market || ""
+      )
+        .trim()
+        .toUpperCase();
+
+    const street =
+      String(facts.street || "").trim();
+
+    const postalCode =
+      String(facts.postalCode || "").trim();
+
+    const city =
+      String(facts.location || "").trim();
+
+    if (
+      !countryCode ||
+      !street ||
+      !postalCode ||
+      !city
+    ) {
+      return;
+    }
+
+    try {
+      const response =
+        await fetch(
+          "/api/automation/nearby-facts",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              countryCode,
+              street,
+              postalCode,
+              city,
+            }),
+          }
+        );
+
+      if (!response.ok) {
+        return;
+      }
+
+      const payload =
+        await response.json();
+
+      if (payload?.facts) {
+        setNearbyFacts(
+          payload.facts as NearbyFacts
+        );
+      }
+    } catch (error) {
+      console.warn(
+        "[AUTOMATION NEARBY FACTS CLIENT]",
+        error
+      );
+    }
+  }
+
   async function processFiles(nextExpose: File | null, nextImages: File[]) {
     if (!nextExpose && nextImages.length === 0) return;
 
@@ -397,6 +809,7 @@ export default function AutomationFlowV2() {
     setError("");
     setVariants([]);
     setActiveVariant(0);
+    setNearbyFacts(null);
     setStage("working");
     setStatusText("Inserat-AI übernimmt. Du musst nichts tun …");
 
@@ -410,57 +823,107 @@ export default function AutomationFlowV2() {
         images: nextImages.length,
       });
 
-      const factsPromise = extractExpose(
+      // PDF_IMAGES_PROCESS_FLOW_V1
+      //
+      // Separate uploaded originals always win.
+      // If there are no uploaded images, the complete PDF
+      // supplies its own extracted property photographs.
+      const exposePromise = extractExpose(
         nextExpose,
         controller.signal
-      ).then((facts) => {
-        if (
-          !controller.signal.aborted &&
-          automationAbortRef.current === controller
-        ) {
-          setData(facts);
+      );
+
+      const uploadedAnalysesPromise =
+        nextImages.length > 0
+          ? analyzeImages(
+              nextImages,
+              controller.signal
+            )
+          : null;
+
+      const exposeResult =
+        await exposePromise;
+
+      if (
+        controller.signal.aborted ||
+        automationAbortRef.current !== controller
+      ) {
+        return;
+      }
+
+      const facts =
+        exposeResult.facts;
+
+      // AUTOMATION_FACTS_DIAGNOSTIC_V1
+      console.log(
+        "[AUTOMATION EXTRACTED FACTS]",
+        {
+          street: facts.street,
+          postalCode: facts.postalCode,
+          location: facts.location,
+          rooms: facts.rooms,
+          livingArea: facts.livingArea,
+          price: facts.price,
+          missingFields:
+            facts.missingFields,
         }
+      );
 
-        console.log("[AUTOMATION SPEED] expose-done", {
-          durationMs: Math.round(
-            performance.now() - automationBranchStartedAt
-          ),
-        });
+      setData(facts);
 
-        return facts;
-      });
+      // Fire-and-forget:
+      // location enrichment must not delay
+      // listing generation.
+      void loadNearbyFacts(facts);
 
-      const analysesPromise = analyzeImages(
-        nextImages,
-        controller.signal
-      ).then((analyses) => {
-        if (
-          !controller.signal.aborted &&
-          automationAbortRef.current === controller
-        ) {
-          setImageAnalyses(analyses);
-        }
-
-        console.log("[AUTOMATION SPEED] images-done", {
-          durationMs: Math.round(
-            performance.now() - automationBranchStartedAt
-          ),
-          images: analyses.length,
-        });
-
-        return analyses;
-      });
-
-      console.log("[AUTOMATION SPEED] waiting-for-both", {
+      console.log("[AUTOMATION SPEED] expose-done", {
         durationMs: Math.round(
           performance.now() - automationBranchStartedAt
         ),
+        pdfImages:
+          exposeResult.pdfImages.length,
       });
 
-      const [facts, analyses] = await Promise.all([
-        factsPromise,
-        analysesPromise,
-      ]);
+      const effectiveImages =
+        nextImages.length > 0
+          ? nextImages
+          : exposeResult.pdfImages;
+
+      if (
+        nextImages.length === 0 &&
+        effectiveImages.length > 0
+      ) {
+        setImages(effectiveImages);
+        setPreviewFiles(effectiveImages);
+      }
+
+      const analyses =
+        uploadedAnalysesPromise
+          ? await uploadedAnalysesPromise
+          : await analyzeImages(
+              effectiveImages,
+              controller.signal
+            );
+
+      if (
+        controller.signal.aborted ||
+        automationAbortRef.current !== controller
+      ) {
+        return;
+      }
+
+      setImageAnalyses(analyses);
+
+      console.log("[AUTOMATION SPEED] images-done", {
+        durationMs: Math.round(
+          performance.now() - automationBranchStartedAt
+        ),
+        images: analyses.length,
+        source:
+          nextImages.length > 0
+            ? "uploaded"
+            : "pdf",
+      });
 
       if (
         controller.signal.aborted ||
@@ -501,7 +964,7 @@ export default function AutomationFlowV2() {
 
     setError("");
     setStage("receive");
-    setStatusText("Verarbeitung gestoppt. Deine Dateien bleiben ausgew?hlt.");
+    setStatusText("Verarbeitung gestoppt. Deine Dateien bleiben ausgewählt.");
   }
 
   function improveManually() {
@@ -525,9 +988,23 @@ export default function AutomationFlowV2() {
     event.target.value = "";
     if (!incoming.length) return;
 
-    const nextExpose = incoming.find(isExposeFile) || exposeFile;
-    const newImages = incoming.filter(isImageFile);
-    const nextImages = (newImages.length ? newImages : images).slice(0, 10);
+    const incomingExpose =
+      incoming.find(isExposeFile);
+
+    const nextExpose =
+      incomingExpose || exposeFile;
+
+    const newImages =
+      incoming.filter(isImageFile);
+
+    const nextImages =
+      (
+        newImages.length > 0
+          ? newImages
+          : incomingExpose
+            ? []
+            : images
+      ).slice(0, 10);
 
     setExposeFile(nextExpose || null);
     setImages(nextImages);
@@ -690,6 +1167,10 @@ export default function AutomationFlowV2() {
 
   const step = stage === "receive" || stage === "working" ? 1 : stage === "edit" ? 2 : 3;
 
+  if (!automationAccessReady) {
+    return null;
+  }
+
   return (
     <WorkspaceFrame market={market} active="new" title="Automation">
       <main className="page">
@@ -813,7 +1294,520 @@ export default function AutomationFlowV2() {
               </div>
             )}
 
-            {(stage === "edit" || stage === "publish") && (
+            {/* RESULT_BEFORE_FACTS_V1 */}
+            {/* INSERAT_AI_OUTPUT_DESIGN_V1 */}
+            {stage === "publish" && variants.length > 0 && (
+              <div className="result">
+                <div className="outputGlow" />
+
+                <div className="resultTop">
+                  <div className="outputHeading">
+                    <div className="eyebrow">
+                      INSERAT-AI OUTPUT
+                    </div>
+
+                    <div className="outputTitleRow">
+                      <h2>Dein Inserat ist bereit</h2>
+
+                      <span className="readyBadge">
+                        <span className="readyDot" />
+                        READY
+                      </span>
+                    </div>
+
+                    <p>
+                      Vollst?ndig von Inserat-AI erstellt.
+                      Du kannst direkt ver?ffentlichen oder
+                      den Text noch anpassen.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="outputFacts">
+                  {data.propertyType && (
+                    <span>{data.propertyType}</span>
+                  )}
+
+                  {data.rooms && (
+                    <span>{data.rooms} Zimmer</span>
+                  )}
+
+                  {data.livingArea && (
+                    <span>{data.livingArea}</span>
+                  )}
+
+                  {data.price && (
+                    <span>{data.price}</span>
+                  )}
+
+                  {data.location && (
+                    <span>{data.location}</span>
+                  )}
+                </div>
+
+                <div className="variantBar">
+                  <div className="variantIntro">
+                    <span className="variantLabel">
+                      TEXTVARIANTEN
+                    </span>
+
+                    <strong>
+                      Wähle deinen Favoriten
+                    </strong>
+                  </div>
+
+                  <div className="tabs">
+                    {variants.map((_, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        className={
+                          activeVariant === index
+                            ? "active"
+                            : ""
+                        }
+                        onClick={() =>
+                          setActiveVariant(index)
+                        }
+                      >
+                        <small>VARIANTE</small>
+                        <span>
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="listingPreview">
+                  <div className="previewChrome">
+                    <span className="previewMark">
+                      AI
+                    </span>
+
+                    <span>
+                      INSERAT-VORSCHAU
+                    </span>
+
+                    <span className="previewLive">
+                      LIVE EDITIERBAR
+                    </span>
+                  </div>
+
+                  {/* INSERAT_AI_LISTING_GALLERY_V1 */}
+                  {variantImagePreviews.length > 0 && (
+                    <div className="listingGallery">
+                      <div className="listingHeroImage">
+                        <img
+                          src={variantImagePreviews[0]}
+                          alt="Titelbild der Immobilie"
+                        />
+
+                        <div className="heroImageBadge">
+                          TITELBILD
+                        </div>
+
+                        <div className="heroImageCount">
+                          {variantImagePreviews.length} BILDER
+                        </div>
+                      </div>
+
+                      {variantImagePreviews.length > 1 && (
+                        <div className="listingGallerySide">
+                          {variantImagePreviews
+                            .slice(1, 5)
+                            .map((src, index) => {
+                              const remaining =
+                                variantImagePreviews.length - 5;
+
+                              const mobileRemaining =
+                                variantImagePreviews.length - 3;
+
+                              const showRemaining =
+                                index === 3 &&
+                                remaining > 0;
+
+                              return (
+                                <button
+                                  type="button"
+                                  className="listingGalleryThumb"
+                                  key={src}
+                                  aria-label={
+                                    "Bild " +
+                                    (index + 2) +
+                                    " als Titelbild verwenden"
+                                  }
+                                  title="Als Titelbild verwenden"
+                                  onClick={() => {
+                                    // MANUAL_HERO_CLICK_V1
+                                    setManualHero(src);
+                                  }}
+                                >
+                                  <img
+                                    src={src}
+                                    alt={
+                                      "Objektbild " +
+                                      (index + 2)
+                                    }
+                                  />
+
+                                  {index === 1 &&
+                                    mobileRemaining > 0 && (
+                                      <div
+                                        className="mobileMoreImages"
+                                        onClick={(event) => {
+                                          event.stopPropagation();
+                                          setImageViewerIndex(0);
+                                          setImageViewerOpen(true);
+                                        }}
+                                      >
+                                        +{mobileRemaining} weitere
+                                      </div>
+                                    )}
+
+                                  {showRemaining && (
+                                    <div className="moreImages">
+                                      +{remaining}
+                                    </div>
+                                  )}
+                                </button>
+                              );
+                            })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {imageViewerOpen &&
+                    variantImagePreviews.length > 0 && (
+                      <div
+                        className="imageViewerBackdrop"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Alle Objektbilder"
+                        onClick={() =>
+                          setImageViewerOpen(false)
+                        }
+                      >
+                        <div
+                          className="imageViewer"
+                          onClick={(event) =>
+                            event.stopPropagation()
+                          }
+                        >
+                          <div className="imageViewerTop">
+                            <strong>Alle Bilder</strong>
+
+                            <span>
+                              {imageViewerIndex + 1} /{" "}
+                              {variantImagePreviews.length}
+                            </span>
+
+                            <button
+                              type="button"
+                              className="imageViewerClose"
+                              aria-label="Bilder schlie?en"
+                              onClick={() =>
+                                setImageViewerOpen(false)
+                              }
+                            >
+                              X
+                            </button>
+                          </div>
+
+                          <div className="imageViewerStage">
+                            <img
+                              src={
+                                variantImagePreviews[
+                                  imageViewerIndex
+                                ]
+                              }
+                              alt={
+                                "Objektbild " +
+                                (imageViewerIndex + 1)
+                              }
+                            />
+
+                            {variantImagePreviews.length > 1 && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="imageViewerPrev"
+                                  aria-label="Vorheriges Bild"
+                                  onClick={() =>
+                                    setImageViewerIndex(
+                                      (current) =>
+                                        (current -
+                                          1 +
+                                          variantImagePreviews.length) %
+                                        variantImagePreviews.length
+                                    )
+                                  }
+                                >
+                                  {"<"}
+                                </button>
+
+                                <button
+                                  type="button"
+                                  className="imageViewerNext"
+                                  aria-label="N?chstes Bild"
+                                  onClick={() =>
+                                    setImageViewerIndex(
+                                      (current) =>
+                                        (current + 1) %
+                                        variantImagePreviews.length
+                                    )
+                                  }
+                                >
+                                  {">"}
+                                </button>
+                              </>
+                            )}
+                          </div>
+
+                          <div className="imageViewerThumbs">
+                            {variantImagePreviews.map(
+                              (viewerSrc, viewerIndex) => (
+                                <button
+                                  type="button"
+                                  key={
+                                    viewerSrc +
+                                    "-" +
+                                    viewerIndex
+                                  }
+                                  className={
+                                    "imageViewerThumb " +
+                                    (viewerIndex ===
+                                    imageViewerIndex
+                                      ? "active"
+                                      : "")
+                                  }
+                                  aria-label={
+                                    "Bild " +
+                                    (viewerIndex + 1) +
+                                    " anzeigen"
+                                  }
+                                  onClick={() =>
+                                    setImageViewerIndex(
+                                      viewerIndex
+                                    )
+                                  }
+                                >
+                                  <img
+                                    src={viewerSrc}
+                                    alt=""
+                                  />
+                                </button>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                  <textarea
+                    className="titleEdit"
+                    rows={2}
+                    aria-label="Inserattitel"
+                    value={
+                      variants[activeVariant]?.title || ""
+                    }
+                    onChange={(event) =>
+                      updateVariant(
+                        "title",
+                        event.target.value
+                      )
+                    }
+                  />
+
+                  {/* LISTING_NEARBY_FACT_STRIP_V1 */}
+                  {nearbyFacts &&
+                    [
+                      nearbyFacts.transport,
+                      nearbyFacts.education,
+                      nearbyFacts.shopping,
+                    ].some(Boolean) && (
+                      <div className="listingFactStrip">
+                        {[
+                          nearbyFacts.transport,
+                          nearbyFacts.education,
+                          nearbyFacts.shopping,
+                        ]
+                          .filter(
+                            (
+                              fact
+                            ): fact is NearbyFact =>
+                              Boolean(fact)
+                          )
+                          .map((fact) => {
+                            const distance =
+                              fact.distanceMetres >= 1000
+                                ? `${(
+                                    fact.distanceMetres /
+                                    1000
+                                  )
+                                    .toFixed(1)
+                                    .replace(
+                                      ".",
+                                      ","
+                                    )} km`
+                                : `${fact.distanceMetres} m`;
+
+                            const title =
+                              fact.category ===
+                              "shopping"
+                                ? `Einkauf ${fact.name}`
+                                : fact.category ===
+                                  "education"
+                                ? fact.name.replace(
+                                    /Oberlunkhofen/gi,
+                                    ""
+                                  ).trim() ||
+                                  fact.label
+                                : fact.name;
+
+                            return (
+                              <span
+                                className="listingFact"
+                                key={
+                                  fact.category
+                                }
+                              >
+                                {title} -{" "}
+                                {distance}
+                              </span>
+                            );
+                          })}
+                      </div>
+                    )}
+
+                  <div className="previewDivider" />
+
+                  <textarea
+                    className="textEdit"
+                    aria-label="Inserattext"
+                    value={
+                      variants[activeVariant]?.text || ""
+                    }
+                    onChange={(event) =>
+                      updateVariant(
+                        "text",
+                        event.target.value
+                      )
+                    }
+                  />
+                </div>
+
+                {/* LISTING_EXPORT_ACTIONS_V1 */}
+                <div className="listingActions">
+                  <button
+                    type="button"
+                    className="listingAction"
+                    onClick={() => {
+                      void copyCurrentListing();
+                    }}
+                  >
+                    <span aria-hidden="true">
+                      {copiedListing ? (
+                        "✓"
+                      ) : (
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="17"
+                          height="17"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <rect
+                            x="8"
+                            y="8"
+                            width="12"
+                            height="12"
+                            rx="2"
+                          />
+                          <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+                        </svg>
+                      )}
+                    </span>
+
+                    {copiedListing
+                      ? "Kopiert"
+                      : "Text kopieren"}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="listingAction"
+                    onClick={printCurrentListing}
+                  >
+                    <span aria-hidden="true">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="18"
+                        height="18"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M6 9V3h12v6" />
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                        <rect
+                          x="6"
+                          y="14"
+                          width="12"
+                          height="7"
+                        />
+                        <path d="M18 12h.01" />
+                      </svg>
+                    </span>
+
+                    Inserat drucken
+                  </button>
+                </div>
+
+                <div className="publishZone">
+                  <div className="publishCopy">
+                    <span className="publishReady">
+                      BEREIT FÜR DEINE PORTALE
+                    </span>
+
+                    <strong>
+                      Ein Klick bis zur Veröffentlichung
+                    </strong>
+
+                    <small>
+                      Objektdaten, Bilder und der gewählte
+                      Text werden automatisch übernommen.
+                    </small>
+                  </div>
+
+                  <button
+                    className="publish"
+                    disabled={publishing}
+                    onClick={publish}
+                  >
+                    {publishing
+                      ? "Wird vorbereitet …"
+                      : "AUF PORTALEN VERÖFFENTLICHEN"}
+
+                    {!publishing ? (
+                      <span>{"\u2192"}</span>
+                    ) : null}
+                  </button>
+                </div>
+
+                <p className="publishHint">
+                  Keine erneute Dateneingabe. Du wählst
+                  danach nur noch deine verbundenen Portale.
+                </p>
+              </div>
+            )}
+                      {(stage === "edit" || stage === "publish") && (
               <div className="review">
                 <div className="reviewTop">
                   <div>
@@ -830,7 +1824,7 @@ export default function AutomationFlowV2() {
                       <span>
                         {[data.rooms ? `${data.rooms} Zimmer` : "", data.livingArea, data.location]
                           .filter(Boolean)
-                          .join(" ? ")}
+                          .join(" · ")}
                       </span>
                     </div>
 
@@ -869,45 +1863,170 @@ export default function AutomationFlowV2() {
               </div>
             )}
 
-            {stage === "publish" && variants.length > 0 && (
-              <div className="result">
-                <div className="resultTop">
-                  <div>
-                    <div className="eyebrow">FERTIGES INSERAT</div>
-                    <h2>Kontrollieren ist optional</h2>
-                  </div>
-                  <div className="tabs">
-                    {variants.map((_, index) => (
-                      <button key={index} className={activeVariant === index ? "active" : ""} onClick={() => setActiveVariant(index)}>
-                        {index + 1}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <textarea
-                  className="titleEdit"
-                  rows={2}
-                  value={variants[activeVariant]?.title || ""}
-                  onChange={(event) => updateVariant("title", event.target.value)}
-                />
-                <textarea
-                  className="textEdit"
-                  value={variants[activeVariant]?.text || ""}
-                  onChange={(event) => updateVariant("text", event.target.value)}
-                />
-
-                <button className="publish" disabled={publishing} onClick={publish}>
-                  {publishing ? "Wird vorbereitet …" : "VERÖFFENTLICHEN"}
-                  {!publishing ? <span>→</span> : null}
-                </button>
-                <p className="publishHint">Danach wählst du nur noch deine bereits verbundenen Portale. Keine erneute Dateneingabe.</p>
-              </div>
-            )}
-          </section>
+</section>
         </div>
 
         <style jsx>{`
+          /* LISTING_FACT_STRIP_STYLE_V1 */
+          .listingFactStrip {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0;
+            padding: 4px 28px 22px;
+            color: #334155;
+          }
+
+          .listingFact {
+            display: inline-flex;
+            align-items: center;
+            font-size: 14px;
+            line-height: 1.4;
+            font-weight: 850;
+            white-space: nowrap;
+          }
+
+          .listingFact:not(:last-child)::after {
+            content: "-";
+            margin: 0 11px;
+            color: #f59e0b;
+            font-weight: 950;
+          }
+
+          @media (max-width: 760px) {
+            .listingFactStrip {
+              padding:
+                2px 18px 18px;
+            }
+
+            .listingFact {
+              font-size: 12px;
+            }
+
+            .listingFact:not(:last-child)::after {
+              margin: 0 7px;
+            }
+          }
+
+          /* LISTING_EXPORT_ACTIONS_STYLE_V1 */
+          .listingActions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 9px;
+            margin: 14px 0 16px;
+          }
+
+          .listingAction {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 42px;
+            padding: 0 15px;
+            border: 1px solid rgba(148,163,184,.22);
+            border-radius: 11px;
+            background: rgba(255,255,255,.06);
+            color: #e2e8f0;
+            font: inherit;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: .02em;
+            cursor: pointer;
+            transition:
+              transform .16s ease,
+              background .16s ease,
+              border-color .16s ease;
+          }
+
+          .listingAction:hover {
+            transform: translateY(-1px);
+            border-color: rgba(251,191,36,.42);
+            background: rgba(245,158,11,.1);
+            color: #fff;
+          }
+
+          .listingAction span {
+            display: inline-grid;
+            place-items: center;
+            min-width: 16px;
+            color: #fbbf24;
+            font-size: 15px;
+            font-weight: 950;
+          }
+
+          @media print {
+            @page {
+              margin: 12mm;
+            }
+
+            body * {
+              visibility: hidden !important;
+            }
+
+            .listingPreview,
+            .listingPreview * {
+              visibility: visible !important;
+            }
+
+            .listingPreview {
+              position: absolute !important;
+              top: 0 !important;
+              left: 0 !important;
+              width: 100% !important;
+              margin: 0 !important;
+              border: 0 !important;
+              border-radius: 0 !important;
+              box-shadow: none !important;
+              background: #fff !important;
+              color: #111827 !important;
+              overflow: visible !important;
+            }
+
+            .previewChrome {
+              display: none !important;
+            }
+
+            .listingGallery {
+              break-inside: avoid;
+              page-break-inside: avoid;
+            }
+
+            .listingGalleryThumb {
+              border: 0 !important;
+            }
+
+            .titleEdit,
+            .textEdit {
+              display: block !important;
+              width: 100% !important;
+              overflow: visible !important;
+              resize: none !important;
+              border: 0 !important;
+              outline: 0 !important;
+              box-shadow: none !important;
+              background: #fff !important;
+              color: #111827 !important;
+            }
+
+            .titleEdit {
+              font-size: 22pt !important;
+              line-height: 1.15 !important;
+            }
+
+            .textEdit {
+              font-size: 11pt !important;
+              line-height: 1.6 !important;
+              min-height: 0 !important;
+            }
+
+            .heroImageBadge,
+            .heroImageCount,
+            .moreImages {
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+          }
+
           .page { min-height: calc(100vh - 80px); padding: 22px; background: radial-gradient(circle at 88% 12%, rgba(245,158,11,.14), transparent 28%), radial-gradient(circle at 10% 82%, rgba(37,99,235,.18), transparent 32%), linear-gradient(135deg,#06172c 0%,#0a2342 58%,#102744 100%); color:#fff; }
           .shell { max-width: 1120px; margin: 0 auto; }
           .hero,.card { border:1px solid rgba(148,163,184,.18); border-radius:24px; background:rgba(5,22,43,.84); box-shadow:0 22px 60px rgba(2,6,23,.24); }
@@ -987,15 +2106,613 @@ export default function AutomationFlowV2() {
           .facts { display:grid; grid-template-columns:repeat(2,1fr); gap:11px; margin-top:18px; }
           .primary,.publish { width:100%; min-height:56px; margin-top:18px; border:0; border-radius:15px; background:linear-gradient(135deg,#f59e0b,#f97316); color:#fff; font-weight:950; font-size:15px; cursor:pointer; }
           .primary:disabled,.publish:disabled { opacity:.42; cursor:not-allowed; }
-          .tabs { display:flex; gap:6px; }
-          .tabs button { width:34px; height:34px; border-radius:10px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.05); color:#cbd5e1; font-weight:900; cursor:pointer; }
-          .tabs button.active { background:#f59e0b; border-color:#f59e0b; color:#fff; }
-          .titleEdit,.textEdit { width:100%; box-sizing:border-box; border:1px solid rgba(148,163,184,.2); background:#fff; color:#243247; outline:none; }
-          .titleEdit { margin-top:18px; min-height:48px; padding:0 14px; border-radius:12px; font-size:17px; font-weight:850; }
-          .textEdit { margin-top:9px; min-height:260px; padding:16px; border-radius:14px; resize:vertical; line-height:1.7; font:inherit; }
-          .publish { font-size:17px; box-shadow:0 16px 38px rgba(249,115,22,.25); }
-          .publish span { margin-left:10px; font-size:22px; }
-          .publishHint { margin:10px 0 0; text-align:center; color:#94a3b8; font-size:12px; }
+          /* INSERAT_AI_OUTPUT_STYLE_V1 */
+
+          .result {
+            position: relative;
+            overflow: hidden;
+            margin-top: 18px;
+            padding: 26px;
+            border: 1px solid rgba(251,191,36,.18);
+            border-radius: 24px;
+            background:
+              radial-gradient(
+                circle at 92% 0%,
+                rgba(245,158,11,.13),
+                transparent 30%
+              ),
+              linear-gradient(
+                145deg,
+                rgba(8,25,48,.98),
+                rgba(5,18,37,.98)
+              );
+            box-shadow:
+              0 28px 70px rgba(2,6,23,.34),
+              inset 0 1px 0 rgba(255,255,255,.035);
+          }
+
+          .outputGlow {
+            position: absolute;
+            width: 260px;
+            height: 260px;
+            top: -170px;
+            right: -90px;
+            border-radius: 999px;
+            background: rgba(245,158,11,.16);
+            filter: blur(65px);
+            pointer-events: none;
+          }
+
+          .resultTop {
+            position: relative;
+            z-index: 1;
+          }
+
+          .outputHeading {
+            max-width: 760px;
+          }
+
+          .outputTitleRow {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+          }
+
+          .result .outputTitleRow h2 {
+            margin: 0;
+            font-size: clamp(26px,3vw,38px);
+            line-height: 1.08;
+            letter-spacing: -.035em;
+          }
+
+          .outputHeading > p {
+            max-width: 700px;
+            margin: 10px 0 0;
+            color: #9fb0c8;
+            line-height: 1.6;
+            font-size: 13px;
+          }
+
+          .readyBadge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 10px;
+            border: 1px solid rgba(52,211,153,.25);
+            border-radius: 999px;
+            background: rgba(16,185,129,.09);
+            color: #86efac;
+            font-size: 10px;
+            font-weight: 950;
+            letter-spacing: .12em;
+          }
+
+          .readyDot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: #34d399;
+            box-shadow: 0 0 14px rgba(52,211,153,.8);
+          }
+
+          .outputFacts {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+          }
+
+          .outputFacts span {
+            padding: 8px 11px;
+            border: 1px solid rgba(148,163,184,.16);
+            border-radius: 999px;
+            background: rgba(255,255,255,.045);
+            color: #dbe7f5;
+            font-size: 11px;
+            font-weight: 800;
+          }
+
+          .variantBar {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 18px;
+            margin-top: 26px;
+            padding-top: 22px;
+            border-top: 1px solid rgba(148,163,184,.12);
+          }
+
+          .variantIntro {
+            display: grid;
+            gap: 4px;
+          }
+
+          .variantLabel {
+            color: #70839f;
+            font-size: 9px;
+            font-weight: 950;
+            letter-spacing: .16em;
+          }
+
+          .variantIntro strong {
+            color: #e8eef7;
+            font-size: 13px;
+          }
+
+          .tabs {
+            display: flex;
+            gap: 8px;
+          }
+
+          .tabs button {
+            display: grid;
+            grid-template-columns: auto auto;
+            align-items: center;
+            gap: 8px;
+            min-width: 94px;
+            min-height: 48px;
+            padding: 8px 11px;
+            border: 1px solid rgba(148,163,184,.16);
+            border-radius: 13px;
+            background: rgba(255,255,255,.035);
+            color: #8fa1ba;
+            cursor: pointer;
+            transition:
+              transform .16s ease,
+              border-color .16s ease,
+              background .16s ease;
+          }
+
+          .tabs button:hover {
+            transform: translateY(-1px);
+            border-color: rgba(251,191,36,.3);
+          }
+
+          .tabs button small {
+            font-size: 8px;
+            font-weight: 900;
+            letter-spacing: .1em;
+          }
+
+          .tabs button span {
+            font-size: 17px;
+            font-weight: 950;
+            color: #cbd5e1;
+          }
+
+          .tabs button.active {
+            border-color: rgba(251,191,36,.52);
+            background:
+              linear-gradient(
+                135deg,
+                rgba(245,158,11,.18),
+                rgba(249,115,22,.09)
+              );
+            box-shadow:
+              inset 0 0 0 1px rgba(251,191,36,.06),
+              0 10px 26px rgba(245,158,11,.08);
+            color: #fbbf24;
+          }
+
+          .tabs button.active span {
+            color: #fbbf24;
+          }
+
+          .listingPreview {
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            margin-top: 14px;
+            border: 1px solid rgba(148,163,184,.15);
+            border-radius: 19px;
+            background:
+              linear-gradient(
+                180deg,
+                rgba(255,255,255,.98),
+                rgba(247,250,252,.98)
+              );
+            box-shadow: 0 20px 48px rgba(2,6,23,.24);
+          }
+
+          .mobileMoreImages {
+            display: none;
+          }
+
+          /* LISTING_IMAGE_VIEWER_STYLE_V1 */
+          .imageViewerBackdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: grid;
+            place-items: center;
+            padding: 18px;
+            background: rgba(2,8,18,.88);
+            backdrop-filter: blur(8px);
+          }
+
+          .imageViewer {
+            width: min(920px, 100%);
+            max-height: calc(100vh - 36px);
+            overflow: auto;
+            padding: 14px;
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 18px;
+            background: #07111f;
+            box-shadow: 0 24px 80px rgba(0,0,0,.5);
+          }
+
+          .imageViewerTop {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            color: #fff;
+          }
+
+          .imageViewerTop span {
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 800;
+          }
+
+          .imageViewerClose {
+            width: 34px;
+            height: 34px;
+            border: 0;
+            border-radius: 10px;
+            background: rgba(255,255,255,.1);
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+          }
+
+          .imageViewerStage {
+            position: relative;
+            overflow: hidden;
+            height: min(62vh, 600px);
+            aspect-ratio: 4 / 3;
+            border-radius: 14px;
+            background: #020617;
+          }
+
+          .imageViewerStage img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+          }
+
+          .imageViewerPrev,
+          .imageViewerNext {
+            position: absolute;
+            top: 50%;
+            width: 42px;
+            height: 42px;
+            transform: translateY(-50%);
+            border: 0;
+            border-radius: 50%;
+            background: rgba(2,6,23,.72);
+            color: #fff;
+            font-size: 28px;
+            cursor: pointer;
+          }
+
+          .imageViewerPrev {
+            left: 10px;
+          }
+
+          .imageViewerNext {
+            right: 10px;
+          }
+
+          .imageViewerThumbs {
+            display: flex;
+            gap: 7px;
+            overflow-x: auto;
+            padding-top: 10px;
+          }
+
+          .imageViewerThumb {
+            flex: 0 0 76px;
+            height: 56px;
+            padding: 0;
+            overflow: hidden;
+            border: 2px solid transparent;
+            border-radius: 9px;
+            background: #0f172a;
+            cursor: pointer;
+          }
+
+          .imageViewerThumb.active {
+            border-color: #f59e0b;
+          }
+
+          .imageViewerThumb img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+
+          /* INSERAT_AI_LISTING_GALLERY_STYLE_V1 */
+
+          .listingGallery {
+            display: grid;
+            grid-template-columns: minmax(0, 1.65fr) minmax(250px, .75fr);
+            gap: 5px;
+            height: 430px;
+            padding: 5px;
+            background: #e8edf3;
+          }
+
+          .listingHeroImage,
+          .listingGalleryThumb {
+            position: relative;
+            overflow: hidden;
+            background: #dbe3ec;
+          }
+
+          .listingHeroImage {
+            border-radius: 14px 5px 5px 14px;
+          }
+
+          .listingHeroImage img,
+          .listingGalleryThumb img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .35s ease;
+          }
+
+          .listingHeroImage:hover img,
+          .listingGalleryThumb:hover img {
+            transform: scale(1.015);
+          }
+
+          .listingGallerySide {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0,1fr));
+            grid-template-rows: repeat(2, minmax(0,1fr));
+            gap: 5px;
+            min-width: 0;
+          }
+
+          .listingGalleryThumb {
+            min-width: 0;
+          }
+
+          .listingGalleryThumb:nth-child(2) {
+            border-radius: 0 14px 0 0;
+          }
+
+          .listingGalleryThumb:nth-child(4) {
+            border-radius: 0 0 14px 0;
+          }
+
+          .heroImageBadge,
+          .heroImageCount {
+            position: absolute;
+            bottom: 14px;
+            display: inline-flex;
+            align-items: center;
+            min-height: 28px;
+            padding: 0 10px;
+            border: 1px solid rgba(255,255,255,.22);
+            border-radius: 9px;
+            background: rgba(3,12,25,.72);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            font-size: 9px;
+            font-weight: 950;
+            letter-spacing: .08em;
+            box-shadow: 0 8px 24px rgba(2,6,23,.18);
+          }
+
+          .heroImageBadge {
+            left: 14px;
+          }
+
+          .heroImageCount {
+            right: 14px;
+          }
+
+          .moreImages {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            background: rgba(3,12,25,.58);
+            backdrop-filter: blur(2px);
+            color: #fff;
+            font-size: 30px;
+            font-weight: 950;
+            letter-spacing: -.03em;
+          }
+
+          .previewChrome {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            min-height: 42px;
+            padding: 0 15px;
+            border-bottom: 1px solid #e7edf4;
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 9px;
+            font-weight: 950;
+            letter-spacing: .1em;
+          }
+
+          .previewMark {
+            display: grid;
+            place-items: center;
+            width: 25px;
+            height: 25px;
+            border-radius: 8px;
+            background: linear-gradient(
+              135deg,
+              #f59e0b,
+              #f97316
+            );
+            color: #fff;
+            font-size: 9px;
+            box-shadow: 0 5px 12px rgba(249,115,22,.22);
+          }
+
+          .previewLive {
+            margin-left: auto;
+            color: #16a34a;
+          }
+
+          .titleEdit,
+          .textEdit {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            border: 0;
+            background: transparent;
+            color: #172033;
+            outline: none;
+          }
+
+          .titleEdit {
+            min-height: 100px;
+            margin: 0;
+            padding: 24px 26px 18px;
+            border-radius: 0;
+            resize: none;
+            font-family: inherit;
+            font-size: clamp(20px,2.3vw,29px);
+            font-weight: 900;
+            line-height: 1.22;
+            letter-spacing: -.025em;
+          }
+
+          .previewDivider {
+            height: 1px;
+            margin: 0 26px;
+            background: #e8edf3;
+          }
+
+          .textEdit {
+            min-height: 300px;
+            margin: 0;
+            padding: 20px 26px 28px;
+            border-radius: 0;
+            resize: vertical;
+            font: inherit;
+            font-size: 14px;
+            line-height: 1.78;
+            color: #40506a;
+          }
+
+          .titleEdit:focus,
+          .textEdit:focus {
+            background: rgba(245,158,11,.025);
+          }
+
+          .publishZone {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1fr minmax(310px,420px);
+            align-items: center;
+            gap: 22px;
+            margin-top: 18px;
+            padding: 18px;
+            border: 1px solid rgba(251,191,36,.16);
+            border-radius: 17px;
+            background:
+              linear-gradient(
+                135deg,
+                rgba(245,158,11,.07),
+                rgba(255,255,255,.025)
+              );
+          }
+
+          .publishCopy {
+            display: grid;
+            gap: 4px;
+          }
+
+          .publishReady {
+            color: #fbbf24;
+            font-size: 9px;
+            font-weight: 950;
+            letter-spacing: .14em;
+          }
+
+          .publishCopy strong {
+            color: #f8fafc;
+            font-size: 16px;
+          }
+
+          .publishCopy small {
+            max-width: 520px;
+            color: #8294ad;
+            font-size: 11px;
+            line-height: 1.5;
+          }
+
+          .publish {
+            width: 100%;
+            min-height: 58px;
+            margin: 0;
+            padding: 0 20px;
+            border: 0;
+            border-radius: 14px;
+            background:
+              linear-gradient(
+                135deg,
+                #f59e0b,
+                #f97316
+              );
+            color: #fff;
+            font-size: 13px;
+            font-weight: 950;
+            letter-spacing: .025em;
+            cursor: pointer;
+            box-shadow:
+              0 15px 34px rgba(249,115,22,.22),
+              inset 0 1px 0 rgba(255,255,255,.18);
+            transition:
+              transform .16s ease,
+              box-shadow .16s ease;
+          }
+
+          .publish:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow:
+              0 19px 40px rgba(249,115,22,.28),
+              inset 0 1px 0 rgba(255,255,255,.18);
+          }
+
+          .publish:disabled {
+            opacity: .42;
+            cursor: not-allowed;
+          }
+
+          .publish span {
+            margin-left: 9px;
+            font-size: 20px;
+          }
+
+          .publishHint {
+            position: relative;
+            z-index: 1;
+            margin: 10px 0 0;
+            text-align: center;
+            color: #667a97;
+            font-size: 10px;
+          }
           @media (max-width:760px) {
             .page {
               padding: 8px;
@@ -1156,6 +2873,130 @@ export default function AutomationFlowV2() {
               transform: translateY(-1px) rotate(-45deg);
             }
 
+            /* INSERAT_AI_MOBILE_IMAGE_VIEWER_V1 */
+            .imageViewerBackdrop {
+              padding: 10px;
+            }
+
+            .imageViewer {
+              width: 100%;
+              max-height: calc(100dvh - 20px);
+              padding: 10px;
+              border-radius: 15px;
+            }
+
+            .imageViewerTop {
+              margin-bottom: 8px;
+            }
+
+            .imageViewerStage {
+              width: 100%;
+              height: auto;
+              aspect-ratio: 4 / 3;
+              border-radius: 11px;
+            }
+
+            .imageViewerStage img {
+              width: 100%;
+              height: 100%;
+              object-fit: contain;
+            }
+
+            .imageViewerPrev,
+            .imageViewerNext {
+              width: 36px;
+              height: 36px;
+              font-size: 20px;
+            }
+
+            .imageViewerThumbs {
+              gap: 6px;
+              padding-top: 8px;
+            }
+
+            .imageViewerThumb {
+              flex-basis: 62px;
+              height: 46px;
+            }
+
+            /* INSERAT_AI_MOBILE_LISTING_GALLERY_V1 */
+            .mobileMoreImages {
+              display: block;
+            }
+
+            .listingGallery {
+              grid-template-columns: 1fr;
+              grid-template-rows: 230px 112px;
+              gap: 5px;
+              height: auto;
+              padding: 5px;
+            }
+
+            .listingHeroImage {
+              min-width: 0;
+              min-height: 0;
+              border-radius: 12px 12px 5px 5px;
+            }
+
+            .listingGallerySide {
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+              grid-template-rows: 112px;
+              gap: 5px;
+              min-width: 0;
+            }
+
+            .listingGalleryThumb {
+              min-width: 0;
+              min-height: 0;
+              border-radius: 5px;
+            }
+
+            .listingGalleryThumb:nth-child(n + 3) {
+              display: none;
+            }
+
+            .listingGalleryThumb:first-child {
+              border-radius: 5px 5px 5px 12px;
+            }
+
+            .listingGalleryThumb:nth-child(2) {
+              border-radius: 5px 5px 12px 5px;
+            }
+
+            .mobileMoreImages {
+              position: absolute;
+              right: 8px;
+              bottom: 8px;
+              z-index: 2;
+              padding: 5px 8px;
+              border: 0;
+              cursor: pointer;
+              border-radius: 8px;
+              background: rgba(3,12,25,.72);
+              color: #fff;
+              font-size: 10px;
+              font-weight: 900;
+              line-height: 1;
+              backdrop-filter: blur(6px);
+            }
+
+            .heroImageBadge,
+            .heroImageCount {
+              bottom: 10px;
+              min-height: 24px;
+              padding: 0 8px;
+              font-size: 9px;
+            }
+
+            .heroImageBadge {
+              left: 10px;
+            }
+
+            .heroImageCount {
+              right: 10px;
+            }
+
+
             .facts {
               grid-template-columns: 1fr;
             }
@@ -1239,13 +3080,33 @@ export default function AutomationFlowV2() {
               margin-top: 12px;
             }
 
+            /* INSERAT_AI_MOBILE_VARIANTS_V1 */
             .result .tabs {
+              display: grid;
+              grid-template-columns: repeat(3, minmax(0, 1fr));
+              gap: 6px;
               width: 100%;
+              min-width: 0;
             }
 
             .result .tabs button {
-              flex: 1;
-              height: 38px;
+              width: 100%;
+              min-width: 0;
+              min-height: 34px;
+              height: 34px;
+              padding: 3px 3px;
+              gap: 2px;
+              border-radius: 9px;
+            }
+
+            .result .tabs button small {
+              font-size: 6px;
+              letter-spacing: 0;
+            }
+
+            .result .tabs button span {
+              font-size: 12px;
+              line-height: 1;
             }
 
             .titleEdit {
@@ -1267,10 +3128,38 @@ export default function AutomationFlowV2() {
               line-height: 1.55;
             }
 
+            /* INSERAT_AI_MOBILE_PUBLISH_ZONE_V1 */
+            .publishZone {
+              grid-template-columns: minmax(0, 1fr);
+              gap: 14px;
+              padding: 14px;
+            }
+
+            .publishCopy {
+              min-width: 0;
+            }
+
+            .publishCopy strong {
+              font-size: 15px;
+              line-height: 1.3;
+            }
+
+            .publishCopy small {
+              font-size: 10px;
+              line-height: 1.5;
+            }
+
             .publish {
-              min-height: 54px;
-              margin-top: 12px;
-              font-size: 16px;
+              width: 100%;
+              min-width: 0;
+              max-width: 100%;
+              min-height: 50px;
+              margin: 0;
+              padding: 0 12px;
+              box-sizing: border-box;
+              font-size: 12px;
+              line-height: 1.2;
+              white-space: normal;
             }
 
             .publishHint {
