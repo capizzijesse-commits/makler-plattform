@@ -1208,7 +1208,7 @@ export default function AutomationFlowV2() {
                   />
                   <div className="dropIcon">＋</div>
                   <div>
-                    <h2>{stage === "working" ? "Inserat-AI arbeitet …" : "Exposé + Bilder hier ablegen"}</h2>
+                    <h2>{stage === "working" ? "Inserat-AI arbeitet …" : "Exposé mit Bildern hochladen"}</h2>
                     <p>
                       {stage === "working"
                         ? "Adresse, Daten, Masse, Bilder und Inserattext werden automatisch verarbeitet."
