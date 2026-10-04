@@ -522,10 +522,10 @@ export async function extractPdfImageCandidates(
 
         if (
           !image?.data ||
-          width < 400 ||
-          height < 300 ||
+          width < 120 ||
+          height < 100 ||
           width * height <
-            240000
+            25000
         ) {
           continue;
         }
