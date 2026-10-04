@@ -235,7 +235,8 @@ useEffect(() => {
        */
       if (
         normalizedPlan === "pro" ||
-        normalizedPlan === "agency"
+        normalizedPlan === "agency" ||
+        normalizedPlan === "admin"
       ) {
         window.location.replace("/automation");
         return;

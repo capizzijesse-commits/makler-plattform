@@ -529,42 +529,22 @@ export default function PricingSection({
                   </span>
                 </button>
               ) : plan.id === "pro" ? (
-                isGermany ? (
-                  <a
-                    href="/register?plan=pro"
-                    className="planButton"
-                    style={{
-                      border: 0,
-                      cursor: "pointer",
-                      opacity: 1,
-                      font: "inherit",
-                    }}
-                  >
-                    30 Tage kostenlos starten
+                <a
+                  href="/register?plan=pro"
+                  className="planButton"
+                  style={{
+                    border: 0,
+                    cursor: "pointer",
+                    opacity: 1,
+                    font: "inherit",
+                  }}
+                >
+                  30 Tage kostenlos starten
 
-                    <span aria-hidden="true">
-                      {"\u2192"}
-                    </span>
-                  </a>
-                ) : (
-                  <button
-                    type="button"
-                    disabled
-                    className="planButton"
-                    style={{
-                      border: 0,
-                      font: "inherit",
-                      opacity: 0.62,
-                      cursor: "not-allowed",
-                    }}
-                  >
-                    {plan.button}
-
-                    <span aria-hidden="true">
-                      {"\u{1F512}"}
-                    </span>
-                  </button>
-                )
+                  <span aria-hidden="true">
+                    {"\u2192"}
+                  </span>
+                </a>
               ) : (
                 <a
                   href={plan.href}
