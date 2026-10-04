@@ -5,9 +5,133 @@ import { NextResponse } from "next/server";
 
 import { getAuthenticatedUser } from "@/lib/session";
 
+import {
+  extractPropertyPhotosFromPdf,
+} from "@/lib/pdf-extract-property-photos.server";
+
 const MODEL = process.env.OPENAI_LISTING_MODEL?.trim() || "gpt-4.1-mini";
 const EXPOSE_PREFIX = "/automation-exposes/";
 const MAX_EXPOSE_BYTES = 25 * 1024 * 1024;
+
+
+// PDF_TEXT_FAST_PATH_V1
+async function extractPdfTextFast(
+  bytes: Uint8Array
+): Promise<{
+  text: string;
+  pageCount: number;
+  textPageCount: number;
+}> {
+  await import(
+    "pdfjs-dist/legacy/build/pdf.worker.mjs"
+  );
+
+  const pdfjs =
+    await import(
+      "pdfjs-dist/legacy/build/pdf.mjs"
+    );
+
+  const loadingTask =
+    pdfjs.getDocument({
+      data:
+        new Uint8Array(bytes),
+      useSystemFonts:
+        false,
+    });
+
+  const pdf =
+    await loadingTask.promise;
+
+  const pageTexts: string[] = [];
+
+  try {
+    for (
+      let pageNumber = 1;
+      pageNumber <= pdf.numPages;
+      pageNumber += 1
+    ) {
+      const page =
+        await pdf.getPage(
+          pageNumber
+        );
+
+      try {
+        const content =
+          await page.getTextContent();
+
+        const text =
+          content.items
+            .map((item) =>
+              "str" in item
+                ? item.str
+                : ""
+            )
+            .join(" ")
+            .replace(/\s+/g, " ")
+            .trim();
+
+        if (text) {
+          pageTexts.push(
+            `[PAGE ${pageNumber}]\n${text}`
+          );
+        }
+      } finally {
+        page.cleanup();
+      }
+    }
+
+    return {
+      text:
+        pageTexts.join(
+          "\n\n"
+        ),
+      pageCount:
+        pdf.numPages,
+      textPageCount:
+        pageTexts.length,
+    };
+  } finally {
+    await loadingTask.destroy();
+  }
+}
+
+function isPdfTextFastPathUsable(
+  result: {
+    text: string;
+    pageCount: number;
+    textPageCount: number;
+  }
+): boolean {
+  const normalized =
+    result.text.trim();
+
+  if (
+    normalized.length < 1000
+  ) {
+    return false;
+  }
+
+  if (
+    result.textPageCount < 2
+  ) {
+    return false;
+  }
+
+  const textCoverage =
+    result.pageCount > 0
+      ? result.textPageCount /
+        result.pageCount
+      : 0;
+
+  if (
+    result.pageCount >= 4 &&
+    textCoverage < 0.2
+  ) {
+    return false;
+  }
+
+  return true;
+}
 
 const ALLOWED_CONTENT_TYPES = new Set([
   "application/pdf",
@@ -90,6 +214,69 @@ function normalizeResult(value: unknown): ExtractedExpose {
     sourceSummary: cleanString(raw.sourceSummary),
     missingFields,
   };
+}
+
+// EXPOSE_PRICE_FIREWALL_V1
+function normalizePriceDigits(
+  value: string
+): string {
+  return value.replace(/\D/g, "");
+}
+
+function hasExplicitSalePriceEvidence(
+  documentText: string,
+  extractedPrice: string
+): boolean {
+  const priceDigits =
+    normalizePriceDigits(
+      extractedPrice
+    );
+
+  if (!priceDigits) {
+    return false;
+  }
+
+  const normalizedDocument =
+    documentText
+      .replace(/[???`']/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const allowedLabels =
+    /(?:kaufpreis|verkaufspreis|angebotspreis|asking\s+price|purchase\s+price|sale\s+price)/i;
+
+  const forbiddenLabels =
+    /(?:verkehrswert|steuerlicher\s+verkehrswert|ertragswert|versicherungswert|geb?udeversicherungswert|gebaeudeversicherungswert|steuerwert)/i;
+
+  const chunks =
+    normalizedDocument.split(
+      /(?<=[.!?])\s+|\n+/g
+    );
+
+  for (const chunk of chunks) {
+    if (!allowedLabels.test(chunk)) {
+      continue;
+    }
+
+    if (forbiddenLabels.test(chunk)) {
+      continue;
+    }
+
+    const chunkDigits =
+      normalizePriceDigits(
+        chunk
+      );
+
+    if (
+      chunkDigits.includes(
+        priceDigits
+      )
+    ) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function parseJsonObject(text: string): unknown {
@@ -249,44 +436,90 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // AUTOMATION_PDF_PROPERTY_PHOTOS_V1
+    const pdfPropertyPhotosPromise =
+      fileType === "application/pdf"
+        ? extractPropertyPhotosFromPdf(
+            Buffer.from(bytes),
+            {
+              maximumPhotos: 10,
+              minimumConfidence: 0.7,
+            }
+          )
+        : Promise.resolve({
+            candidateCount: 0,
+            propertyPhotoCount: 0,
+            photos: [],
+          });
+
+    // PDF_TEXT_FAST_PATH_DECISION_V1
+    let pdfFastText = "";
+    let usePdfTextFastPath = false;
+
+    if (
+      fileType === "application/pdf"
+    ) {
+      const pdfTextStartedAt =
+        performance.now();
+
+      try {
+        const pdfTextResult =
+          await extractPdfTextFast(
+            bytes
+          );
+
+        usePdfTextFastPath =
+          isPdfTextFastPathUsable(
+            pdfTextResult
+          );
+
+        if (
+          usePdfTextFastPath
+        ) {
+          pdfFastText =
+            pdfTextResult.text;
+        }
+
+        console.log(
+          "[EXPOSE PDF TEXT FAST PATH]",
+          {
+            usable:
+              usePdfTextFastPath,
+            pages:
+              pdfTextResult.pageCount,
+            textPages:
+              pdfTextResult.textPageCount,
+            characters:
+              pdfTextResult.text.length,
+            durationMs:
+              Math.round(
+                performance.now() -
+                  pdfTextStartedAt
+              ),
+          }
+        );
+      } catch (error) {
+        console.warn(
+          "[EXPOSE PDF TEXT FAST PATH] fallback",
+          error
+        );
+
+        pdfFastText = "";
+        usePdfTextFastPath = false;
+      }
+    }
+
     openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    const uploadable = await toFile(bytes, fileName, {
-      type: fileType,
-    });
-
-    const uploaded = await openai.files.create({
-      file: uploadable,
-      purpose: "user_data",
-    });
-
-    openAiFileId = uploaded.id;
-
-    console.log("[EXPOSE SPEED] openai-file-upload", {
-      durationMs: Math.round(performance.now() - exposeProfileStepAt),
-    });
-    exposeProfileStepAt = performance.now();
-
-    const response = await openai.responses.create({
-      model: MODEL,
-      input: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "input_file",
-              file_id: uploaded.id,
-            },
-            {
-              type: "input_text",
-              text: `
+    // PDF_TEXT_FAST_PATH_EXECUTION_V1
+    const extractionPrompt = `
 Du bist die Fakten-Extraktion von Inserat-AI.
-Lies das Immobilien-Exposé und extrahiere ausschliesslich belegte Fakten.
-Erfinde nichts und leite keine Vorteile ab, die nicht ausdrücklich im Dokument stehen.
+Lies den gelieferten Immobilien-Expos?-Inhalt und extrahiere ausschliesslich belegte Fakten.
+Erfinde nichts und leite keine Vorteile ab, die nicht ausdr?cklich im Dokument stehen.
 
-Gib NUR valides JSON in dieser Struktur zurück:
+Gib NUR valides JSON in dieser Struktur zur?ck:
 {
   "projectName": "kurzer interner Objektname, wenn sinnvoll aus den Fakten ableitbar",
   "countryCode": "CH oder DE oder AT",
@@ -295,36 +528,227 @@ Gib NUR valides JSON in dieser Struktur zurück:
   "location": "Ort/Gemeinde",
   "propertyType": "Objektart",
   "rooms": "Zimmerzahl ohne Zusatztext",
-  "livingArea": "Wohnfläche als Zahl oder kurze belegte Angabe",
-  "price": "Preis mit Währung, falls vorhanden",
+  "livingArea": "Wohnfl?che als Zahl oder kurze belegte Angabe",
+  "price": "Preis mit W?hrung, falls vorhanden",
   "highlights": "kommagetrennte belegte Ausstattungsmerkmale",
-  "styleText": "kurze neutrale Stilbeschreibung nur wenn ausdrücklich belegt, sonst leer",
-  "sourceSummary": "maximal 2 kurze Sätze mit den wichtigsten belegten Fakten",
-  "missingFields": ["Feldnamen, die für ein Immobilieninserat wichtig sind, aber im Dokument fehlen"]
+  "styleText": "kurze neutrale Stilbeschreibung nur wenn ausdr?cklich belegt, sonst leer",
+  "sourceSummary": "maximal 2 kurze S?tze mit den wichtigsten belegten Fakten",
+  "missingFields": ["Feldnamen, die f?r ein Immobilieninserat wichtig sind, aber im Dokument fehlen"]
 }
 
 Regeln:
-- Unbekannte Werte als leeren String zurückgeben.
-- Keine Schätzungen.
+
+ADRESSE:
+- Adresse nur ?bernehmen, wenn sie ausdr?cklich im Dokument steht.
+- "street" muss den vollst?ndigen ausdr?cklich genannten Strassennamen inklusive Hausnummer enthalten.
+- Artikel oder Pr?positionen wie "Am", "Im" oder "An der" beibehalten, wenn sie Teil der Adresse sind.
+- Eine vorhandene Hausnummer darf niemals entfernt werden.
+- PLZ und Ort getrennt ausgeben.
+- Keine Adresse oder PLZ erraten oder nachschlagen.
+
+WOHNFL?CHE:
+- "livingArea" muss die ausdr?cklich als Wohnfl?che bezeichnete Gesamtfl?che sein.
+- Eine ausdr?cklich genannte "Netto Wohnfl?che", "Nettowohnfl?che" oder eindeutig gleichwertige Gesamt-Wohnfl?che hat Vorrang.
+- Zahlen aus Ertragswert-, Bewertungs-, Kapitalisierungs-, Versicherungs- oder Vergleichstabellen sind keine Wohnfl?che.
+- HNF, NNF, Geschossfl?che, Grundst?cksfl?che und einzelne Raumfl?chen nicht als livingArea verwenden, wenn eine explizite Gesamt-Wohnfl?che vorhanden ist.
+- Den Wert exakt ?bernehmen.
+
+PREIS:
+- "price" darf NUR einen ausdr?cklich genannten Verkaufs-, Kauf-, Angebots- oder Verkaufspreis enthalten.
+- Verkehrswert ist KEIN Verkaufspreis.
+- Steuerlicher Verkehrswert ist KEIN Verkaufspreis.
+- Ertragswert ist KEIN Verkaufspreis.
+- Versicherungswert und Geb?udeversicherung sind KEIN Verkaufspreis.
+- Grundst?ckswerte, Wertquoten und Einzelwerte sind KEIN Verkaufspreis.
+- Wenn kein ausdr?cklicher Verkaufs-, Kauf- oder Angebotspreis vorhanden ist, MUSS "price" ein leerer String sein.
+
+DATENSCHUTZ:
+- Keine Namen von Eigent?mern, Verk?ufern, K?ufern oder Kontaktpersonen in sourceSummary, highlights oder styleText ausgeben.
+- Personenbezogene Namen sind keine Inseratfakten.
+
+ZUSAMMENFASSUNG:
+- sourceSummary maximal 2 kurze S?tze.
+- Nur inseratrelevante Objektfakten aufnehmen.
+- Keine Bewertungswerte als Verkaufspreis darstellen.
+
+ALLGEMEIN:
+- Keine Sch?tzungen.
+- Keine Fakten erfinden.
+- Zahlen und Fl?chen exakt ?bernehmen.
+- Unbekannte Werte als leeren String zur?ckgeben.
 - Keine erfundenen Lagevorteile.
 - Keine Zielgruppen erfinden.
-- Zahlen, Flächen und Preise exakt übernehmen.
-`.trim(),
-            },
-          ],
-        },
-      ],
-      max_output_tokens: 1200,
-    });
+`.trim();
 
-    console.log("[EXPOSE SPEED] ai-extraction", {
-      durationMs: Math.round(performance.now() - exposeProfileStepAt),
-    });
-    exposeProfileStepAt = performance.now();
+    const aiStartedAt =
+      performance.now();
 
-    const extracted = normalizeResult(
-      parseJsonObject(response.output_text || "")
+    const response =
+      usePdfTextFastPath
+        ? await openai.responses.create({
+            model: MODEL,
+            input: [
+              {
+                role: "user",
+                content: [
+                  {
+                    type: "input_text",
+                    text:
+                      extractionPrompt +
+                      "\n\nDOKUMENT:\n\n" +
+                      pdfFastText,
+                  },
+                ],
+              },
+            ],
+            max_output_tokens: 1200,
+          })
+        : await (async () => {
+            const uploadStartedAt =
+              performance.now();
+
+            const uploadable =
+              await toFile(
+                bytes,
+                fileName,
+                {
+                  type: fileType,
+                }
+              );
+
+            const uploaded =
+              await openai.files.create({
+                file: uploadable,
+                purpose: "user_data",
+              });
+
+            openAiFileId =
+              uploaded.id;
+
+            console.log(
+              "[EXPOSE SPEED] openai-file-upload",
+              {
+                durationMs:
+                  Math.round(
+                    performance.now() -
+                      uploadStartedAt
+                  ),
+              }
+            );
+
+            return openai.responses.create({
+              model: MODEL,
+              input: [
+                {
+                  role: "user",
+                  content: [
+                    {
+                      type: "input_file",
+                      file_id:
+                        uploaded.id,
+                    },
+                    {
+                      type: "input_text",
+                      text:
+                        extractionPrompt,
+                    },
+                  ],
+                },
+              ],
+              max_output_tokens: 1200,
+            });
+          })();
+
+    console.log(
+      "[EXPOSE SPEED] ai-extraction",
+      {
+        mode:
+          usePdfTextFastPath
+            ? "pdf-text-fast"
+            : "full-file-fallback",
+        durationMs:
+          Math.round(
+            performance.now() -
+              aiStartedAt
+          ),
+      }
     );
+
+    exposeProfileStepAt =
+      performance.now();
+
+    const extracted =
+      normalizeResult(
+        parseJsonObject(
+          response.output_text || ""
+        )
+      );
+
+    if (
+      usePdfTextFastPath &&
+      extracted.price &&
+      !hasExplicitSalePriceEvidence(
+        pdfFastText,
+        extracted.price
+      )
+    ) {
+      console.warn(
+        "[EXPOSE PRICE FIREWALL] rejected",
+        {
+          extractedPrice:
+            extracted.price,
+        }
+      );
+
+      extracted.price = "";
+
+      if (
+        !extracted.missingFields.includes(
+          "price"
+        )
+      ) {
+        extracted.missingFields.push(
+          "price"
+        );
+      }
+    }
+
+    const pdfPropertyPhotos =
+      await pdfPropertyPhotosPromise;
+
+    console.log("[EXPOSE PDF PHOTOS]", {
+      candidateCount:
+        pdfPropertyPhotos.candidateCount,
+      propertyPhotoCount:
+        pdfPropertyPhotos.propertyPhotoCount,
+      returnedPhotos:
+        pdfPropertyPhotos.photos.length,
+    });
+
+    const extractedPhotos =
+      pdfPropertyPhotos.photos.map(
+        (photo, index) => ({
+          fileName:
+            `expose-photo-${String(index + 1).padStart(2, "0")}.jpg`,
+          mimeType: "image/jpeg",
+          width: photo.width,
+          height: photo.height,
+          pageNumber: photo.pageNumber,
+          imageIndex: photo.imageIndex,
+          confidence: photo.confidence,
+          reason: photo.reason,
+          base64:
+            photo.buffer.toString("base64"),
+        })
+      );
+
+    // EXPOSE_ADDRESS_DIAGNOSTIC_V1
+    console.log("[EXPOSE ADDRESS]", {
+      street: extracted.street,
+      postalCode: extracted.postalCode,
+      location: extracted.location,
+      missingFields: extracted.missingFields,
+    });
 
     console.log("[EXPOSE SPEED] completed", {
       parseMs: Math.round(performance.now() - exposeProfileStepAt),
@@ -334,6 +758,7 @@ Regeln:
     return NextResponse.json({
       success: true,
       extracted,
+      extractedPhotos,
     });
   } catch (error) {
     console.error("AUTOMATION EXPOSE EXTRACTION ERROR:", error);
