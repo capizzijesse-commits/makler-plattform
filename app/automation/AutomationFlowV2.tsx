@@ -10,6 +10,14 @@ import {
   type InseratAiMarket,
 } from "@/lib/inserat-ai-market";
 
+import {
+  buildSalesExposeDocument,
+} from "@/lib/sales-expose/sales-expose-document";
+
+import {
+  downloadSalesExposePdf,
+} from "@/lib/sales-expose/sales-expose-pdf";
+
 type Extracted = {
   projectName: string;
   countryCode: "CH" | "DE" | "AT";
@@ -188,6 +196,21 @@ export default function AutomationFlowV2() {
   function printCurrentListing() {
     window.print();
   }
+  // SALES_EXPOSE_DOWNLOAD_V1
+  async function downloadCurrentSalesExpose() {
+    const salesExposeDocument =
+      buildSalesExposeDocument({
+        facts: data,
+        images: imageAnalyses,
+        variants,
+      });
+
+    await downloadSalesExposePdf(
+      salesExposeDocument,
+      images
+    );
+  }
+
   // AUTOMATION_ABORT_V1
   const automationAbortRef = useRef<AbortController | null>(null);
   // MOBILE_AUTOMATION_FACTS_TOGGLE_V1
@@ -1767,6 +1790,17 @@ export default function AutomationFlowV2() {
                     </span>
 
                     Inserat drucken
+                  </button>
+
+                  <button
+                    type="button"
+                    className="listingAction"
+                    onClick={() => {
+                      void downloadCurrentSalesExpose();
+                    }}
+                  >
+                    <span aria-hidden="true">↓</span>
+                    Verkaufsexposé herunterladen
                   </button>
                 </div>
 
