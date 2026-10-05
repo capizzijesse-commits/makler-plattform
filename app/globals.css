@@ -1,4 +1,4 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -577,7 +577,7 @@ body {
     width: 100% !important;
   }
 
-  /* ðŸ”¥ DAS HIER FEHLT BEI DIR */
+  /* Ã°Å¸â€Â¥ DAS HIER FEHLT BEI DIR */
   .landingPage .pricingGrid {
     grid-template-columns: 1fr !important;
     padding: 0 16px !important;
@@ -733,12 +733,12 @@ body {
     max-width: 100% !important;
     text-align: center !important;
   }
- /* Erzwingt das durchsichtige Grau fÃ¼r alle Browser */
+ /* Erzwingt das durchsichtige Grau fÃƒÂ¼r alle Browser */
 input::placeholder,
 textarea::placeholder {
   color: #94A3B8 !important;
-  opacity: 0.4 !important; /* Etwas niedriger fÃ¼r echtes "Durchscheinen" */
-  -webkit-text-fill-color: #94A3B8 !important; /* Speziell fÃ¼r Safari/iOS */
+  opacity: 0.4 !important; /* Etwas niedriger fÃƒÂ¼r echtes "Durchscheinen" */
+  -webkit-text-fill-color: #94A3B8 !important; /* Speziell fÃƒÂ¼r Safari/iOS */
 }
 
 /* Verhindert, dass der Browser den Text beim Reinklicken schwarz macht */
@@ -2007,7 +2007,7 @@ input:focus::placeholder {
     grid-template-columns: 1fr;
   }
 }
-/* Weicher Ãœbergang von Hero zu Preisen */
+/* Weicher ÃƒÅ“bergang von Hero zu Preisen */
 
 .landingHero {
   position: relative;
@@ -2054,7 +2054,7 @@ input:focus::placeholder {
     display: none;
   }
 }
-/* Trust-/Vorteile-Balken schÃ¶ner und grÃ¶sser */
+/* Trust-/Vorteile-Balken schÃƒÂ¶ner und grÃƒÂ¶sser */
 
 .landingTrustBar {
   min-height: 116px;
@@ -2467,7 +2467,7 @@ input:focus::placeholder {
     text-align: center !important;
   }
 
-  /* BegrÃ¼ssung */
+  /* BegrÃƒÂ¼ssung */
 
   .heroSection {
     align-items: stretch !important;
@@ -2500,7 +2500,7 @@ input:focus::placeholder {
     min-height: 48px !important;
   }
 
-  /* Statistik-Karten: 2 Ã— 2 statt vier nebeneinander */
+  /* Statistik-Karten: 2 Ãƒâ€” 2 statt vier nebeneinander */
 
   .statsGrid {
     display: grid !important;
@@ -2854,7 +2854,7 @@ input:focus::placeholder {
     color: #fbbf24 !important;
   }
 
-  /* Statistik-Karten kompakt als 2 Ã— 2 */
+  /* Statistik-Karten kompakt als 2 Ãƒâ€” 2 */
 
   .statsGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -2888,7 +2888,7 @@ input:focus::placeholder {
     font-size: 16px !important;
   }
 
-  /* Kontaktbutton kleiner und nÃ¤her am Rand */
+  /* Kontaktbutton kleiner und nÃƒÂ¤her am Rand */
 
   .fixed.bottom-24.right-5.z-50 {
     right: 9px !important;
@@ -2972,7 +2972,7 @@ input:focus::placeholder {
     box-sizing: border-box !important;
   }
 }/* =========================================================
-   INSERAT-AI: MOBILE DASHBOARD â€“ FINALER EINGABEBEREICH
+   INSERAT-AI: MOBILE DASHBOARD Ã¢â‚¬â€œ FINALER EINGABEBEREICH
    ========================================================= */
 
 .saveCockpitButton {
@@ -3051,7 +3051,7 @@ input:focus::placeholder {
     display: none !important;
   }
 
-  /* Auch die Ausgabekarte normal Ã¼ber die Seite scrollen lassen */
+  /* Auch die Ausgabekarte normal ÃƒÂ¼ber die Seite scrollen lassen */
 
   .outputSection,
   .outputCard {
@@ -3113,7 +3113,7 @@ input:focus::placeholder {
     text-align: center !important;
   }
 }
-/* Virtual Tour Studio â€“ elegante Scrollbereiche */
+/* Virtual Tour Studio Ã¢â‚¬â€œ elegante Scrollbereiche */
 
 @media (min-width: 901px) {
   .tourPanel {
@@ -3182,7 +3182,7 @@ input:focus::placeholder {
     display: none;
   }
 }
-/* Virtual Tour Studio â€“ haftender Aktionsbutton */
+/* Virtual Tour Studio Ã¢â‚¬â€œ haftender Aktionsbutton */
 
 .tourStickyActionBar {
   position: sticky;
@@ -3261,7 +3261,7 @@ input:focus::placeholder {
   }
 }
 /* =========================================================
-   INSERAT-AI â€“ ZENTRALE APP-NAVIGATION
+   INSERAT-AI Ã¢â‚¬â€œ ZENTRALE APP-NAVIGATION
    ========================================================= */
 
 .appCentralNavbar {
@@ -3643,7 +3643,7 @@ input:focus::placeholder {
     font-size: 12px;
   }
 }
-/* GLOBALER PRIVATSPHÃ„RE-MODUS */
+/* GLOBALER PRIVATSPHÃƒâ€žRE-MODUS */
 
 html.privacy-mode main img:not([data-privacy-exempt="true"]),
 html.privacy-mode main video:not([data-privacy-exempt="true"]) {
@@ -3707,7 +3707,7 @@ html.privacy-mode main video:not([data-privacy-exempt="true"]) {
     font-size: 11px;
   }
 }
-/* PREMIUM-PRIVATSPHÃ„RE-SCHALTER IN DER NAVBAR */
+/* PREMIUM-PRIVATSPHÃƒâ€žRE-SCHALTER IN DER NAVBAR */
 
 .globalPrivacyButton {
   position: relative !important;
@@ -3928,7 +3928,7 @@ html.privacy-mode main video:not([data-privacy-exempt="true"]) {
     0 0 24px rgba(251,191,36,0.18) !important;
 }
 
-/* Karte 2 â€“ Cyan */
+/* Karte 2 Ã¢â‚¬â€œ Cyan */
 .quickGrid > a.quickCard:nth-child(2) {
   border-color: rgba(56, 189, 248, 0.52) !important;
   background:
@@ -3961,7 +3961,7 @@ html.privacy-mode main video:not([data-privacy-exempt="true"]) {
     0 0 24px rgba(56,189,248,0.2) !important;
 }
 
-/* Karte 3 â€“ Violett / Gold */
+/* Karte 3 Ã¢â‚¬â€œ Violett / Gold */
 .quickGrid > a.quickCard:nth-child(3) {
   border-color: rgba(129, 140, 248, 0.48) !important;
   background:
@@ -4046,7 +4046,7 @@ html.privacy-mode main video:not([data-privacy-exempt="true"]) {
     min-height: 190px !important;
   }
 }
-/* SCHNELLZUGRIFF â€“ FARBEN DEZENTER */
+/* SCHNELLZUGRIFF Ã¢â‚¬â€œ FARBEN DEZENTER */
 
 .quickGrid > a.quickCard {
   border-color: rgba(251, 191, 36, 0.28) !important;
@@ -4077,7 +4077,7 @@ html.privacy-mode main video:not([data-privacy-exempt="true"]) {
     0 0 8px rgba(251, 191, 36, 0.18) !important;
 }
 
-/* Bilder analysieren â€“ dezentes Cyan */
+/* Bilder analysieren Ã¢â‚¬â€œ dezentes Cyan */
 
 .quickGrid > a.quickCard:nth-child(2) {
   border-color: rgba(56, 189, 248, 0.32) !important;
@@ -4106,7 +4106,7 @@ html.privacy-mode main video:not([data-privacy-exempt="true"]) {
     0 0 8px rgba(56, 189, 248, 0.2) !important;
 }
 
-/* Objekte verwalten â€“ dezentes Violett */
+/* Objekte verwalten Ã¢â‚¬â€œ dezentes Violett */
 
 .quickGrid > a.quickCard:nth-child(3) {
   border-color: rgba(129, 140, 248, 0.3) !important;
@@ -4149,7 +4149,7 @@ html.privacy-mode main video:not([data-privacy-exempt="true"]) {
     0 0 18px rgba(251, 191, 36, 0.07) !important;
 }
 /* =========================================================
-   INSERAT-AI â€“ GLOBALE SMARTPHONE-BASIS
+   INSERAT-AI Ã¢â‚¬â€œ GLOBALE SMARTPHONE-BASIS
    Finale Regeln bewusst am Dateiende
    ========================================================= */
 
@@ -4184,7 +4184,7 @@ svg {
 }
 
 /* =========================================================
-   Ã–FFENTLICHE MOBILE-NAVIGATION
+   Ãƒâ€“FFENTLICHE MOBILE-NAVIGATION
    ========================================================= */
 
 @media (max-width: 700px) {
@@ -4328,7 +4328,7 @@ svg {
   }
 }
 /* =========================================================
-   INSERAT-AI â€“ FINALE Ã–FFENTLICHE MOBILE-NAVBAR
+   INSERAT-AI Ã¢â‚¬â€œ FINALE Ãƒâ€“FFENTLICHE MOBILE-NAVBAR
    ========================================================= */
 
 .siteCtaMobileText {
@@ -4440,7 +4440,7 @@ svg {
   }
 }
 
-/* Auf sehr schmalen GerÃ¤ten nur das Logo-Symbol */
+/* Auf sehr schmalen GerÃƒÂ¤ten nur das Logo-Symbol */
 @media (max-width: 370px) {
   .siteNavbar:not(.appCentralNavbar)
     .siteBrandText {
@@ -4459,8 +4459,8 @@ svg {
   }
 }
 /* =========================================================
-   INSERAT-AI â€“ Ã–FFENTLICHE MOBILE-NAVBAR V2
-   Ãœberschreibt bewusst alle Ã¤lteren Mobile-Regeln
+   INSERAT-AI Ã¢â‚¬â€œ Ãƒâ€“FFENTLICHE MOBILE-NAVBAR V2
+   ÃƒÅ“berschreibt bewusst alle ÃƒÂ¤lteren Mobile-Regeln
    ========================================================= */
 
 @media screen and (max-width: 700px) {
@@ -4607,7 +4607,7 @@ svg {
 }
 
 /* =========================================================
-   INSERAT-AI – MOBILER LOGIN MIT NORMALEM SEITENSCROLLEN
+   INSERAT-AI â€“ MOBILER LOGIN MIT NORMALEM SEITENSCROLLEN
    ========================================================= */
 
 @media (max-width: 700px) {
@@ -4665,7 +4665,7 @@ svg {
   }
 
   /*
-   Während der Eingabe entsteht echter Platz unter dem Formular.
+   WÃ¤hrend der Eingabe entsteht echter Platz unter dem Formular.
    Die Seite bleibt normales Dokument und keine interne Scrollbox.
   */
   .loginPage:focus-within {
@@ -4686,7 +4686,7 @@ svg {
   }
 }
 /* =========================================================
-   INSERAT-AI – PRIVATSPHÄRE FEST IM APP-MENÜ
+   INSERAT-AI â€“ PRIVATSPHÃ„RE FEST IM APP-MENÃœ
    ========================================================= */
 
 .appMenuPrivacyCard {
@@ -4783,8 +4783,8 @@ svg {
   background: linear-gradient(180deg, #f59e0b, #ea580c);
 }
 /* =========================================================
-   INSERAT-AI – MOBILE APP-NAVBAR V3
-   Nur für den eingeloggten App-Bereich
+   INSERAT-AI â€“ MOBILE APP-NAVBAR V3
+   Nur fÃ¼r den eingeloggten App-Bereich
    ========================================================= */
 
 .appMenuMobileMeta {
@@ -4962,12 +4962,12 @@ svg {
   }
 }
 /* =========================================================
-   INSERAT-AI – PUBLIC LANDING MOBILE V3
-   Öffentliche Landingpage bei kleinen Bildschirmbreiten
+   INSERAT-AI â€“ PUBLIC LANDING MOBILE V3
+   Ã–ffentliche Landingpage bei kleinen Bildschirmbreiten
    ========================================================= */
 
 @media screen and (max-width: 700px) {
-  /* Öffentlicher Header */
+  /* Ã–ffentlicher Header */
 
   .appPublicNavbar {
     width: 100% !important;
@@ -5035,7 +5035,7 @@ svg {
   }
 
   /*
-   * Mobil gehören diese Informationen nicht alle
+   * Mobil gehÃ¶ren diese Informationen nicht alle
    * gleichzeitig in die obere Navigationsleiste.
    */
   .appPublicNavbar .appHeaderPrivacy,
@@ -5288,14 +5288,14 @@ svg {
   }
 }
 /* =========================================================
-   INSERAT-AI – PUBLIC LANDING MOBILE V4
-   Optimierung Startseite / Header für ca. 390 px
+   INSERAT-AI â€“ PUBLIC LANDING MOBILE V4
+   Optimierung Startseite / Header fÃ¼r ca. 390 px
    ========================================================= */
 
 @media screen and (max-width: 430px) {
 
   /* -------------------------------------------------------
-     ÖFFENTLICHER HEADER
+     Ã–FFENTLICHER HEADER
      ------------------------------------------------------- */
 
   .appPublicNavbar {
@@ -5647,7 +5647,7 @@ svg {
 }
 
 
-/* Sehr kleine Geräte */
+/* Sehr kleine GerÃ¤te */
 
 @media screen and (max-width: 360px) {
 
@@ -5666,7 +5666,7 @@ svg {
 }
 
 /* =========================================================
-   INSERAT-AI – MOBILE COOKIE SETTINGS V1
+   INSERAT-AI â€“ MOBILE COOKIE SETTINGS V1
    Kompakter Datenschutz-Zugriff auf kleinen Displays
    ========================================================= */
 
@@ -5716,7 +5716,7 @@ svg {
 }
 
 /* =========================================================
-   INSERAT-AI – PUBLIC LANDING MOBILE V4.1
+   INSERAT-AI â€“ PUBLIC LANDING MOBILE V4.1
    Trust + Future-Bereich bei ca. 390 px
    ========================================================= */
 
@@ -5798,7 +5798,7 @@ svg {
 }
 
 /* =========================================================
-   INSERAT-AI – PUBLIC LANDING MOBILE V4.2
+   INSERAT-AI â€“ PUBLIC LANDING MOBILE V4.2
    Marketing Hub bei ca. 390 px
    ========================================================= */
 
@@ -7780,7 +7780,7 @@ svg {
 
 /*
  * Einzelanalysen sind eine Mobile-Darstellung.
- * Desktop behält vorerst seine bestehende Gesamtanalyse.
+ * Desktop behÃ¤lt vorerst seine bestehende Gesamtanalyse.
  */
 .dashboardImageAnalysisItem {
   display: none;
@@ -7887,7 +7887,7 @@ svg {
 
 
   /* =======================================================
-     LÖSCHEN = ECHTE TOUCHFLÄCHE
+     LÃ–SCHEN = ECHTE TOUCHFLÃ„CHE
      ======================================================= */
 
   .dashboardPage
@@ -8555,7 +8555,7 @@ svg {
 
 
   /* =======================================================
-     AKTIONEN / NÄCHSTE SCHRITTE
+     AKTIONEN / NÃ„CHSTE SCHRITTE
      ======================================================= */
 
   .detailPage .nextSteps p {
@@ -8815,7 +8815,7 @@ svg {
 
 
   /* =======================================================
-     OBJEKT AUSWÄHLEN
+     OBJEKT AUSWÃ„HLEN
      ======================================================= */
 
   body:has(#marketing-listing)
@@ -8900,7 +8900,7 @@ svg {
 
 
   /* =======================================================
-     FORTSCHRITT + NÄCHSTER SCHRITT
+     FORTSCHRITT + NÃ„CHSTER SCHRITT
      ======================================================= */
 
   body:has(#marketing-listing)
@@ -9012,7 +9012,7 @@ svg {
 
 
   /* =======================================================
-     EMPFOHLENER NÄCHSTER SCHRITT
+     EMPFOHLENER NÃ„CHSTER SCHRITT
      ======================================================= */
 
   body:has(#marketing-listing)
@@ -9429,7 +9429,7 @@ svg {
 
   /* =======================================================
      KARTEN
-     Keine Desktop-Mindesthöhen auf Mobile
+     Keine Desktop-MindesthÃ¶hen auf Mobile
      ======================================================= */
 
   .socialMediaPage section,
@@ -9518,7 +9518,7 @@ svg {
   /* =======================================================
      AUSGABE
      Wichtigster Fix:
-     nur Inhalts-Höhe, nie auf Eingabehöhe strecken.
+     nur Inhalts-HÃ¶he, nie auf EingabehÃ¶he strecken.
      ======================================================= */
 
   .socialMediaPage
@@ -9735,13 +9735,13 @@ svg {
 
 /* =========================================================
    INSERAT-AI - HOME STAGING MOBILE STYLE V1
-   Stilwahl + eigene Wünsche
+   Stilwahl + eigene WÃ¼nsche
    ========================================================= */
 
 @media (max-width: 640px) {
 
   /* -------------------------------------------------------
-     EINRICHTUNGSSTIL – KOMPAKTES 2x2 PREMIUM GRID
+     EINRICHTUNGSSTIL â€“ KOMPAKTES 2x2 PREMIUM GRID
      ------------------------------------------------------- */
 
   .stagingPage .styleOptionGrid {
@@ -9867,7 +9867,7 @@ svg {
 
 
   /* -------------------------------------------------------
-     EIGENE WÜNSCHE – RUHIGER PREMIUM INPUT
+     EIGENE WÃœNSCHE â€“ RUHIGER PREMIUM INPUT
      ------------------------------------------------------- */
 
   .stagingPage .customPromptPanel {
@@ -9953,7 +9953,7 @@ svg {
 
 
   /* -------------------------------------------------------
-     HINWEIS + ZEICHENZÄHLER
+     HINWEIS + ZEICHENZÃ„HLER
      ------------------------------------------------------- */
 
   .stagingPage .customPromptFooter {
@@ -10021,8 +10021,8 @@ svg {
     overflow-x: hidden;
   }
 
-  /* Eingabefelder müssen sich auf Mobile wie echte
-     App-Controls anfühlen und nicht wie Desktop-Inputs. */
+  /* Eingabefelder mÃ¼ssen sich auf Mobile wie echte
+     App-Controls anfÃ¼hlen und nicht wie Desktop-Inputs. */
   .financeMobilePage input {
     width: 100%;
     min-height: 48px;
@@ -10068,7 +10068,7 @@ svg {
     line-height: 1.4;
   }
 
-  /* Käufer-Finanzierung:
+  /* KÃ¤ufer-Finanzierung:
      Ergebnisse bleiben auf Mobile ruhig untereinander. */
   .financeMobilePage
     [data-section="FINANCING-CHECK-V1"] {
@@ -10100,7 +10100,7 @@ svg {
 
 /* =========================================================
    INSERAT-AI - EXAMPLE RESULT MOBILE WIDTH V1
-   Mehr nutzbare Textbreite im öffentlichen Demo-Ergebnis
+   Mehr nutzbare Textbreite im Ã¶ffentlichen Demo-Ergebnis
    ========================================================= */
 
 @media (max-width: 700px) {
@@ -10255,7 +10255,7 @@ svg {
   }
 
 
-  /* Icons wieder normale Mobile-Grösse */
+  /* Icons wieder normale Mobile-GrÃ¶sse */
 
   body:has(.detailPage)
   .supportDock
@@ -10559,7 +10559,7 @@ svg {
 
 
   /* -------------------------------------------------------
-     Aktionen bleiben unterhalb der Scrollfläche
+     Aktionen bleiben unterhalb der ScrollflÃ¤che
      ------------------------------------------------------- */
 
   .dashboardPage .actions {
@@ -10600,7 +10600,7 @@ svg {
     overflow-x: hidden !important;
   }
 
-  /* Aktionen vollständig unter dem Scrollfenster */
+  /* Aktionen vollstÃ¤ndig unter dem Scrollfenster */
   .dashboardPage .actions {
     position: relative !important;
     flex: none !important;
@@ -10785,3 +10785,1628 @@ svg {
       12px !important;
   }
 }
+
+/* =========================================================
+   INSERAT-AI ONE PAGE V1
+   Compact premium landing page
+   ========================================================= */
+
+.iaOnePage {
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 72% 18%, rgba(14, 165, 233, 0.11), transparent 30%),
+    radial-gradient(circle at 16% 20%, rgba(245, 158, 11, 0.08), transparent 26%),
+    linear-gradient(135deg, #020617 0%, #061426 48%, #071b31 100%);
+  color: #f8fafc;
+}
+
+.iaOneHero {
+  position: relative;
+  padding: 42px 34px 26px;
+  overflow: hidden;
+}
+
+.iaOneGlow {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 999px;
+  filter: blur(90px);
+  opacity: 0.22;
+}
+
+.iaOneGlowGold {
+  width: 360px;
+  height: 360px;
+  left: -160px;
+  top: 20px;
+  background: #f59e0b;
+}
+
+.iaOneGlowBlue {
+  width: 440px;
+  height: 440px;
+  right: -180px;
+  top: -120px;
+  background: #0ea5e9;
+}
+
+.iaOneHeroGrid {
+  position: relative;
+  z-index: 1;
+  width: min(1320px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 0.88fr) minmax(520px, 1.12fr);
+  gap: 70px;
+  align-items: center;
+}
+
+.iaOneEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 20px;
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.iaOneEyebrowDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #fbbf24;
+  box-shadow: 0 0 18px rgba(251, 191, 36, 0.7);
+}
+
+.iaOneTitle {
+  margin: 0;
+  max-width: 680px;
+  color: #f8fafc;
+  font-size: clamp(3.2rem, 4.8vw, 5.25rem);
+  line-height: 0.99;
+  letter-spacing: -0.06em;
+  font-weight: 950;
+}
+
+.iaOneTitle span {
+  color: #fbbf24;
+  text-shadow: 0 0 34px rgba(251, 191, 36, 0.13);
+}
+
+.iaOneLead {
+  max-width: 590px;
+  margin: 24px 0 0;
+  color: #aebdce;
+  font-size: 16px;
+  line-height: 1.7;
+  font-weight: 520;
+}
+
+.iaOneActions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+
+.iaOnePrimary,
+.iaOneDemo {
+  min-height: 50px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border-radius: 13px;
+  font-size: 14px;
+  font-weight: 900;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.iaOnePrimary {
+  gap: 30px;
+  padding: 0 21px;
+  background: linear-gradient(135deg, #fcd34d, #f59e0b);
+  border: 1px solid rgba(251, 191, 36, 0.9);
+  color: #111827;
+  box-shadow: 0 14px 34px rgba(245, 158, 11, 0.16);
+}
+
+.iaOnePrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px rgba(245, 158, 11, 0.27);
+}
+
+.iaOneDemo {
+  gap: 9px;
+  padding: 0 17px;
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+}
+
+.iaOneDemo:hover {
+  transform: translateY(-2px);
+  border-color: rgba(251, 191, 36, 0.34);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.iaOnePlay {
+  width: 25px;
+  height: 25px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+  font-size: 9px;
+}
+
+.iaOneTrial {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 15px;
+  color: #7f91a6;
+  font-size: 12px;
+}
+
+.iaOneTrial strong {
+  color: #cbd5e1;
+}
+
+.iaOneResultWrap {
+  position: relative;
+  padding: 14px;
+  border-radius: 26px;
+  border: 1px solid rgba(148, 163, 184, 0.17);
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.91), rgba(7, 20, 38, 0.82));
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.32),
+    inset 0 1px rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(20px);
+}
+
+.iaOneResultTopline {
+  min-height: 32px;
+  padding: 0 5px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #73859a;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.iaOneResultTopline strong {
+  color: #86efac;
+  letter-spacing: 0.08em;
+}
+
+.iaOneListing {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.92fr) minmax(0, 1.08fr);
+  grid-template-rows: auto auto;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.iaOneListingImage {
+  grid-row: 1 / 3;
+  padding: 8px;
+}
+
+.iaOneImageScene {
+  position: relative;
+  min-height: 250px;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 13px;
+  background:
+    linear-gradient(180deg, rgba(188, 216, 229, 0.9) 0 42%, transparent 42%),
+    linear-gradient(160deg, #d7c4a6 0 52%, #a88763 52% 100%);
+}
+
+.iaOneWindow {
+  position: absolute;
+  width: 42%;
+  height: 35%;
+  left: 9%;
+  top: 8%;
+  border: 5px solid rgba(255, 255, 255, 0.82);
+  background:
+    linear-gradient(180deg, #8cc4dc, #dbeafe 60%, #8fb378 61%);
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.13);
+}
+
+.iaOneWindow::after {
+  content: "";
+  position: absolute;
+  left: 48%;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.iaOneSofa {
+  position: absolute;
+  left: 13%;
+  bottom: 18%;
+  width: 58%;
+  height: 30%;
+  border-radius: 17px 17px 8px 8px;
+  background: #e8e0d4;
+  box-shadow: 0 15px 28px rgba(15, 23, 42, 0.2);
+}
+
+.iaOneSofa::before {
+  content: "";
+  position: absolute;
+  left: -5%;
+  bottom: 0;
+  width: 110%;
+  height: 42%;
+  border-radius: 9px;
+  background: #d9d0c4;
+}
+
+.iaOneSofa span {
+  position: relative;
+  display: inline-block;
+  width: 29%;
+  height: 48%;
+  margin: 8% 1.5% 0;
+  border-radius: 8px;
+  background: #f1ebe2;
+}
+
+.iaOneTable {
+  position: absolute;
+  right: 8%;
+  bottom: 12%;
+  width: 30%;
+  height: 10%;
+  border-radius: 50%;
+  background: #6d513b;
+  box-shadow: 0 12px 18px rgba(15, 23, 42, 0.28);
+}
+
+.iaOneTable::after {
+  content: "";
+  position: absolute;
+  width: 5px;
+  height: 36px;
+  left: 48%;
+  top: 70%;
+  background: #473426;
+}
+
+.iaOnePlant {
+  position: absolute;
+  right: 9%;
+  top: 17%;
+  color: #4f7b4b;
+  font-size: 38px;
+  transform: rotate(18deg);
+}
+
+.iaOnePlant i {
+  display: block;
+  width: 4px;
+  height: 48px;
+  margin: -8px auto 0;
+  background: #49663f;
+}
+
+.iaOneImageBadge {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  padding: 6px 8px;
+  border-radius: 7px;
+  background: rgba(2, 6, 23, 0.72);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  backdrop-filter: blur(8px);
+}
+
+.iaOneImageNav {
+  grid-column: 2;
+  padding: 16px 18px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.iaOneDots {
+  display: flex;
+  gap: 6px;
+}
+
+.iaOneDots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #475569;
+}
+
+.iaOneDots span.active {
+  width: 18px;
+  background: #fbbf24;
+}
+
+.iaOneImageNav strong {
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+.iaOneListingBody {
+  grid-column: 2;
+  padding: 13px 18px 18px;
+}
+
+.iaOneListingLocation {
+  color: #fbbf24;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.iaOneListingBody h2 {
+  margin: 8px 0 0;
+  color: #f8fafc;
+  font-size: clamp(17px, 1.5vw, 23px);
+  line-height: 1.16;
+  letter-spacing: -0.035em;
+}
+
+.iaOneListingBody p {
+  margin: 11px 0 0;
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.iaOneFacts {
+  margin-top: 15px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.iaOneFacts span {
+  min-width: 0;
+  padding: 8px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #64748b;
+  font-size: 8px;
+}
+
+.iaOneFacts strong {
+  display: block;
+  overflow: hidden;
+  color: #e2e8f0;
+  font-size: 10px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.iaOneAutomation {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 13px;
+  border: 1px solid rgba(251, 191, 36, 0.14);
+  background: rgba(251, 191, 36, 0.045);
+}
+
+.iaOneAutomation > span {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: rgba(251, 191, 36, 0.11);
+  color: #fbbf24;
+}
+
+.iaOneAutomation strong {
+  display: block;
+  color: #f8fafc;
+  font-size: 11px;
+}
+
+.iaOneAutomation small {
+  display: block;
+  margin-top: 2px;
+  color: #718096;
+  font-size: 9px;
+}
+
+.iaOneAutomation b {
+  color: #fbbf24;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.iaOnePricing {
+  width: min(1320px, calc(100% - 68px));
+  margin: 0 auto;
+  padding: 20px 0 24px;
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 24px;
+  border-top: 1px solid rgba(148, 163, 184, 0.11);
+}
+
+.iaOnePricingIntro {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.iaOnePricingIntro span {
+  color: #fbbf24;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: 0.18em;
+}
+
+.iaOnePricingIntro strong {
+  max-width: 170px;
+  margin-top: 7px;
+  color: #cbd5e1;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.iaOnePlans {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.iaOnePlan {
+  position: relative;
+  min-height: 130px;
+  padding: 14px 16px;
+  border-radius: 15px;
+  border: 1px solid rgba(148, 163, 184, 0.13);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.iaOnePlanPro {
+  border-color: rgba(251, 191, 36, 0.32);
+  background:
+    linear-gradient(145deg, rgba(251, 191, 36, 0.08), rgba(255, 255, 255, 0.025));
+  box-shadow: 0 12px 34px rgba(245, 158, 11, 0.07);
+}
+
+.iaOneRecommended {
+  position: absolute;
+  right: 10px;
+  top: 9px;
+  color: #fbbf24;
+  font-size: 7px;
+  font-weight: 950;
+  letter-spacing: 0.09em;
+}
+
+.iaOnePlanLabel {
+  color: #94a3b8;
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+}
+
+.iaOnePrice {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.iaOnePrice strong {
+  color: #f8fafc;
+  font-size: 22px;
+  letter-spacing: -0.035em;
+}
+
+.iaOnePrice span {
+  color: #64748b;
+  font-size: 9px;
+}
+
+.iaOnePlan p {
+  min-height: 29px;
+  margin: 5px 0 8px;
+  color: #718096;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.iaOnePlanMode {
+  display: inline-flex;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.08);
+  color: #cbd5e1;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+.iaOnePlanModePro {
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+}
+
+.iaOneFooter {
+  width: min(1320px, calc(100% - 68px));
+  min-height: 46px;
+  margin: 0 auto;
+  padding: 12px 0 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  border-top: 1px solid rgba(148, 163, 184, 0.08);
+  color: #53657a;
+  font-size: 10px;
+}
+
+.iaOneFooter nav {
+  display: flex;
+  gap: 18px;
+}
+
+.iaOneFooter a {
+  color: #718096;
+  text-decoration: none;
+}
+
+.iaOneFooter a:hover {
+  color: #fbbf24;
+}
+
+@media (max-width: 1000px) {
+  .iaOneHeroGrid {
+    grid-template-columns: 1fr;
+    gap: 34px;
+  }
+
+  .iaOneCopy {
+    max-width: 720px;
+  }
+
+  .iaOneResultWrap {
+    max-width: 760px;
+  }
+
+  .iaOnePricing {
+    grid-template-columns: 1fr;
+  }
+
+  .iaOnePricingIntro strong {
+    max-width: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .iaOneHero {
+    padding: 28px 16px 22px;
+  }
+
+  .iaOneTitle {
+    font-size: clamp(2.6rem, 12vw, 4rem);
+  }
+
+  .iaOneLead {
+    font-size: 14px;
+  }
+
+  .iaOneActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .iaOnePrimary,
+  .iaOneDemo {
+    width: 100%;
+  }
+
+  .iaOnePrimary {
+    justify-content: space-between;
+  }
+
+  .iaOneTrial {
+    flex-wrap: wrap;
+  }
+
+  .iaOneResultWrap {
+    padding: 10px;
+    border-radius: 20px;
+  }
+
+  .iaOneListing {
+    display: block;
+  }
+
+  .iaOneListingImage {
+    padding: 7px;
+  }
+
+  .iaOneImageScene {
+    min-height: 210px;
+  }
+
+  .iaOneImageNav {
+    padding: 10px 13px 0;
+  }
+
+  .iaOneListingBody {
+    padding: 11px 13px 15px;
+  }
+
+  .iaOneFacts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .iaOneAutomation {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .iaOneAutomation b {
+    grid-column: 2;
+  }
+
+  .iaOnePricing {
+    width: calc(100% - 32px);
+    padding-top: 18px;
+  }
+
+  .iaOnePlans {
+    grid-template-columns: 1fr;
+  }
+
+  .iaOnePlan {
+    min-height: auto;
+  }
+
+  .iaOneFooter {
+    width: calc(100% - 32px);
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+
+/* IA ONE PAGE V1 - DESKTOP COMPACT PASS */
+@media (min-width: 1001px) {
+  .iaOneHero {
+    padding-top: 24px;
+    padding-bottom: 14px;
+  }
+
+  .iaOneHeroGrid {
+    gap: 52px;
+  }
+
+  .iaOneTitle {
+    font-size: clamp(3rem, 4.15vw, 4.55rem);
+    line-height: 0.98;
+  }
+
+  .iaOneEyebrow {
+    margin-bottom: 14px;
+  }
+
+  .iaOneLead {
+    margin-top: 18px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .iaOneActions {
+    margin-top: 20px;
+  }
+
+  .iaOneTrial {
+    margin-top: 10px;
+  }
+
+  .iaOneImageScene {
+    min-height: 210px;
+  }
+
+  .iaOneResultWrap {
+    padding: 11px;
+  }
+
+  .iaOneResultTopline {
+    min-height: 27px;
+    padding-bottom: 7px;
+  }
+
+  .iaOneListingBody {
+    padding-top: 10px;
+    padding-bottom: 13px;
+  }
+
+  .iaOneListingBody p {
+    margin-top: 8px;
+  }
+
+  .iaOneFacts {
+    margin-top: 10px;
+  }
+
+  .iaOneAutomation {
+    margin-top: 7px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .iaOnePricing {
+    padding-top: 14px;
+    padding-bottom: 16px;
+  }
+
+  .iaOnePlan {
+    min-height: 112px;
+    padding-top: 11px;
+    padding-bottom: 11px;
+  }
+}
+
+
+/* IA ONE PAGE V1 - LARGER SHOWCASE */
+@media (min-width: 1001px) {
+  .iaOneHero {
+    min-height: 585px;
+    padding-top: 34px;
+    padding-bottom: 26px;
+    display: flex;
+    align-items: center;
+  }
+
+  .iaOneHeroGrid {
+    grid-template-columns:
+      minmax(0, 0.84fr)
+      minmax(610px, 1.16fr);
+    gap: 58px;
+  }
+
+  .iaOneResultWrap {
+    padding: 14px;
+  }
+
+  .iaOneImageScene {
+    min-height: 265px;
+  }
+
+  .iaOneListing {
+    grid-template-columns:
+      minmax(260px, 0.96fr)
+      minmax(0, 1.04fr);
+  }
+
+  .iaOneListingBody h2 {
+    font-size: clamp(20px, 1.55vw, 26px);
+  }
+
+  .iaOneListingBody p {
+    font-size: 11px;
+    line-height: 1.6;
+  }
+
+  .iaOneAutomation {
+    margin-top: 10px;
+    padding: 11px 13px;
+  }
+
+  .iaOnePricing {
+    padding-top: 18px;
+    padding-bottom: 24px;
+  }
+
+  .iaOnePlan {
+    min-height: 132px;
+    padding: 14px 16px;
+  }
+}
+
+
+/* PRO TRIAL NOTE */
+.iaOneProTrial {
+  margin-top: 9px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(251, 191, 36, 0.16);
+  color: #fbbf24;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+}
+
+
+/* FOUNDER + PRO TRIAL HEADER */
+@media (min-width: 701px) {
+  .iaOnePlans {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: auto 1fr;
+    align-items: stretch;
+  }
+
+  .iaOneSubscriptionTrial {
+    grid-column: 2 / 4;
+    grid-row: 1;
+    margin-bottom: 2px;
+    padding: 0 4px;
+    color: #fbbf24;
+    font-size: 9px;
+    font-weight: 950;
+    letter-spacing: 0.12em;
+    text-align: center;
+  }
+
+  .iaOnePlans > .iaOnePlan:nth-of-type(1) {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    align-self: end;
+  }
+
+  .iaOnePlans > .iaOnePlan:nth-of-type(2) {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .iaOnePlans > .iaOnePlan:nth-of-type(3) {
+    grid-column: 3;
+    grid-row: 2;
+  }
+}
+
+@media (max-width: 700px) {
+  .iaOneSubscriptionTrial {
+    margin: 6px 0 0;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: rgba(251, 191, 36, 0.07);
+    color: #fbbf24;
+    font-size: 9px;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-align: center;
+  }
+}
+
+
+/* FOUNDER + PRO TRIAL HEADER */
+@media (min-width: 701px) {
+  .iaOnePlans {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: auto 1fr;
+    align-items: stretch;
+  }
+
+  .iaOneSubscriptionTrial {
+    grid-column: 2 / 4;
+    grid-row: 1;
+    margin-bottom: 2px;
+    padding: 0 4px;
+    color: #fbbf24;
+    font-size: 9px;
+    font-weight: 950;
+    letter-spacing: 0.12em;
+    text-align: center;
+  }
+
+  .iaOnePlans > .iaOnePlan:nth-of-type(1) {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    align-self: end;
+  }
+
+  .iaOnePlans > .iaOnePlan:nth-of-type(2) {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .iaOnePlans > .iaOnePlan:nth-of-type(3) {
+    grid-column: 3;
+    grid-row: 2;
+  }
+}
+
+@media (max-width: 700px) {
+  .iaOneSubscriptionTrial {
+    margin: 6px 0 0;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: rgba(251, 191, 36, 0.07);
+    color: #fbbf24;
+    font-size: 9px;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-align: center;
+  }
+}
+
+
+/* IA ONE PAGE - CLICKABLE PRICING CARDS */
+.iaOnePlanLink {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.iaOnePlanLink:hover {
+  transform: translateY(-4px);
+  border-color: rgba(251, 191, 36, 0.38);
+  background: rgba(255, 255, 255, 0.045);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18);
+}
+
+.iaOnePlanPro.iaOnePlanLink:hover {
+  border-color: rgba(251, 191, 36, 0.62);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(251, 191, 36, 0.12),
+      rgba(255, 255, 255, 0.035)
+    );
+  box-shadow: 0 18px 42px rgba(245, 158, 11, 0.12);
+}
+
+.iaOnePlanLink:focus-visible {
+  outline: 2px solid #fbbf24;
+  outline-offset: 4px;
+}
+
+
+/* IA ONE PAGE - PREMIUM SPACING PASS */
+@media (min-width: 1001px) {
+  .iaOneHero {
+    min-height: 720px;
+    padding-top: 58px;
+    padding-bottom: 72px;
+  }
+
+  .iaOneHeroGrid {
+    grid-template-columns:
+      minmax(0, 0.82fr)
+      minmax(620px, 1.18fr);
+    gap: 72px;
+    align-items: center;
+  }
+
+  .iaOneCopy {
+    padding-top: 10px;
+  }
+
+  .iaOneResultWrap {
+    transform: scale(1.025);
+    transform-origin: center;
+  }
+
+  .iaOnePricing {
+    padding-top: 58px;
+    padding-bottom: 54px;
+  }
+
+  .iaOnePlans {
+    margin-top: 24px;
+  }
+
+  .iaOneSubscriptionTrial {
+    margin-bottom: 12px;
+  }
+}
+
+
+/* IA ONE PAGE - HERO BALANCE */
+@media (min-width: 1001px) {
+  .iaOneHero {
+    min-height: 660px;
+    padding-top: 48px;
+    padding-bottom: 48px;
+  }
+
+  .iaOnePricing {
+    padding-top: 46px;
+  }
+}
+
+
+/* IA ONE PAGE - PRICING PRESENCE */
+@media (min-width: 1001px) {
+  .iaOnePricing {
+    max-width: 1180px;
+  }
+
+  .iaOnePlans {
+    gap: 18px;
+  }
+
+  .iaOnePlan {
+    min-height: 155px;
+    padding: 20px 22px;
+  }
+
+  .iaOnePrice strong {
+    font-size: 26px;
+  }
+
+  .iaOnePlanLabel {
+    font-size: 10px;
+  }
+
+  .iaOnePlan p {
+    font-size: 11px;
+    line-height: 1.55;
+  }
+}
+
+
+/* IA ONE PAGE - FINAL PRICING SCALE */
+@media (min-width: 1001px) {
+  .iaOnePricing {
+    max-width: 1260px;
+  }
+
+  .iaOnePlan {
+    min-height: 175px;
+    padding: 22px 24px;
+  }
+
+  .iaOnePrice strong {
+    font-size: 30px;
+  }
+
+  .iaOnePlanLabel {
+    font-size: 11px;
+  }
+
+  .iaOnePlan p {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .iaOnePlanTag {
+    font-size: 10px;
+  }
+}
+
+
+/* =========================================================
+   INSERAT-AI BRAND DEPTH V1
+   Farbe/Licht ×‘×œ×‘×“ â€“ kein Layout
+   ========================================================= */
+
+.iaOnePage {
+  background:
+    radial-gradient(
+      circle at 13% 28%,
+      rgba(245, 158, 11, 0.13) 0,
+      rgba(245, 158, 11, 0.045) 19%,
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at 82% 27%,
+      rgba(14, 116, 144, 0.25) 0,
+      rgba(14, 116, 144, 0.09) 25%,
+      transparent 46%
+    ),
+    linear-gradient(
+      145deg,
+      #030914 0%,
+      #061426 48%,
+      #04182b 100%
+    );
+}
+
+.iaOneHero {
+  background:
+    radial-gradient(
+      circle at 79% 38%,
+      rgba(14, 165, 233, 0.08),
+      transparent 34%
+    );
+}
+
+.iaOneResultWrap {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(13, 30, 52, 0.96),
+      rgba(8, 24, 43, 0.94)
+    );
+  border-color: rgba(96, 165, 250, 0.18);
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.28),
+    0 0 60px rgba(14, 116, 144, 0.08);
+}
+
+.iaOneListing {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(20, 42, 68, 0.88),
+      rgba(13, 29, 49, 0.96)
+    );
+  border-color: rgba(148, 163, 184, 0.17);
+}
+
+.iaOneAutomation {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(245, 158, 11, 0.075),
+      rgba(15, 35, 57, 0.96) 30%,
+      rgba(15, 35, 57, 0.96)
+    );
+  border-color: rgba(245, 158, 11, 0.23);
+}
+
+.iaOnePricing {
+  position: relative;
+}
+
+.iaOnePricing::before {
+  content: "";
+  position: absolute;
+  inset: 0 -80px;
+  z-index: -1;
+  background:
+    radial-gradient(
+      ellipse at 78% 50%,
+      rgba(245, 158, 11, 0.055),
+      transparent 38%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(6, 19, 35, 0.18),
+      rgba(8, 26, 46, 0.46)
+    );
+}
+
+.iaOnePlan {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(17, 36, 59, 0.88),
+      rgba(10, 27, 47, 0.96)
+    );
+  border-color: rgba(148, 163, 184, 0.14);
+}
+
+.iaOnePlans > .iaOnePlan:nth-of-type(2) {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(15, 43, 70, 0.96),
+      rgba(10, 28, 49, 0.96)
+    );
+  border-color: rgba(56, 189, 248, 0.18);
+}
+
+.iaOnePlanPro {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(67, 48, 13, 0.42),
+      rgba(15, 34, 54, 0.97) 48%,
+      rgba(9, 27, 47, 0.98)
+    );
+  border-color: rgba(251, 191, 36, 0.48);
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.18),
+    0 0 35px rgba(245, 158, 11, 0.06);
+}
+
+.iaOnePrimary {
+  box-shadow:
+    0 12px 32px rgba(245, 158, 11, 0.20),
+    0 0 22px rgba(245, 158, 11, 0.08);
+}
+
+
+/* =========================================================
+   INSERAT-AI BRAND DEPTH V2 - VISIBLE
+   ========================================================= */
+
+.iaOnePage {
+  background:
+    radial-gradient(
+      circle at 10% 27%,
+      rgba(245, 158, 11, 0.24) 0%,
+      rgba(180, 112, 12, 0.11) 18%,
+      transparent 39%
+    ),
+    radial-gradient(
+      circle at 88% 30%,
+      rgba(0, 145, 190, 0.34) 0%,
+      rgba(0, 91, 145, 0.17) 27%,
+      transparent 52%
+    ),
+    linear-gradient(
+      120deg,
+      #020711 0%,
+      #061426 48%,
+      #03233a 100%
+    ) !important;
+}
+
+.iaOneHero {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.015),
+      transparent 75%
+    ) !important;
+}
+
+.iaOneResultWrap {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(17, 42, 70, 0.98),
+      rgba(7, 25, 45, 0.98)
+    ) !important;
+
+  border-color: rgba(70, 180, 230, 0.30) !important;
+
+  box-shadow:
+    0 30px 90px rgba(0,0,0,0.36),
+    0 0 80px rgba(0,130,190,0.16) !important;
+}
+
+.iaOnePricing {
+  border-top:
+    1px solid rgba(245, 158, 11, 0.16);
+}
+
+.iaOnePricing::before {
+  background:
+    radial-gradient(
+      ellipse at 76% 45%,
+      rgba(245, 158, 11, 0.12),
+      transparent 34%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(8, 27, 48, 0.78),
+      rgba(3, 14, 27, 0.92)
+    ) !important;
+}
+
+.iaOnePlans > .iaOnePlan:nth-of-type(1) {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(18, 39, 64, 0.98),
+      rgba(8, 24, 43, 0.98)
+    ) !important;
+}
+
+.iaOnePlans > .iaOnePlan:nth-of-type(2) {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(9, 63, 91, 0.95),
+      rgba(8, 29, 51, 0.98)
+    ) !important;
+
+  border-color:
+    rgba(56, 189, 248, 0.32) !important;
+}
+
+.iaOnePlanPro {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(105, 70, 8, 0.58),
+      rgba(35, 40, 40, 0.98) 42%,
+      rgba(8, 28, 48, 0.98) 100%
+    ) !important;
+
+  border-color:
+    rgba(251, 191, 36, 0.68) !important;
+
+  box-shadow:
+    0 20px 55px rgba(0,0,0,0.28),
+    0 0 40px rgba(245,158,11,0.12) !important;
+}
+
+
+/* =========================================================
+   INSERAT-AI BRAND DEPTH V3 - ALIVE
+   ========================================================= */
+
+.iaOnePage {
+  background:
+    radial-gradient(
+      ellipse 55% 65% at 4% 34%,
+      rgba(245, 158, 11, 0.34) 0%,
+      rgba(180, 105, 8, 0.16) 24%,
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse 58% 72% at 98% 30%,
+      rgba(0, 174, 239, 0.44) 0%,
+      rgba(0, 107, 170, 0.25) 30%,
+      transparent 67%
+    ),
+    radial-gradient(
+      ellipse 45% 35% at 65% 85%,
+      rgba(0, 113, 188, 0.13),
+      transparent 70%
+    ),
+    linear-gradient(
+      115deg,
+      #02060d 0%,
+      #06101f 38%,
+      #061a2d 67%,
+      #04304b 100%
+    ) !important;
+}
+
+/* Goldener Lichtbereich hinter der Botschaft */
+.iaOneCopy {
+  position: relative;
+  z-index: 1;
+}
+
+.iaOneCopy::before {
+  content: "";
+  position: absolute;
+  width: 430px;
+  height: 430px;
+  left: -190px;
+  top: 10%;
+  z-index: -1;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle,
+      rgba(245, 158, 11, 0.18),
+      rgba(245, 158, 11, 0.05) 45%,
+      transparent 72%
+    );
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+/* Produkt bekommt sichtbaren Tech-Glow */
+.iaOneResultWrap {
+  position: relative;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(17, 48, 78, 0.98),
+      rgba(7, 27, 48, 0.98)
+    ) !important;
+
+  border-color:
+    rgba(56, 189, 248, 0.42) !important;
+
+  box-shadow:
+    0 32px 90px rgba(0, 0, 0, 0.38),
+    0 0 70px rgba(14, 165, 233, 0.20),
+    0 0 140px rgba(14, 165, 233, 0.10) !important;
+}
+
+.iaOneResultWrap::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      120deg,
+      rgba(251, 191, 36, 0.20),
+      transparent 28%,
+      transparent 58%,
+      rgba(56, 189, 248, 0.32)
+    );
+  filter: blur(18px);
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+/* Trennlinie nicht mehr grau */
+.iaOnePricing {
+  border-top:
+    1px solid rgba(251, 191, 36, 0.26) !important;
+}
+
+/* Founder bekommt bewusst Tech-Blau */
+.iaOnePlans > .iaOnePlan:nth-of-type(2) {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(8, 76, 108, 0.96),
+      rgba(7, 34, 58, 0.98)
+    ) !important;
+
+  border-color:
+    rgba(56, 189, 248, 0.48) !important;
+
+  box-shadow:
+    0 16px 42px rgba(0, 119, 182, 0.10);
+}
+
+/* Pro bleibt klar die Inserat-AI Gold-Karte */
+.iaOnePlanPro {
+  background:
+    radial-gradient(
+      circle at 90% 5%,
+      rgba(251, 191, 36, 0.18),
+      transparent 38%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(103, 70, 10, 0.72),
+      rgba(32, 38, 40, 0.98) 42%,
+      rgba(8, 30, 50, 0.98)
+    ) !important;
+
+  border-color:
+    rgba(251, 191, 36, 0.82) !important;
+
+  box-shadow:
+    0 20px 55px rgba(0, 0, 0, 0.30),
+    0 0 45px rgba(245, 158, 11, 0.15) !important;
+}
+
+/* Hauptaktion bekommt mehr Markenenergie */
+.iaOnePrimary {
+  box-shadow:
+    0 12px 34px rgba(245, 158, 11, 0.30),
+    0 0 38px rgba(245, 158, 11, 0.16) !important;
+}
+
+
+/* =========================================================
+   INSERAT-AI HERO - ZÃœRICH SKYLINE VIDEO
+   ========================================================= */
+
+
+
+
+
+/* =========================================================
+   ZÜRICH SKYLINE – ISOLIERTER HERO-HINTERGRUND
+   ========================================================= */
+
+.iaSkylineBackground {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.iaSkylineBackground video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 48%;
+  opacity: 0.68;
+  filter:
+    saturate(0.82)
+    contrast(1.08)
+    brightness(0.78);
+}
+
+.iaSkylineShade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(2, 6, 13, 0.82) 0%,
+      rgba(3, 12, 23, 0.68) 45%,
+      rgba(3, 18, 31, 0.58) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(2, 6, 13, 0.12) 0%,
+      rgba(3, 10, 20, 0.28) 65%,
+      rgba(3, 10, 20, 0.96) 100%
+    );
+}
+
+
+/* ZÜRICH SKYLINE – HELLER / SICHTBARER */
+
+.iaSkylineBackground video {
+  opacity: 0.92;
+  filter:
+    saturate(1.05)
+    contrast(1.04)
+    brightness(1.02);
+}
+
+.iaSkylineShade {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(2, 6, 13, 0.56) 0%,
+      rgba(3, 12, 23, 0.38) 46%,
+      rgba(3, 18, 31, 0.30) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(2, 6, 13, 0.06) 0%,
+      rgba(3, 10, 20, 0.14) 65%,
+      rgba(3, 10, 20, 0.72) 100%
+    );
+}
+
+
+/* DEMOVIDEO IM INSERAT */
+
+.iaOneDemoVideo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: inherit;
+}
+
+
+/* DEMOVIDEO – VOLLE INSERATBREITE */
+
+.iaOneListing {
+  display: block;
+}
+
+.iaOneListingImage {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.iaOneDemoVideo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  background: #061426;
+}
+

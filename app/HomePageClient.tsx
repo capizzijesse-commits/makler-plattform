@@ -1,52 +1,20 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
 import {
   getInseratAiMarketFromHostname,
   INSERAT_AI_MARKET_EVENT,
   INSERAT_AI_MARKET_STORAGE_KEY,
   type InseratAiMarket,
 } from "@/lib/inserat-ai-market";
-import PricingSection from "./components/PricingSection";
-import ExampleGenerator from "./components/ExampleGenerator";
-import SocialProofSection from "./components/SocialProofSection";
-import LandingAssistant from "./components/LandingAssistant";
 
 type HomePageClientProps = {
   initialMarket: InseratAiMarket;
 };
 
-const DE_LANDING_COPY = {
-  heroBadge:
-    "Die smarte Lösung für Immobilienprofis in Deutschland",
-  heroSubline:
-    "Inserat-AI erstellt hochwertige Immobilieninserate in Sekunden – emotional formuliert, professionell strukturiert und bereit für ImmobilienScout24, immowelt und Social Media.",
-  professionals:
-    "Entwickelt für Immobilienprofis in Deutschland",
-  dataProtection:
-    "Datenschutz und Einwilligung im Fokus",
-  market: "Deutscher Immobilienmarkt",
-  workflow:
-    "Inserat, Bilder und Social Media aus einem Workflow.",
-  portalText:
-    "Inserattexte und Social-Media-Varianten in einem Schritt.",
-  listingTextsText:
-    "Moderne 4,5-Zimmer-Wohnung mit Balkon, guter Anbindung und hochwertigem Ausbau.",
-  demoHighlight:
-    "Helle Räume",
-  parking:
-    "Tiefgaragenstellplatz",
-  marketingHubDescription:
-    "Der Inserat-AI Marketing Hub verbindet Inserat, Bilder, Social Media und Finanzierung. Er zeigt, was bereits fertig ist und welcher Schritt als Nächstes sinnvoll ist.",
-  marketingHubCentral:
-    "Social Media, Bilder und Finanzierung lassen sich direkt aus einer zentralen Übersicht öffnen.",
-} as const;
-
 export default function HomePageClient({
   initialMarket,
 }: HomePageClientProps) {
-  const t = useTranslations("HomePage");
   const [market, setMarket] =
     useState<InseratAiMarket>(initialMarket);
 
@@ -62,9 +30,10 @@ export default function HomePageClient({
     }
 
     const applyStoredMarket = () => {
-      const storedMarket = window.localStorage.getItem(
-        INSERAT_AI_MARKET_STORAGE_KEY
-      );
+      const storedMarket =
+        window.localStorage.getItem(
+          INSERAT_AI_MARKET_STORAGE_KEY
+        );
 
       if (
         storedMarket === "CH" ||
@@ -74,31 +43,45 @@ export default function HomePageClient({
       }
     };
 
-    const handleStorage = (event: StorageEvent) => {
+    const handleStorage = (
+      event: StorageEvent
+    ) => {
       if (
-        event.key === INSERAT_AI_MARKET_STORAGE_KEY
+        event.key ===
+        INSERAT_AI_MARKET_STORAGE_KEY
       ) {
         applyStoredMarket();
       }
     };
 
     applyStoredMarket();
+
     window.addEventListener(
       INSERAT_AI_MARKET_EVENT,
       applyStoredMarket
     );
-    window.addEventListener("storage", handleStorage);
-    window.addEventListener("click", applyStoredMarket);
+
+    window.addEventListener(
+      "storage",
+      handleStorage
+    );
+
+    window.addEventListener(
+      "click",
+      applyStoredMarket
+    );
 
     return () => {
       window.removeEventListener(
         INSERAT_AI_MARKET_EVENT,
         applyStoredMarket
       );
+
       window.removeEventListener(
         "storage",
         handleStorage
       );
+
       window.removeEventListener(
         "click",
         applyStoredMarket
@@ -113,502 +96,239 @@ export default function HomePageClient({
         : "Inserat-AI Schweiz";
   }, [market]);
 
+  const isDE = market === "DE";
+
+  const currency = isDE ? "€" : "CHF";
+
+  const city = isDE
+    ? "Berlin-Charlottenburg"
+    : "Zürich";
+
+  const price = isDE
+    ? "895.000 €"
+    : "CHF 1'390'000";
+
   return (
-    <>
-      <section className={market === "DE" ? "landingHero landingHeroGermanyCompact" : "landingHero"}>
-        {market === "DE" ? (
-          <div
-            className="deLaunchMomentum"
-            style={{
-              width: "100%",
-              padding: "13px 18px",
-              boxSizing: "border-box",
-              borderBottom:
-                "1px solid rgba(245,189,33,.30)",
-              background:
-                "linear-gradient(90deg, rgba(7,18,39,.98), rgba(82,49,5,.96), rgba(7,18,39,.98))",
-              textAlign: "center",
-            }}
+    <main className="iaOnePage">
+      <section className="iaOneHero">
+        <div className="iaSkylineBackground" aria-hidden="true">
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
           >
-            <div
-              style={{
-                color: "#fbbf24",
-                fontSize: 10,
-                fontWeight: 950,
-                letterSpacing: ".10em",
-                textTransform: "uppercase",
-              }}
-            >
-              Jetzt für Immobilienprofis in Deutschland
+            <source
+              src="/zürich-skyline-loop.mp4"
+              type="video/mp4"
+            />
+          </video>
+          <div className="iaSkylineShade" />
+        </div>
+
+        <div className="iaOneGlow iaOneGlowGold" />
+        <div className="iaOneGlow iaOneGlowBlue" />
+
+        <div className="iaOneHeroGrid">
+          <div className="iaOneCopy">
+            <div className="iaOneEyebrow">
+              <span className="iaOneEyebrowDot" />
+              Immobilieninserate · automatisiert
             </div>
 
-            <strong
-              style={{
-                display: "block",
-                marginTop: 4,
-                color: "#ffffff",
-                fontSize: "clamp(15px, 2vw, 20px)",
-                lineHeight: 1.25,
-                fontWeight: 950,
-              }}
-            >
-              Jetzt startet Inserat-AI in Deutschland.
-            </strong>
-
-            <div
-              style={{
-                marginTop: 4,
-                color: "#dbe4ef",
-                fontSize: 12,
-                lineHeight: 1.4,
-                fontWeight: 750,
-              }}
-            >
-              Founder-Start: 30 Tage kostenlos · danach dauerhaft
-              19,90 € / Monat
-            </div>
-          </div>
-        ) : null}
-        <div className="landingHeroInner">
-          <div className="landingHeroContent">
-            <div className="landingBadge">
-              {market === "DE" ? DE_LANDING_COPY.heroBadge : t("hero.badge")}
-            </div>
-
-            <h1 className="landingHeadline">
-              {t("hero.headlineLine1")}
+            <h1 className="iaOneTitle">
+              Ein Exposé. Bilder.
               <br />
-              {t("hero.headlineLine2")}
+              Das fertige Inserat.
               <br />
-              <span>{t("hero.headlineLine3")}</span>
+              <span>In Sekunden.</span>
             </h1>
 
-            <p className="landingSubline">
-              {market === "DE" ? DE_LANDING_COPY.heroSubline : t("hero.subline")}
+            <p className="iaOneLead">
+              Exposé und Bilder hochladen.
+              Inserat-AI erkennt die Objektdaten,
+              analysiert und sortiert die Bilder
+              und erstellt daraus automatisch
+              das vollständige Immobilieninserat.
             </p>
 
-            <div className="landingHeroActions">
+            <div className="iaOneActions">
               <a
-                href="/register"
-                className="landingPrimaryButton"
+                href="/register?plan=pro"
+                className="iaOnePrimary"
               >
-                {t("hero.register")}
-                <span>{"\u2192"}</span>
+                Inserat erstellen
+                <span aria-hidden="true">→</span>
               </a>
 
-              <div className="landingCheck">
-                <span>{"\u2713"}</span>
-                {t("hero.noCreditCard")}
-              </div>
-            </div>
-
-            <div
-              id="benefits"
-              className="landingBenefits"
-            >
-              <div className="landingBenefit">
-                <div className="landingBenefitIcon">
-                  {"\u2726"}
-                </div>
-
-                <div>
-                  <strong>
-                    {t("benefits.speedTitle")}
-                  </strong>
-
-                  <p>{t("benefits.speedText")}</p>
-                </div>
-              </div>
-
-              <div className="landingBenefit">
-                <div className="landingBenefitIcon">
-                  {"\u2197"}
-                </div>
-
-                <div>
-                  <strong>
-                    {t("benefits.visibilityTitle")}
-                  </strong>
-
-                  <p>
-                    {t("benefits.visibilityText")}
-                  </p>
-                </div>
-              </div>
-
-              <div className="landingBenefit">
-                <div className="landingBenefitIcon">
-                  {"\u25CE"}
-                </div>
-
-                <div>
-                  <strong>
-                    {t("benefits.inquiriesTitle")}
-                  </strong>
-
-                  <p>
-                    {market === "DE" ? DE_LANDING_COPY.workflow : t("benefits.inquiriesText")}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div
-            id="demo"
-            className="landingVideoArea"
-          >
-            <div className="landingVideoCard" style={{ display: market === "DE" ? "none" : undefined }}>
-              <div className="landingVideoLabel">
-                <span />
-                {t("demo.label")}
-              </div>
-
-              <video
-                className="landingVideo"
-                controls
+              <a
+                href="/inserat-ai-demo.mp4"
+                className="iaOneDemo"
               >
-                <source
-                  src="/inserat-ai-demo.mp4"
-                  type="video/mp4"
-                />
-
-                {t("demo.unsupported")}
-              </video>
+                <span
+                  className="iaOnePlay"
+                  aria-hidden="true"
+                >
+                  ▶
+                </span>
+                20-Sekunden-Demo
+              </a>
             </div>
-
-            <div className="landingFloatingCards">
-              <div className="landingMiniCard">
-                <strong>
-                  {t("demo.listingTextsTitle")}
-                </strong>
-
-                <p>
-                  {market === "DE"
-                    ? DE_LANDING_COPY.listingTextsText
-                    : t("demo.listingTextsText")}
-                </p>
-              </div>
-
-              <div className="landingMiniCard">
-                <strong>
-                  {t("demo.highlightsTitle")}
-                </strong>
-
-                <ul>
-                  <li>
-                    {market === "DE"
-                      ? DE_LANDING_COPY.demoHighlight
-                      : t("demo.seaView")}
-                  </li>
-                  <li>{t("demo.balcony")}</li>
-                  <li>
-                    {market === "DE"
-                      ? DE_LANDING_COPY.parking
-                      : t("demo.parking")}
-                  </li>
-                </ul>
-              </div>
-
-              <div className="landingMiniCard">
-                <strong>
-                  {t("demo.portalTitle")}
-                </strong>
-
-                <p>{market === "DE" ? DE_LANDING_COPY.portalText : t("demo.portalText")}</p>
-              </div>
-            </div>
-
-            {/* DE HERO LIVE PREVIEW V1 */}
-            {market === "DE" ? (
-              <div className="mt-6 rounded-[1.75rem] border border-amber-400/30 bg-gradient-to-br from-slate-950 via-[#0a1830] to-[#0b2b50] p-5 shadow-2xl shadow-black/30 md:p-6">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-amber-400/25 bg-amber-400/10 text-xl text-amber-300">
-                      ✦
-                    </span>
-
-                    <div>
-                      <div className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">
-                        Live-Vorschau
-                      </div>
-
-                      <div className="mt-1 text-lg font-black text-white">
-                        So arbeitet Inserat-AI
-                      </div>
-                    </div>
-                  </div>
-
-                  <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs font-semibold text-slate-300">
-                    3 Varianten in Sekunden
-                  </span>
-                </div>
-
-                <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {[
-                    "Berlin-Charlottenburg",
-                    "4,5 Zimmer",
-                    "112 m²",
-                    "895.000 €",
-                  ].map((item) => (
-                    <div
-                      key={item}
-                      className="rounded-xl border border-white/10 bg-white/[0.045] px-3 py-2 text-center text-xs font-bold text-slate-200"
-                    >
-                      {item}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-5 grid gap-4 lg:grid-cols-[0.9fr_0.8fr_1.2fr]">
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
-                    <div className="text-sm font-black text-white">
-                      Objektdaten
-                    </div>
-
-                    <div className="mt-4 space-y-3 text-xs">
-                      <div className="flex justify-between gap-4 border-b border-white/5 pb-2">
-                        <span className="text-slate-400">
-                          Objektart
-                        </span>
-                        <strong className="text-slate-200">
-                          Wohnung
-                        </strong>
-                      </div>
-
-                      <div className="flex justify-between gap-4 border-b border-white/5 pb-2">
-                        <span className="text-slate-400">
-                          Ort
-                        </span>
-                        <strong className="text-slate-200">
-                          Berlin
-                        </strong>
-                      </div>
-
-                      <div className="flex justify-between gap-4 border-b border-white/5 pb-2">
-                        <span className="text-slate-400">
-                          Zimmer
-                        </span>
-                        <strong className="text-slate-200">
-                          4,5
-                        </strong>
-                      </div>
-
-                      <div className="flex justify-between gap-4">
-                        <span className="text-slate-400">
-                          Wohnfläche
-                        </span>
-                        <strong className="text-slate-200">
-                          112 m²
-                        </strong>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col items-center justify-center rounded-2xl border border-amber-400/20 bg-amber-400/[0.04] p-4 text-center">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full border border-amber-400/30 bg-amber-400/10 text-2xl text-amber-300">
-                      ✦
-                    </div>
-
-                    <strong className="mt-4 text-sm leading-5 text-white">
-                      Inserat-AI erstellt
-                      <br />
-                      3 Varianten
-                    </strong>
-
-                    <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-                      <div className="h-full w-3/4 rounded-full bg-amber-400" />
-                    </div>
-
-                    <div className="mt-3 text-xs text-slate-400">
-                      Daten analysieren
-                      <br />
-                      Texte optimieren
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.055] p-4">
-                    <div className="text-xs font-black uppercase tracking-[0.16em] text-amber-300">
-                      Ergebnis
-                    </div>
-
-                    <div className="mt-3 text-lg font-black leading-snug text-white">
-                      Moderne 4,5-Zimmer-Wohnung
-                      mit Balkon in Berlin
-                    </div>
-
-                    <p className="mt-3 text-sm leading-6 text-slate-300">
-                      Helle Räume, 112 m² Wohnfläche
-                      und ein Balkon bilden die Basis
-                      für einen professionell
-                      strukturierten Inserattext.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                  <div className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3">
-                    <strong className="text-sm text-white">
-                      ✓ 3 Varianten
-                    </strong>
-                    <div className="mt-1 text-xs text-slate-400">
-                      unterschiedliche Tonalitäten
-                    </div>
-                  </div>
-
-                  <div className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3">
-                    <strong className="text-sm text-white">
-                      ✓ Portal-ready
-                    </strong>
-                    <div className="mt-1 text-xs text-slate-400">
-                      für Immobilienportale
-                    </div>
-                  </div>
-
-                  <div className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3">
-                    <strong className="text-sm text-white">
-                      ✓ Social Media
-                    </strong>
-                    <div className="mt-1 text-xs text-slate-400">
-                      direkt weiterverwenden
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : null}
-          </div>
-        </div>
-
-        <div
-          id="trust"
-          className="landingTrustBar"
-          style={{
-            display:
-              market === "DE"
-                ? "none"
-                : undefined,
-          }}
-        >
-          <div className="landingTrustTitle">
-            {t("trust.title")}
           </div>
 
-          <div className="landingTrustItems">
-            <span>
-              {market === "DE" ? DE_LANDING_COPY.professionals : t("trust.swissProfessionals")}
-            </span>
+          <div className="iaOneResultWrap">
+            <div className="iaOneResultTopline">
+              <span>
+                AUTOMATISCH ERSTELLTES INSERAT
+              </span>
 
-            <strong>
-              {market === "DE" ? DE_LANDING_COPY.dataProtection : t("trust.dataProtection")}
-            </strong>
+              <strong>
+                ✓ FERTIG
+              </strong>
+            </div>
 
-            <strong>
-              {market === "DE" ? DE_LANDING_COPY.market : t("trust.swissMarket")}
-            </strong>
+            <article className="iaOneListing">
+              <div className="iaOneListingImage">
+                  <video
+                    className="iaOneDemoVideo"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                  >
+                    <source
+                      src="/inserat-ai-demo.mp4"
+                      type="video/mp4"
+                    />
+                  </video>
+                </div>
+            </article>
 
-            <strong>
-              {t("trust.portalSocial")}
-            </strong>
+            <div className="iaOneAutomation">
+              <span>✦</span>
 
-            <strong>
-              {t("trust.noCreditCard")}
-            </strong>
+              <div>
+                <strong>
+                  Vollautomatisch erstellt
+                </strong>
+
+                <small>
+                  Daten erkannt · Bilder analysiert
+                  & sortiert · 3 Texte erstellt
+                </small>
+              </div>
+
+              <b>
+                ca. 20 Sek.
+              </b>
+            </div>
           </div>
         </div>
       </section>
-
-      <SocialProofSection key={`social-proof-${market}`} market={market} />
-
-      <ExampleGenerator key={market} market={market} />
-
 
       <section
-        id="marketing-hub"
-        className="landingMarketingHubSection relative mx-auto mt-24 max-w-6xl px-6"
+        id="preise"
+        className="iaOnePricing"
       >
-        <div className="landingMarketingHubCard relative overflow-hidden rounded-[2rem] border border-amber-300/20 bg-gradient-to-br from-slate-950 via-[#08142d] to-[#0a2752] p-8 shadow-2xl shadow-black/30 md:p-12">
-          <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-amber-400/15 blur-3xl" />
-          <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
+        <div className="iaOnePricingIntro">
+          <span>PREISE</span>
 
-          <div className="relative">
-            <p className="text-sm font-black uppercase tracking-[0.25em] text-amber-300">
-              {t("marketingHub.eyebrow")}
-            </p>
+          <strong>
+            Wähle, wie du arbeiten möchtest.
+          </strong>
+        </div>
 
-            <h2 className="landingMarketingHubHeadline mt-5 max-w-4xl text-4xl font-black leading-tight tracking-[-0.045em] text-white md:text-6xl">
-              {t("marketingHub.title")}
-            </h2>
-
-            <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
-              {market === "DE"
-                ? DE_LANDING_COPY.marketingHubDescription
-                : t("marketingHub.description")}
-            </p>
-
-            <div className="landingMarketingHubGrid mt-10 grid gap-5 md:grid-cols-3">
-              <article className="landingMarketingHubFeature rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-6 backdrop-blur">
-                <span className="text-sm font-black tracking-[0.18em] text-amber-300">
-                  01
-                </span>
-                <h3 className="mt-5 text-2xl font-black text-white">
-                  {t("marketingHub.cards.progress.title")}
-                </h3>
-                <p className="mt-3 leading-7 text-slate-300">
-                  {t("marketingHub.cards.progress.text")}
-                </p>
-              </article>
-
-              <article className="landingMarketingHubFeature rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-6 backdrop-blur">
-                <span className="text-sm font-black tracking-[0.18em] text-amber-300">
-                  02
-                </span>
-                <h3 className="mt-5 text-2xl font-black text-white">
-                  {t("marketingHub.cards.nextStep.title")}
-                </h3>
-                <p className="mt-3 leading-7 text-slate-300">
-                  {t("marketingHub.cards.nextStep.text")}
-                </p>
-              </article>
-
-              <article className="landingMarketingHubFeature rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-6 backdrop-blur">
-                <span className="text-sm font-black tracking-[0.18em] text-amber-300">
-                  03
-                </span>
-                <h3 className="mt-5 text-2xl font-black text-white">
-                  {t("marketingHub.cards.central.title")}
-                </h3>
-                <p className="mt-3 leading-7 text-slate-300">
-                  {market === "DE"
-                    ? DE_LANDING_COPY.marketingHubCentral
-                    : t(
-                        "marketingHub.cards.central.text"
-                      )}
-                </p>
-              </article>
+        <div className="iaOnePlans">
+          <a href="/register?plan=single-object" className="iaOnePlan iaOnePlanLink">
+            <div className="iaOnePlanLabel">
+              EINZELOBJEKT
             </div>
 
-            <div className="landingMarketingHubActions mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-              <a
-                href="/register"
-                className="inline-flex min-h-14 items-center justify-center rounded-xl bg-gradient-to-r from-amber-300 to-amber-500 px-7 font-black text-slate-950 shadow-lg shadow-amber-500/20 transition hover:-translate-y-0.5"
-              >
-                {t("marketingHub.cta")}
-                <span className="ml-2" aria-hidden="true">
-                  {"\u2192"}
-                </span>
-              </a>
-
-              <span className="text-sm font-bold text-slate-400">
-                {t("marketingHub.note")}
-              </span>
+            <div className="iaOnePrice">
+              <strong>
+                {currency} 9.90
+              </strong>
+              <span>einmalig</span>
             </div>
-          </div>
+
+            <p>
+              Für ein einzelnes Inserat.
+            </p>
+
+            <div className="iaOnePlanMode">
+              Einzelauftrag
+            </div>
+          </a>
+
+          <div className="iaOneSubscriptionTrial">
+  30 TAGE KOSTENLOS · KEINE KREDITKARTE
+</div>
+
+          <a href="/register?plan=founder" className="iaOnePlan iaOnePlanLink">
+            <div className="iaOnePlanLabel">
+              FOUNDER
+            </div>
+
+            <div className="iaOnePrice">
+              <strong>
+                {currency} 19.90
+              </strong>
+              <span>/ Monat</span>
+            </div>
+
+            <p>
+              Die Werkzeuge von Inserat-AI.
+              Du arbeitest Schritt für Schritt.
+            </p>
+
+            <div className="iaOnePlanMode">
+              Manuell arbeiten
+            </div>
+          </a>
+
+          <a href="/register?plan=pro" className="iaOnePlan iaOnePlanPro iaOnePlanLink">
+            <div className="iaOneRecommended">
+              ★ EMPFOHLEN
+            </div>
+
+            <div className="iaOnePlanLabel">
+              PRO · AUTOPILOT
+            </div>
+
+            <div className="iaOnePrice">
+              <strong>
+                {currency} 79.90
+              </strong>
+              <span>/ Monat</span>
+            </div>
+
+            <p>
+              Exposé + Bilder hochladen.
+              Inserat-AI übernimmt den
+              gesamten Erstellungsprozess.
+            </p>
+
+            <div className="iaOnePlanMode iaOnePlanModePro">
+              Vollautomatisch arbeiten
+            </div>
+          </a>
         </div>
       </section>
-
-      <LandingAssistant key={`landing-assistant-${market}`} market={market} />
-
-      <PricingSection key={`pricing-${market}`} market={market} />
-    </>
+    </main>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
