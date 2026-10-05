@@ -156,10 +156,14 @@ type ExtractedExpose = {
   missingFields: string[];
 };
 
-type ExtractRequest = {
+type ExtractDocumentRequest = {
   fileUrl?: unknown;
   fileName?: unknown;
   fileType?: unknown;
+};
+
+type ExtractRequest = ExtractDocumentRequest & {
+  files?: unknown;
 };
 
 function emptyResult(): ExtractedExpose {
@@ -369,145 +373,254 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let cleanupUrl = "";
-  let openAiFileId = "";
+  const cleanupUrls: string[] = [];
+  const openAiFileIds: string[] = [];
   let openai: OpenAI | null = null;
 
   try {
     const body = (await request.json()) as ExtractRequest;
-    const fileUrl = cleanString(body.fileUrl);
-    const fileName = cleanString(body.fileName) || "expose.pdf";
-    const fileType = cleanString(body.fileType) || "application/pdf";
 
-    if (!fileUrl || !isTrustedBlobUrl(fileUrl)) {
+    const rawFiles =
+      Array.isArray(body.files)
+        ? body.files
+        : [body];
+
+    const files =
+      rawFiles
+        .map((value) => {
+          const raw =
+            value && typeof value === "object"
+              ? (value as Record<string, unknown>)
+              : {};
+
+          return {
+            fileUrl: cleanString(raw.fileUrl),
+            fileName:
+              cleanString(raw.fileName) ||
+              "unterlage.pdf",
+            fileType:
+              cleanString(raw.fileType) ||
+              "application/pdf",
+          };
+        })
+        .filter((file) => file.fileUrl);
+
+    if (files.length === 0) {
       return NextResponse.json(
         {
           success: false,
           code: "INVALID_FILE_URL",
-          error: "Das hochgeladene Exposé konnte nicht verifiziert werden.",
+          error:
+            "Es wurden keine g?ltigen Objektunterlagen ?bermittelt.",
         },
         { status: 400 }
       );
     }
 
-    cleanupUrl = fileUrl;
+    const {
+      fileUrl,
+      fileName,
+      fileType,
+    } = files[0];
 
-    if (!ALLOWED_CONTENT_TYPES.has(fileType)) {
-      return NextResponse.json(
-        {
-          success: false,
-          code: "UNSUPPORTED_FILE_TYPE",
-          error: "Bitte PDF, DOCX oder TXT als Exposé verwenden.",
-        },
-        { status: 415 }
-      );
-    }
-
-    // EXPOSE_SPEED_PROFILE_V1
+    // MULTI_DOCUMENT_PREPARATION_V1
     const exposeProfileStartedAt = performance.now();
     let exposeProfileStepAt = exposeProfileStartedAt;
 
-    const sourceResponse = await fetch(fileUrl, {
-      cache: "no-store",
-    });
-
-    if (!sourceResponse.ok) {
-      throw new Error(
-        `EXPOSE_BLOB_DOWNLOAD_FAILED_${sourceResponse.status}`
-      );
-    }
-
-    const bytes = new Uint8Array(await sourceResponse.arrayBuffer());
-
-    console.log("[EXPOSE SPEED] blob-download", {
-      durationMs: Math.round(performance.now() - exposeProfileStepAt),
-      bytes: bytes.byteLength,
-    });
-    exposeProfileStepAt = performance.now();
-
-    if (bytes.byteLength <= 0 || bytes.byteLength > MAX_EXPOSE_BYTES) {
-      return NextResponse.json(
-        {
-          success: false,
-          code: "INVALID_FILE_SIZE",
-          error: "Das Exposé darf maximal 25 MB gross sein.",
-        },
-        { status: 413 }
-      );
-    }
-
-    // AUTOMATION_PDF_PROPERTY_PHOTOS_V1
-    const pdfPropertyPhotosPromise =
-      fileType === "application/pdf"
-        ? extractPropertyPhotosFromPdf(
-            Buffer.from(bytes),
-            {
-              maximumPhotos: 10,
-              minimumConfidence: 0.7,
-            }
-          )
-        : Promise.resolve({
-            candidateCount: 0,
-            propertyPhotoCount: 0,
-            photos: [],
-          });
-
-    // PDF_TEXT_FAST_PATH_DECISION_V1
-    let pdfFastText = "";
-    let usePdfTextFastPath = false;
-
-    if (
-      fileType === "application/pdf"
-    ) {
-      const pdfTextStartedAt =
-        performance.now();
-
-      try {
-        const pdfTextResult =
-          await extractPdfTextFast(
-            bytes
-          );
-
-        usePdfTextFastPath =
-          isPdfTextFastPathUsable(
-            pdfTextResult
-          );
-
-        if (
-          usePdfTextFastPath
-        ) {
-          pdfFastText =
-            pdfTextResult.text;
-        }
-
-        console.log(
-          "[EXPOSE PDF TEXT FAST PATH]",
+    for (const file of files) {
+      if (!isTrustedBlobUrl(file.fileUrl)) {
+        return NextResponse.json(
           {
-            usable:
-              usePdfTextFastPath,
-            pages:
-              pdfTextResult.pageCount,
-            textPages:
-              pdfTextResult.textPageCount,
-            characters:
-              pdfTextResult.text.length,
-            durationMs:
-              Math.round(
-                performance.now() -
-                  pdfTextStartedAt
-              ),
-          }
+            success: false,
+            code: "INVALID_FILE_URL",
+            error:
+              "Eine hochgeladene Unterlage konnte nicht verifiziert werden.",
+          },
+          { status: 400 }
         );
-      } catch (error) {
-        console.warn(
-          "[EXPOSE PDF TEXT FAST PATH] fallback",
-          error
-        );
-
-        pdfFastText = "";
-        usePdfTextFastPath = false;
       }
+
+      if (!ALLOWED_CONTENT_TYPES.has(file.fileType)) {
+        return NextResponse.json(
+          {
+            success: false,
+            code: "UNSUPPORTED_FILE_TYPE",
+            error:
+              "Bitte nur PDF, DOCX oder TXT als Objektunterlagen verwenden.",
+          },
+          { status: 415 }
+        );
+      }
+
+      cleanupUrls.push(file.fileUrl);
     }
+
+    const preparedDocuments =
+      await Promise.all(
+        files.map(async (file) => {
+          const downloadStartedAt =
+            performance.now();
+
+          const sourceResponse =
+            await fetch(file.fileUrl, {
+              cache: "no-store",
+            });
+
+          if (!sourceResponse.ok) {
+            throw new Error(
+              `EXPOSE_BLOB_DOWNLOAD_FAILED_${sourceResponse.status}`
+            );
+          }
+
+          const bytes =
+            new Uint8Array(
+              await sourceResponse.arrayBuffer()
+            );
+
+          if (
+            bytes.byteLength <= 0 ||
+            bytes.byteLength > MAX_EXPOSE_BYTES
+          ) {
+            throw Object.assign(
+              new Error(
+                `Die Unterlage "${file.fileName}" darf maximal 25 MB gross sein.`
+              ),
+              {
+                code: "INVALID_FILE_SIZE",
+                status: 413,
+              }
+            );
+          }
+
+          console.log(
+            "[EXPOSE SPEED] document-download",
+            {
+              fileName: file.fileName,
+              durationMs: Math.round(
+                performance.now() -
+                  downloadStartedAt
+              ),
+              bytes: bytes.byteLength,
+            }
+          );
+
+          const propertyPhotosPromise =
+            file.fileType === "application/pdf"
+              ? extractPropertyPhotosFromPdf(
+                  Buffer.from(bytes),
+                  {
+                    maximumPhotos: 10,
+                    minimumConfidence: 0.7,
+                  }
+                )
+              : Promise.resolve({
+                  candidateCount: 0,
+                  propertyPhotoCount: 0,
+                  photos: [],
+                });
+
+          let fastText = "";
+          let useFastText = false;
+
+          if (
+            file.fileType ===
+            "application/pdf"
+          ) {
+            const pdfTextStartedAt =
+              performance.now();
+
+            try {
+              const pdfTextResult =
+                await extractPdfTextFast(
+                  bytes
+                );
+
+              useFastText =
+                isPdfTextFastPathUsable(
+                  pdfTextResult
+                );
+
+              if (useFastText) {
+                fastText =
+                  pdfTextResult.text;
+              }
+
+              console.log(
+                "[EXPOSE PDF TEXT FAST PATH]",
+                {
+                  fileName:
+                    file.fileName,
+                  usable:
+                    useFastText,
+                  pages:
+                    pdfTextResult.pageCount,
+                  textPages:
+                    pdfTextResult.textPageCount,
+                  characters:
+                    pdfTextResult.text.length,
+                  durationMs:
+                    Math.round(
+                      performance.now() -
+                        pdfTextStartedAt
+                    ),
+                }
+              );
+            } catch (error) {
+              console.warn(
+                "[EXPOSE PDF TEXT FAST PATH] fallback",
+                file.fileName,
+                error
+              );
+
+              fastText = "";
+              useFastText = false;
+            }
+          }
+
+          return {
+            ...file,
+            bytes,
+            fastText,
+            useFastText,
+            propertyPhotosPromise,
+          };
+        })
+      );
+
+    const usePdfTextFastPath =
+      preparedDocuments.every(
+        (document) =>
+          document.fileType ===
+            "application/pdf" &&
+          document.useFastText
+      );
+
+    const pdfFastText =
+      usePdfTextFastPath
+        ? preparedDocuments
+            .map(
+              (document, index) =>
+                `DOKUMENT ${index + 1}: ${document.fileName}\n\n${document.fastText}`
+            )
+            .join(
+              "\n\n--- NAECHSTES DOKUMENT ---\n\n"
+            )
+        : "";
+
+    console.log(
+      "[EXPOSE SPEED] documents-prepared",
+      {
+        documents:
+          preparedDocuments.length,
+        allFastText:
+          usePdfTextFastPath,
+        durationMs:
+          Math.round(
+            performance.now() -
+              exposeProfileStartedAt
+          ),
+      }
+    );
 
     openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
@@ -610,27 +723,45 @@ ALLGEMEIN:
             const uploadStartedAt =
               performance.now();
 
-            const uploadable =
-              await toFile(
-                bytes,
-                fileName,
-                {
-                  type: fileType,
-                }
+            const uploadedDocuments =
+              await Promise.all(
+                preparedDocuments.map(
+                  async (document) => {
+                    const uploadable =
+                      await toFile(
+                        document.bytes,
+                        document.fileName,
+                        {
+                          type:
+                            document.fileType,
+                        }
+                      );
+
+                    const uploaded =
+                      await openai!.files.create({
+                        file: uploadable,
+                        purpose: "user_data",
+                      });
+
+                    openAiFileIds.push(
+                      uploaded.id
+                    );
+
+                    return {
+                      fileName:
+                        document.fileName,
+                      fileId:
+                        uploaded.id,
+                    };
+                  }
+                )
               );
 
-            const uploaded =
-              await openai.files.create({
-                file: uploadable,
-                purpose: "user_data",
-              });
-
-            openAiFileId =
-              uploaded.id;
-
             console.log(
-              "[EXPOSE SPEED] openai-file-upload",
+              "[EXPOSE SPEED] openai-files-upload",
               {
+                documents:
+                  uploadedDocuments.length,
                 durationMs:
                   Math.round(
                     performance.now() -
@@ -639,23 +770,30 @@ ALLGEMEIN:
               }
             );
 
-            return openai.responses.create({
+            const content = [
+              ...uploadedDocuments.map(
+                (document) => ({
+                  type:
+                    "input_file" as const,
+                  file_id:
+                    document.fileId,
+                })
+              ),
+              {
+                type:
+                  "input_text" as const,
+                text:
+                  extractionPrompt +
+                  "\n\nAlle gelieferten Dateien geh?ren zu demselben Immobilienobjekt. Werte sie gemeinsam aus und f?hre die belegten Fakten zu genau einem Objekt zusammen.",
+              },
+            ];
+
+            return openai!.responses.create({
               model: MODEL,
               input: [
                 {
                   role: "user",
-                  content: [
-                    {
-                      type: "input_file",
-                      file_id:
-                        uploaded.id,
-                    },
-                    {
-                      type: "input_text",
-                      text:
-                        extractionPrompt,
-                    },
-                  ],
+                  content,
                 },
               ],
               max_output_tokens: 1200,
@@ -716,32 +854,73 @@ ALLGEMEIN:
       }
     }
 
-    const pdfPropertyPhotos =
-      await pdfPropertyPhotosPromise;
+    // MULTI_DOCUMENT_PDF_PHOTOS_V1
+    const pdfPhotoResults =
+      await Promise.all(
+        preparedDocuments.map(
+          (document) =>
+            document.propertyPhotosPromise
+        )
+      );
 
-    console.log("[EXPOSE PDF PHOTOS]", {
-      candidateCount:
-        pdfPropertyPhotos.candidateCount,
-      propertyPhotoCount:
-        pdfPropertyPhotos.propertyPhotoCount,
-      returnedPhotos:
-        pdfPropertyPhotos.photos.length,
-    });
+    const candidateCount =
+      pdfPhotoResults.reduce(
+        (total, result) =>
+          total +
+          result.candidateCount,
+        0
+      );
+
+    const propertyPhotoCount =
+      pdfPhotoResults.reduce(
+        (total, result) =>
+          total +
+          result.propertyPhotoCount,
+        0
+      );
+
+    const combinedPdfPhotos =
+      pdfPhotoResults
+        .flatMap(
+          (result) =>
+            result.photos
+        )
+        .slice(0, 10);
+
+    console.log(
+      "[EXPOSE PDF PHOTOS]",
+      {
+        documents:
+          preparedDocuments.length,
+        candidateCount,
+        propertyPhotoCount,
+        returnedPhotos:
+          combinedPdfPhotos.length,
+      }
+    );
 
     const extractedPhotos =
-      pdfPropertyPhotos.photos.map(
+      combinedPdfPhotos.map(
         (photo, index) => ({
           fileName:
-            `expose-photo-${String(index + 1).padStart(2, "0")}.jpg`,
+            `expose-photo-${String(
+              index + 1
+            ).padStart(2, "0")}.jpg`,
           mimeType: "image/jpeg",
           width: photo.width,
           height: photo.height,
-          pageNumber: photo.pageNumber,
-          imageIndex: photo.imageIndex,
-          confidence: photo.confidence,
-          reason: photo.reason,
+          pageNumber:
+            photo.pageNumber,
+          imageIndex:
+            photo.imageIndex,
+          confidence:
+            photo.confidence,
+          reason:
+            photo.reason,
           base64:
-            photo.buffer.toString("base64"),
+            photo.buffer.toString(
+              "base64"
+            ),
         })
       );
 
@@ -776,22 +955,28 @@ ALLGEMEIN:
       { status: friendly.status }
     );
   } finally {
-    if (openai && openAiFileId) {
-      await openai.files.delete(openAiFileId).catch((cleanupError) => {
-        console.warn(
-          "AUTOMATION OPENAI FILE CLEANUP WARNING:",
-          cleanupError
-        );
-      });
+    if (openai) {
+      await Promise.all(
+        openAiFileIds.map((fileId) =>
+          openai!.files.delete(fileId).catch((cleanupError) => {
+            console.warn(
+              "AUTOMATION OPENAI FILE CLEANUP WARNING:",
+              cleanupError
+            );
+          })
+        )
+      );
     }
 
-    if (cleanupUrl) {
-      await del(cleanupUrl).catch((cleanupError) => {
-        console.warn(
-          "AUTOMATION EXPOSE CLEANUP WARNING:",
-          cleanupError
-        );
-      });
-    }
+    await Promise.all(
+      cleanupUrls.map((url) =>
+        del(url).catch((cleanupError) => {
+          console.warn(
+            "AUTOMATION EXPOSE CLEANUP WARNING:",
+            cleanupError
+          );
+        })
+      )
+    );
   }
 }

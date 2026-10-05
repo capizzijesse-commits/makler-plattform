@@ -111,7 +111,7 @@ export default function AutomationFlowV2() {
     useState(false);
   const [market, setMarket] = useState<InseratAiMarket>("CH");
   const [stage, setStage] = useState<Stage>("receive");
-  const [exposeFile, setExposeFile] = useState<File | null>(null);
+  const [documentFiles, setDocumentFiles] = useState<File[]>([]);
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [imageAnalyses, setImageAnalyses] = useState<ImageAnalysis[]>([]);
@@ -551,65 +551,133 @@ export default function AutomationFlowV2() {
     );
   }
 
-  async function extractExpose(file: File | null, signal: AbortSignal): Promise<ExtractExposeResult> {
-    if (!file) {
+  async function extractDocuments(
+    files: File[],
+    signal: AbortSignal
+  ): Promise<ExtractExposeResult> {
+    if (files.length === 0) {
       return {
         facts: { ...data },
         pdfImages: [],
       };
     }
 
-    if (file.size > MAX_EXPOSE_BYTES) {
-      throw new Error("Das Exposé ist grösser als 25 MB.");
+    const validFiles =
+      files.filter(
+        (file) =>
+          file.size <= MAX_EXPOSE_BYTES
+      );
+
+    const oversizedFiles =
+      files.filter(
+        (file) =>
+          file.size > MAX_EXPOSE_BYTES
+      );
+
+    if (validFiles.length === 0) {
+      throw new Error(
+        files.length === 1
+          ? `Die Unterlage "${files[0].name}" ist gr?sser als 25 MB.`
+          : "Alle ausgew?hlten Unterlagen sind gr?sser als 25 MB."
+      );
     }
 
-    setStatusText("Exposé wird gelesen …");
+    if (oversizedFiles.length > 0) {
+      console.warn(
+        "[AUTOMATION DOCUMENTS] oversized-skipped",
+        oversizedFiles.map(
+          (file) => file.name
+        )
+      );
+    }
 
-    // AUTOMATION_EXPOSE_CLIENT_PROFILE_V1
-    const exposeClientStartedAt = performance.now();
+    setStatusText(
+      oversizedFiles.length > 0
+        ? `${validFiles.length} Unterlage${validFiles.length === 1 ? "" : "n"} wird verarbeitet ? ${oversizedFiles.length} ?ber 25 MB ?bersprungen`
+        : validFiles.length === 1
+          ? "Unterlage wird gelesen ?"
+          : `${validFiles.length} Unterlagen werden gelesen ?`
+    );
 
-    console.log("[AUTOMATION CLIENT] expose-upload-start", {
-      name: file.name,
-      bytes: file.size,
-      type: file.type,
-    });
+    const startedAt =
+      performance.now();
 
-    const blob = await upload(
-      `automation-exposes/${crypto.randomUUID()}-${safeFileName(file.name)}`,
-      file,
+    const uploadedFiles =
+      await Promise.all(
+        validFiles.map(async (file) => {
+          const blob =
+            await upload(
+              `automation-exposes/${crypto.randomUUID()}-${safeFileName(file.name)}`,
+              file,
+              {
+                access: "public",
+                handleUploadUrl:
+                  "/api/automation/expose-upload",
+                multipart:
+                  file.size >
+                  8 * 1024 * 1024,
+                contentType:
+                  file.type ||
+                  "application/pdf",
+                abortSignal:
+                  signal,
+              }
+            );
+
+          return {
+            fileUrl: blob.url,
+            fileName: file.name,
+            fileType:
+              file.type ||
+              "application/pdf",
+          };
+        })
+      );
+
+    console.log(
+      "[AUTOMATION CLIENT] documents-upload-done",
       {
-        access: "public",
-        handleUploadUrl: "/api/automation/expose-upload",
-        multipart: file.size > 8 * 1024 * 1024,
-        contentType: file.type || "application/pdf",
-        abortSignal: signal,
+        documents:
+          uploadedFiles.length,
+        durationMs:
+          Math.round(
+            performance.now() -
+              startedAt
+          ),
       }
     );
 
-    console.log("[AUTOMATION CLIENT] expose-upload-done", {
-      durationMs: Math.round(
-        performance.now() - exposeClientStartedAt
-      ),
-      url: blob.url,
-    });
+    const response =
+      await fetch(
+        "/api/automation/extract-expose",
+        {
+          method: "POST",
+          credentials: "include",
+          signal,
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            files: uploadedFiles,
+          }),
+        }
+      );
 
-    console.log("[AUTOMATION CLIENT] expose-extract-fetch-start");
+    const payload =
+      await response
+        .json()
+        .catch(() => ({}));
 
-    const response = await fetch("/api/automation/extract-expose", {
-      method: "POST",
-      credentials: "include",
-      signal,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        fileUrl: blob.url,
-        fileName: file.name,
-        fileType: file.type || "application/pdf",
-      }),
-    });
-
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok || payload?.success !== true) {
-      throw new Error(friendlyError(payload?.error));
+    if (
+      !response.ok ||
+      payload?.success !== true
+    ) {
+      throw new Error(
+        friendlyError(
+          payload?.error
+        )
+      );
     }
 
     const extracted = {
@@ -618,32 +686,49 @@ export default function AutomationFlowV2() {
     } as Extracted;
 
     const fallbackName = [
-      extracted.rooms ? `${extracted.rooms}-Zimmer` : "",
+      extracted.rooms
+        ? `${extracted.rooms}-Zimmer`
+        : "",
       extracted.propertyType,
-      extracted.location ? `in ${extracted.location}` : "",
+      extracted.location
+        ? `in ${extracted.location}`
+        : "",
     ]
       .filter(Boolean)
       .join(" ")
       .trim();
 
-    if (!extracted.projectName && fallbackName) {
-      extracted.projectName = fallbackName;
+    if (
+      !extracted.projectName &&
+      fallbackName
+    ) {
+      extracted.projectName =
+        fallbackName;
     }
 
     const extractedPhotoPayloads =
-      Array.isArray(payload?.extractedPhotos)
+      Array.isArray(
+        payload?.extractedPhotos
+      )
         ? (payload.extractedPhotos as ExtractedPdfPhotoPayload[])
         : [];
 
     const pdfImages =
       extractedPhotoPayloads
         .slice(0, 10)
-        .map(pdfPhotoPayloadToFile);
+        .map(
+          pdfPhotoPayloadToFile
+        );
 
-    console.log("[AUTOMATION PDF PHOTOS CLIENT]", {
-      received: extractedPhotoPayloads.length,
-      usable: pdfImages.length,
-    });
+    console.log(
+      "[AUTOMATION DOCUMENT PHOTOS CLIENT]",
+      {
+        received:
+          extractedPhotoPayloads.length,
+        usable:
+          pdfImages.length,
+      }
+    );
 
     return {
       facts: extracted,
@@ -820,8 +905,8 @@ export default function AutomationFlowV2() {
     }
   }
 
-  async function processFiles(nextExpose: File | null, nextImages: File[]) {
-    if (!nextExpose && nextImages.length === 0) return;
+  async function processFiles(nextDocuments: File[], nextImages: File[]) {
+    if (nextDocuments.length === 0 && nextImages.length === 0) return;
 
     // AUTOMATION_ABORT_SIGNAL_V1
     automationAbortRef.current?.abort();
@@ -842,7 +927,7 @@ export default function AutomationFlowV2() {
       const automationBranchStartedAt = performance.now();
 
       console.log("[AUTOMATION SPEED] branches-start", {
-        expose: Boolean(nextExpose),
+        documents: nextDocuments.length,
         images: nextImages.length,
       });
 
@@ -851,8 +936,8 @@ export default function AutomationFlowV2() {
       // Separate uploaded originals always win.
       // If there are no uploaded images, the complete PDF
       // supplies its own extracted property photographs.
-      const exposePromise = extractExpose(
-        nextExpose,
+      const exposePromise = extractDocuments(
+        nextDocuments,
         controller.signal
       );
 
@@ -1001,9 +1086,9 @@ export default function AutomationFlowV2() {
 
   // AUTOMATION_RESTART_V1
   async function restartAutomation() {
-    if (!exposeFile && images.length === 0) return;
+    if (documentFiles.length === 0 && images.length === 0) return;
 
-    await processFiles(exposeFile, images);
+    await processFiles(documentFiles, images);
   }
 
   async function handleIncomingFiles(event: ChangeEvent<HTMLInputElement>) {
@@ -1011,11 +1096,13 @@ export default function AutomationFlowV2() {
     event.target.value = "";
     if (!incoming.length) return;
 
-    const incomingExpose =
-      incoming.find(isExposeFile);
+    const incomingDocuments =
+      incoming.filter(isExposeFile);
 
-    const nextExpose =
-      incomingExpose || exposeFile;
+    const nextDocuments =
+      incomingDocuments.length > 0
+        ? incomingDocuments
+        : documentFiles;
 
     const newImages =
       incoming.filter(isImageFile);
@@ -1024,16 +1111,19 @@ export default function AutomationFlowV2() {
       (
         newImages.length > 0
           ? newImages
-          : incomingExpose
+          : incomingDocuments.length > 0
             ? []
             : images
       ).slice(0, 10);
 
-    setExposeFile(nextExpose || null);
+    setDocumentFiles(nextDocuments);
     setImages(nextImages);
     setPreviewFiles(nextImages);
 
-    await processFiles(nextExpose || null, nextImages);
+    await processFiles(
+      nextDocuments,
+      nextImages
+    );
   }
 
   async function finishAfterManualEdit() {
@@ -1260,16 +1350,16 @@ export default function AutomationFlowV2() {
                   </div>
                 )}
 
-                {(exposeFile || images.length > 0) && (
+                {(documentFiles.length > 0 || images.length > 0) && (
                   <div className="received">
-                    <span>{exposeFile ? `✓ ${exposeFile.name}` : "Kein Exposé"}</span>
+                    <span>{documentFiles.length > 0 ? `${documentFiles.length} Unterlage${documentFiles.length === 1 ? "" : "n"}` : "Keine Unterlagen"}</span>
                     <span>✓ {images.length} Bilder</span>
                   </div>
                 )}
 
                 {stage === "receive" &&
                   statusText.startsWith("Verarbeitung gestoppt") &&
-                  (exposeFile || images.length > 0) && (
+                  (documentFiles.length > 0 || images.length > 0) && (
                     <button
                       type="button"
                       className="restartAutomation"
