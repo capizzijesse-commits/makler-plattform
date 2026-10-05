@@ -516,8 +516,11 @@ export async function POST(request: NextRequest) {
     // PDF_TEXT_FAST_PATH_EXECUTION_V1
     const extractionPrompt = `
 Du bist die Fakten-Extraktion von Inserat-AI.
-Lies den gelieferten Immobilien-Expos?-Inhalt und extrahiere ausschliesslich belegte Fakten.
-Erfinde nichts und leite keine Vorteile ab, die nicht ausdr?cklich im Dokument stehen.
+Lies die gelieferten Immobilien-Unterlagen und extrahiere ausschliesslich belegte Fakten.
+Die Unterlagen m\u00fcssen kein fertiges Expos\u00e9 sein.
+Sie k\u00f6nnen z. B. aus Objektunterlagen, Notizen, Verkaufsunterlagen, Bewertungen oder einem bestehenden Expos\u00e9 bestehen.
+Verwende nur Informationen, die in den gelieferten Unterlagen ausdr\u00fccklich belegt sind.
+Erfinde nichts und leite keine Vorteile ab, die nicht ausdr\u00fccklich im Dokument stehen.
 
 Gib NUR valides JSON in dieser Struktur zur?ck:
 {

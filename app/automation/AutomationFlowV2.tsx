@@ -1231,11 +1231,11 @@ export default function AutomationFlowV2() {
                   />
                   <div className="dropIcon">＋</div>
                   <div>
-                    <h2>{stage === "working" ? "Inserat-AI arbeitet …" : "Exposé mit Bildern hochladen"}</h2>
+                    <h2>{stage === "working" ? "Inserat-AI arbeitet …" : "Objektunterlagen & Bilder hochladen"}</h2>
                     <p>
                       {stage === "working"
                         ? "Adresse, Daten, Masse, Bilder und Inserattext werden automatisch verarbeitet."
-                        : "Einmal auswählen oder hineinziehen. Danach musst du nichts mehr eingeben."}
+                        : "Lade alles hoch, was du zum Objekt hast. Inserat-AI erkennt die vorhandenen Angaben und fragt nur nach wirklich fehlenden Daten."}
                     </p>
                   </div>
                 </label>
@@ -1722,6 +1722,24 @@ export default function AutomationFlowV2() {
                 </div>
 
                 {/* LISTING_EXPORT_ACTIONS_V1 */}
+                <div className="salesExposeReady">
+                  <div className="salesExposeReadyStatus">
+                    <span>{"\u2713"} Inserat erstellt</span>
+                    <span>{"\u2713"} Verkaufsexpos{"\u00e9"} erstellt</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="salesExposeAction"
+                    onClick={() => {
+                      void downloadCurrentSalesExpose();
+                    }}
+                  >
+                    <span aria-hidden="true">{"\u2193"}</span>
+                    {"Verkaufsexpos\u00e9 herunterladen"}
+                  </button>
+                </div>
+
                 <div className="listingActions">
                   <button
                     type="button"
@@ -1792,16 +1810,7 @@ export default function AutomationFlowV2() {
                     Inserat drucken
                   </button>
 
-                  <button
-                    type="button"
-                    className="listingAction"
-                    onClick={() => {
-                      void downloadCurrentSalesExpose();
-                    }}
-                  >
-                    <span aria-hidden="true">↓</span>
-                    Verkaufsexposé herunterladen
-                  </button>
+
                 </div>
 
                 <div className="publishZone">
@@ -1965,6 +1974,80 @@ export default function AutomationFlowV2() {
               transform .16s ease,
               background .16s ease,
               border-color .16s ease;
+          }
+
+          .salesExposeReady {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 18px;
+            margin: 18px 0 10px;
+            padding: 16px 18px;
+            border: 1px solid rgba(251,191,36,.22);
+            border-radius: 15px;
+            background: rgba(245,158,11,.055);
+          }
+
+          .salesExposeReadyStatus {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 18px;
+            color: #e2e8f0;
+            font-size: 12px;
+            font-weight: 800;
+          }
+
+          .salesExposeReadyStatus span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+          }
+
+          @media (max-width: 700px) {
+            .salesExposeReady {
+              grid-template-columns: minmax(0, 1fr);
+              gap: 12px;
+              padding: 14px;
+            }
+
+            .salesExposeAction {
+              width: 100%;
+            }
+          }
+
+          .salesExposeAction {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-height: 52px;
+            padding: 0 22px;
+            border: 1px solid rgba(251,191,36,.72);
+            border-radius: 12px;
+            background: linear-gradient(
+              135deg,
+              #fbbf24 0%,
+              #f59e0b 100%
+            );
+            color: #111827;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 10px 28px rgba(245,158,11,.18);
+            transition:
+              transform .18s ease,
+              box-shadow .18s ease;
+          }
+
+          .salesExposeAction:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 34px rgba(245,158,11,.28);
+          }
+
+          .salesExposeAction span {
+            font-size: 18px;
+            font-weight: 950;
           }
 
           .listingAction:hover {
