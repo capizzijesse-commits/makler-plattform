@@ -792,12 +792,20 @@ export default function SupportActionDock() {
           font: inherit;
 
           transition:
+            width 220ms ease,
+            padding 220ms ease,
+            gap 220ms ease,
             transform 160ms ease,
             box-shadow 160ms ease,
             border-color 160ms ease;
         }
 
         .supportLauncher:hover {
+          width: 190px;
+          justify-content: flex-start;
+          gap: 9px;
+          padding: 0 8px;
+
           transform:
             translateY(-2px);
 
@@ -895,17 +903,27 @@ export default function SupportActionDock() {
         }
 
         .supportLauncherText {
-          display: none;
+          display: block;
 
-          overflow: visible;
+          max-width: 0;
+          overflow: hidden;
+          opacity: 0;
 
           font-size: 11px;
           font-weight: 950;
 
-          text-overflow:
-            clip;
-
+          text-overflow: clip;
           white-space: nowrap;
+
+          transition:
+            max-width 220ms ease,
+            opacity 140ms ease;
+        }
+
+        .supportLauncher:hover
+        .supportLauncherText {
+          max-width: 125px;
+          opacity: 1;
         }
 
 
