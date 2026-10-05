@@ -1290,13 +1290,13 @@ export default function AutomationFlowV2() {
         <div className="shell">
           <header className="hero">
             <div className="eyebrow">INSERAT-AI AUTOPILOT</div>
-            <h1>Exposé rein. Veröffentlichen. Fertig.</h1>
+            <h1>Objektunterlagen rein. Inserat &amp; Exposé fertig.</h1>
             <p>
-              Inserat-AI liest Exposé und Bilder, übernimmt die Objektdaten und erstellt das komplette Inserat automatisch. Du greifst nur ein, wenn du etwas ändern willst.
+              Lade deine Objektunterlagen und Bilder hoch. Inserat-AI erkennt die vorhandenen Angaben, analysiert und sortiert die Bilder und erstellt automatisch das fertige Immobilieninserat und Verkaufsexposé.
             </p>
 
             <div className="steps">
-              {["Empfangen", "Bearbeiten", "Veröffentlichen"].map((label, index) => {
+              {["Empfangen", "Automatisch erstellen", "Fertig"].map((label, index) => {
                 const number = index + 1;
                 return (
                   <div key={label} className={`step ${step === number ? "active" : step > number ? "done" : ""}`}>
@@ -2235,8 +2235,8 @@ export default function AutomationFlowV2() {
           .hero { padding:32px; }
           .card { margin-top:16px; padding:24px; }
           .eyebrow { color:#fbbf24; font-size:11px; letter-spacing:.14em; font-weight:950; }
-          h1 { margin:8px 0 10px; font-size:clamp(34px,5vw,58px); line-height:1.02; letter-spacing:-.045em; }
-          .hero > p { max-width:820px; margin:0; color:#cbd5e1; line-height:1.65; }
+          h1 { margin:10px 0 14px; max-width:980px; font-size:clamp(36px,4.2vw,52px); line-height:1.08; letter-spacing:-.032em; font-weight:650; text-wrap:balance; }
+          .hero > p { max-width:940px; margin:0; color:#cbd5e1; font-size:16px; font-weight:400; line-height:1.7; letter-spacing:-.008em; text-wrap:pretty; }
           .steps { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:24px; }
           .step { display:flex; align-items:center; gap:9px; padding:11px 12px; border-radius:13px; border:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.035); color:#94a3b8; }
           .step span { display:grid; place-items:center; width:27px; height:27px; border-radius:999px; background:rgba(255,255,255,.08); font-size:11px; font-weight:950; }
