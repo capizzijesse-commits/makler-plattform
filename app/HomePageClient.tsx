@@ -192,9 +192,7 @@ export default function HomePageClient({
               <div className="iaOneListingImage">
                   <video
                     className="iaOneDemoVideo"
-                    autoPlay
-                    muted
-                    loop
+                    controls
                     playsInline
                     preload="metadata"
                   >
@@ -319,6 +317,7 @@ export default function HomePageClient({
     </main>
   );
 }
+
 
 
 

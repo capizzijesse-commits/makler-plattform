@@ -12410,3 +12410,119 @@ svg {
   background: #061426;
 }
 
+
+/* =========================================================
+   PREMIUM LANDING – MOBILE V1
+   Nur Smartphone, Desktop bleibt unverändert
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+  .iaOneHero {
+    min-height: auto;
+    padding: 26px 16px 34px;
+  }
+
+  .iaOneHeroGrid {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+
+  .iaOneCopy {
+    width: 100%;
+    max-width: none;
+  }
+
+  .iaOneEyebrow {
+    margin-bottom: 16px;
+  }
+
+  .iaOneTitle {
+    font-size: clamp(2.55rem, 11.5vw, 3.55rem);
+    line-height: 0.98;
+    letter-spacing: -0.045em;
+  }
+
+  .iaOneLead {
+    max-width: 100%;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .iaOneActions {
+    width: 100%;
+    gap: 10px;
+  }
+
+  .iaOnePrimary {
+    min-height: 52px;
+  }
+
+  .iaOneDemo {
+    min-height: 42px;
+  }
+
+  .iaOneResultWrap {
+    width: 100%;
+    max-width: none;
+    padding: 9px;
+    border-radius: 18px;
+    transform: none;
+  }
+
+  .iaOneListing {
+    width: 100%;
+    display: block;
+  }
+
+  .iaOneListingImage {
+    width: 100%;
+    height: auto;
+    padding: 0;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 12px;
+  }
+
+  .iaOneDemoVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .iaOneAutomation {
+    margin-top: 9px;
+    padding: 12px;
+    gap: 10px;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .iaOneAutomation small {
+    line-height: 1.35;
+  }
+
+  .iaOneAutomation b {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .iaOnePricing {
+    width: calc(100% - 32px);
+    padding-top: 30px;
+  }
+
+  .iaOnePlans {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .iaOnePlan {
+    min-height: auto;
+  }
+
+  .iaSkylineBackground video {
+    object-position: center center;
+  }
+}
+
