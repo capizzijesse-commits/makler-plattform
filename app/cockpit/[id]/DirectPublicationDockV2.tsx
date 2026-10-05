@@ -291,19 +291,12 @@ export default function DirectPublicationDockV2({
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
-        className={
-          "fixed bottom-5 right-5 z-[70] inline-flex min-h-12 items-center justify-center rounded-full border px-5 py-3 text-xs font-black shadow-2xl transition hover:brightness-105 " +
-          (directReady
-            ? "border-emerald-200/30 bg-emerald-300 text-emerald-950"
-            : "border-amber-200/25 bg-amber-300 text-amber-950")
-        }
+        disabled
+        aria-disabled="true"
+        title="Portal-Anbindungen werden derzeit freigeschaltet."
+        className="fixed bottom-5 right-5 z-[70] inline-flex min-h-12 cursor-not-allowed items-center justify-center rounded-full border border-slate-600 bg-slate-700 px-5 py-3 text-xs font-black text-slate-300 shadow-2xl opacity-90"
       >
-        {loading
-          ? "Veröffentlichung prüfen …"
-          : directReady
-            ? "Direkt veröffentlichen →"
-            : `Objekt vervollständigen ${readyCount}/3`}
+        {"Portal-Ver\u00f6ffentlichung \u2013 in Verarbeitung"}
       </button>
 
       {open ? (
@@ -383,7 +376,7 @@ export default function DirectPublicationDockV2({
               </div>
             ) : null}
 
-            {directReady ? (
+            {false && directReady ? (
               <div className="mt-5">
                 <PublicationOrchestratorPanel
                   listingId={listingId}

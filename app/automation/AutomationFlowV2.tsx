@@ -1788,16 +1788,11 @@ export default function AutomationFlowV2() {
 
                   <button
                     className="publish"
-                    disabled={publishing}
-                    onClick={publish}
+                    disabled
+                    aria-disabled="true"
+                    title="Portal-Anbindungen werden derzeit freigeschaltet."
                   >
-                    {publishing
-                      ? "Wird vorbereitet …"
-                      : "AUF PORTALEN VERÖFFENTLICHEN"}
-
-                    {!publishing ? (
-                      <span>{"\u2192"}</span>
-                    ) : null}
+                    {"PORTAL-VER\u00d6FFENTLICHUNG \u2013 IN VERARBEITUNG"}
                   </button>
                 </div>
 
@@ -2696,8 +2691,11 @@ export default function AutomationFlowV2() {
           }
 
           .publish:disabled {
-            opacity: .42;
+            background: #475569;
+            color: #cbd5e1;
+            opacity: 1;
             cursor: not-allowed;
+            box-shadow: none;
           }
 
           .publish span {
