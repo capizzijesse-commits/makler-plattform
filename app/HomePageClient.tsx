@@ -162,18 +162,7 @@ export default function HomePageClient({
                 <span aria-hidden="true">→</span>
               </a>
 
-              <a
-                href="/inserat-ai-demo.mp4"
-                className="iaOneDemo"
-              >
-                <span
-                  className="iaOnePlay"
-                  aria-hidden="true"
-                >
-                  ▶
-                </span>
-                20-Sekunden-Demo
-              </a>
+              
             </div>
           </div>
 
