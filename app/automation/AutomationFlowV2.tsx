@@ -1836,16 +1836,6 @@ export default function AutomationFlowV2() {
                     <span>{"\u2713"} Verkaufsexpos{"\u00e9"} erstellt</span>
                   </div>
 
-                  <button
-                    type="button"
-                    className="salesExposeAction"
-                    onClick={() => {
-                      void downloadCurrentSalesExpose();
-                    }}
-                  >
-                    <span aria-hidden="true">{"\u2193"}</span>
-                    {"Verkaufsexpos\u00e9 herunterladen"}
-                  </button>
                 </div>
 
                 <div className="listingActions">
