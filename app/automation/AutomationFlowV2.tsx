@@ -1306,13 +1306,22 @@ export default function AutomationFlowV2() {
         <div className="shell">
           <header className="hero">
             <div className="eyebrow">INSERAT-AI AUTOPILOT</div>
-            <h1>Objektunterlagen rein. Inserat &amp; Exposé fertig.</h1>
+            <h1>Objektunterlagen rein. Inserat automatisch fertig.</h1>
             <p>
-              Lade deine Objektunterlagen und Bilder hoch. Inserat-AI erkennt die vorhandenen Angaben, analysiert und sortiert die Bilder und erstellt automatisch das fertige Immobilieninserat und Verkaufsexposé.
+              Lade deine Objektunterlagen und Bilder hoch. Inserat-AI erkennt die vorhandenen Angaben, analysiert und sortiert die Bilder und erstellt automatisch dein fertiges Immobilieninserat.
+            </p>
+            <p
+              style={{
+                marginTop: "10px",
+                fontSize: "14px",
+                opacity: 0.78,
+              }}
+            >
+              Exposé-Export: Wird derzeit technisch weiterentwickelt und steht vorübergehend nicht zur Verfügung.
             </p>
 
             <div className="steps">
-              {["Empfangen", "Automatisch erstellen", "Fertig"].map((label, index) => {
+              {["Empfangen", "Automatisch erstellen", "Inserat fertig"].map((label, index) => {
                 const number = index + 1;
                 return (
                   <div key={label} className={`step ${step === number ? "active" : step > number ? "done" : ""}`}>
