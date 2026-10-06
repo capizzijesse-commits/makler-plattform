@@ -163,6 +163,7 @@ export default function DashboardPage() {
   } = useAppDialog();
 
   const [userPlan, setUserPlan] = useState("free");
+  const [sessionRouteResolved, setSessionRouteResolved] = useState(false);
   const canUseDashboardImages =
     process.env.NODE_ENV ===
       "development" ||
@@ -204,6 +205,9 @@ useEffect(() => {
       }
 
       if (!response.ok) {
+        if (active) {
+          setSessionRouteResolved(true);
+        }
         return;
       }
 
@@ -249,11 +253,17 @@ useEffect(() => {
       ) {
         setUserName(data.user.name.trim());
       }
+
+      setSessionRouteResolved(true);
     } catch (error) {
       console.error(
         "SESSION KONNTE NICHT GELADEN WERDEN:",
         error
       );
+
+      if (active) {
+        setSessionRouteResolved(true);
+      }
     }
   }
 
@@ -2587,6 +2597,10 @@ function removeImage(indexToRemove: number) {
 
 setImageAnalysisMessage("");
 localStorage.removeItem("inseratAiImageAnalysis");
+}
+
+if (!sessionRouteResolved) {
+  return null;
 }
 
 return (
