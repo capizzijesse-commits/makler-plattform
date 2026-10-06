@@ -1370,6 +1370,17 @@ export default function AutomationFlowV2() {
                   <div className="received">
                     <span>{documentFiles.length > 0 ? `${documentFiles.length} Unterlage${documentFiles.length === 1 ? "" : "n"}` : "Keine Unterlagen"}</span>
                     <span>✓ {images.length} Bilder</span>
+
+                    {stage === "receive" &&
+                      !statusText.startsWith("Verarbeitung gestoppt") && (
+                        <button
+                          type="button"
+                          className="startAutomationButton"
+                          onClick={restartAutomation}
+                        >
+                          Jetzt erstellen
+                        </button>
+                      )}
                   </div>
                 )}
 
@@ -2288,7 +2299,23 @@ export default function AutomationFlowV2() {
           .dropIcon { display:grid; place-items:center; width:62px; height:62px; flex:0 0 62px; border-radius:18px; background:linear-gradient(135deg,#f59e0b,#f97316); font-size:34px; font-weight:300; }
           .drop h2 { margin:0; font-size:24px; }
           .drop p { margin:8px 0 0; color:#aebbd0; line-height:1.55; }
-          .received { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+          .received { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:12px; }
+          .startAutomationButton {
+            margin-left:auto;
+            min-height:34px;
+            padding:7px 12px;
+            border:1px solid rgba(251,191,36,.38);
+            border-radius:999px;
+            background:rgba(245,158,11,.12);
+            color:#fbbf24;
+            font:inherit;
+            font-size:11px;
+            font-weight:900;
+            cursor:pointer;
+          }
+          .startAutomationButton:hover {
+            background:rgba(245,158,11,.18);
+          }
           .mobileAutomationNext { display:none; }
 
         .restartAutomation {
