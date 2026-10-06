@@ -544,12 +544,14 @@ export default function AutomationFlowV2() {
     imageIndex: number;
     confidence: number;
     reason: string;
+    analysis?: string;
     base64: string;
   };
 
   type ExtractExposeResult = {
     facts: Extracted;
     pdfImages: File[];
+    pdfAnalyses: ImageAnalysis[];
   };
 
   function pdfPhotoPayloadToFile(
@@ -589,6 +591,7 @@ export default function AutomationFlowV2() {
       return {
         facts: { ...data },
         pdfImages: [],
+        pdfAnalyses: [],
       };
     }
 
@@ -632,67 +635,131 @@ export default function AutomationFlowV2() {
     const startedAt =
       performance.now();
 
-    const uploadedFiles =
-      await Promise.all(
-        validFiles.map(async (file) => {
-          const blob =
-            await upload(
-              `automation-exposes/${crypto.randomUUID()}-${safeFileName(file.name)}`,
-              file,
-              {
-                access: "public",
-                handleUploadUrl:
-                  "/api/automation/expose-upload",
-                multipart:
-                  file.size >
-                  8 * 1024 * 1024,
-                contentType:
-                  file.type ||
-                  "application/pdf",
-                abortSignal:
-                  signal,
-              }
-            );
-
-          return {
-            fileUrl: blob.url,
-            fileName: file.name,
-            fileType:
-              file.type ||
-              "application/pdf",
-          };
-        })
+    const directUploadBytes =
+      validFiles.reduce(
+        (total, file) =>
+          total + file.size,
+        0
       );
 
-    console.log(
-      "[AUTOMATION CLIENT] documents-upload-done",
-      {
-        documents:
-          uploadedFiles.length,
-        durationMs:
-          Math.round(
-            performance.now() -
-              startedAt
-          ),
-      }
-    );
+    const useDirectExposeUpload =
+      directUploadBytes <=
+      3.5 * 1024 * 1024;
 
-    const response =
-      await fetch(
-        "/api/automation/extract-expose",
+    let response: Response;
+
+    if (useDirectExposeUpload) {
+      const form =
+        new FormData();
+
+      for (const file of validFiles) {
+        form.append(
+          "files",
+          file,
+          file.name
+        );
+      }
+
+      console.log(
+        "[AUTOMATION CLIENT] direct-expose-start",
         {
-          method: "POST",
-          credentials: "include",
-          signal,
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            files: uploadedFiles,
-          }),
+          documents:
+            validFiles.length,
+          bytes:
+            directUploadBytes,
         }
       );
+
+      response =
+        await fetch(
+          "/api/automation/extract-expose",
+          {
+            method: "POST",
+            credentials: "include",
+            signal,
+            body: form,
+          }
+        );
+
+      console.log(
+        "[AUTOMATION CLIENT] direct-expose-response",
+        {
+          durationMs:
+            Math.round(
+              performance.now() -
+                startedAt
+            ),
+        }
+      );
+    } else {
+      const uploadedFiles =
+        await Promise.all(
+          validFiles.map(
+            async (file) => {
+              const blob =
+                await upload(
+                  `automation-exposes/${crypto.randomUUID()}-${safeFileName(file.name)}`,
+                  file,
+                  {
+                    access: "public",
+                    handleUploadUrl:
+                      "/api/automation/expose-upload",
+                    multipart:
+                      file.size >
+                      8 * 1024 * 1024,
+                    contentType:
+                      file.type ||
+                      "application/pdf",
+                    abortSignal:
+                      signal,
+                  }
+                );
+
+              return {
+                fileUrl:
+                  blob.url,
+                fileName:
+                  file.name,
+                fileType:
+                  file.type ||
+                  "application/pdf",
+              };
+            }
+          )
+        );
+
+      console.log(
+        "[AUTOMATION CLIENT] documents-upload-done",
+        {
+          documents:
+            uploadedFiles.length,
+          durationMs:
+            Math.round(
+              performance.now() -
+                startedAt
+            ),
+        }
+      );
+
+      response =
+        await fetch(
+          "/api/automation/extract-expose",
+          {
+            method: "POST",
+            credentials: "include",
+            signal,
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body:
+              JSON.stringify({
+                files:
+                  uploadedFiles,
+              }),
+          }
+        );
+    }
 
     const payload =
       await response
@@ -748,6 +815,39 @@ export default function AutomationFlowV2() {
         pdfPhotoPayloadToFile
       );
 
+    const pdfAnalyses: ImageAnalysis[] =
+      extractedPhotoPayloads
+        .map(
+          (photo, index) => {
+            const analysis =
+              typeof photo.analysis === "string"
+                ? photo.analysis.trim()
+                : "";
+
+            const image =
+              pdfImages[index];
+
+            if (
+              !analysis ||
+              !image
+            ) {
+              return null;
+            }
+
+            return {
+              fileName:
+                image.name,
+              analysis,
+            };
+          }
+        )
+        .filter(
+          (
+            item
+          ): item is ImageAnalysis =>
+            item !== null
+        );
+
     console.log(
       "[AUTOMATION DOCUMENT PHOTOS CLIENT]",
       {
@@ -755,12 +855,15 @@ export default function AutomationFlowV2() {
           extractedPhotoPayloads.length,
         usable:
           pdfImages.length,
+        analyzed:
+          pdfAnalyses.length,
       }
     );
 
     return {
       facts: extracted,
       pdfImages,
+      pdfAnalyses,
     };
   }
 
@@ -1220,51 +1323,120 @@ export default function AutomationFlowV2() {
         setPreviewFiles(effectiveImages);
       }
 
-      const analyses =
-        uploadedAnalysesPromise
-          ? await uploadedAnalysesPromise
-          : await analyzeImages(
-              effectiveImages,
-              controller.signal
-            );
-
       if (
-        controller.signal.aborted ||
-        automationAbortRef.current !== controller
+        !facts.location.trim() ||
+        !facts.propertyType.trim()
       ) {
-        return;
-      }
-
-      setImageAnalyses(analyses);
-
-      console.log("[AUTOMATION SPEED] images-done", {
-        durationMs: Math.round(
-          performance.now() - automationBranchStartedAt
-        ),
-        images: analyses.length,
-        source:
-          nextImages.length > 0
-            ? "uploaded"
-            : "pdf",
-      });
-
-      if (
-        controller.signal.aborted ||
-        automationAbortRef.current !== controller
-      ) {
-        return;
-      }
-
-      if (!facts.location.trim() || !facts.propertyType.trim()) {
         setStage("edit");
-        setStatusText("Fast fertig. Es fehlen nur einzelne Pflichtangaben.");
+        setStatusText(
+          "Fast fertig. Es fehlen nur einzelne Pflichtangaben."
+        );
         return;
       }
 
-      const nextVariants = await generateListing(facts, analyses, controller.signal);
-      setVariants(nextVariants);
-      setStage("publish");
-      setStatusText("Bereit zur Veröffentlichung.");
+      /*
+       * SPEED_PIPELINE_PARALLEL_V1
+       *
+       * Bildanalyse und Textgenerierung
+       * laufen parallel.
+       */
+      const hasCompletePdfAnalyses =
+        nextImages.length === 0 &&
+        exposeResult.pdfImages.length > 0 &&
+        exposeResult.pdfAnalyses.length ===
+          exposeResult.pdfImages.length;
+
+      console.log(
+        "[AUTOMATION SPEED] pdf-analysis-source",
+        {
+          serverAnalyses:
+            exposeResult.pdfAnalyses.length,
+          pdfImages:
+            exposeResult.pdfImages.length,
+          reused:
+            hasCompletePdfAnalyses,
+        }
+      );
+
+      const analysesPromise =
+        uploadedAnalysesPromise ??
+        (
+          hasCompletePdfAnalyses
+            ? Promise.resolve(
+                exposeResult.pdfAnalyses
+              )
+            : analyzeImages(
+                effectiveImages,
+                controller.signal
+              )
+        );
+
+      const variantsPromise =
+        generateListing(
+          facts,
+          [],
+          controller.signal
+        );
+
+      console.log(
+        "[AUTOMATION SPEED] parallel-work-start",
+        {
+          durationMs:
+            Math.round(
+              performance.now() -
+                automationBranchStartedAt
+            ),
+          images:
+            effectiveImages.length,
+        }
+      );
+
+      const [
+        analyses,
+        nextVariants,
+      ] =
+        await Promise.all([
+          analysesPromise,
+          variantsPromise,
+        ]);
+
+      if (
+        controller.signal.aborted ||
+        automationAbortRef.current !== controller
+      ) {
+        return;
+      }
+
+      setImageAnalyses(
+        analyses
+      );
+
+      console.log(
+        "[AUTOMATION SPEED] parallel-work-done",
+        {
+          durationMs:
+            Math.round(
+              performance.now() -
+                automationBranchStartedAt
+            ),
+          images:
+            analyses.length,
+          variants:
+            nextVariants.length,
+        }
+      );
+
+      setVariants(
+        nextVariants
+      );
+
+      setStage(
+        "publish"
+      );
+
+      setStatusText(
+        "Bereit zur Ver?ffentlichung."
+      );
     } catch (runError) {
       if (controller.signal.aborted) {
         return;

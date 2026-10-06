@@ -363,6 +363,9 @@ export async function extractPdfImageCandidates(
   pdfBuffer: Buffer,
   options: {
     renderPages?: boolean;
+    onCandidate?: (
+      candidate: PdfImageCandidate
+    ) => void;
   } = {}
 ): Promise<PdfImageCandidate[]> {
   await import(
@@ -568,6 +571,10 @@ export async function extractPdfImageCandidates(
             results.push(
               renderedPageCandidate
             );
+
+            options.onCandidate?.(
+              renderedPageCandidate
+            );
           }
         }
       }
@@ -728,7 +735,7 @@ export async function extractPdfImageCandidates(
           fingerprint
         );
 
-        results.push({
+        const candidate: PdfImageCandidate = {
           buffer:
             output,
           width,
@@ -736,7 +743,15 @@ export async function extractPdfImageCandidates(
           pageNumber,
           imageIndex:
             pageImageIndex,
-        });
+        };
+
+        results.push(
+          candidate
+        );
+
+        options.onCandidate?.(
+          candidate
+        );
       }
 
       page.cleanup();

@@ -1,6 +1,10 @@
 "use client";
 
-import type { ReactNode } from "react";
+import {
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import { usePathname } from "next/navigation";
 
 import Navbar from "@/app/components/Navbar";
@@ -23,6 +27,75 @@ export default function AppShell({
 }: AppShellProps) {
   const pathname = usePathname() || "/";
 
+  // APPSHELL_DASHBOARD_REDIRECT_GATE_V1
+  // Hide global workspace/support UI while /dashboard
+  // resolves whether this account redirects to /automation.
+  const [
+    dashboardShellReady,
+    setDashboardShellReady,
+  ] = useState(false);
+
+  useEffect(() => {
+    if (pathname !== "/dashboard") {
+      setDashboardShellReady(true);
+      return;
+    }
+
+    let active = true;
+
+    async function resolveDashboardShell() {
+      try {
+        const response =
+          await fetch("/api/session", {
+            credentials: "include",
+            cache: "no-store",
+          });
+
+        if (!active) {
+          return;
+        }
+
+        if (!response.ok) {
+          setDashboardShellReady(true);
+          return;
+        }
+
+        const data =
+          await response.json();
+
+        if (!active) {
+          return;
+        }
+
+        const plan =
+          String(
+            data?.user?.plan ?? ""
+          )
+            .trim()
+            .toLowerCase();
+
+        const redirectsToAutomation =
+          plan === "pro" ||
+          plan === "agency" ||
+          plan === "admin";
+
+        if (!redirectsToAutomation) {
+          setDashboardShellReady(true);
+        }
+      } catch {
+        if (active) {
+          setDashboardShellReady(true);
+        }
+      }
+    }
+
+    void resolveDashboardShell();
+
+    return () => {
+      active = false;
+    };
+  }, [pathname]);
+
   const isExposePage =
     pathname === "/expose" ||
     pathname.startsWith("/expose/");
@@ -44,7 +117,13 @@ export default function AppShell({
     isCockpitDetailPage ||
     isMapPage;
   const showSupportTools =
-    !isMapPage;
+    !isMapPage &&
+    pathname !== "/automation" &&
+    !pathname.startsWith("/automation/") &&
+    (
+      pathname !== "/dashboard" ||
+      dashboardShellReady
+    );
 
   return (
     <>
@@ -56,7 +135,11 @@ export default function AppShell({
         <Footer />
       ) : null}
 
-      {isWorkspacePage ? (
+      {isWorkspacePage &&
+      (
+        pathname !== "/dashboard" ||
+        dashboardShellReady
+      ) ? (
         <>
           <GlobalWorkspaceLauncher />
           <MaklerCommunicationHub />

@@ -11,6 +11,7 @@ import {
   extractPropertyPhotosFromPdf,
 } from "@/lib/pdf-extract-property-photos.server";
 
+
 const MODEL = process.env.OPENAI_LISTING_MODEL?.trim() || "gpt-4.1-mini";
 const EXPOSE_PREFIX = "/automation-exposes/";
 const MAX_EXPOSE_BYTES = 25 * 1024 * 1024;
@@ -950,6 +951,139 @@ function hasExplicitSalePriceEvidence(
   return false;
 }
 
+// SPEED_BOOSTER_V2_LOCAL_FACTS
+function extractLocalFastFacts(
+  documentText: string
+): ExtractedExpose {
+  const result =
+    emptyResult();
+
+  const text =
+    documentText
+      .replace(/\r/g, "")
+      .replace(/[ \t]+/g, " ");
+
+  const firstMatch = (
+    patterns: RegExp[]
+  ): string => {
+    for (const pattern of patterns) {
+      const match =
+        text.match(pattern);
+
+      if (match?.[1]) {
+        return match[1]
+          .trim()
+          .replace(
+            /\s+/g,
+            " "
+          );
+      }
+    }
+
+    return "";
+  };
+
+  result.postalCode =
+    firstMatch([
+      /(?:PLZ|Postleitzahl)\s*[:\-]?\s*([0-9]{4,5})\b/i,
+      /\b([0-9]{4})\s+[A-Z???][A-Za-z???????\- ]{2,50}\b/,
+    ]);
+
+  result.location =
+    firstMatch([
+      /(?:Ort|Gemeinde|Ortschaft)\s*[:\-]?\s*([^\n,;]{2,60})/i,
+      /\b[0-9]{4}\s+([A-Z???][A-Za-z???????\- ]{2,50})\b/,
+    ]);
+
+  result.street =
+    firstMatch([
+      /(?:Strasse|Stra?e|Adresse)\s*[:\-]?\s*([^\n,;]{3,100})/i,
+    ]);
+
+  result.rooms =
+    firstMatch([
+      /(?:Zimmer|Zimmerzahl|Anzahl Zimmer)\s*[:\-]?\s*([0-9]+(?:[.,][0-9]+)?)/i,
+      /\b([0-9]+(?:[.,][0-9]+)?)\s*[- ]?Zimmer\b/i,
+    ])
+      .replace(",", ".");
+
+  result.livingArea =
+    extractExplicitNetLivingArea(
+      text
+    ) ||
+    firstMatch([
+      /(?:Wohnfl(?:\u00e4|ae)che)\s*[:\-]?\s*([0-9]+(?:[.,][0-9]+)?)/i,
+    ])
+      .replace(",", ".");
+
+  result.propertyType =
+    firstMatch([
+      /\b(Einfamilienhaus|Mehrfamilienhaus|Doppelhaush\u00e4lfte|Doppelhaushaelfte|Reihenhaus|Eigentumswohnung|Wohnung|Penthouse|Attikawohnung|Maisonette|Villa|Grundst\u00fcck|Grundstueck|Gewerbeobjekt)\b/i,
+      /(?:Objektart|Objekttyp|Immobilientyp)\s*[:\-]?\s*([^\n,;]{3,80})/i,
+    ]);
+
+  const priceMatch =
+    text.match(
+      /(?:Kaufpreis|Verkaufspreis|Angebotspreis)\s*[:\-]?\s*((?:CHF|EUR|\u20ac)?\s*[0-9][0-9'.\s]*(?:[.,][0-9]{2})?\s*(?:CHF|EUR|\u20ac)?)/i
+    );
+
+  if (priceMatch?.[1]) {
+    result.price =
+      priceMatch[1]
+        .trim()
+        .replace(
+          /\s+/g,
+          " "
+        );
+  }
+
+  const projectParts = [
+    result.propertyType,
+    result.location,
+  ].filter(Boolean);
+
+  if (
+    projectParts.length === 2
+  ) {
+    result.projectName =
+      projectParts.join(" ");
+  }
+
+  const required: Array<
+    keyof ExtractedExpose
+  > = [
+    "postalCode",
+    "location",
+    "propertyType",
+    "rooms",
+    "livingArea",
+  ];
+
+  result.missingFields =
+    required
+      .filter(
+        (field) =>
+          !String(
+            result[field] ?? ""
+          ).trim()
+      )
+      .map(String);
+
+  return result;
+}
+
+function isLocalFastFactsReady(
+  facts: ExtractedExpose
+): boolean {
+  return Boolean(
+    facts.postalCode &&
+    facts.location &&
+    facts.propertyType &&
+    facts.rooms &&
+    facts.livingArea
+  );
+}
+
 function parseJsonObject(text: string): unknown {
   const trimmed = text.trim();
 
@@ -1068,32 +1202,107 @@ export async function POST(request: NextRequest) {
   let openai: OpenAI | null = null;
 
   try {
-    const body = (await request.json()) as ExtractRequest;
+    const contentType =
+      request.headers.get("content-type") || "";
 
-    const rawFiles =
-      Array.isArray(body.files)
-        ? body.files
-        : [body];
+    const directDocuments: Array<{
+      fileUrl: string;
+      fileName: string;
+      fileType: string;
+      bytes?: Uint8Array;
+    }> = [];
 
-    const files =
-      rawFiles
-        .map((value) => {
-          const raw =
-            value && typeof value === "object"
-              ? (value as Record<string, unknown>)
-              : {};
+    let files: Array<{
+      fileUrl: string;
+      fileName: string;
+      fileType: string;
+      bytes?: Uint8Array;
+    }> = [];
 
-          return {
-            fileUrl: cleanString(raw.fileUrl),
-            fileName:
-              cleanString(raw.fileName) ||
-              "unterlage.pdf",
-            fileType:
-              cleanString(raw.fileType) ||
-              "application/pdf",
-          };
-        })
-        .filter((file) => file.fileUrl);
+    if (
+      contentType.includes(
+        "multipart/form-data"
+      )
+    ) {
+      const form =
+        await request.formData();
+
+      const directFiles =
+        form
+          .getAll("files")
+          .filter(
+            (value): value is File =>
+              value instanceof File
+          );
+
+      for (
+        const directFile
+        of directFiles
+      ) {
+        const bytes =
+          new Uint8Array(
+            await directFile.arrayBuffer()
+          );
+
+        directDocuments.push({
+          fileUrl: "",
+          fileName:
+            directFile.name ||
+            "unterlage.pdf",
+          fileType:
+            directFile.type ||
+            "application/pdf",
+          bytes,
+        });
+      }
+
+      files =
+        directDocuments;
+    } else {
+      const body =
+        (await request.json()) as ExtractRequest;
+
+      const rawFiles =
+        Array.isArray(body.files)
+          ? body.files
+          : [body];
+
+      files =
+        rawFiles
+          .map((value) => {
+            const raw =
+              value &&
+              typeof value === "object"
+                ? (
+                    value as Record<
+                      string,
+                      unknown
+                    >
+                  )
+                : {};
+
+            return {
+              fileUrl:
+                cleanString(
+                  raw.fileUrl
+                ),
+              fileName:
+                cleanString(
+                  raw.fileName
+                ) ||
+                "unterlage.pdf",
+              fileType:
+                cleanString(
+                  raw.fileType
+                ) ||
+                "application/pdf",
+            };
+          })
+          .filter(
+            (file) =>
+              Boolean(file.fileUrl)
+          );
+    }
 
     if (files.length === 0) {
       return NextResponse.json(
@@ -1118,7 +1327,13 @@ export async function POST(request: NextRequest) {
     let exposeProfileStepAt = exposeProfileStartedAt;
 
     for (const file of files) {
-      if (!isTrustedBlobUrl(file.fileUrl)) {
+      const hasDirectBytes =
+        file.bytes instanceof Uint8Array;
+
+      if (
+        !hasDirectBytes &&
+        !isTrustedBlobUrl(file.fileUrl)
+      ) {
         return NextResponse.json(
           {
             success: false,
@@ -1148,7 +1363,11 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      cleanupUrls.push(file.fileUrl);
+      if (!hasDirectBytes) {
+        cleanupUrls.push(
+          file.fileUrl
+        );
+      }
     }
 
     const preparedDocuments =
@@ -1157,21 +1376,28 @@ export async function POST(request: NextRequest) {
           const downloadStartedAt =
             performance.now();
 
-          const sourceResponse =
-            await fetch(file.fileUrl, {
-              cache: "no-store",
-            });
-
-          if (!sourceResponse.ok) {
-            throw new Error(
-              `EXPOSE_BLOB_DOWNLOAD_FAILED_${sourceResponse.status}`
-            );
-          }
-
           const bytes =
-            new Uint8Array(
-              await sourceResponse.arrayBuffer()
-            );
+            file.bytes instanceof Uint8Array
+              ? file.bytes
+              : await (async () => {
+                  const sourceResponse =
+                    await fetch(
+                      file.fileUrl,
+                      {
+                        cache: "no-store",
+                      }
+                    );
+
+                  if (!sourceResponse.ok) {
+                    throw new Error(
+                      `EXPOSE_BLOB_DOWNLOAD_FAILED_${sourceResponse.status}`
+                    );
+                  }
+
+                  return new Uint8Array(
+                    await sourceResponse.arrayBuffer()
+                  );
+                })();
 
           if (
             bytes.byteLength <= 0 ||
@@ -1321,6 +1547,7 @@ export async function POST(request: NextRequest) {
         })
       );
 
+
     const textDocuments =
       preparedDocuments.filter(
         (document) =>
@@ -1346,6 +1573,77 @@ export async function POST(request: NextRequest) {
           "\n\n--- NAECHSTES DOKUMENT ---\n\n"
         );
 
+    const localFastFacts =
+      extractLocalFastFacts(
+        combinedFastText
+      );
+
+    const localFastFactsReady =
+      useTextFastPath &&
+      isLocalFastFactsReady(
+        localFastFacts
+      );
+
+    const canonicalLocalPropertyTypes =
+      new Set([
+        "Einfamilienhaus",
+        "Mehrfamilienhaus",
+        "Doppelhaush?lfte",
+        "Doppelhaushaelfte",
+        "Reihenhaus",
+        "Eigentumswohnung",
+        "Wohnung",
+        "Penthouse",
+        "Attikawohnung",
+        "Maisonette",
+        "Villa",
+        "Grundst?ck",
+        "Grundstueck",
+        "Gewerbeobjekt",
+      ]);
+
+    const useLocalFactsFastPath =
+      localFastFactsReady &&
+      canonicalLocalPropertyTypes.has(
+        localFastFacts.propertyType
+      );
+
+    console.log(
+      "[SPEED BOOSTER V4 FAST PATH]",
+      {
+        enabled:
+          useLocalFactsFastPath,
+        propertyType:
+          localFastFacts.propertyType,
+      }
+    );
+
+    console.log(
+      "[SPEED BOOSTER V3 LOCAL FACTS]",
+      {
+        ready:
+          localFastFactsReady,
+        projectName:
+          localFastFacts.projectName,
+        street:
+          localFastFacts.street,
+        postalCode:
+          localFastFacts.postalCode,
+        location:
+          localFastFacts.location,
+        propertyType:
+          localFastFacts.propertyType,
+        rooms:
+          localFastFacts.rooms,
+        livingArea:
+          localFastFacts.livingArea,
+        price:
+          localFastFacts.price,
+        missingFields:
+          localFastFacts.missingFields,
+      }
+    );
+
     console.log(
       "[EXPOSE SPEED] documents-prepared",
       {
@@ -1365,9 +1663,12 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+    if (!useLocalFactsFastPath) {
+      openai = new OpenAI({
+        apiKey:
+          process.env.OPENAI_API_KEY,
+      });
+    }
 
     // PDF_TEXT_FAST_PATH_EXECUTION_V1
     const extractionPrompt = `
@@ -1443,8 +1744,10 @@ ALLGEMEIN:
       performance.now();
 
     const response =
-      useTextFastPath
-        ? await openai.responses.create({
+      useLocalFactsFastPath
+        ? null
+        : useTextFastPath
+          ? await openai!.responses.create({
             model: MODEL,
             input: [
               {
@@ -1550,14 +1853,33 @@ ALLGEMEIN:
           })();
 
     console.log(
+      "[EXPOSE AI USAGE]",
+      {
+        inputTokens:
+          response?.usage?.input_tokens ??
+          null,
+        outputTokens:
+          response?.usage?.output_tokens ??
+          null,
+        totalTokens:
+          response?.usage?.total_tokens ??
+          null,
+        fastTextChars:
+          combinedFastText.length,
+      }
+    );
+
+    console.log(
       "[EXPOSE SPEED] ai-extraction",
       {
         mode:
-          useTextFastPath
-            ? "text-fast"
-            : combinedFastText
-              ? "mixed-text-file"
-              : "full-file-fallback",
+          useLocalFactsFastPath
+            ? "local-fast"
+            : useTextFastPath
+              ? "text-fast"
+              : combinedFastText
+                ? "mixed-text-file"
+                : "full-file-fallback",
         durationMs:
           Math.round(
             performance.now() -
@@ -1570,11 +1892,39 @@ ALLGEMEIN:
       performance.now();
 
     const extracted =
-      normalizeResult(
-        parseJsonObject(
-          response.output_text || ""
-        )
-      );
+      useLocalFactsFastPath
+        ? normalizeResult(
+            localFastFacts
+          )
+        : normalizeResult(
+            parseJsonObject(
+              response?.output_text ||
+                ""
+            )
+          );
+
+    if (useLocalFactsFastPath) {
+      extracted.sourceSummary =
+        [
+          extracted.propertyType,
+          extracted.rooms
+            ? extracted.rooms +
+              " Zimmer"
+            : "",
+          extracted.livingArea
+            ? extracted.livingArea +
+              " m? Wohnfl?che"
+            : "",
+          [
+            extracted.postalCode,
+            extracted.location,
+          ]
+            .filter(Boolean)
+            .join(" "),
+        ]
+          .filter(Boolean)
+          .join(", ");
+    }
 
     const explicitNetLivingArea =
       extractExplicitNetLivingArea(
@@ -1694,12 +2044,15 @@ ALLGEMEIN:
             photo.confidence,
           reason:
             photo.reason,
+          analysis:
+            photo.analysis,
           base64:
             photo.buffer.toString(
               "base64"
             ),
         })
       );
+
 
     // EXPOSE_ADDRESS_DIAGNOSTIC_V1
     console.log("[EXPOSE ADDRESS]", {

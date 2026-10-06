@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 
 import { canUseListingCoreForUser } from "@/lib/listing-access";
 import { getAuthenticatedUser } from "@/lib/session";
+import { analyzeImageBatch } from "@/lib/image-batch-analyzer.server";
 
 export const runtime = "nodejs";
 
@@ -246,159 +247,23 @@ export async function POST(
       }
     }
 
-    const content: Array<
-      | {
-          type: "text";
-          text: string;
-        }
-      | {
-          type: "image_url";
-          image_url: {
-            url: string;
-            detail: "low";
-          };
-        }
-    > = [
-      {
-        type: "text",
-        text:
-          "Analysiere jedes bereitgestellte Immobilienbild separat. " +
-          "Erfinde keine nicht sichtbaren Fakten. " +
-          "Gib ausschliesslich JSON zurueck. " +
-          "imageIndex beginnt bei 0 und muss exakt der angegebenen Bildnummer entsprechen.\n\n" +
-          'Format: {"analyses":[{"imageIndex":0,"room":"...","condition":"...","visibleFacts":["..."],"strengths":["..."],"limitations":["..."]}]}\n\n' +
-          "Regeln: room maximal 5 Woerter; condition maximal 10 Woerter; " +
-          "visibleFacts maximal 5 kurze Eintraege; strengths maximal 2; limitations maximal 2.",
-      },
-    ];
-
-    for (
-      let index = 0;
-      index < images.length;
-      index += 1
-    ) {
-      const image =
-        images[index];
-
-      const bytes =
-        Buffer.from(
-          await image.arrayBuffer()
-        );
-
-      content.push({
-        type: "text",
-        text:
-          `Bild ${index}, Dateiname: ${image.name}`,
-      });
-
-      content.push({
-        type: "image_url",
-        image_url: {
-          url:
-            `data:${image.type};base64,` +
-            bytes.toString("base64"),
-          detail: "low",
-        },
-      });
-    }
-
-    console.info(
-      "[IMAGE BATCH SPEED] openai-start",
-      {
-        imageCount:
-          images.length,
-        imageNames:
-          images.map(
-            (image) => image.name
-          ),
-        imageBytes:
-          images.map(
-            (image) => image.size
-          ),
-      }
-    );
-
-    const openai =
-      new OpenAI({
-        apiKey:
-          process.env.OPENAI_API_KEY,
-      });
-
-    const response =
-      await openai.chat.completions.create({
-        model:
-          "gpt-4.1-mini",
-        temperature:
-          0,
-        max_tokens:
-          1200,
-        response_format: {
-          type:
-            "json_object",
-        },
-        messages: [
-          {
-            role: "user",
-            content,
-          },
-        ],
-      });
-
-    const raw =
-      response.choices[0]
-        ?.message?.content
-        ?.trim();
-
-    if (!raw) {
-      throw new Error(
-        "Keine Batch-Bildanalyse erhalten."
+    const batchInputs =
+      await Promise.all(
+        images.map(
+          async (image) => ({
+            name: image.name,
+            mimeType: image.type,
+            bytes: Buffer.from(
+              await image.arrayBuffer()
+            ),
+          })
+        )
       );
-    }
-
-    const parsed =
-      JSON.parse(raw) as {
-        analyses?: BatchAnalysis[];
-      };
 
     const analyses =
-      Array.isArray(
-        parsed.analyses
-      )
-        ? parsed.analyses
-            .filter(
-              (
-                item
-              ): item is BatchAnalysis =>
-                typeof item ===
-                  "object" &&
-                item !== null &&
-                Number.isInteger(
-                  item.imageIndex
-                )
-            )
-            .sort(
-              (a, b) =>
-                a.imageIndex -
-                b.imageIndex
-            )
-            .map((item) => ({
-              imageIndex:
-                item.imageIndex,
-              analysis:
-                buildAnalysis(
-                  item
-                ),
-            }))
-        : [];
-
-    if (
-      analyses.length !==
-      images.length
-    ) {
-      throw new Error(
-        `Batch-Bildanalyse unvollstaendig: erwartet ${images.length}, erhalten ${analyses.length}.`
+      await analyzeImageBatch(
+        batchInputs
       );
-    }
 
     const durationMs =
       Math.round(
