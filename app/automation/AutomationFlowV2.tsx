@@ -1374,17 +1374,6 @@ export default function AutomationFlowV2() {
                 )}
 
 
-                {stage === "receive" &&
-                  !statusText.startsWith("Verarbeitung gestoppt") &&
-                  (documentFiles.length > 0 || images.length > 0) && (
-                    <button
-                      type="button"
-                      className="restartAutomation"
-                      onClick={restartAutomation}
-                    >
-                      Hochladen &amp; erstellen
-                    </button>
-                  )}
 
                 {stage === "receive" &&
                   statusText.startsWith("Verarbeitung gestoppt") &&
