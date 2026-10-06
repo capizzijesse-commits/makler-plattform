@@ -4098,7 +4098,7 @@ function ensureSquareMetres(
       .replace(/\s+/g, " ")
       .trim();
 
-  return /m\u00b2\b/i.test(normalized)
+  return /m\u00b2(?:\s|$)/i.test(normalized)
     ? normalized
     : `${normalized} m\u00b2`;
 }

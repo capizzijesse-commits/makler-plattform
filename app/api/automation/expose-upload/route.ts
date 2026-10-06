@@ -17,6 +17,10 @@ const ALLOWED_CONTENT_TYPES = [
   "text/plain",
   "text/markdown",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-excel",
+  "text/csv",
+  "application/csv",
 ];
 
 export async function POST(request: NextRequest): Promise<NextResponse> {

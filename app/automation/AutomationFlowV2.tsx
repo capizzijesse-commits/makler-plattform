@@ -3,6 +3,7 @@
 import { upload } from "@vercel/blob/client";
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
+import { createPortal } from "react-dom";
 
 import WorkspaceFrame from "../components/WorkspaceFrame";
 import {
@@ -98,9 +99,15 @@ function isExposeFile(file: File) {
   return (
     file.type === "application/pdf" ||
     file.type === "text/plain" ||
+    file.type === "text/csv" ||
+    file.type === "application/csv" ||
     file.type ===
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
-    /\.(pdf|docx|txt)$/i.test(file.name)
+    file.type ===
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+    file.type ===
+      "application/vnd.ms-excel" ||
+    /\.(pdf|docx|txt|xlsx|xls|csv)$/i.test(file.name)
   );
 }
 
@@ -327,6 +334,13 @@ export default function AutomationFlowV2() {
         imageAnalyses[index]?.analysis
           ?.toLowerCase() ?? "";
 
+      const fileName =
+        images[index]?.name
+          ?.toLowerCase() ?? "";
+
+      const rankingText =
+        analysis + " " + fileName;
+
       let score = 0;
 
       const add = (
@@ -335,7 +349,7 @@ export default function AutomationFlowV2() {
       ) => {
         if (
           terms.some((term) =>
-            analysis.includes(term)
+            rankingText.includes(term)
           )
         ) {
           score += value;
@@ -405,8 +419,13 @@ export default function AutomationFlowV2() {
         [
           "grundriss",
           "grundrissplan",
+          "floorplan",
+          "kataster",
+          "lageplan",
+          "situationsplan",
+          "map-expose",
         ],
-        -80
+        -1000
       );
 
       const fallbackScore =
@@ -464,6 +483,7 @@ export default function AutomationFlowV2() {
   }, [
     imagePreviews,
     imageAnalyses,
+    images,
     manualHero,
   ]);
 
@@ -544,7 +564,17 @@ export default function AutomationFlowV2() {
 
     return new File(
       [bytes],
-      photo.fileName || "expose-photo.jpg",
+      (
+        photo.reason === "floorplan" ||
+        photo.reason === "map" ||
+        photo.reason === "property_photo"
+          ? photo.reason + "-"
+          : "pdf-"
+      ) +
+        (
+          photo.fileName ||
+          "expose-photo.jpg"
+        ),
       {
         type: photo.mimeType || "image/jpeg",
       }
@@ -714,11 +744,9 @@ export default function AutomationFlowV2() {
         : [];
 
     const pdfImages =
-      extractedPhotoPayloads
-        .slice(0, 10)
-        .map(
-          pdfPhotoPayloadToFile
-        );
+      extractedPhotoPayloads.map(
+        pdfPhotoPayloadToFile
+      );
 
     console.log(
       "[AUTOMATION DOCUMENT PHOTOS CLIENT]",
@@ -739,51 +767,240 @@ export default function AutomationFlowV2() {
   async function analyzeImages(files: File[], signal: AbortSignal): Promise<ImageAnalysis[]> {
     if (!files.length) return [];
 
-    setStatusText(`${files.length} Bilder werden gleichzeitig analysiert …`);
+    const imageAnalysisStartedAt =
+      performance.now();
 
-    return Promise.all(
-      files.map(async (original) => {
-        // AUTOMATION_CLIENT_STEP_PROFILE_V1
-        const imageClientStartedAt = performance.now();
-
-        console.log("[AUTOMATION CLIENT] image-prepare-start", {
-          name: original.name,
-          bytes: original.size,
-          type: original.type,
-        });
-
-        const file = await prepareImage(original);
-
-        console.log("[AUTOMATION CLIENT] image-prepare-done", {
-          durationMs: Math.round(
-            performance.now() - imageClientStartedAt
-          ),
-          bytes: file.size,
-          type: file.type,
-        });
-        const form = new FormData();
-        form.append("image", file, file.name);
-
-        console.log("[AUTOMATION CLIENT] image-fetch-start");
-
-        const response = await fetch("/api/analyze-image", {
-          method: "POST",
-          credentials: "include",
-          signal,
-          body: form,
-        });
-
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok || typeof payload?.analysis !== "string") {
-          throw new Error(friendlyError(payload?.error));
-        }
-
-        return {
-          fileName: original.name,
-          analysis: payload.analysis.trim(),
-        };
-      })
+    setStatusText(
+      `${files.length} Bilder werden gleichzeitig analysiert ?`
     );
+
+    const prepared =
+      await Promise.all(
+        files.map(
+          async (
+            original,
+            originalIndex
+          ) => {
+            const startedAt =
+              performance.now();
+
+            console.log(
+              "[AUTOMATION CLIENT] image-prepare-start",
+              {
+                name: original.name,
+                bytes: original.size,
+                type: original.type,
+              }
+            );
+
+            const file =
+              await prepareImage(
+                original
+              );
+
+            console.log(
+              "[AUTOMATION CLIENT] image-prepare-done",
+              {
+                durationMs:
+                  Math.round(
+                    performance.now() -
+                      startedAt
+                  ),
+                bytes: file.size,
+                type: file.type,
+              }
+            );
+
+            return {
+              original,
+              originalIndex,
+              file,
+            };
+          }
+        )
+      );
+
+    const BATCH_SIZE = 5;
+
+    const batches: typeof prepared[] =
+      [];
+
+    for (
+      let index = 0;
+      index < prepared.length;
+      index += BATCH_SIZE
+    ) {
+      batches.push(
+        prepared.slice(
+          index,
+          index + BATCH_SIZE
+        )
+      );
+    }
+
+    console.log(
+      "[AUTOMATION CLIENT] image-batches-start",
+      {
+        imageCount:
+          prepared.length,
+        batchSize:
+          BATCH_SIZE,
+        batchCount:
+          batches.length,
+      }
+    );
+
+    const batchResults =
+      await Promise.all(
+        batches.map(
+          async (
+            batch,
+            batchIndex
+          ) => {
+            const batchStartedAt =
+              performance.now();
+
+            const form =
+              new FormData();
+
+            for (
+              const item of batch
+            ) {
+              form.append(
+                "images",
+                item.file,
+                item.file.name
+              );
+            }
+
+            const response =
+              await fetch(
+                "/api/analyze-images",
+                {
+                  method: "POST",
+                  credentials:
+                    "include",
+                  signal,
+                  body: form,
+                }
+              );
+
+            const payload =
+              await response
+                .json()
+                .catch(() => ({}));
+
+            if (
+              !response.ok ||
+              !Array.isArray(
+                payload?.analyses
+              )
+            ) {
+              throw new Error(
+                friendlyError(
+                  payload?.error
+                )
+              );
+            }
+
+            if (
+              payload.analyses.length !==
+              batch.length
+            ) {
+              throw new Error(
+                `Batch ${batchIndex + 1}: erwartet ${batch.length} Analysen, erhalten ${payload.analyses.length}.`
+              );
+            }
+
+            console.log(
+              "[AUTOMATION CLIENT] image-batch-done",
+              {
+                batchIndex,
+                imageCount:
+                  batch.length,
+                durationMs:
+                  Math.round(
+                    performance.now() -
+                      batchStartedAt
+                  ),
+              }
+            );
+
+            return batch.map(
+              (
+                item,
+                localIndex
+              ) => {
+                const result =
+                  payload.analyses.find(
+                    (
+                      analysis: {
+                        imageIndex?: unknown;
+                        analysis?: unknown;
+                      }
+                    ) =>
+                      analysis.imageIndex ===
+                      localIndex
+                  );
+
+                if (
+                  !result ||
+                  typeof result.analysis !==
+                    "string"
+                ) {
+                  throw new Error(
+                    `Batch ${batchIndex + 1}: Analyse f?r Bild ${localIndex} fehlt.`
+                  );
+                }
+
+                return {
+                  originalIndex:
+                    item.originalIndex,
+                  fileName:
+                    item.original.name,
+                  analysis:
+                    result.analysis.trim(),
+                };
+              }
+            );
+          }
+        )
+      );
+
+    const results =
+      batchResults
+        .flat()
+        .sort(
+          (a, b) =>
+            a.originalIndex -
+            b.originalIndex
+        )
+        .map(
+          ({
+            fileName,
+            analysis,
+          }) => ({
+            fileName,
+            analysis,
+          })
+        );
+
+    console.log(
+      "[AUTOMATION CLIENT] image-analysis-finished",
+      {
+        imageCount:
+          results.length,
+        batchCount:
+          batches.length,
+        durationMs:
+          Math.round(
+            performance.now() -
+              imageAnalysisStartedAt
+          ),
+      }
+    );
+
+    return results;
   }
 
   async function generateListing(
@@ -993,14 +1210,12 @@ export default function AutomationFlowV2() {
       });
 
       const effectiveImages =
-        nextImages.length > 0
-          ? nextImages
-          : exposeResult.pdfImages;
+        [
+          ...nextImages,
+          ...exposeResult.pdfImages,
+        ];
 
-      if (
-        nextImages.length === 0 &&
-        effectiveImages.length > 0
-      ) {
+      if (effectiveImages.length > 0) {
         setImages(effectiveImages);
         setPreviewFiles(effectiveImages);
       }
@@ -1130,8 +1345,7 @@ export default function AutomationFlowV2() {
                 fileKey(candidate) ===
                 fileKey(file)
             ) === index
-        )
-        .slice(0, 10);
+        );
 
     setDocumentFiles(nextDocuments);
     setImages(nextImages);
@@ -1333,7 +1547,7 @@ export default function AutomationFlowV2() {
                   <input
                     type="file"
                     multiple
-                    accept=".pdf,.docx,.txt,image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+                    accept=".pdf,.docx,.txt,.xlsx,.xls,.csv,image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/plain,text/csv,application/csv"
                     disabled={stage === "working"}
                     onChange={handleIncomingFiles}
                   />
@@ -1374,8 +1588,6 @@ export default function AutomationFlowV2() {
                     <span>✓ {images.length} Bilder</span>
                   </div>
                 )}
-
-
 
                 {stage === "receive" &&
                   statusText.startsWith("Verarbeitung gestoppt") &&
@@ -1540,9 +1752,22 @@ export default function AutomationFlowV2() {
                           TITELBILD
                         </div>
 
-                        <div className="heroImageCount">
-                          {variantImagePreviews.length} BILDER
-                        </div>
+                        <button
+                          type="button"
+                          className="heroImageCount"
+                          onClick={() => {
+                            setImageViewerIndex(0);
+                            setImageViewerOpen(true);
+                          }}
+                          aria-label="Alle Bilder und Pl?ne anzeigen"
+                        >
+                          <span className="heroImageCountLabel">
+                            ALLE MEDIEN
+                          </span>
+                          <span className="heroImageCountValue">
+                            {variantImagePreviews.length}
+                          </span>
+                        </button>
                       </div>
 
                       {variantImagePreviews.length > 1 && (
@@ -1599,7 +1824,14 @@ export default function AutomationFlowV2() {
                                     )}
 
                                   {showRemaining && (
-                                    <div className="moreImages">
+                                    <div
+                                      className="moreImages"
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        setImageViewerIndex(0);
+                                        setImageViewerOpen(true);
+                                      }}
+                                    >
                                       +{remaining}
                                     </div>
                                   )}
@@ -1612,7 +1844,9 @@ export default function AutomationFlowV2() {
                   )}
 
                   {imageViewerOpen &&
-                    variantImagePreviews.length > 0 && (
+                    variantImagePreviews.length > 0 &&
+                    typeof document !== "undefined" &&
+                    createPortal(
                       <div
                         className="imageViewerBackdrop"
                         role="dialog"
@@ -1629,10 +1863,21 @@ export default function AutomationFlowV2() {
                           }
                         >
                           <div className="imageViewerTop">
-                            <strong>Alle Bilder</strong>
+                            <div className="imageViewerHeading">
+                              <span className="imageViewerEyebrow">
+                                INSERAT-AI MEDIENGALERIE
+                              </span>
+                              <strong>
+                                Alle Bilder & Pl?ne
+                              </strong>
+                              <small>
+                                Fotos, Grundrisse und Lagepl?ne
+                              </small>
+                            </div>
 
-                            <span>
-                              {imageViewerIndex + 1} /{" "}
+                            <span className="imageViewerCounter">
+                              {imageViewerIndex + 1}
+                              <span>/</span>
                               {variantImagePreviews.length}
                             </span>
 
@@ -1648,6 +1893,7 @@ export default function AutomationFlowV2() {
                             </button>
                           </div>
 
+                          <div className="imageViewerBody">
                           <div className="imageViewerStage">
                             <img
                               src={
@@ -1698,6 +1944,57 @@ export default function AutomationFlowV2() {
                             )}
                           </div>
 
+                            <aside className="imageViewerInfo">
+                              <span className="imageViewerInfoEyebrow">
+                                AKTUELLES MEDIUM
+                              </span>
+
+                              <strong className="imageViewerInfoTitle">
+                                Bild {imageViewerIndex + 1}
+                              </strong>
+
+                              <div className="imageViewerInfoCount">
+                                <span>
+                                  Position
+                                </span>
+                                <strong>
+                                  {imageViewerIndex + 1} /{" "}
+                                  {variantImagePreviews.length}
+                                </strong>
+                              </div>
+
+                              <div className="imageViewerInfoHint">
+                                W?hle unten ein anderes Bild oder
+                                navigiere mit den Pfeilen.
+                              </div>
+
+                              <button
+                                type="button"
+                                className="imageViewerHeroAction"
+                                disabled={
+                                  imageViewerIndex === 0
+                                }
+                                onClick={() => {
+                                  const current =
+                                    variantImagePreviews[
+                                      imageViewerIndex
+                                    ];
+
+                                  if (!current) {
+                                    return;
+                                  }
+
+                                  setManualHero(current);
+                                  setImageViewerIndex(0);
+                                }}
+                              >
+                                {imageViewerIndex === 0
+                                  ? "Aktuelles Titelbild"
+                                  : "Als Titelbild verwenden"}
+                              </button>
+                            </aside>
+                          </div>
+
                           <div className="imageViewerThumbs">
                             {variantImagePreviews.map(
                               (viewerSrc, viewerIndex) => (
@@ -1735,7 +2032,8 @@ export default function AutomationFlowV2() {
                             )}
                           </div>
                         </div>
-                      </div>
+                      </div>,
+                      document.body
                     )}
 
                   <textarea
@@ -2778,6 +3076,316 @@ export default function AutomationFlowV2() {
             font-size: 30px;
             font-weight: 950;
             letter-spacing: -.03em;
+          }
+
+/* PREMIUM_MEDIA_UI_V2 */
+
+          .heroImageCount {
+            right: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            min-height: 36px;
+            padding: 0 9px 0 11px;
+            border: 1px solid rgba(255,255,255,.25);
+            border-radius: 11px;
+            background: rgba(3,12,25,.78);
+            backdrop-filter: blur(12px);
+            cursor: pointer;
+            transition:
+              transform .16s ease,
+              border-color .16s ease,
+              background .16s ease;
+          }
+
+          .heroImageCount:hover {
+            transform: translateY(-1px);
+            border-color: rgba(251,191,36,.55);
+            background: rgba(15,23,42,.9);
+          }
+
+          .heroImageCountLabel {
+            color: #f8fafc;
+            font-size: 8px;
+            font-weight: 950;
+            letter-spacing: .12em;
+          }
+
+          .heroImageCountValue {
+            display: grid;
+            place-items: center;
+            min-width: 25px;
+            height: 23px;
+            padding: 0 6px;
+            border-radius: 7px;
+            background: rgba(245,158,11,.18);
+            color: #fbbf24;
+            font-size: 11px;
+            font-weight: 950;
+          }
+
+          .moreImages {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            background: rgba(2,6,23,.62);
+            backdrop-filter: blur(2px);
+            color: #fff;
+            font-size: 23px;
+            font-weight: 950;
+            cursor: pointer;
+          }
+
+          .imageViewerBackdrop {
+            background: rgba(2,8,18,.91);
+            backdrop-filter: blur(12px);
+          }
+
+          .imageViewer {
+            width: min(1040px, 100%);
+            max-height: calc(100vh - 32px);
+            padding: 18px;
+            border-radius: 24px;
+            background:
+              radial-gradient(
+                circle at 85% 0%,
+                rgba(245,158,11,.09),
+                transparent 30%
+              ),
+              linear-gradient(
+                145deg,
+                #07172b,
+                #020a17
+              );
+            box-shadow:
+              0 34px 100px rgba(0,0,0,.62),
+              inset 0 1px 0 rgba(255,255,255,.04);
+          }
+
+          .imageViewerTop {
+            grid-template-columns:
+              minmax(0,1fr) auto auto;
+            gap: 14px;
+            margin-bottom: 16px;
+            padding: 2px 2px 0;
+          }
+
+          .imageViewerHeading {
+            min-width: 0;
+          }
+
+          .imageViewerEyebrow {
+            display: block;
+            margin-bottom: 4px;
+            color: #fbbf24;
+            font-size: 8px;
+            font-weight: 950;
+            letter-spacing: .16em;
+          }
+
+          .imageViewerHeading strong {
+            display: block;
+            color: #fff;
+            font-size: 19px;
+            font-weight: 900;
+            letter-spacing: -.02em;
+          }
+
+          .imageViewerHeading small {
+            display: block;
+            margin-top: 3px;
+            color: #8fa1ba;
+            font-size: 11px;
+            font-weight: 650;
+          }
+
+          .imageViewerCounter {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            min-height: 35px;
+            padding: 0 11px;
+            border: 1px solid rgba(148,163,184,.16);
+            border-radius: 10px;
+            background: rgba(255,255,255,.05);
+            color: #e2e8f0;
+            font-size: 12px;
+            font-weight: 900;
+          }
+
+          .imageViewerCounter > span {
+            color: #64748b;
+          }
+
+          .imageViewerStage {
+            border: 1px solid rgba(255,255,255,.06);
+            border-radius: 18px;
+            background: #010713;
+            box-shadow:
+              inset 0 0 50px rgba(0,0,0,.18);
+          }
+
+          .imageViewerClose {
+            border: 1px solid rgba(255,255,255,.08);
+            background: rgba(255,255,255,.07);
+            transition:
+              background .16s ease,
+              transform .16s ease;
+          }
+
+          .imageViewerClose:hover {
+            transform: scale(1.04);
+            background: rgba(255,255,255,.13);
+          }
+
+          .imageViewerThumb {
+            transition:
+              transform .16s ease,
+              border-color .16s ease;
+          }
+
+          .imageViewerThumb:hover {
+            transform: translateY(-2px);
+          }
+
+          .imageViewerThumb.active {
+            border-color: #f59e0b;
+            box-shadow:
+              0 0 0 2px rgba(245,158,11,.14);
+          }
+
+
+                    /* PREMIUM_MEDIA_SIDEBAR_V1 */
+
+          .imageViewer {
+            display: grid;
+            grid-template-columns:
+              minmax(0, 1fr) 270px;
+            grid-template-rows:
+              auto minmax(0, 1fr) auto;
+            column-gap: 16px;
+            row-gap: 0;
+            width: min(1080px, calc(100vw - 40px));
+            max-height: calc(100vh - 32px);
+            overflow: hidden;
+          }
+
+          .imageViewerTop {
+            grid-column: 1 / -1;
+            grid-row: 1;
+          }
+
+          .imageViewerBody {
+            display: contents;
+          }
+
+          .imageViewerStage {
+            grid-column: 1;
+            grid-row: 2 / 4;
+            width: 100%;
+            height: min(68vh, 650px);
+            aspect-ratio: auto;
+            min-height: 0;
+          }
+
+          .imageViewerInfo {
+            grid-column: 2;
+            grid-row: 2;
+            align-self: start;
+            padding: 15px;
+            border: 1px solid rgba(148,163,184,.13);
+            border-radius: 14px;
+            background: rgba(255,255,255,.035);
+          }
+
+          .imageViewerInfoEyebrow {
+            display: block;
+            margin-bottom: 5px;
+            color: #fbbf24;
+            font-size: 8px;
+            font-weight: 950;
+            letter-spacing: .14em;
+          }
+
+          .imageViewerInfoTitle {
+            display: block;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 900;
+          }
+
+          .imageViewerInfoCount {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(148,163,184,.12);
+            color: #94a3b8;
+            font-size: 11px;
+          }
+
+          .imageViewerInfoCount strong {
+            color: #f8fafc;
+            font-size: 12px;
+          }
+
+          .imageViewerInfoHint {
+            margin-top: 12px;
+            color: #8293aa;
+            font-size: 10px;
+            line-height: 1.45;
+          }
+
+          .imageViewerHeroAction {
+            width: 100%;
+            margin-top: 14px;
+            min-height: 38px;
+            border: 1px solid rgba(245,158,11,.32);
+            border-radius: 10px;
+            background: rgba(245,158,11,.12);
+            color: #fbbf24;
+            font-size: 10px;
+            font-weight: 900;
+            cursor: pointer;
+          }
+
+          .imageViewerHeroAction:hover:not(:disabled) {
+            background: rgba(245,158,11,.2);
+          }
+
+          .imageViewerHeroAction:disabled {
+            cursor: default;
+            opacity: .58;
+          }
+
+          .imageViewerThumbs {
+            grid-column: 2;
+            grid-row: 3;
+            align-self: end;
+            display: grid;
+            grid-template-columns:
+              repeat(2, minmax(0, 1fr));
+            gap: 7px;
+            max-height: 360px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            margin-top: 12px;
+            padding: 2px 4px 2px 0;
+          }
+
+          .imageViewerThumb {
+            width: 100%;
+            height: 66px;
+            flex: none;
+          }
+
+          .imageViewerThumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
           }
 
           .previewChrome {

@@ -28,6 +28,7 @@ export type ExtractPdfPropertyPhotosResult = {
 type ExtractPdfPropertyPhotosOptions = {
   maximumPhotos?: number;
   minimumConfidence?: number;
+  renderPages?: boolean;
 };
 
 /*
@@ -37,9 +38,10 @@ type ExtractPdfPropertyPhotosOptions = {
  * -> usable real-estate photographs.
  *
  * Important:
+ * - property photos are included
+ * - floorplans are included
+ * - maps / site plans are included
  * - documents are excluded
- * - floorplans are excluded
- * - maps are excluded
  * - uncertain candidates fail closed
  * - the original PDF candidate order is preserved
  *
@@ -50,15 +52,14 @@ export async function extractPropertyPhotosFromPdf(
   options: ExtractPdfPropertyPhotosOptions = {}
 ): Promise<ExtractPdfPropertyPhotosResult> {
   const maximumPhotos =
-    Math.max(
-      1,
-      Math.min(
-        20,
-        Math.floor(
-          options.maximumPhotos ?? 10
-        )
-      )
-    );
+    options.maximumPhotos == null
+      ? Number.POSITIVE_INFINITY
+      : Math.max(
+          1,
+          Math.floor(
+            options.maximumPhotos
+          )
+        );
 
   const minimumConfidence =
     Math.max(
@@ -78,7 +79,11 @@ export async function extractPropertyPhotosFromPdf(
 
   const candidates =
     await extractPdfImageCandidates(
-      pdfBuffer
+      pdfBuffer,
+      {
+        renderPages:
+          options.renderPages === true,
+      }
     );
 
   console.log("[PDF PHOTO SPEED] candidates", {
@@ -117,8 +122,14 @@ export async function extractPropertyPhotosFromPdf(
         (
           classification
         ): classification is ClassifiedPdfImageCandidate =>
-          classification.category ===
-            "property_photo" &&
+          (
+            classification.category ===
+              "property_photo" ||
+            classification.category ===
+              "floorplan" ||
+            classification.category ===
+              "map"
+          ) &&
           classification.confidence >=
             minimumConfidence
       )

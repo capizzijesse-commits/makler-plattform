@@ -1,4 +1,5 @@
 import sharp from "sharp";
+import { createCanvas } from "@napi-rs/canvas";
 
 export type PdfImageCandidate = {
   buffer: Buffer;
@@ -18,6 +19,81 @@ type PdfPageText = {
   pageNumber: number;
   text: string;
 };
+
+async function renderPdfPageCandidate(
+  page: any,
+  pageNumber: number
+): Promise<PdfImageCandidate | null> {
+  const viewport =
+    page.getViewport({
+      scale: 1.5,
+    });
+
+  const width =
+    Math.max(
+      1,
+      Math.round(
+        viewport.width
+      )
+    );
+
+  const height =
+    Math.max(
+      1,
+      Math.round(
+        viewport.height
+      )
+    );
+
+  if (
+    width * height >
+    12_000_000
+  ) {
+    return null;
+  }
+
+  const canvas =
+    createCanvas(
+      width,
+      height
+    );
+
+  const context =
+    canvas.getContext("2d");
+
+  await page.render({
+    canvas,
+    canvasContext:
+      context,
+    viewport,
+  }).promise;
+
+  const png =
+    await canvas.encode(
+      "png"
+    );
+
+  const output =
+    await sharp(png)
+      .resize({
+        width: 1600,
+        height: 1600,
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .jpeg({
+        quality: 78,
+      })
+      .toBuffer();
+
+  return {
+    buffer: output,
+    width,
+    height,
+    pageNumber,
+    imageIndex: 0,
+  };
+}
 
 function getPdfObject(
   objs: {
@@ -284,7 +360,10 @@ function detectExposePageRange(
  * - semantic photo/document classification still happens later
  */
 export async function extractPdfImageCandidates(
-  pdfBuffer: Buffer
+  pdfBuffer: Buffer,
+  options: {
+    renderPages?: boolean;
+  } = {}
 ): Promise<PdfImageCandidate[]> {
   await import(
     "pdfjs-dist/legacy/build/pdf.worker.mjs"
@@ -462,6 +541,36 @@ export async function extractPdfImageCandidates(
             ),
         }
       );
+
+      if (options.renderPages === true) {
+        const renderedPageCandidate =
+          await renderPdfPageCandidate(
+            page,
+            pageNumber
+          );
+
+        if (renderedPageCandidate) {
+          const pageFingerprint =
+            "page:" +
+            pageNumber +
+            ":" +
+            renderedPageCandidate.buffer.length;
+
+          if (
+            !fingerprints.has(
+              pageFingerprint
+            )
+          ) {
+            fingerprints.add(
+              pageFingerprint
+            );
+
+            results.push(
+              renderedPageCandidate
+            );
+          }
+        }
+      }
 
       let pageImageIndex = 0;
 

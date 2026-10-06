@@ -1,7 +1,9 @@
-import OpenAI, { toFile } from "openai";
+﻿import OpenAI, { toFile } from "openai";
 import { del } from "@vercel/blob";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import * as unzipper from "unzipper";
+import { XMLParser } from "fast-xml-parser";
 
 import { getAuthenticatedUser } from "@/lib/session";
 
@@ -13,6 +15,649 @@ const MODEL = process.env.OPENAI_LISTING_MODEL?.trim() || "gpt-4.1-mini";
 const EXPOSE_PREFIX = "/automation-exposes/";
 const MAX_EXPOSE_BYTES = 25 * 1024 * 1024;
 
+
+// SPREADSHEET_TEXT_FAST_PATH_V1
+const SPREADSHEET_CONTENT_TYPES =
+  new Set([
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-excel",
+    "text/csv",
+    "application/csv",
+  ]);
+
+function isSpreadsheetDocument(
+  fileName: string,
+  fileType: string
+): boolean {
+  return (
+    SPREADSHEET_CONTENT_TYPES.has(fileType) ||
+    /\.(xlsx|xls|csv)$/i.test(fileName)
+  );
+}
+
+const MAX_XLSX_XML_ENTRY_BYTES =
+  6 * 1024 * 1024;
+
+const MAX_XLSX_XML_TOTAL_BYTES =
+  20 * 1024 * 1024;
+
+function asArray<T>(
+  value: T | T[] | undefined | null
+): T[] {
+  if (value == null) {
+    return [];
+  }
+
+  return Array.isArray(value)
+    ? value
+    : [value];
+}
+
+function spreadsheetColumnIndex(
+  reference: string
+): number {
+  const letters =
+    reference.match(
+      /^[A-Z]+/i
+    )?.[0] || "";
+
+  let index = 0;
+
+  for (
+    const character
+    of letters.toUpperCase()
+  ) {
+    index =
+      index * 26 +
+      (
+        character.charCodeAt(0) -
+        64
+      );
+  }
+
+  return Math.max(
+    0,
+    index - 1
+  );
+}
+
+function spreadsheetRichText(
+  node: unknown
+): string {
+  if (node == null) {
+    return "";
+  }
+
+  if (
+    typeof node === "string" ||
+    typeof node === "number"
+  ) {
+    return String(node);
+  }
+
+  if (Array.isArray(node)) {
+    return node
+      .map(
+        spreadsheetRichText
+      )
+      .join("");
+  }
+
+  if (
+    typeof node === "object"
+  ) {
+    const record =
+      node as Record<
+        string,
+        unknown
+      >;
+
+    if ("t" in record) {
+      return spreadsheetRichText(
+        record.t
+      );
+    }
+
+    if ("r" in record) {
+      return asArray(
+        record.r
+      )
+        .map(
+          spreadsheetRichText
+        )
+        .join("");
+    }
+  }
+
+  return "";
+}
+
+function normalizeSpreadsheetNumber(
+  value: string
+): string {
+  if (
+    !/^-?\d+(?:\.\d+)?(?:e[+-]?\d+)?$/i.test(
+      value
+    )
+  ) {
+    return value;
+  }
+
+  const number =
+    Number(value);
+
+  if (
+    !Number.isFinite(number)
+  ) {
+    return value;
+  }
+
+  return Number.parseFloat(
+    number.toPrecision(15)
+  ).toString();
+}
+
+async function extractXlsxText(
+  bytes: Uint8Array,
+  fileName: string
+): Promise<string> {
+  const directory =
+    await unzipper.Open.buffer(
+      Buffer.from(bytes)
+    );
+
+  let totalXmlBytes = 0;
+
+  for (
+    const entry
+    of directory.files
+  ) {
+    if (
+      !entry.path.endsWith(
+        ".xml"
+      ) &&
+      !entry.path.endsWith(
+        ".rels"
+      )
+    ) {
+      continue;
+    }
+
+    const size =
+      Number(
+        entry.uncompressedSize || 0
+      );
+
+    if (
+      size >
+      MAX_XLSX_XML_ENTRY_BYTES
+    ) {
+      throw new Error(
+        `Die Tabellen-Unterlage "${fileName}" enthÃ¤lt eine zu grosse XML-Datei.`
+      );
+    }
+
+    totalXmlBytes += size;
+
+    if (
+      totalXmlBytes >
+      MAX_XLSX_XML_TOTAL_BYTES
+    ) {
+      throw new Error(
+        `Die Tabellen-Unterlage "${fileName}" ist entpackt zu gross.`
+      );
+    }
+  }
+
+  const parser =
+    new XMLParser({
+      ignoreAttributes: false,
+      attributeNamePrefix:
+        "@_",
+      parseTagValue: false,
+      trimValues: false,
+    });
+
+  const readXml =
+    async (
+      path: string,
+      required = true
+    ): Promise<
+      Record<string, unknown> | null
+    > => {
+      const entry =
+        directory.files.find(
+          (item) =>
+            item.path === path
+        );
+
+      if (!entry) {
+        if (!required) {
+          return null;
+        }
+
+        throw new Error(
+          `Die Tabellen-Unterlage "${fileName}" ist unvollstÃ¤ndig: ${path}`
+        );
+      }
+
+      const buffer =
+        await entry.buffer();
+
+      if (
+        buffer.length >
+        MAX_XLSX_XML_ENTRY_BYTES
+      ) {
+        throw new Error(
+          `Die Tabellen-Unterlage "${fileName}" enthÃ¤lt eine zu grosse XML-Datei.`
+        );
+      }
+
+      return parser.parse(
+        buffer.toString(
+          "utf8"
+        )
+      ) as Record<
+        string,
+        unknown
+      >;
+    };
+
+  const workbook =
+    await readXml(
+      "xl/workbook.xml"
+    );
+
+  const relationshipsXml =
+    await readXml(
+      "xl/_rels/workbook.xml.rels"
+    );
+
+  const sharedStringsXml =
+    await readXml(
+      "xl/sharedStrings.xml",
+      false
+    );
+
+  const sharedRoot =
+    sharedStringsXml
+      ?.sst as
+        | Record<
+            string,
+            unknown
+          >
+        | undefined;
+
+  const sharedStrings =
+    asArray(
+      sharedRoot?.si
+    ).map(
+      spreadsheetRichText
+    );
+
+  const relationshipRoot =
+    relationshipsXml
+      ?.Relationships as
+        | Record<
+            string,
+            unknown
+          >
+        | undefined;
+
+  const relationships =
+    new Map<
+      string,
+      string
+    >();
+
+  for (
+    const relationship
+    of asArray(
+      relationshipRoot
+        ?.Relationship
+    )
+  ) {
+    if (
+      !relationship ||
+      typeof relationship !==
+        "object"
+    ) {
+      continue;
+    }
+
+    const record =
+      relationship as Record<
+        string,
+        unknown
+      >;
+
+    const id =
+      String(
+        record["@_Id"] || ""
+      );
+
+    const target =
+      String(
+        record["@_Target"] ||
+          ""
+      );
+
+    if (
+      id &&
+      target.startsWith(
+        "worksheets/"
+      )
+    ) {
+      relationships.set(
+        id,
+        target
+      );
+    }
+  }
+
+  const workbookRoot =
+    workbook?.workbook as
+      | Record<
+          string,
+          unknown
+        >
+      | undefined;
+
+  const sheetsRoot =
+    workbookRoot?.sheets as
+      | Record<
+          string,
+          unknown
+        >
+      | undefined;
+
+  const sheets =
+    asArray(
+      sheetsRoot?.sheet
+    );
+
+  const sections: string[] =
+    [];
+
+  for (
+    let index = 0;
+    index < sheets.length;
+    index += 1
+  ) {
+    const sheet =
+      sheets[index];
+
+    if (
+      !sheet ||
+      typeof sheet !==
+        "object"
+    ) {
+      continue;
+    }
+
+    const sheetRecord =
+      sheet as Record<
+        string,
+        unknown
+      >;
+
+    const sheetName =
+      String(
+        sheetRecord[
+          "@_name"
+        ] ||
+          `Tabelle ${index + 1}`
+      );
+
+    const relationId =
+      String(
+        sheetRecord[
+          "@_r:id"
+        ] || ""
+      );
+
+    const target =
+      relationships.get(
+        relationId
+      );
+
+    if (!target) {
+      continue;
+    }
+
+    const sheetXml =
+      await readXml(
+        "xl/" + target
+      );
+
+    const worksheet =
+      sheetXml
+        ?.worksheet as
+          | Record<
+              string,
+              unknown
+            >
+          | undefined;
+
+    const sheetData =
+      worksheet
+        ?.sheetData as
+          | Record<
+              string,
+              unknown
+            >
+          | undefined;
+
+    const csvLines: string[] =
+      [];
+
+    for (
+      const row
+      of asArray(
+        sheetData?.row
+      )
+    ) {
+      if (
+        !row ||
+        typeof row !==
+          "object"
+      ) {
+        continue;
+      }
+
+      const rowRecord =
+        row as Record<
+          string,
+          unknown
+        >;
+
+      const values: string[] =
+        [];
+
+      for (
+        const cell
+        of asArray(
+          rowRecord.c
+        )
+      ) {
+        if (
+          !cell ||
+          typeof cell !==
+            "object"
+        ) {
+          continue;
+        }
+
+        const cellRecord =
+          cell as Record<
+            string,
+            unknown
+          >;
+
+        const reference =
+          String(
+            cellRecord[
+              "@_r"
+            ] || ""
+          );
+
+        const column =
+          spreadsheetColumnIndex(
+            reference
+          );
+
+        while (
+          values.length <
+          column
+        ) {
+          values.push("");
+        }
+
+        const type =
+          String(
+            cellRecord[
+              "@_t"
+            ] || ""
+          );
+
+        let value = "";
+
+        if (type === "s") {
+          const sharedIndex =
+            Number(
+              cellRecord.v
+            );
+
+          value =
+            Number.isInteger(
+              sharedIndex
+            )
+              ? sharedStrings[
+                  sharedIndex
+                ] || ""
+              : "";
+        } else if (
+          type ===
+          "inlineStr"
+        ) {
+          value =
+            spreadsheetRichText(
+              cellRecord.is
+            );
+        } else {
+          value =
+            cellRecord.v == null
+              ? ""
+              : normalizeSpreadsheetNumber(
+                  String(
+                    cellRecord.v
+                  )
+                );
+        }
+
+        values.push(
+          value.replace(
+            /\r?\n/g,
+            " "
+          )
+        );
+      }
+
+      const line =
+        values.join(",");
+
+      if (
+        line.replace(
+          /,/g,
+          ""
+        ).trim()
+      ) {
+        csvLines.push(
+          line
+        );
+      }
+    }
+
+    const trimmed =
+      csvLines
+        .join("\n")
+        .trim();
+
+    if (!trimmed) {
+      continue;
+    }
+
+    sections.push(
+      [
+        `TABELLE ${index + 1}: ${sheetName}`,
+        trimmed,
+      ].join("\n")
+    );
+  }
+
+  const text =
+    sections.join(
+      "\n\n--- NAECHSTE TABELLE ---\n\n"
+    );
+
+  if (!text) {
+    throw new Error(
+      `Die Tabellen-Unterlage "${fileName}" enthÃ¤lt keine lesbaren Daten.`
+    );
+  }
+
+  return text.slice(
+    0,
+    120000
+  );
+}
+
+async function extractSpreadsheetText(
+  bytes: Uint8Array,
+  fileName: string
+): Promise<string> {
+  if (
+    /\.csv$/i.test(
+      fileName
+    )
+  ) {
+    const text =
+      new TextDecoder(
+        "utf-8"
+      )
+        .decode(bytes)
+        .trim();
+
+    if (!text) {
+      throw new Error(
+        `Die Tabellen-Unterlage "${fileName}" enthÃ¤lt keine lesbaren Daten.`
+      );
+    }
+
+    return text.slice(
+      0,
+      120000
+    );
+  }
+
+  if (
+    /\.xls$/i.test(
+      fileName
+    ) &&
+    !/\.xlsx$/i.test(
+      fileName
+    )
+  ) {
+    throw new Error(
+      "Legacy-XLS wird aus SicherheitsgrÃ¼nden derzeit nicht verarbeitet. Bitte als XLSX oder CSV speichern."
+    );
+  }
+
+  return extractXlsxText(
+    bytes,
+    fileName
+  );
+}
 
 // PDF_TEXT_FAST_PATH_V1
 async function extractPdfTextFast(
@@ -138,6 +783,10 @@ const ALLOWED_CONTENT_TYPES = new Set([
   "text/plain",
   "text/markdown",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-excel",
+  "text/csv",
+  "application/csv",
 ]);
 
 type ExtractedExpose = {
@@ -220,6 +869,24 @@ function normalizeResult(value: unknown): ExtractedExpose {
   };
 }
 
+// EXPOSE_LIVING_AREA_FIREWALL_V1
+function extractExplicitNetLivingArea(
+  documentText: string
+): string {
+  const match =
+    documentText.match(
+      /Netto\s+Wohnfl(?:\u00e4|ae)che\s*,\s*"?([0-9]+(?:[.,][0-9]+)?)"?/i
+    );
+
+  if (!match?.[1]) {
+    return "";
+  }
+
+  return match[1]
+    .replace(",", ".")
+    .trim();
+}
+
 // EXPOSE_PRICE_FIREWALL_V1
 function normalizePriceDigits(
   value: string
@@ -296,7 +963,7 @@ function parseJsonObject(text: string): unknown {
       return JSON.parse(trimmed.slice(start, end + 1));
     }
 
-    throw new Error("Das Exposé konnte nicht strukturiert ausgewertet werden.");
+    throw new Error("Das ExposÃ© konnte nicht strukturiert ausgewertet werden.");
   }
 }
 
@@ -324,7 +991,7 @@ function friendlyOpenAiError(error: unknown) {
       status: 503,
       code: "AI_TEMPORARILY_UNAVAILABLE",
       message:
-        "Die KI-Auswertung ist momentan nicht verfügbar. Deine Datei wurde nicht dauerhaft gespeichert. Sobald der API-Zugang wieder aktiv ist, kannst du denselben Ablauf erneut starten.",
+        "Die KI-Auswertung ist momentan nicht verfÃ¼gbar. Deine Datei wurde nicht dauerhaft gespeichert. Sobald der API-Zugang wieder aktiv ist, kannst du denselben Ablauf erneut starten.",
     };
   }
 
@@ -333,7 +1000,7 @@ function friendlyOpenAiError(error: unknown) {
       status: 502,
       code: "EXPOSE_FILE_PROCESSING_FAILED",
       message:
-        "Das Exposé konnte technisch nicht gelesen werden. Bitte denselben Upload erneut versuchen.",
+        "Das ExposÃ© konnte technisch nicht gelesen werden. Bitte denselben Upload erneut versuchen.",
     };
   }
 
@@ -341,7 +1008,7 @@ function friendlyOpenAiError(error: unknown) {
     status: 500,
     code: "EXPOSE_EXTRACTION_FAILED",
     message:
-      "Das Exposé konnte gerade nicht automatisch ausgewertet werden. Bitte später erneut versuchen.",
+      "Das ExposÃ© konnte gerade nicht automatisch ausgewertet werden. Bitte spÃ¤ter erneut versuchen.",
   };
 }
 
@@ -370,6 +1037,29 @@ export async function POST(request: NextRequest) {
         error: "Bitte zuerst anmelden.",
       },
       { status: 401 }
+    );
+  }
+
+  // AUTOMATION_MEDIA_PLAN_LIMIT_V1
+  const automationPlan =
+    String(user.plan ?? "")
+      .trim()
+      .toLowerCase();
+
+  const automationAllowed =
+    automationPlan === "pro" ||
+    automationPlan === "agency" ||
+    automationPlan === "admin";
+
+  if (!automationAllowed) {
+    return NextResponse.json(
+      {
+        success: false,
+        code: "AUTOMATION_PLAN_REQUIRED",
+        error:
+          "Die Vollautomatisierung ist in deinem aktuellen Plan nicht enthalten.",
+      },
+      { status: 403 }
     );
   }
 
@@ -440,13 +1130,19 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      if (!ALLOWED_CONTENT_TYPES.has(file.fileType)) {
+      if (
+        !ALLOWED_CONTENT_TYPES.has(file.fileType) &&
+        !isSpreadsheetDocument(
+          file.fileName,
+          file.fileType
+        )
+      ) {
         return NextResponse.json(
           {
             success: false,
             code: "UNSUPPORTED_FILE_TYPE",
             error:
-              "Bitte nur PDF, DOCX oder TXT als Objektunterlagen verwenden.",
+              "Bitte nur PDF, DOCX, TXT, XLSX, XLS oder CSV als Objektunterlagen verwenden.",
           },
           { status: 415 }
         );
@@ -504,13 +1200,20 @@ export async function POST(request: NextRequest) {
             }
           );
 
+          const shouldRenderPdfPages =
+            file.fileType === "application/pdf" &&
+            /(?:^|[\s_-])(eg|og|ug)(?:[\s_.-]|$)|grundriss|kataster|katasrer|lageplan|situationsplan|bauplan|abstellraum|geschossplan|parzellenplan|umgebungsplan|schnitt|ansicht|werkplan|architekturplan/i.test(
+              file.fileName
+            );
+
           const propertyPhotosPromise =
             file.fileType === "application/pdf"
               ? extractPropertyPhotosFromPdf(
                   Buffer.from(bytes),
                   {
-                    maximumPhotos: 10,
                     minimumConfidence: 0.7,
+                    renderPages:
+                      shouldRenderPdfPages,
                   }
                 )
               : Promise.resolve({
@@ -523,6 +1226,37 @@ export async function POST(request: NextRequest) {
           let useFastText = false;
 
           if (
+            isSpreadsheetDocument(
+              file.fileName,
+              file.fileType
+            )
+          ) {
+            const spreadsheetStartedAt =
+              performance.now();
+
+            fastText =
+              await extractSpreadsheetText(
+                bytes,
+                file.fileName
+              );
+
+            useFastText = true;
+
+            console.log(
+              "[EXPOSE SPREADSHEET TEXT]",
+              {
+                fileName:
+                  file.fileName,
+                characters:
+                  fastText.length,
+                durationMs:
+                  Math.round(
+                    performance.now() -
+                      spreadsheetStartedAt
+                  ),
+              }
+            );
+          } else if (
             file.fileType ===
             "application/pdf"
           ) {
@@ -587,25 +1321,30 @@ export async function POST(request: NextRequest) {
         })
       );
 
-    const usePdfTextFastPath =
-      preparedDocuments.every(
+    const textDocuments =
+      preparedDocuments.filter(
         (document) =>
-          document.fileType ===
-            "application/pdf" &&
           document.useFastText
       );
 
-    const pdfFastText =
-      usePdfTextFastPath
-        ? preparedDocuments
-            .map(
-              (document, index) =>
-                `DOKUMENT ${index + 1}: ${document.fileName}\n\n${document.fastText}`
-            )
-            .join(
-              "\n\n--- NAECHSTES DOKUMENT ---\n\n"
-            )
-        : "";
+    const fileDocuments =
+      preparedDocuments.filter(
+        (document) =>
+          !document.useFastText
+      );
+
+    const useTextFastPath =
+      fileDocuments.length === 0;
+
+    const combinedFastText =
+      textDocuments
+        .map(
+          (document, index) =>
+            `DOKUMENT ${index + 1}: ${document.fileName}\n\n${document.fastText}`
+        )
+        .join(
+          "\n\n--- NAECHSTES DOKUMENT ---\n\n"
+        );
 
     console.log(
       "[EXPOSE SPEED] documents-prepared",
@@ -613,7 +1352,11 @@ export async function POST(request: NextRequest) {
         documents:
           preparedDocuments.length,
         allFastText:
-          usePdfTextFastPath,
+          useTextFastPath,
+        textDocuments:
+          textDocuments.length,
+        fileDocuments:
+          fileDocuments.length,
         durationMs:
           Math.round(
             performance.now() -
@@ -700,7 +1443,7 @@ ALLGEMEIN:
       performance.now();
 
     const response =
-      usePdfTextFastPath
+      useTextFastPath
         ? await openai.responses.create({
             model: MODEL,
             input: [
@@ -712,7 +1455,7 @@ ALLGEMEIN:
                     text:
                       extractionPrompt +
                       "\n\nDOKUMENT:\n\n" +
-                      pdfFastText,
+                      combinedFastText,
                   },
                 ],
               },
@@ -725,7 +1468,7 @@ ALLGEMEIN:
 
             const uploadedDocuments =
               await Promise.all(
-                preparedDocuments.map(
+                fileDocuments.map(
                   async (document) => {
                     const uploadable =
                       await toFile(
@@ -784,7 +1527,13 @@ ALLGEMEIN:
                   "input_text" as const,
                 text:
                   extractionPrompt +
-                  "\n\nAlle gelieferten Dateien geh?ren zu demselben Immobilienobjekt. Werte sie gemeinsam aus und f?hre die belegten Fakten zu genau einem Objekt zusammen.",
+                  (
+                    combinedFastText
+                      ? "\n\nBEREITS AUSGELESENE DOKUMENTE:\n\n" +
+                        combinedFastText
+                      : ""
+                  ) +
+                  "\n\nAlle gelieferten Dateien geh?ren zu demselben Immobilienobjekt. Werte die hochgeladenen Dateien und die bereits ausgelesenen Dokumenttexte gemeinsam aus und f?hre die belegten Fakten zu genau einem Objekt zusammen.",
               },
             ];
 
@@ -804,9 +1553,11 @@ ALLGEMEIN:
       "[EXPOSE SPEED] ai-extraction",
       {
         mode:
-          usePdfTextFastPath
-            ? "pdf-text-fast"
-            : "full-file-fallback",
+          useTextFastPath
+            ? "text-fast"
+            : combinedFastText
+              ? "mixed-text-file"
+              : "full-file-fallback",
         durationMs:
           Math.round(
             performance.now() -
@@ -825,11 +1576,36 @@ ALLGEMEIN:
         )
       );
 
+    const explicitNetLivingArea =
+      extractExplicitNetLivingArea(
+        combinedFastText
+      );
+
+    if (explicitNetLivingArea) {
+      extracted.livingArea =
+        explicitNetLivingArea;
+
+      extracted.missingFields =
+        extracted.missingFields.filter(
+          (field) =>
+            field.toLowerCase() !==
+            "livingarea"
+        );
+
+      console.log(
+        "[EXPOSE LIVING AREA FIREWALL]",
+        {
+          livingArea:
+            explicitNetLivingArea,
+        }
+      );
+    }
+
     if (
-      usePdfTextFastPath &&
+      useTextFastPath &&
       extracted.price &&
       !hasExplicitSalePriceEvidence(
-        pdfFastText,
+        combinedFastText,
         extracted.price
       )
     ) {
@@ -879,13 +1655,14 @@ ALLGEMEIN:
         0
       );
 
+    const allPdfPhotos =
+      pdfPhotoResults.flatMap(
+        (result) =>
+          result.photos
+      );
+
     const combinedPdfPhotos =
-      pdfPhotoResults
-        .flatMap(
-          (result) =>
-            result.photos
-        )
-        .slice(0, 10);
+      allPdfPhotos;
 
     console.log(
       "[EXPOSE PDF PHOTOS]",
