@@ -1096,33 +1096,49 @@ export default function AutomationFlowV2() {
     event.target.value = "";
     if (!incoming.length) return;
 
+    const fileKey = (file: File) =>
+      `${file.name}::${file.size}::${file.lastModified}`;
+
     const incomingDocuments =
       incoming.filter(isExposeFile);
 
-    const nextDocuments =
-      incomingDocuments.length > 0
-        ? incomingDocuments
-        : documentFiles;
-
-    const newImages =
+    const incomingImages =
       incoming.filter(isImageFile);
 
+    const nextDocuments =
+      [
+        ...documentFiles,
+        ...incomingDocuments,
+      ].filter(
+        (file, index, files) =>
+          files.findIndex(
+            (candidate) =>
+              fileKey(candidate) ===
+              fileKey(file)
+          ) === index
+      );
+
     const nextImages =
-      (
-        newImages.length > 0
-          ? newImages
-          : incomingDocuments.length > 0
-            ? []
-            : images
-      ).slice(0, 10);
+      [
+        ...images,
+        ...incomingImages,
+      ]
+        .filter(
+          (file, index, files) =>
+            files.findIndex(
+              (candidate) =>
+                fileKey(candidate) ===
+                fileKey(file)
+            ) === index
+        )
+        .slice(0, 10);
 
     setDocumentFiles(nextDocuments);
     setImages(nextImages);
     setPreviewFiles(nextImages);
 
-    await processFiles(
-      nextDocuments,
-      nextImages
+    setStatusText(
+      "Dateien ausgew\u00e4hlt. Du kannst weitere hinzuf\u00fcgen oder die Erstellung starten."
     );
   }
 
@@ -1356,6 +1372,19 @@ export default function AutomationFlowV2() {
                     <span>✓ {images.length} Bilder</span>
                   </div>
                 )}
+
+
+                {stage === "receive" &&
+                  !statusText.startsWith("Verarbeitung gestoppt") &&
+                  (documentFiles.length > 0 || images.length > 0) && (
+                    <button
+                      type="button"
+                      className="restartAutomation"
+                      onClick={restartAutomation}
+                    >
+                      Hochladen &amp; erstellen
+                    </button>
+                  )}
 
                 {stage === "receive" &&
                   statusText.startsWith("Verarbeitung gestoppt") &&
