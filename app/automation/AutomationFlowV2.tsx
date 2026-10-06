@@ -2102,6 +2102,37 @@ export default function AutomationFlowV2() {
 
             .salesExposeAction {
               width: 100%;
+              min-height: 46px;
+              padding: 0 14px;
+              font-size: 12px;
+            }
+
+            .salesExposeReadyStatus {
+              gap: 6px 12px;
+              font-size: 10px;
+              line-height: 1.35;
+            }
+
+            .salesExposeReadyStatus span {
+              gap: 5px;
+            }
+
+            .listingActions {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 7px;
+              margin: 10px 0 12px;
+            }
+
+            .listingAction {
+              width: 100%;
+              min-width: 0;
+              min-height: 40px;
+              padding: 0 8px;
+              gap: 6px;
+              font-size: 10px;
+              line-height: 1.2;
+              white-space: normal;
             }
           }
 
@@ -2929,7 +2960,7 @@ export default function AutomationFlowV2() {
             }
 
             .hero {
-              padding: 16px;
+              padding: 15px 14px 14px;
             }
 
             .card {
@@ -2937,66 +2968,75 @@ export default function AutomationFlowV2() {
               padding: 14px;
             }
 
-            h1 {
-              margin: 6px 0 8px;
-              font-size: 30px;
-              line-height: 1.02;
+            .hero .eyebrow {
+              font-size: 9px;
+              letter-spacing: .12em;
+            }
+
+            .hero h1 {
+              margin: 7px 0 8px;
+              font-size: 27px;
+              line-height: 1.04;
+              letter-spacing: -.035em;
             }
 
             .hero > p {
-              font-size: 13px;
+              margin: 0;
+              font-size: 12px;
               line-height: 1.5;
             }
 
             .steps {
               grid-template-columns: repeat(3, minmax(0, 1fr));
               gap: 5px;
-              margin-top: 14px;
+              margin-top: 13px;
             }
 
             .step {
               min-width: 0;
               gap: 5px;
-              padding: 8px 5px;
+              padding: 8px 4px;
               justify-content: center;
             }
 
             .step span {
-              width: 22px;
-              height: 22px;
-              flex: 0 0 22px;
-              font-size: 10px;
+              width: 21px;
+              height: 21px;
+              flex: 0 0 21px;
+              font-size: 9px;
             }
 
             .step strong {
               min-width: 0;
               font-size: 9px;
-              white-space: nowrap;
+              line-height: 1.15;
+              text-align: center;
+              white-space: normal;
             }
 
             .drop {
-              min-height: 164px;
-              padding: 16px;
-              gap: 14px;
+              min-height: 148px;
+              padding: 14px;
+              gap: 12px;
               align-items: center;
             }
 
             .dropIcon {
-              width: 50px;
-              height: 50px;
-              flex-basis: 50px;
-              border-radius: 14px;
-              font-size: 28px;
+              width: 46px;
+              height: 46px;
+              flex-basis: 46px;
+              border-radius: 12px;
+              font-size: 25px;
             }
 
             .drop h2 {
-              font-size: 19px;
+              font-size: 18px;
               line-height: 1.25;
             }
 
             .drop p {
-              margin-top: 5px;
-              font-size: 12px;
+              margin-top: 4px;
+              font-size: 11px;
               line-height: 1.45;
             }
 
@@ -3076,6 +3116,64 @@ export default function AutomationFlowV2() {
               border-left: 2px solid #86efac;
               border-bottom: 2px solid #86efac;
               transform: translateY(-1px) rotate(-45deg);
+            }
+
+
+            /* INSERAT_AI_MOBILE_WORKING_V1 */
+            .workingActions {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 7px;
+              margin-top: 9px;
+            }
+
+            .workingActions button {
+              width: 100%;
+              min-width: 0;
+              min-height: 40px;
+              padding: 8px 7px;
+              border-radius: 10px;
+              font-size: 10px;
+              line-height: 1.25;
+              white-space: normal;
+            }
+
+            .received {
+              gap: 6px;
+              margin-top: 9px;
+            }
+
+            .received span,
+            .badge {
+              padding: 6px 8px;
+              font-size: 9px;
+            }
+
+            .previews {
+              gap: 6px;
+              margin-top: 10px;
+              padding-bottom: 2px;
+            }
+
+            .previews img {
+              width: 76px;
+              height: 56px;
+              border-radius: 9px;
+            }
+
+            .status {
+              margin-top: 10px;
+              padding: 10px 11px;
+              gap: 8px;
+              border-radius: 11px;
+              font-size: 11px;
+              line-height: 1.4;
+            }
+
+            .pulse {
+              width: 8px;
+              height: 8px;
+              flex: 0 0 8px;
             }
 
             /* INSERAT_AI_MOBILE_IMAGE_VIEWER_V1 */
@@ -3336,8 +3434,8 @@ export default function AutomationFlowV2() {
             /* INSERAT_AI_MOBILE_PUBLISH_ZONE_V1 */
             .publishZone {
               grid-template-columns: minmax(0, 1fr);
-              gap: 14px;
-              padding: 14px;
+              gap: 11px;
+              padding: 12px;
             }
 
             .publishCopy {
@@ -3345,31 +3443,31 @@ export default function AutomationFlowV2() {
             }
 
             .publishCopy strong {
-              font-size: 15px;
+              font-size: 14px;
               line-height: 1.3;
             }
 
             .publishCopy small {
               font-size: 10px;
-              line-height: 1.5;
+              line-height: 1.45;
             }
 
             .publish {
               width: 100%;
               min-width: 0;
               max-width: 100%;
-              min-height: 50px;
+              min-height: 46px;
               margin: 0;
-              padding: 0 12px;
+              padding: 0 10px;
               box-sizing: border-box;
-              font-size: 12px;
+              font-size: 11px;
               line-height: 1.2;
               white-space: normal;
             }
 
             .publishHint {
-              margin-top: 8px;
-              font-size: 10px;
+              margin-top: 7px;
+              font-size: 9px;
               line-height: 1.4;
             }
           }
