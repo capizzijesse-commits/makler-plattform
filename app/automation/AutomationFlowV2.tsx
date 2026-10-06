@@ -1306,7 +1306,7 @@ export default function AutomationFlowV2() {
         <div className="shell">
           <header className="hero">
             <div className="eyebrow">TECHNISCHE VERBESSERUNG · IN KÜRZE NOCH BESSER</div>
-            <h1>Objektunterlagen rein. Inserat automatisch fertig.</h1>
+            <h1>Technische Verbesserung. In Kürze noch besser.</h1>
             <p>
               Lade deine Objektunterlagen und Bilder hoch. Inserat-AI erkennt die vorhandenen Angaben, analysiert und sortiert die Bilder und erstellt automatisch dein fertiges Immobilieninserat.
             </p>
