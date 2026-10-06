@@ -34,6 +34,7 @@ const nextConfig: NextConfig = {
 
   serverExternalPackages: [
     "pdfjs-dist",
+    "@napi-rs/canvas",
   ],
 
   devIndicators: false,
