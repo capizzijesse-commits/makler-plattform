@@ -317,7 +317,7 @@ export default function WorkspaceFrame({
       key: "new" as const,
       icon: "new" as const,
       label: labels.newListing,
-      href: "/dashboard#new-listing",
+      href: "/automation",
     },
     {
       key: "images" as const,
