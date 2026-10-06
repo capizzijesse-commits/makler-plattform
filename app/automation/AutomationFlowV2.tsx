@@ -1305,23 +1305,14 @@ export default function AutomationFlowV2() {
       <main className="page">
         <div className="shell">
           <header className="hero">
-            <div className="eyebrow">TECHNISCHE VERBESSERUNG · IN KÜRZE NOCH BESSER</div>
-            <h1>Technische Verbesserung. In Kürze noch besser.</h1>
+            <div className="eyebrow">INSERAT-AI AUTOPILOT</div>
+            <h1>Exposé rein. Veröffentlichen. Fertig.</h1>
             <p>
-              Lade deine Objektunterlagen und Bilder hoch. Inserat-AI erkennt die vorhandenen Angaben, analysiert und sortiert die Bilder und erstellt automatisch dein fertiges Immobilieninserat.
-            </p>
-            <p
-              style={{
-                marginTop: "10px",
-                fontSize: "14px",
-                opacity: 0.78,
-              }}
-            >
-              Exposé-Export: Wird derzeit technisch weiterentwickelt und steht vorübergehend nicht zur Verfügung.
+              Inserat-AI liest Exposé und Bilder, übernimmt die Objektdaten und erstellt das komplette Inserat automatisch. Du greifst nur ein, wenn du etwas ändern willst.
             </p>
 
             <div className="steps">
-              {["Empfangen", "Automatisch erstellen", "Inserat fertig"].map((label, index) => {
+              {["Empfangen", "Bearbeiten", "Veröffentlichen"].map((label, index) => {
                 const number = index + 1;
                 return (
                   <div key={label} className={`step ${step === number ? "active" : step > number ? "done" : ""}`}>
@@ -1346,11 +1337,11 @@ export default function AutomationFlowV2() {
                   />
                   <div className="dropIcon">＋</div>
                   <div>
-                    <h2>{stage === "working" ? "Inserat-AI arbeitet …" : "Objektunterlagen & Bilder hochladen"}</h2>
+                    <h2>{stage === "working" ? "Inserat-AI arbeitet …" : "Exposé mit Bildern hochladen"}</h2>
                     <p>
                       {stage === "working"
                         ? "Adresse, Daten, Masse, Bilder und Inserattext werden automatisch verarbeitet."
-                        : "Lade alles hoch, was du zum Objekt hast. Inserat-AI erkennt die vorhandenen Angaben und fragt nur nach wirklich fehlenden Daten."}
+                        : "Einmal auswählen oder hineinziehen. Danach musst du nichts mehr eingeben."}
                     </p>
                   </div>
                 </label>
