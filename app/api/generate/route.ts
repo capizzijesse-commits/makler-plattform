@@ -6030,6 +6030,11 @@ export async function POST(
             selectedQuality.issues,
           similarities:
             selectedQuality.similarities,
+          selectedVariantCount:
+            selectedVariants.length,
+          blockingQualityIssues,
+          germanyFactAuditFindings:
+            germanyFactAudit?.findings ?? [],
         }
       );
 
