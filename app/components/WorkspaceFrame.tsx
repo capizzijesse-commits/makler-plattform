@@ -355,10 +355,10 @@ export default function WorkspaceFrame({
         <button
           type="button"
           className="iaMobileMenuClose"
-          aria-label="Men? schlie?en"
+          aria-label="Menü schließen"
           onClick={() => setMobileMenuOpen(false)}
         >
-          ?
+          ×
         </button>
 
         <Link
@@ -511,7 +511,7 @@ export default function WorkspaceFrame({
         <button
           type="button"
           className="iaMobileMenuBackdrop"
-          aria-label="Men? schlie?en"
+          aria-label="Menü schließen"
           onClick={() => setMobileMenuOpen(false)}
         />
       ) : null}
@@ -521,7 +521,7 @@ export default function WorkspaceFrame({
           <button
             type="button"
             className="iaMobileMenuButton"
-            aria-label="Men? ?ffnen"
+            aria-label="Menü öffnen"
             aria-expanded={mobileMenuOpen}
             onClick={() => setMobileMenuOpen(true)}
           >
