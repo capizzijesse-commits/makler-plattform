@@ -610,8 +610,8 @@ export default function AutomationFlowV2() {
     if (validFiles.length === 0) {
       throw new Error(
         files.length === 1
-          ? `Die Unterlage "${files[0].name}" ist gr?sser als 25 MB.`
-          : "Alle ausgew?hlten Unterlagen sind gr?sser als 25 MB."
+          ? `Die Unterlage "${files[0].name}" ist grösser als 25 MB.`
+          : "Alle ausgewählten Unterlagen sind grösser als 25 MB."
       );
     }
 
@@ -626,10 +626,10 @@ export default function AutomationFlowV2() {
 
     setStatusText(
       oversizedFiles.length > 0
-        ? `${validFiles.length} Unterlage${validFiles.length === 1 ? "" : "n"} wird verarbeitet ? ${oversizedFiles.length} ?ber 25 MB ?bersprungen`
+        ? `${validFiles.length} Unterlage${validFiles.length === 1 ? "" : "n"} wird verarbeitet · ${oversizedFiles.length} über 25 MB übersprungen`
         : validFiles.length === 1
-          ? "Unterlage wird gelesen ?"
-          : `${validFiles.length} Unterlagen werden gelesen ?`
+          ? "Unterlage wird gelesen …"
+          : `${validFiles.length} Unterlagen werden gelesen …`
     );
 
     const startedAt =
@@ -874,7 +874,7 @@ export default function AutomationFlowV2() {
       performance.now();
 
     setStatusText(
-      `${files.length} Bilder werden gleichzeitig analysiert ?`
+      `${files.length} Bilder werden gleichzeitig analysiert …`
     );
 
     const prepared =
@@ -1052,7 +1052,7 @@ export default function AutomationFlowV2() {
                     "string"
                 ) {
                   throw new Error(
-                    `Batch ${batchIndex + 1}: Analyse f?r Bild ${localIndex} fehlt.`
+                    `Batch ${batchIndex + 1}: Analyse für Bild ${localIndex} fehlt.`
                   );
                 }
 
@@ -1435,7 +1435,7 @@ export default function AutomationFlowV2() {
       );
 
       setStatusText(
-        "Bereit zur Ver?ffentlichung."
+        "Bereit zur Veröffentlichung."
       );
     } catch (runError) {
       if (controller.signal.aborted) {
@@ -1833,8 +1833,8 @@ export default function AutomationFlowV2() {
                     </div>
 
                     <p>
-                      Vollst?ndig von Inserat-AI erstellt.
-                      Du kannst direkt ver?ffentlichen oder
+                      Vollständig von Inserat-AI erstellt.
+                      Du kannst direkt veröffentlichen oder
                       den Text noch anpassen.
                     </p>
                   </div>
@@ -1931,7 +1931,7 @@ export default function AutomationFlowV2() {
                             setImageViewerIndex(0);
                             setImageViewerOpen(true);
                           }}
-                          aria-label="Alle Bilder und Pl?ne anzeigen"
+                          aria-label="Alle Bilder und Pläne anzeigen"
                         >
                           <span className="heroImageCountLabel">
                             ALLE MEDIEN
@@ -2040,10 +2040,10 @@ export default function AutomationFlowV2() {
                                 INSERAT-AI MEDIENGALERIE
                               </span>
                               <strong>
-                                Alle Bilder & Pl?ne
+                                Alle Bilder & Pläne
                               </strong>
                               <small>
-                                Fotos, Grundrisse und Lagepl?ne
+                                Fotos, Grundrisse und Lagepläne
                               </small>
                             </div>
 
@@ -2056,7 +2056,7 @@ export default function AutomationFlowV2() {
                             <button
                               type="button"
                               className="imageViewerClose"
-                              aria-label="Bilder schlie?en"
+                              aria-label="Bilder schließen"
                               onClick={() =>
                                 setImageViewerOpen(false)
                               }
@@ -2101,7 +2101,7 @@ export default function AutomationFlowV2() {
                                 <button
                                   type="button"
                                   className="imageViewerNext"
-                                  aria-label="N?chstes Bild"
+                                  aria-label="Nächstes Bild"
                                   onClick={() =>
                                     setImageViewerIndex(
                                       (current) =>
@@ -2136,7 +2136,7 @@ export default function AutomationFlowV2() {
                               </div>
 
                               <div className="imageViewerInfoHint">
-                                W?hle unten ein anderes Bild oder
+                                Wähle unten ein anderes Bild oder
                                 navigiere mit den Pfeilen.
                               </div>
 
