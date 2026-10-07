@@ -407,7 +407,14 @@ export default function WorkspaceFrame({
                           )
                         );
                       }
-                    : () => setMobileMenuOpen(false)
+                    : item.key === "new" &&
+                        active === "new"
+                      ? (event) => {
+                          event.preventDefault();
+                          setMobileMenuOpen(false);
+                          window.location.reload();
+                        }
+                      : () => setMobileMenuOpen(false)
                 }
                 className={
                   active === item.key
