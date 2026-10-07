@@ -17,6 +17,7 @@ import SupportActionDock from "@/app/components/SupportActionDock";
 import AutomationPublishOverlay from "@/app/components/AutomationPublishOverlay";
 import MobileAppNav from "@/app/components/MobileAppNav";
 import FeedbackButton from "@/components/FeedbackButton";
+import PresenceTracker from "@/app/components/PresenceTracker";
 
 type AppShellProps = {
   children: ReactNode;
@@ -127,6 +128,7 @@ export default function AppShell({
 
   return (
     <>
+      <PresenceTracker />
       <Navbar />
 
       {children}

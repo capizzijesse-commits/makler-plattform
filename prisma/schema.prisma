@@ -9,22 +9,22 @@ generator client {
 }
 
 model User {
-  id                  String  @id @default(cuid())
+  id                  String    @id @default(cuid())
   name                String
-  email               String  @unique
-  googleSub           String? @unique
+  email               String    @unique
+  googleSub           String?   @unique
   company             String?
   phone               String?
   companyLogoUrl      String?
   companyLogoPathname String?
   password            String?
-  role                String  @default("user")
-  plan                String  @default("free")
-  trialPlan      String?
-  trialStartedAt DateTime?
-  trialEndsAt    DateTime?
-  freeGenerationsUsed Int     @default(0)
-  freeGenerationLimit Int     @default(50)
+  role                String    @default("user")
+  plan                String    @default("free")
+  trialPlan           String?
+  trialStartedAt      DateTime?
+  trialEndsAt         DateTime?
+  freeGenerationsUsed Int       @default(0)
+  freeGenerationLimit Int       @default(50)
 
   isFounder         Boolean @default(false)
   founderNumber     Int?    @unique
@@ -46,6 +46,7 @@ model User {
 
   listings                                                                Listing[]
   sessions                                                                Session[]
+  presence                                                                UserPresence?
   valuations                                                              Valuation[]
   portalConnections                                                       PortalConnection[]
   portalCredentials                                                       PortalCredential[]
@@ -578,6 +579,12 @@ model PortalPublishJob {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  /**
+   * COMMAND_CENTER_TRANSITION_HISTORY_V1
+   * Append-only Statushistorie.
+   */
+  transitions PortalPublishJobTransition[]
+
   @@index([userId, status, createdAt])
   @@index([connectionId, status])
   @@index([listingId])
@@ -586,15 +593,7 @@ model PortalPublishJob {
   @@index([provider, portal, status])
   @@index([provider, providerOperationState])
   @@index([listingId, portal, status])
-
-  /*
-   * COMMAND_CENTER_TRANSITION_HISTORY_V1
-   *
-   * Append-only Statushistorie.
-   */
-  transitions PortalPublishJobTransition[]
 }
-
 
 model PortalPublishJobTransition {
   id Int @id @default(autoincrement())
@@ -627,7 +626,6 @@ model PortalPublishJobTransition {
   @@index([listingId, createdAt])
   @@index([toStatus, createdAt])
 }
-
 
 model Listing {
   id String @id @default(cuid())
@@ -711,12 +709,10 @@ model BrokerWorkflow {
   @@index([updatedAt])
 }
 
-/*
+/**
  * PUBLICATION ORCHESTRATOR V1
- *
  * Ein Run entspricht genau einem bewusst
  * gestarteten Vermarktungs-/Publishing-Vorgang.
- *
  * Die einzelnen Ziele bleiben dauerhaft
  * nachvollziehbar, auch wenn ein Portal-
  * oder Social-Job spaeter fehlschlaegt.
@@ -730,7 +726,7 @@ model PublicationRun {
   listingId String
   listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
-  /*
+  /**
    * draft
    * ready
    * publishing
@@ -760,20 +756,19 @@ model PublicationTarget {
   runId String
   run   PublicationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
 
-  /*
+  /**
    * Eindeutig innerhalb eines Runs:
-   *
    * portal:immowelt_de
    * social:<connectionId>
    */
   targetKey String
 
-  /*
+  /**
    * portal | social
    */
   kind String
 
-  /*
+  /**
    * Snapshot des Zielsystems.
    */
   provider          String?
@@ -782,9 +777,8 @@ model PublicationTarget {
   externalAccountId String?
   environment       String?
 
-  /*
+  /**
    * Einheitlicher Orchestrator-Status:
-   *
    * pending
    * publishing
    * published
@@ -794,10 +788,9 @@ model PublicationTarget {
    */
   status String @default("pending")
 
-  /*
+  /**
    * Bewusst zunaechst nur IDs und keine
    * Foreign Keys:
-   *
    * Der Run-/Target-Verlauf soll bestehen
    * bleiben, selbst wenn Publish-Jobs
    * spaeter archiviert oder entfernt werden.
@@ -969,6 +962,20 @@ model HomeStagingImage {
   @@index([listingId, createdAt])
 }
 
+model UserPresence {
+  userId String @id
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  currentPath      String
+  sessionStartedAt DateTime @default(now())
+  lastSeenAt       DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([lastSeenAt])
+}
+
 model Session {
   id        String @id @default(cuid())
   tokenHash String @unique
@@ -1068,4 +1075,122 @@ model RateLimitBucket {
   updatedAt DateTime @updatedAt
 
   @@index([expiresAt])
+}
+
+/**
+ * AUTOMATION_MONITORING_V1
+ * Beobachtet den Inserat-AI-Autopilot,
+ * ohne dessen eigentliche Verarbeitung
+ * zu veraendern.
+ * Keine Dokumentinhalte, Bildinhalte,
+ * Adressen oder generierten Texte
+ * in metadata speichern.
+ */
+model AutomationMonitoringRun {
+  id String @id @default(cuid())
+
+  /**
+   * Bewusst ohne Foreign-Key-Abhaengigkeit.
+   * Monitoring soll den produktiven
+   * Automationsprozess niemals blockieren.
+   */
+  userId    String?
+  listingId String?
+
+  /**
+   * running
+   * ready
+   * failed
+   * abandoned
+   */
+  status String @default("running")
+
+  documentCount Int @default(0)
+  imageCount    Int @default(0)
+
+  detectedFieldCount   Int @default(0)
+  missingRequiredCount Int @default(0)
+
+  manualCorrectionCount Int     @default(0)
+  textEdited            Boolean @default(false)
+  imageOrderChanged     Boolean @default(false)
+
+  readyReached Boolean @default(false)
+
+  totalDurationMs Int?
+
+  errorStage   String?
+  errorCode    String?
+  errorMessage String?
+
+  /**
+   * Nur technische, nicht-sensitive
+   * Zusatzinformationen.
+   * Beispiel:
+   * {
+   * "market": "DE",
+   * "device": "mobile",
+   * "version": "autopilot-v2"
+   * }
+   */
+  metadata Json?
+
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  events AutomationMonitoringEvent[]
+
+  @@index([createdAt])
+  @@index([status, createdAt])
+  @@index([userId, createdAt])
+  @@index([listingId, createdAt])
+  @@index([readyReached, createdAt])
+}
+
+model AutomationMonitoringEvent {
+  id Int @id @default(autoincrement())
+
+  runId String
+  run   AutomationMonitoringRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  /**
+   * Beispiele:
+   * upload
+   * expose_extraction
+   * image_analysis
+   * text_generation
+   * readiness
+   * publishing
+   */
+  stage String
+
+  /**
+   * started
+   * success
+   * failed
+   * skipped
+   */
+  status String
+
+  durationMs Int?
+
+  errorCode    String?
+  errorMessage String?
+
+  /**
+   * Ausschliesslich technische Kennzahlen.
+   * Keine Rohdaten des Exposes,
+   * keine Bildanalyse-Texte und
+   * keine generierten Inserattexte.
+   */
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([runId, createdAt])
+  @@index([stage, status, createdAt])
+  @@index([status, createdAt])
 }

@@ -8,6 +8,13 @@ import { XMLParser } from "fast-xml-parser";
 import { getAuthenticatedUser } from "@/lib/session";
 
 import {
+  completeAutomationMonitoringRun,
+  getMonitoringErrorFields,
+  recordAutomationMonitoringEvent,
+  startAutomationMonitoringRun,
+} from "@/lib/automation-monitoring.server";
+
+import {
   extractPropertyPhotosFromPdf,
 } from "@/lib/pdf-extract-property-photos.server";
 
@@ -814,6 +821,7 @@ type ExtractDocumentRequest = {
 
 type ExtractRequest = ExtractDocumentRequest & {
   files?: unknown;
+  skipPdfPhotoExtraction?: boolean;
 };
 
 function emptyResult(): ExtractedExpose {
@@ -1201,6 +1209,14 @@ export async function POST(request: NextRequest) {
   const openAiFileIds: string[] = [];
   let openai: OpenAI | null = null;
 
+  let monitoringRunId:
+    | string
+    | null = null;
+
+  let monitoringStartedAt:
+    | number
+    | null = null;
+
   try {
     const contentType =
       request.headers.get("content-type") || "";
@@ -1219,6 +1235,9 @@ export async function POST(request: NextRequest) {
       bytes?: Uint8Array;
     }> = [];
 
+    let skipPdfPhotoExtraction =
+      false;
+
     if (
       contentType.includes(
         "multipart/form-data"
@@ -1226,6 +1245,11 @@ export async function POST(request: NextRequest) {
     ) {
       const form =
         await request.formData();
+
+      skipPdfPhotoExtraction =
+        form.get(
+          "skipPdfPhotoExtraction"
+        ) === "true";
 
       const directFiles =
         form
@@ -1261,6 +1285,10 @@ export async function POST(request: NextRequest) {
     } else {
       const body =
         (await request.json()) as ExtractRequest;
+
+      skipPdfPhotoExtraction =
+        body.skipPdfPhotoExtraction ===
+        true;
 
       const rawFiles =
         Array.isArray(body.files)
@@ -1322,6 +1350,14 @@ export async function POST(request: NextRequest) {
       fileType,
     } = files[0];
 
+    console.log(
+      "[EXPOSE SPEED] pdf-photo-mode",
+      {
+        skipPdfPhotoExtraction,
+        documents: files.length,
+      }
+    );
+
     // MULTI_DOCUMENT_PREPARATION_V1
     const exposeProfileStartedAt = performance.now();
     let exposeProfileStepAt = exposeProfileStartedAt;
@@ -1369,6 +1405,29 @@ export async function POST(request: NextRequest) {
         );
       }
     }
+
+    monitoringStartedAt =
+      performance.now();
+
+
+    monitoringRunId =
+      await startAutomationMonitoringRun({
+        userId: user.id,
+        documentCount: files.length,
+        metadata: {
+          version:
+            "automation-monitoring-v1",
+          route:
+            "extract-expose",
+          transport:
+            contentType.includes(
+              "multipart/form-data"
+            )
+              ? "multipart"
+              : "json",
+        },
+      });
+
 
     const preparedDocuments =
       await Promise.all(
@@ -1433,7 +1492,8 @@ export async function POST(request: NextRequest) {
             );
 
           const propertyPhotosPromise =
-            file.fileType === "application/pdf"
+            file.fileType === "application/pdf" &&
+            !skipPdfPhotoExtraction
               ? extractPropertyPhotosFromPdf(
                   Buffer.from(bytes),
                   {
@@ -1662,6 +1722,43 @@ export async function POST(request: NextRequest) {
           ),
       }
     );
+
+    if (monitoringRunId) {
+      await recordAutomationMonitoringEvent({
+        runId: monitoringRunId,
+        stage: "document_processing",
+        status: "success",
+        durationMs:
+          Math.round(
+            performance.now() -
+            exposeProfileStartedAt
+          ),
+        metadata: {
+          documents:
+            preparedDocuments.length,
+          textDocuments:
+            textDocuments.length,
+          fileDocuments:
+            fileDocuments.length,
+          fastText:
+            useTextFastPath,
+        },
+      });
+
+      await recordAutomationMonitoringEvent({
+        runId: monitoringRunId,
+        stage: "pdf_text",
+        status: "success",
+        metadata: {
+          textDocuments:
+            textDocuments.length,
+          fileDocuments:
+            fileDocuments.length,
+          fastText:
+            useTextFastPath,
+        },
+      });
+    }
 
     if (!useLocalFactsFastPath) {
       openai = new OpenAI({
@@ -2026,6 +2123,20 @@ ALLGEMEIN:
       }
     );
 
+    if (monitoringRunId) {
+      await recordAutomationMonitoringEvent({
+        runId: monitoringRunId,
+        stage: "pdf_images",
+        status: "success",
+        metadata: {
+          candidateCount,
+          propertyPhotoCount,
+          returnedPhotos:
+            combinedPdfPhotos.length,
+        },
+      });
+    }
+
     const extractedPhotos =
       combinedPdfPhotos.map(
         (photo, index) => ({
@@ -2067,6 +2178,39 @@ ALLGEMEIN:
       totalMs: Math.round(performance.now() - exposeProfileStartedAt),
     });
 
+    if (
+      monitoringRunId &&
+      monitoringStartedAt !== null
+    ) {
+      await recordAutomationMonitoringEvent({
+        runId: monitoringRunId,
+        stage: "expose_extraction",
+        status: "success",
+        durationMs:
+          Math.round(
+            performance.now() -
+            monitoringStartedAt
+          ),
+        metadata: {
+          returnedPhotos:
+            extractedPhotos.length,
+        },
+      });
+
+      await completeAutomationMonitoringRun({
+        runId: monitoringRunId,
+        status: "ready",
+        readyReached: true,
+        imageCount:
+          extractedPhotos.length,
+        totalDurationMs:
+          Math.round(
+            performance.now() -
+            monitoringStartedAt
+          ),
+      });
+    }
+
     return NextResponse.json({
       success: true,
       extracted,
@@ -2074,6 +2218,31 @@ ALLGEMEIN:
     });
   } catch (error) {
     console.error("AUTOMATION EXPOSE EXTRACTION ERROR:", error);
+
+    if (monitoringRunId) {
+      const monitoringError =
+        getMonitoringErrorFields(error);
+
+      await completeAutomationMonitoringRun({
+        runId: monitoringRunId,
+        status: "failed",
+        readyReached: false,
+        totalDurationMs:
+          monitoringStartedAt !== null
+            ? Math.round(
+                performance.now() -
+                monitoringStartedAt
+              )
+            : undefined,
+        errorStage:
+          "expose_extraction",
+        errorCode:
+          monitoringError.errorCode,
+        errorMessage:
+          monitoringError.errorMessage,
+      });
+    }
+
     const friendly = friendlyOpenAiError(error);
 
     return NextResponse.json(
