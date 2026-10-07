@@ -1332,7 +1332,7 @@ justifySelf: "start",
       </strong>
     </button>
 
-    <Link href="/dashboard" className="quickCard">
+    <Link href="/automation" className="quickCard">
       <span className="quickIcon">✨</span>
 
       <h3>{t("quick.newListing.title")}</h3>

@@ -3283,7 +3283,7 @@ export default function CockpitOverviewV2({
 
               <div className="v26HeroActions">
                 <Link
-                  href="/dashboard"
+                  href="/automation"
                   className="v26HeroPrimary"
                   style={{
                     display: "inline-flex",
@@ -4199,7 +4199,7 @@ export default function CockpitOverviewV2({
                                 objectView ===
                                   "active" && (
                                 <Link
-                                  href="/dashboard"
+                                  href="/automation"
                                   className="v2CreateCard"
                                 >
                                   <span className="v2CreatePlus">
@@ -4258,7 +4258,7 @@ export default function CockpitOverviewV2({
                           </div>
 
                           <div className="v2QuickGrid">
-                            <Link href="/dashboard">
+                            <Link href="/automation">
                               <span>＋</span>
                               <strong>
                                 {labels.newListing}
