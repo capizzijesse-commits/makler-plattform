@@ -412,7 +412,12 @@ export default function WorkspaceFrame({
                       ? (event) => {
                           event.preventDefault();
                           setMobileMenuOpen(false);
-                          window.location.reload();
+
+                          window.dispatchEvent(
+                            new Event(
+                              "inserat-ai:new-listing"
+                            )
+                          );
                         }
                       : () => setMobileMenuOpen(false)
                 }

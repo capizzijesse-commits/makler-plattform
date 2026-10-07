@@ -223,6 +223,51 @@ export default function AutomationFlowV2() {
   // MOBILE_AUTOMATION_FACTS_TOGGLE_V1
   const [showMobileFacts, setShowMobileFacts] = useState(false);
 
+  // AUTOMATION_NEW_LISTING_RESET_V1
+  useEffect(() => {
+    const handleNewListing = () => {
+      automationAbortRef.current?.abort();
+      automationAbortRef.current = null;
+
+      setStage("receive");
+      setDocumentFiles([]);
+      setImages([]);
+      setImagePreviews([]);
+      setImageAnalyses([]);
+
+      setData({
+        ...EMPTY,
+        countryCode: market,
+      });
+
+      setNearbyFacts(null);
+      setVariants([]);
+      setActiveVariant(0);
+      setManualHero(null);
+
+      setImageViewerOpen(false);
+      setImageViewerIndex(0);
+
+      setStatusText("");
+      setError("");
+      setPublishing(false);
+      setCopiedListing(false);
+      setShowMobileFacts(false);
+    };
+
+    window.addEventListener(
+      "inserat-ai:new-listing",
+      handleNewListing
+    );
+
+    return () => {
+      window.removeEventListener(
+        "inserat-ai:new-listing",
+        handleNewListing
+      );
+    };
+  }, [market]);
+
   useEffect(() => {
     const detected = getInseratAiMarketFromHostname(window.location.hostname);
     const saved = localStorage.getItem("inseratAiMarket");
