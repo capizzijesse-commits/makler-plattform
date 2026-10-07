@@ -253,6 +253,12 @@ export default function AutomationFlowV2() {
       setPublishing(false);
       setCopiedListing(false);
       setShowMobileFacts(false);
+
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: "auto",
+      });
     };
 
     window.addEventListener(
