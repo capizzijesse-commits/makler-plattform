@@ -262,7 +262,7 @@ export async function buildSalesExposePdfBlob(
   );
 
   pdf.text(
-    "VERKAUFSEXPOSE",
+    "IMMOBILIENINSERAT",
     margin,
     176
   );
