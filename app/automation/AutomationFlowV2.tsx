@@ -1801,7 +1801,7 @@ export default function AutomationFlowV2() {
                   />
                   <div className="dropIcon">＋</div>
                   <div>
-                    <h2>{stage === "working" ? "Inserat-AI arbeitet …" : "Exposé mit Bildern hochladen"}</h2>
+                    <h2>{stage === "working" ? "Inserat-AI arbeitet …" : "Exposé mit Bildern als PDF hochladen"}</h2>
                     <p>
                       {stage === "working"
                         ? "Adresse, Daten, Masse, Bilder und Inserattext werden automatisch verarbeitet."
@@ -2436,7 +2436,7 @@ export default function AutomationFlowV2() {
                       PDF
                     </span>
 
-                    Expos{"\u00e9"} als PDF herunterladen
+                    Inserat als PDF herunterladen
                   </button>
 
 

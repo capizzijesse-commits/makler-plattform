@@ -497,7 +497,7 @@ export default function AdminMonitoringPage() {
                           entry.userId
                         )
                       }
-                      title="Benutzer ?ffnen"
+                      title={"Benutzer \u00f6ffnen"}
                     >
                       <div className="presenceIdentity">
                         <span className="onlineIndicator" />
@@ -563,7 +563,7 @@ export default function AdminMonitoringPage() {
                           entry.userId
                         )
                       }
-                      title="Benutzer ?ffnen"
+                      title={"Benutzer \u00f6ffnen"}
                     >
                       <div className="presenceIdentity">
                         <div className="recentIndicator" />
@@ -668,14 +668,29 @@ export default function AdminMonitoringPage() {
                       </td>
 
                       <td>
-                        <code>
-                          {run.userId
-                            ? run.userId.slice(
-                                0,
-                                10
-                              )
-                            : "—"}
-                        </code>
+                        {run.userId ? (
+                          <button
+                            type="button"
+                            className="runUserLink"
+                            onClick={() => {
+                              if (run.userId) {
+                                openUser(
+                                  run.userId
+                                );
+                              }
+                            }}
+                            title={"Benutzer \u00f6ffnen"}
+                          >
+                            {run.userId.slice(
+                              0,
+                              10
+                            )}
+                          </button>
+                        ) : (
+                          <span className="runUserEmpty">
+                            {"\u2014"}
+                          </span>
+                        )}
                       </td>
 
                       <td>
@@ -1141,6 +1156,41 @@ const styles = `
   code {
     color: #a9adb5;
     font-size: 11px;
+  }
+
+  .runUserLink {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    color: #caa85e;
+    font-family:
+      ui-monospace,
+      SFMono-Regular,
+      Menlo,
+      monospace;
+    font-size: 11px;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color:
+      rgba(202, 168, 94, 0.35);
+    text-underline-offset: 3px;
+  }
+
+  .runUserLink:hover {
+    color: #e2c777;
+    text-decoration-color:
+      rgba(226, 199, 119, 0.75);
+  }
+
+  .runUserLink:focus-visible {
+    outline: 1px solid #caa85e;
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+
+  .runUserEmpty {
+    color: #666b74;
   }
 
   .status {
