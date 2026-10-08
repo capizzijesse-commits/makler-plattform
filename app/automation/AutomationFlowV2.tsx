@@ -2436,7 +2436,7 @@ export default function AutomationFlowV2() {
                       PDF
                     </span>
 
-                    Expos{"\u00e9"} als PDF herunterladen
+                    Inserat PDF herunterladen
                   </button>
 
 
