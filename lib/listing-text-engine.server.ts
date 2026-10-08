@@ -1,6 +1,12 @@
 import OpenAI from "openai";
 
 import {
+  findUnsupportedPropertyFeatures,
+  removeUnsupportedImageClaims,
+  toStrictFactText,
+} from "@/lib/listing-text-feature-gate";
+
+import {
   normalizeSwissTypography,
   type ListingTextVariant,
 } from "@/lib/listing-text-quality";
@@ -20,6 +26,7 @@ export type ListingTextEngineInput = {
   highlights?: unknown;
   styleText?: unknown;
   imageAnalysis?: unknown;
+  verifiedFeatures?: unknown;
 };
 
 export type ListingTextEngineResult = {
@@ -118,21 +125,21 @@ const LANGUAGE_CONFIG: Record<
       "Schweizer Hochdeutsch",
     emptyValue: "keine Angabe",
     defaultStyle:
-      "hochwertig, modern und glaubwÃ¼rdig",
+      "hochwertig, modern und glaubwürdig",
     fallbackTitle: "Variante",
     languageRules: [
       "Verwende konsequent Schweizer Rechtschreibung.",
-      "Schreibe ss statt ÃŸ.",
-      "Verwende natÃ¼rliche Begriffe des Schweizer Immobilienmarkts.",
-      "Verwende passende Begriffe wie Ã–V, Einstellhallenplatz, Gartensitzplatz oder Reduit nur, wenn sie durch die Objektdaten belegt sind.",
-      "Formatiere Zimmerangaben natÃ¼rlich, beispielsweise 3Â½-Zimmer-Wohnung, sofern die entsprechende Zimmerzahl angegeben wurde.",
+      "Schreibe ss statt ß.",
+      "Verwende natürliche Begriffe des Schweizer Immobilienmarkts.",
+      "Verwende passende Begriffe wie ÖV, Einstellhallenplatz, Gartensitzplatz oder Reduit nur, wenn sie durch die Objektdaten belegt sind.",
+      "Formatiere Zimmerangaben natürlich, beispielsweise 3½-Zimmer-Wohnung, sofern die entsprechende Zimmerzahl angegeben wurde.",
       "Erfinde keine Gemeinde-, Steuer-, Schul-, Verkehrs- oder Lagevorteile.",
     ],
   },
 
   it: {
     targetLanguage:
-      "Italienisch fÃ¼r den Schweizer Immobilienmarkt",
+      "Italienisch für den Schweizer Immobilienmarkt",
     emptyValue:
       "nessuna indicazione",
     defaultStyle:
@@ -141,24 +148,24 @@ const LANGUAGE_CONFIG: Record<
     languageRules: [
       "Scrivi in italiano naturale e professionale.",
       "Adatta la terminologia al mercato immobiliare svizzero.",
-      "Mantieni invariati nomi propri, localitÃ , numeri, prezzi e unitÃ  di misura.",
-      "Non inventare vantaggi relativi a posizione, trasporti, scuole, fiscalitÃ  o infrastrutture.",
+      "Mantieni invariati nomi propri, località, numeri, prezzi e unità di misura.",
+      "Non inventare vantaggi relativi a posizione, trasporti, scuole, fiscalità o infrastrutture.",
     ],
   },
 
   fr: {
     targetLanguage:
-      "FranÃ§ais professionnel pour le marchÃ© immobilier suisse",
+      "Français professionnel pour le marché immobilier suisse",
     emptyValue:
       "aucune indication",
     defaultStyle:
-      "haut de gamme, moderne et crÃ©dible",
+      "haut de gamme, moderne et crédible",
     fallbackTitle: "Variante",
     languageRules: [
-      "RÃ©dige dans un franÃ§ais naturel et professionnel.",
-      "Adapte la terminologie au marchÃ© immobilier suisse.",
-      "Conserve les noms propres, localitÃ©s, nombres, prix et unitÃ©s de mesure.",
-      "N'invente aucun avantage concernant la situation, les transports, les Ã©coles, la fiscalitÃ© ou les infrastructures.",
+      "Rédige dans un français naturel et professionnel.",
+      "Adapte la terminologie au marché immobilier suisse.",
+      "Conserve les noms propres, localités, nombres, prix et unités de mesure.",
+      "N'invente aucun avantage concernant la situation, les transports, les écoles, la fiscalité ou les infrastructures.",
     ],
   },
 
@@ -511,7 +518,7 @@ FACTUAL STANDARD:
 
 EDITORIAL STANDARD:
 - Avoid empty advertising language.
-- Avoid generic property clichÃ©s.
+- Avoid generic property clichés.
 - Do not merely replace words with synonyms.
 - Each variant must have a genuinely different opening, structure, emphasis and linguistic character.
 - Shared property facts may appear in more than one variant, but they must not appear in the same order or with nearly identical wording.
@@ -1145,6 +1152,454 @@ IMPORTANT:
 }
 
 /*
+ * STRICT_PROPERTY_FEATURE_GATE_V1
+ *
+ * Pure feature detection lives in
+ * listing-text-feature-gate.ts.
+ * This engine owns retry and fail-closed behavior.
+ */
+function assertNoUnsupportedPropertyFeatures(
+  input: ListingTextEngineInput,
+  variants: ListingTextVariant[]
+): void {
+  const unsupported =
+    findUnsupportedPropertyFeatures(
+      input,
+      variants
+    );
+
+  if (
+    unsupported.length === 0
+  ) {
+    return;
+  }
+
+  console.error(
+    "[STRICT PROPERTY FEATURE GATE]",
+    {
+      unsupported,
+    }
+  );
+
+  throw new Error(
+    "INSERAT_AI_UNSUPPORTED_PROPERTY_FEATURE_" +
+      unsupported
+        .join("_")
+        .toUpperCase()
+        .replace(
+          /[^A-Z0-9]+/g,
+          "_"
+        )
+  );
+}
+
+async function repairUnsupportedVariant(
+  openai: OpenAI,
+  input: ListingTextEngineInput,
+  variant: ListingTextVariant,
+  unsupportedLabels: string[],
+  locale: "de" | "it" | "fr" | "en"
+): Promise<ListingTextVariant> {
+  const verifiedFacts = [
+    input.location
+      ? `Ort: ${toStrictFactText(input.location)}`
+      : "",
+    input.propertyType
+      ? `Objektart: ${toStrictFactText(input.propertyType)}`
+      : "",
+    input.rooms
+      ? `Zimmer: ${toStrictFactText(input.rooms)}`
+      : "",
+    input.livingArea
+      ? `Wohnfl?che: ${toStrictFactText(input.livingArea)}`
+      : "",
+    input.price
+      ? `Preis: ${toStrictFactText(input.price)}`
+      : "",
+    input.verifiedFeatures
+      ? `Best?tigte Merkmale: ${toStrictFactText(input.verifiedFeatures)}`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  const completion =
+    await openai.chat.completions.create({
+      model:
+        LISTING_GENERATION_MODEL,
+
+      messages: [
+        {
+          role:
+            "system",
+
+          content:
+            [
+              "You are a precise real-estate copy editor.",
+              "Your task is NOT to rewrite the listing from scratch.",
+              "Preserve the existing title, structure, tone and useful wording as much as possible.",
+              "Remove or minimally rewrite only unsupported factual claims.",
+              "Never introduce new property facts.",
+              "Never replace a removed feature with another unverified feature.",
+              "Never mention missing information, unavailable data, source limitations or uncertainty.",
+              "Never write phrases such as: keine Angaben, nicht angegeben, nicht spezifiziert, nicht dokumentiert, liegen nicht vor, weitere Informationen, erg?nzende Informationen.",
+              "Do not add generic viewing advice, document advice, broker-process commentary or statements about judging the property on site.",
+              "Do not mention source documents, data quality, verification or the correction process.",
+              "Return only valid JSON.",
+            ].join("\n"),
+        },
+        {
+          role:
+            "user",
+
+          content:
+            [
+              `OUTPUT LANGUAGE: ${LANGUAGE_CONFIG[locale].targetLanguage}`,
+              "",
+              "UNSUPPORTED FEATURES THAT MUST DISAPPEAR:",
+              unsupportedLabels.join(", "),
+              "",
+              "VERIFIED FACTS:",
+              verifiedFacts || "No additional verified feature facts.",
+              "",
+              "ORIGINAL TITLE:",
+              variant.title || "",
+              "",
+              "ORIGINAL DESCRIPTION:",
+              variant.text || "",
+              "",
+              "INSTRUCTIONS:",
+              "- Keep the original copy wherever it is factually safe.",
+              "- Remove every direct or indirect reference to the unsupported features.",
+              "- Repair grammar naturally where text was removed.",
+              "- Keep approximately the same length unless removal makes that impossible.",
+              "- Keep the title concise, natural and professional.",
+              "- Do not create filler text to compensate for removed claims.",
+              "- Do not discuss missing facts.",
+              "",
+              "Return exactly:",
+              '{"variant":{"title":"...","text":"..."}}',
+            ].join("\n"),
+        },
+      ],
+
+      temperature:
+        0.1,
+
+      max_tokens:
+        1000,
+
+      response_format: {
+        type:
+          "json_object",
+      },
+    });
+
+  const content =
+    completion.choices[0]
+      ?.message?.content ??
+    "";
+
+  let parsed:
+    | {
+        variant?: {
+          title?: unknown;
+          text?: unknown;
+        };
+      }
+    | undefined;
+
+  try {
+    parsed =
+      JSON.parse(content);
+  } catch {
+    parsed =
+      undefined;
+  }
+
+  const rawTitle =
+    typeof parsed?.variant?.title ===
+      "string"
+      ? parsed.variant.title
+      : "";
+
+  const rawText =
+    typeof parsed?.variant?.text ===
+      "string"
+      ? parsed.variant.text
+      : "";
+
+  const title =
+    normalizeSwissTypography(
+      rawTitle,
+      locale
+    );
+
+  const text =
+    normalizeSwissTypography(
+      rawText,
+      locale
+    );
+
+  if (
+    !title ||
+    !text
+  ) {
+    throw new Error(
+      "INSERAT_AI_TEXT_ENGINE_TARGETED_REPAIR_INVALID"
+    );
+  }
+
+  return {
+    title,
+    text,
+  };
+}
+
+/*
+ * STRICT_LISTING_QUALITY_GATE_V1
+ *
+ * Rejects clearly unprofessional listing output:
+ * missing-data commentary, process/meta language,
+ * broken fragments and malformed titles.
+ */
+const STRICT_BAD_COPY_RULES = [
+  /\bnicht angegeben\b/i,
+  /\bnicht spezifiziert\b/i,
+  /\bnicht dokumentiert\b/i,
+  /\bliegen nicht vor\b/i,
+  /\bkeine angaben\b/i,
+  /\bkeine informationen\b/i,
+  /\bweitere ausk(?:u|\u00fc)nfte\b/i,
+  /\bweitere informationen\b/i,
+  /\bbest(?:a|ae|\u00e4)tigte eckdaten\b/i,
+  /\bobjektunterlagen\b/i,
+  /\bvor ort beurteilen\b/i,
+  /\bfundierte grundlage f(?:u|ue|\u00fc)r die eigene entscheidung\b/i,
+] as const;
+
+function findStrictQualityIssues(
+  variant: ListingTextVariant
+): string[] {
+  const issues: string[] = [];
+
+  const title =
+    variant.title.trim();
+
+  const text =
+    variant.text.trim();
+
+  const combined =
+    `${title}\n${text}`;
+
+  for (
+    const pattern
+    of STRICT_BAD_COPY_RULES
+  ) {
+    if (
+      pattern.test(
+        combined
+      )
+    ) {
+      issues.push(
+        "UNPROFESSIONAL_META_COPY"
+      );
+      break;
+    }
+  }
+
+  if (
+    title.length < 8 ||
+    title.length > 100
+  ) {
+    issues.push(
+      "MALFORMED_TITLE"
+    );
+  }
+
+  if (
+    /(?:\.\.\.|[,;:]\s*)$/.test(
+      title
+    )
+  ) {
+    issues.push(
+      "BROKEN_TITLE_ENDING"
+    );
+  }
+
+  const firstSentence =
+    text
+      .split(
+        /(?<=[.!?])\s+/
+      )[0]
+      ?.trim() ??
+    "";
+
+  if (
+    firstSentence &&
+    /^[a-z\u00e4\u00f6\u00fc\u00df]/.test(
+      firstSentence
+    )
+  ) {
+    issues.push(
+      "BROKEN_OPENING_FRAGMENT"
+    );
+  }
+
+  if (
+    /\b(?:ionen|offene f)\b/i.test(
+      combined
+    )
+  ) {
+    issues.push(
+      "CORRUPTED_TEXT_FRAGMENT"
+    );
+  }
+
+  return [
+    ...new Set(
+      issues
+    ),
+  ];
+}
+
+async function repairQualityVariant(
+  openai: OpenAI,
+  input: ListingTextEngineInput,
+  variant: ListingTextVariant,
+  issues: string[],
+  locale: "de" | "it" | "fr" | "en"
+): Promise<ListingTextVariant> {
+  const completion =
+    await openai.chat.completions.create({
+      model:
+        LISTING_GENERATION_MODEL,
+
+      messages: [
+        {
+          role:
+            "system",
+
+          content:
+            [
+              "You are a senior real-estate copy editor.",
+              "Repair only the quality problems in the supplied listing.",
+              "Preserve all factually safe content and the original intent.",
+              "Do not invent or infer new property facts.",
+              "Never discuss missing data, unknown information, source documents or verification.",
+              "Never write generic process language about contacting the broker, checking documents or judging the property on site.",
+              "Write polished professional broker copy.",
+              "Return only valid JSON.",
+            ].join("\n"),
+        },
+        {
+          role:
+            "user",
+
+          content:
+            [
+              `OUTPUT LANGUAGE: ${LANGUAGE_CONFIG[locale].targetLanguage}`,
+              "",
+              "QUALITY ISSUES:",
+              issues.join(", "),
+              "",
+              "ORIGINAL TITLE:",
+              variant.title,
+              "",
+              "ORIGINAL DESCRIPTION:",
+              variant.text,
+              "",
+              "REPAIR RULES:",
+              "- Keep verified property facts unchanged.",
+              "- Remove missing-data commentary instead of rephrasing it.",
+              "- Remove meta/process language completely.",
+              "- Repair broken sentence fragments.",
+              "- Keep the title concise and natural.",
+              "- Do not add new features or benefits.",
+              "- Do not create filler to replace removed material.",
+              "",
+              "Return exactly:",
+              '{"variant":{"title":"...","text":"..."}}',
+            ].join("\n"),
+        },
+      ],
+
+      temperature:
+        0.1,
+
+      max_tokens:
+        1000,
+
+      response_format: {
+        type:
+          "json_object",
+      },
+    });
+
+  const content =
+    completion.choices[0]
+      ?.message?.content ??
+    "";
+
+  let parsed:
+    | {
+        variant?: {
+          title?: unknown;
+          text?: unknown;
+        };
+      }
+    | undefined;
+
+  try {
+    parsed =
+      JSON.parse(
+        content
+      );
+  } catch {
+    parsed =
+      undefined;
+  }
+
+  const rawTitle =
+    typeof parsed?.variant?.title ===
+      "string"
+      ? parsed.variant.title
+      : "";
+
+  const rawText =
+    typeof parsed?.variant?.text ===
+      "string"
+      ? parsed.variant.text
+      : "";
+
+  const title =
+    normalizeSwissTypography(
+      rawTitle,
+      locale
+    );
+
+  const text =
+    normalizeSwissTypography(
+      rawText,
+      locale
+    );
+
+  if (
+    !title ||
+    !text
+  ) {
+    throw new Error(
+      "INSERAT_AI_TEXT_ENGINE_QUALITY_REPAIR_INVALID"
+    );
+  }
+
+  return {
+    title,
+    text,
+  };
+}
+
+/*
  * INSERAT_AI_SHARED_TEXT_ENGINE_V1
  *
  * Shared server-only entry point.
@@ -1164,7 +1619,7 @@ export async function generateListingTextVariants(
       locale
     );
 
-  const variants =
+  let variants =
     await requestInitialVariants(
       dependencies.openai,
       prompt,
@@ -1177,8 +1632,211 @@ export async function generateListingTextVariants(
     );
   }
 
+  const unsupportedFeatures =
+    findUnsupportedPropertyFeatures(
+      input,
+      variants
+    );
+
+  if (
+    unsupportedFeatures.length > 0
+  ) {
+    console.warn(
+      "[STRICT PROPERTY FEATURE REPAIR]",
+      {
+        unsupported:
+          unsupportedFeatures,
+      }
+    );
+
+    variants =
+      await Promise.all(
+        variants.map(
+          async (
+            variant,
+            index
+          ) => {
+            const variantUnsupported =
+              findUnsupportedPropertyFeatures(
+                input,
+                [
+                  variant,
+                ]
+              );
+
+            if (
+              variantUnsupported.length === 0
+            ) {
+              return variant;
+            }
+
+            console.warn(
+              "[STRICT PROPERTY VARIANT REPAIR]",
+              {
+                variant:
+                  index + 1,
+                unsupported:
+                  variantUnsupported,
+              }
+            );
+
+            return repairUnsupportedVariant(
+              dependencies.openai,
+              input,
+              variant,
+              variantUnsupported,
+              locale
+            );
+          }
+        )
+      );
+
+    /*
+     * Fail closed:
+     * Nach dem gezielten Repair darf kein
+     * unbelegtes Merkmal mehr vorkommen.
+     */
+    assertNoUnsupportedPropertyFeatures(
+      input,
+      variants
+    );
+  } else {
+    assertNoUnsupportedPropertyFeatures(
+      input,
+      variants
+    );
+  }
+
+  const variantsWithQualityRepair =
+    await Promise.all(
+      variants.map(
+        async (
+          variant,
+          index
+        ) => {
+          const qualityIssues =
+            findStrictQualityIssues(
+              variant
+            );
+
+          if (
+            qualityIssues.length === 0
+          ) {
+            return variant;
+          }
+
+          console.warn(
+            "[STRICT LISTING QUALITY REPAIR]",
+            {
+              variant:
+                index + 1,
+              issues:
+                qualityIssues,
+            }
+          );
+
+          let repaired =
+            await repairQualityVariant(
+              dependencies.openai,
+              input,
+              variant,
+              qualityIssues,
+              locale
+            );
+
+          /*
+           * Fact safety remains mandatory
+           * after every quality repair.
+           */
+          assertNoUnsupportedPropertyFeatures(
+            input,
+            [
+              repaired,
+            ]
+          );
+
+          let remainingIssues =
+            findStrictQualityIssues(
+              repaired
+            );
+
+          /*
+           * QUALITY_REPAIR_RETRY_V2
+           *
+           * Ein einzelner schwacher Repair darf
+           * nicht sofort die gesamte Automation
+           * abbrechen. Die betroffene Variante
+           * erh?lt genau einen zweiten gezielten
+           * Reparaturversuch.
+           */
+          if (
+            remainingIssues.length > 0
+          ) {
+            console.warn(
+              "[STRICT LISTING QUALITY RETRY]",
+              {
+                variant:
+                  index + 1,
+                issues:
+                  remainingIssues,
+              }
+            );
+
+            repaired =
+              await repairQualityVariant(
+                dependencies.openai,
+                input,
+                repaired,
+                remainingIssues,
+                locale
+              );
+
+            assertNoUnsupportedPropertyFeatures(
+              input,
+              [
+                repaired,
+              ]
+            );
+
+            remainingIssues =
+              findStrictQualityIssues(
+                repaired
+              );
+          }
+
+          /*
+           * Fail closed bleibt erhalten:
+           * Erst wenn auch der zweite gezielte
+           * Repair fehlschl?gt, stoppen wir.
+           */
+          if (
+            remainingIssues.length > 0
+          ) {
+            console.error(
+              "[STRICT LISTING QUALITY GATE]",
+              {
+                variant:
+                  index + 1,
+                issues:
+                  remainingIssues,
+                attempts:
+                  2,
+              }
+            );
+
+            throw new Error(
+              "INSERAT_AI_TEXT_ENGINE_QUALITY_GATE_FAILED"
+            );
+          }
+
+          return repaired;
+        }
+      )
+    );
+
   return {
-    variants,
+    variants:
+      variantsWithQualityRepair,
     locale,
     market:
       prompt.market,

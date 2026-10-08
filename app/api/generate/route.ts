@@ -121,21 +121,21 @@ const LANGUAGE_CONFIG: Record<
       "Schweizer Hochdeutsch",
     emptyValue: "keine Angabe",
     defaultStyle:
-      "hochwertig, modern und glaubwÃ¼rdig",
+      "hochwertig, modern und glaubwürdig",
     fallbackTitle: "Variante",
     languageRules: [
       "Verwende konsequent Schweizer Rechtschreibung.",
-      "Schreibe ss statt ÃŸ.",
-      "Verwende natÃ¼rliche Begriffe des Schweizer Immobilienmarkts.",
-      "Verwende passende Begriffe wie Ã–V, Einstellhallenplatz, Gartensitzplatz oder Reduit nur, wenn sie durch die Objektdaten belegt sind.",
-      "Formatiere Zimmerangaben natÃ¼rlich, beispielsweise 3Â½-Zimmer-Wohnung, sofern die entsprechende Zimmerzahl angegeben wurde.",
+      "Schreibe ss statt ß.",
+      "Verwende natürliche Begriffe des Schweizer Immobilienmarkts.",
+      "Verwende passende Begriffe wie ÖV, Einstellhallenplatz, Gartensitzplatz oder Reduit nur, wenn sie durch die Objektdaten belegt sind.",
+      "Formatiere Zimmerangaben natürlich, beispielsweise 3½-Zimmer-Wohnung, sofern die entsprechende Zimmerzahl angegeben wurde.",
       "Erfinde keine Gemeinde-, Steuer-, Schul-, Verkehrs- oder Lagevorteile.",
     ],
   },
 
   it: {
     targetLanguage:
-      "Italienisch fÃ¼r den Schweizer Immobilienmarkt",
+      "Italienisch für den Schweizer Immobilienmarkt",
     emptyValue:
       "nessuna indicazione",
     defaultStyle:
@@ -144,24 +144,24 @@ const LANGUAGE_CONFIG: Record<
     languageRules: [
       "Scrivi in italiano naturale e professionale.",
       "Adatta la terminologia al mercato immobiliare svizzero.",
-      "Mantieni invariati nomi propri, localitÃ , numeri, prezzi e unitÃ  di misura.",
-      "Non inventare vantaggi relativi a posizione, trasporti, scuole, fiscalitÃ  o infrastrutture.",
+      "Mantieni invariati nomi propri, località, numeri, prezzi e unità di misura.",
+      "Non inventare vantaggi relativi a posizione, trasporti, scuole, fiscalità o infrastrutture.",
     ],
   },
 
   fr: {
     targetLanguage:
-      "FranÃ§ais professionnel pour le marchÃ© immobilier suisse",
+      "Français professionnel pour le marché immobilier suisse",
     emptyValue:
       "aucune indication",
     defaultStyle:
-      "haut de gamme, moderne et crÃ©dible",
+      "haut de gamme, moderne et crédible",
     fallbackTitle: "Variante",
     languageRules: [
-      "RÃ©dige dans un franÃ§ais naturel et professionnel.",
-      "Adapte la terminologie au marchÃ© immobilier suisse.",
-      "Conserve les noms propres, localitÃ©s, nombres, prix et unitÃ©s de mesure.",
-      "N'invente aucun avantage concernant la situation, les transports, les Ã©coles, la fiscalitÃ© ou les infrastructures.",
+      "Rédige dans un français naturel et professionnel.",
+      "Adapte la terminologie au marché immobilier suisse.",
+      "Conserve les noms propres, localités, nombres, prix et unités de mesure.",
+      "N'invente aucun avantage concernant la situation, les transports, les écoles, la fiscalité ou les infrastructures.",
     ],
   },
 
@@ -489,7 +489,7 @@ FACTUAL STANDARD:
 
 EDITORIAL STANDARD:
 - Avoid empty advertising language.
-- Avoid generic property clichÃ©s.
+- Avoid generic property clichés.
 - Do not merely replace words with synonyms.
 - Each variant must have a genuinely different opening, structure, emphasis and linguistic character.
 - Shared property facts may appear in more than one variant, but they must not appear in the same order or with nearly identical wording.
@@ -3795,11 +3795,17 @@ STRICT REPAIR RULES:
 - Do not use generic evaluations such as ideal, attractive, outstanding, comfortable or perfect.
 - Use a different title and opening from the accepted variants.
 - Prefer neutral factual wording.
-- Avoid database-style wording such as "aufgeführt", "angegeben", "erfasst", "ausgewiesen", "Objektmerkmale" or "fasst ... zusammen".
-- The rewritten variant must contain approximately 120 to 180 words.
-- Use 3 or 4 complete paragraphs and 8 to 12 complete sentences.
-- Produce a full professional real estate listing, not a teaser, summary or social-media post.
-- Develop the verified property facts into a coherent description without inventing additional benefits.
+- Avoid database-style wording such as "aufgef\u00fchrt", "angegeben", "erfasst", "ausgewiesen", "Objektmerkmale" or "fasst ... zusammen".
+- Never discuss missing, unknown, unavailable or unspecified information. If a fact is unavailable, omit it completely.
+- Never use phrases such as "nicht angegeben", "nicht spezifiziert", "keine Angaben", "keine Informationen", "weitere Informationen", "Objektunterlagen", "Verkaufsunterlagen", "Verkaufsdokumentation", "weitere Ausk\u00fcnfte", "Pr\u00fcfung", "vor Ort beurteilen" or equivalent meta/process language.
+- Never infer practical, comfortable, flexible, versatile, adaptable, quiet, solid, attractive or similar qualitative benefits unless explicitly present in OBJECT FACTS.
+- Do not describe suitability, potential, lifestyle benefits or usage possibilities unless explicitly supported by OBJECT FACTS.
+- For Swiss German, always use Swiss spelling with ss and never \u00df.
+- Every rewritten variant must have its own distinct title. Never reuse the same title for two variants.
+- The rewritten variant should contain approximately 85 to 120 words.
+- Use 2 or 3 complete paragraphs and approximately 5 to 8 complete sentences.
+- Produce a polished professional real estate listing, not a teaser, checklist, database summary or explanation.
+- Develop only the verified property facts into coherent prose. Rephrase and structure them naturally instead of inventing new content.
 - Do not copy the failed text.
 - Do not explain the repair.
 
@@ -3882,65 +3888,65 @@ const LOCAL_REPAIR_RULES_DE:
       issueLabel:
         "familienfreundliche Eignung",
       sentencePattern:
-        /\b(?:familienfreundlich|familien|junge familien|fÃ¼r familien)\b/i,
+        /\b(?:familienfreundlich|familien|junge familien|für familien)\b/i,
       titlePattern:
         /\b(?:familienfreundlich|familienwohnung)\b/i,
     },
     {
       issueLabel:
-        "Eignung fÃ¼r Paare",
+        "Eignung für Paare",
       sentencePattern:
-        /\b(?:fÃ¼r paare|paare|paarwohnung)\b/i,
+        /\b(?:für paare|paare|paarwohnung)\b/i,
       titlePattern:
-        /\b(?:fÃ¼r paare|paarwohnung)\b/i,
+        /\b(?:für paare|paarwohnung)\b/i,
     },
     {
       issueLabel:
         "flexible oder vielseitige Nutzung",
       sentencePattern:
-        /\b(?:flexibel|flexible|vielseitig|vielseitige|anpassbar|gestaltungsmÃ¶glichkeiten|nutzungsmÃ¶glichkeiten|unterschiedliche lebenssituationen|individuelle bedÃ¼rfnisse)\b/i,
+        /\b(?:flexibel|flexible|vielseitig|vielseitige|anpassbar|gestaltungsmöglichkeiten|nutzungsmöglichkeiten|unterschiedliche lebenssituationen|individuelle bedürfnisse)\b/i,
     },
     {
       issueLabel:
-        "BahnhofsnÃ¤he oder Pendler-Eignung",
+        "Bahnhofsnähe oder Pendler-Eignung",
       sentencePattern:
-        /\b(?:bahnhof.{0,45}(?:nÃ¤he|nah|kurz|erreichbar|entfernt|verbindung)|pendler|schnelle verbindungen|gute erreichbarkeit)\b/i,
+        /\b(?:bahnhof.{0,45}(?:nähe|nah|kurz|erreichbar|entfernt|verbindung)|pendler|schnelle verbindungen|gute erreichbarkeit)\b/i,
     },
     {
       issueLabel:
-        "NÃ¤he zu Schule oder Kindergarten",
+        "Nähe zu Schule oder Kindergarten",
       sentencePattern:
         /\b(?:(?:n\u00e4he|nahe|unmittelbar|kurzer weg|in der umgebung|umgebung).{0,70}(?:schule|schulen|kindergarten|kinderg\u00e4rten)|(?:schule|schulen|kindergarten|kinderg\u00e4rten).{0,70}(?:n\u00e4he|nahe|unmittelbar|kurzer weg|in der umgebung|umgebung)|(?:befinden sich|liegen).{0,40}(?:schule|schulen|kindergarten|kinderg\u00e4rten))\b/i,
     },
     {
       issueLabel:
-        "Garage gehÃ¶rt zur Immobilie oder ist im Preis enthalten",
+        "Garage gehört zur Immobilie oder ist im Preis enthalten",
       sentencePattern:
-        /\b(?:garage|garagenplatz).{0,45}(?:gehÃ¶rt|enthalten|inklusive|inbegriffen|angegliedert|zugehÃ¶rig)\b/i,
+        /\b(?:garage|garagenplatz).{0,45}(?:gehört|enthalten|inklusive|inbegriffen|angegliedert|zugehörig)\b/i,
       replacement: () =>
         "Eine Garage ist als Objektmerkmal angegeben.",
     },
     {
       issueLabel:
-        "geschÃ¼tzter oder sicherer Parkplatz",
+        "geschützter oder sicherer Parkplatz",
       sentencePattern:
-        /\b(?:geschÃ¼tzt|sicher|sicherheit).{0,35}(?:garage|parkplatz|fahrzeug|parkieren)\b/i,
+        /\b(?:geschützt|sicher|sicherheit).{0,35}(?:garage|parkplatz|fahrzeug|parkieren)\b/i,
       replacement: () =>
         "Eine Garage ist als Objektmerkmal angegeben.",
     },
     {
       issueLabel:
-        "unbelegte AttraktivitÃ¤tswertung",
+        "unbelegte Attraktivitätswertung",
       sentencePattern:
-        /\b(?:besonders attraktiv|Ã¤usserst attraktiv|herausragend|ideal|optimal geeignet)\b/i,
+        /\b(?:besonders attraktiv|äusserst attraktiv|herausragend|ideal|optimal geeignet)\b/i,
       titlePattern:
         /\b(?:attraktiv|attraktive|attraktives|ideal|ideale|herausragend)\b/i,
     },
     {
       issueLabel:
-        "unbelegte AtmosphÃ¤re oder WohnqualitÃ¤t",
+        "unbelegte Atmosphäre oder Wohnqualität",
       sentencePattern:
-        /\b(?:angenehme atmosphÃ¤re|entspannte stunden|lÃ¤dt zum entspannen ein|wohnqualitÃ¤t|rÃ¼ckzugsort|wohlfÃ¼hlen)\b/i,
+        /\b(?:angenehme atmosphäre|entspannte stunden|lädt zum entspannen ein|wohnqualität|rückzugsort|wohlfühlen)\b/i,
     },
     {
       issueLabel:
@@ -3954,9 +3960,9 @@ const LOCAL_REPAIR_RULES_DE:
       issueLabel:
         "moderner Zustand",
       sentencePattern:
-        /\b(?:modern|moderne|modernes|zeitgemÃ¤ss|zeitgemÃ¤sse)\b/i,
+        /\b(?:modern|moderne|modernes|zeitgemäss|zeitgemässe)\b/i,
       titlePattern:
-        /\b(?:modern|moderne|modernes|zeitgemÃ¤ss)\b/i,
+        /\b(?:modern|moderne|modernes|zeitgemäss)\b/i,
     },
     {
       issueLabel:
@@ -4061,7 +4067,7 @@ function neutralPropertyTitle(
   }
 
   if (locale === "fr") {
-    return `${propertyType} Ã  ${location}`.trim();
+    return `${propertyType} à ${location}`.trim();
   }
 
   return `${propertyType} in ${location}`.trim();
@@ -4557,7 +4563,7 @@ function buildPublishableFallbackVariant(
   const featureSentence =
     featureList
       ? `Zum Angebot z\u00e4hlen ${featureList}.`
-      : "Die Beschreibung konzentriert sich auf die best\u00e4tigten Eckdaten des Angebots.";
+      : "";
 
   const outdoorSentence =
     hasBalcony ||
@@ -4599,34 +4605,52 @@ function buildPublishableFallbackVariant(
   const summaryByVariant = [
     "Damit sind die wesentlichen Informationen f\u00fcr eine erste Pr\u00fcfung der Immobilie zusammengefasst.",
 
-    "Die genannten Eckdaten erm\u00f6glichen eine sachliche erste Beurteilung des Angebots.",
+    "Die vorhandenen Objektdaten vermitteln einen klaren ersten Eindruck der Immobilie.",
 
-    "Zimmerzahl, Wohnfl\u00e4che, Preis und Zusatzmerkmale bilden die Grundlage f\u00fcr die weitere Pr\u00fcfung.",
+    "Zimmerzahl und Wohnfl\u00e4che geben einen kompakten \u00dcberblick \u00fcber das Raumangebot.",
   ];
 
   const closingByVariant = [
     [
-      "F\u00fcr weitere Einzelheiten empfiehlt sich ein Blick in den Grundriss und die vollst\u00e4ndige Verkaufsdokumentation.",
-      "Bei einer Besichtigung lassen sich Raumaufteilung, Proportionen und Gesamteindruck direkt vor Ort beurteilen.",
-      "Offene Fragen zu Ausf\u00fchrung und weiteren Objektdetails k\u00f6nnen im pers\u00f6nlichen Austausch gekl\u00e4rt werden.",
-      "F\u00fcr die weitere Pr\u00fcfung sind auch rechtliche Unterlagen und technische Informationen zum Objekt einzubeziehen.",
-      "So l\u00e4sst sich das Angebot auf einer nachvollziehbaren Informationsbasis einordnen.",
+      rooms
+        ? `Das Objekt verf\u00fcgt \u00fcber ${rooms} Zimmer.`
+        : "",
+      livingArea
+        ? `Die Wohnfl\u00e4che betr\u00e4gt ${livingArea}.`
+        : "",
+      `Das Objekt befindet sich in ${locationLabel}.`,
+      price
+        ? `Der Verkaufspreis betr\u00e4gt ${price}.`
+        : "",
+      featureList
+        ? `Zur Ausstattung geh\u00f6ren ${featureList}.`
+        : "",
     ],
 
     [
-      "Erg\u00e4nzende Informationen k\u00f6nnen den ausf\u00fchrlichen Objektunterlagen entnommen werden.",
-      "Eine pers\u00f6nliche Besichtigung bietet die M\u00f6glichkeit, die R\u00e4ume und ihre Aufteilung vor Ort zu pr\u00fcfen.",
-      "Damit kann das Angebot auf Grundlage der Unterlagen und des eigenen Eindrucks beurteilt werden.",
-      "Der Grundriss unterst\u00fctzt dabei, die Abfolge der R\u00e4ume und die Wege innerhalb der Immobilie nachzuvollziehen.",
-      "Zusammen mit dem pers\u00f6nlichen Eindruck entsteht eine fundierte Grundlage f\u00fcr die eigene Entscheidung.",
+      `Angeboten wird ${article} ${propertyType} in ${locationLabel}.`,
+      rooms
+        ? `Die Immobilie umfasst ${rooms} Zimmer.`
+        : "",
+      livingArea
+        ? `Die Wohnfl\u00e4che umfasst ${livingArea}.`
+        : "",
+      parkingSentence,
+      outdoorSentence,
     ],
 
     [
-      "F\u00fcr eine vertiefte Beurteilung sollten Grundriss, Verkaufsunterlagen und Besichtigung gemeinsam betrachtet werden.",
-      "Vor Ort lassen sich insbesondere Raumproportionen und die tats\u00e4chliche Aufteilung nachvollziehen.",
-      "Weitere Fragen zum Objekt k\u00f6nnen im Rahmen der Besichtigung gekl\u00e4rt werden.",
-      "F\u00fcr einen Angebotsvergleich sollten Kaufpreis, Wohnfl\u00e4che, Zimmerzahl und best\u00e4tigte Zusatzmerkmale gemeinsam betrachtet werden.",
-      "Die Verkaufsunterlagen erg\u00e4nzen diese Eckdaten um weitere Informationen zu Ausf\u00fchrung und Rahmenbedingungen.",
+      `Der Standort des Objekts ist ${locationLabel}.`,
+      rooms
+        ? `Zum Raumangebot geh\u00f6ren ${rooms} Zimmer.`
+        : "",
+      livingArea
+        ? `Die angegebene Wohnfl\u00e4che betr\u00e4gt ${livingArea}.`
+        : "",
+      priceSentence,
+      featureList
+        ? `Das Angebot umfasst ${featureList}.`
+        : "",
     ],
   ];
 
@@ -4858,8 +4882,48 @@ function completeShortVariantsLocally(
           ]?.text ?? ""
         );
 
-      const candidates =
-        ownFallbackSentences;
+      /*
+       * SHORT_VARIANT_COMPLETION_V2
+       *
+       * Der eigene Fallback kann nach der
+       * strikten Quality-Bereinigung selbst
+       * unter 110 W?rtern liegen.
+       *
+       * Deshalb d?rfen zus?tzlich nur bereits
+       * faktenbasierte S?tze aus den beiden
+       * anderen Fallback-Varianten verwendet
+       * werden.
+       *
+       * Keine neue AI-Generierung.
+       * Keine neuen Objektfakten.
+       */
+      const crossVariantFallbackSentences =
+        fallbackVariants
+          .flatMap(
+            (fallbackVariant, index) =>
+              index === variantIndex
+                ? []
+                : splitFallbackSentences(
+                    fallbackVariant?.text ?? ""
+                  )
+          );
+
+      const crossVariantCurrentSentences =
+        variants
+          .flatMap(
+            (candidateVariant, index) =>
+              index === variantIndex
+                ? []
+                : splitFallbackSentences(
+                    candidateVariant?.text ?? ""
+                  )
+          );
+
+      const candidates = [
+        ...ownFallbackSentences,
+        ...crossVariantFallbackSentences,
+        ...crossVariantCurrentSentences,
+      ];
 
       const existingText =
         variant.text
@@ -4970,25 +5034,44 @@ function repairVariantLocally(
     return variant;
   }
 
-  const claimIssues =
+  const repairableIssues =
     issues.filter(
       (issue) =>
         issue.severity ===
           "error" &&
         issue.variantIndex ===
           variantIndex &&
-        issue.code ===
-          "CLAIM_WITHOUT_EVIDENCE"
+        (
+          issue.code ===
+            "CLAIM_WITHOUT_EVIDENCE" ||
+          issue.code ===
+            "UNPROFESSIONAL_META_COPY"
+        )
     );
 
-  if (claimIssues.length === 0) {
+  if (repairableIssues.length === 0) {
     return variant;
   }
 
-  let title = variant.title;
+  const metaCopyPattern =
+    /\bbest(?:aetigte|\u00e4tigte)\s+eckdaten\b\s*[:\-]?\s*/gi;
+
+  let title =
+    variant.title
+      .replace(
+        metaCopyPattern,
+        ""
+      )
+      .trim();
+
+  metaCopyPattern.lastIndex = 0;
 
   let paragraphs =
     variant.text
+      .replace(
+        metaCopyPattern,
+        ""
+      )
       .split(/\n{2,}/)
       .map(
         (paragraph) =>
@@ -4997,7 +5080,7 @@ function repairVariantLocally(
       .filter(Boolean);
 
   const broadUnsupportedPattern =
-    /\b(?:attraktiv\w*|ideal\w*|komfort\w*|bequem\w*|flexib\w*|vielseit\w*|zentral\w*|ruhig\w*|hell\w*|atmosph\w*|wohnqualit\w*|durchdacht\w*|optimal\w*|gem\u00fctlich\w*|famil\w*|paar\w*|pendler\w*|n\u00e4he|umgebung|erreichbar\w*|entspann\w*|r\u00fcckzugsort\w*|nutzungsm\u00f6glichkeit\w*|gestaltungsm\u00f6glichkeit\w*|individuell\w*|sicherheit\w*|praktische vorteile|tageslicht|kurzer weg|nicht weit entfernt)\b/i;
+    /\b(?:attraktiv\w*|ideal\w*|komfort\w*|bequem\w*|flexib\w*|vielseit\w*|zentral\w*|ruhig\w*|hell\w*|atmosph\w*|wohnqualit\w*|durchdacht\w*|optimal\w*|gem\u00fctlich\w*|famil\w*|paar\w*|pendler\w*|lebensstil\w*|unterschiedliche wohnkonzepte|n\u00e4he|umgebung|erreichbar\w*|entspann\w*|r\u00fcckzugsort\w*|nutzungsm\u00f6glichkeit\w*|gestaltungsm\u00f6glichkeit\w*|individuell\w*|sicherheit\w*|praktische vorteile|tageslicht|kurzer weg|nicht weit entfernt)\b/i;
 
   const broadUnsupportedTitlePattern =
     /\b(?:attraktiv\w*|ideal\w*|komfort\w*|flexib\w*|vielseit\w*|zentral\w*|ruhig\w*|modern\w*|famil\w*|hell\w*|exklusiv\w*|luxuri\u00f6s\w*)\b/i;
@@ -5082,7 +5165,17 @@ function repairVariantLocally(
       .filter(Boolean)
       .length;
 
-  if (repairedWordCount >= 100) {
+  /*
+   * LOCAL_REPAIR_KEEP_SAFE_RESULT_V2
+   *
+   * Eine erfolgreich bereinigte Variante darf
+   * nicht nur wegen geringer Wortzahl wieder
+   * durch einen Fallback ersetzt werden.
+   *
+   * Die nachgelagerte Short-Variant-Stufe
+   * erg?nzt zu kurze Texte anschlie?end.
+   */
+  if (repairedWordCount > 0) {
     return {
       title:
         title.trim() ||
@@ -5262,7 +5355,7 @@ export async function POST(
     // Deutschland nutzt in Development und Production
     // denselben Surgical-Hard-Fact-Pfad.
     const enableTargetedAiRepair =
-      false;
+      true;
 
     const ultraSpeedKey =
       createUltraSpeedFingerprint({
@@ -5461,18 +5554,16 @@ export async function POST(
               "error"
         );
 
-      const hasOnlyWordCountErrors =
-        blockingIssues.length > 0 &&
-        blockingIssues.every(
-          (issue) =>
-            issue.code ===
-              "WORD_COUNT_OUTSIDE_TARGET"
-        );
-
-      if (hasOnlyWordCountErrors) {
-        break;
-      }
-
+      /*
+       * TARGETED_WORD_COUNT_REPAIR_V1
+       *
+       * Auch reine Wortzahlfehler werden gezielt
+       * per AI repariert.
+       *
+       * Bereits bestandene Varianten bleiben
+       * durch requestTargetedVariantRepairs()
+       * vollst?ndig unver?ndert.
+       */
       try {
         const targetedRepairs =
           await requestTargetedVariantRepairs(
@@ -5482,6 +5573,27 @@ export async function POST(
             selectedVariants,
             selectedQuality
           );
+
+        console.info(
+          "[TARGETED REPAIR RESULT]",
+          {
+            repairCount:
+              targetedRepairs.length,
+            repairs:
+              targetedRepairs.map(
+                (repair) => ({
+                  variantNumber:
+                    repair.variantNumber,
+                  wordCount:
+                    countListingWords(
+                      repair.text
+                    ),
+                  title:
+                    repair.title,
+                })
+              ),
+          }
+        );
 
         if (
           targetedRepairs.length === 0
@@ -5501,6 +5613,28 @@ export async function POST(
             locale,
             qualityFacts
           );
+
+        console.info(
+          "[TARGETED REPAIR QUALITY]",
+          {
+            scores:
+              targetedQuality.scores,
+            wordCounts:
+              targetedVariants.map(
+                (variant) =>
+                  countListingWords(
+                    variant.text
+                  )
+              ),
+            blockingCount:
+              targetedQuality.issues.filter(
+                (issue) =>
+                  issue.severity === "error"
+              ).length,
+            issues:
+              targetedQuality.issues,
+          }
+        );
 
         attempts += 1;
         repairAttempted = true;
@@ -5570,16 +5704,20 @@ export async function POST(
       !selectedQuality.passed;
       localPass += 1
     ) {
-      const hasRepairableClaimError =
+      const hasRepairableLocalError =
         selectedQuality.issues.some(
           (issue) =>
             issue.severity ===
               "error" &&
-            issue.code ===
-              "CLAIM_WITHOUT_EVIDENCE"
+            (
+              issue.code ===
+                "CLAIM_WITHOUT_EVIDENCE" ||
+              issue.code ===
+                "UNPROFESSIONAL_META_COPY"
+            )
         );
 
-      if (!hasRepairableClaimError) {
+      if (!hasRepairableLocalError) {
         break;
       }
 
@@ -5771,7 +5909,19 @@ export async function POST(
             "WORD_COUNT_OUTSIDE_TARGET"
       );
 
+    /*
+     * SHORT_VARIANT_COMPLETION_ENABLED_V2
+     *
+     * Keine k?nstliche Verl?ngerung mehr mit S?tzen
+     * aus anderen Fallback-Varianten.
+     * K?rzere, saubere Texte sind besser als
+     * repetitive F?lltexte.
+     */
+    const enableLocalShortCompletion =
+      true;
+
     if (
+      enableLocalShortCompletion &&
       postFallbackHasWordCountIssues &&
       locale === "de" &&
       market === "CH"
@@ -6016,26 +6166,29 @@ export async function POST(
         0
       ) > 0
     ) {
+      const qualityFailureDetails = {
+        userId:
+          user.id,
+        listingId:
+          listingId || null,
+        locale,
+        market,
+        scores:
+          selectedQuality.scores,
+        issues:
+          selectedQuality.issues,
+        similarities:
+          selectedQuality.similarities,
+        selectedVariantCount:
+          selectedVariants.length,
+        blockingQualityIssues,
+        germanyFactAuditFindings:
+          germanyFactAudit?.findings ?? [],
+      };
+
       console.warn(
         "LISTING QUALITY CHECK FAILED:",
-        {
-          userId: user.id,
-          listingId:
-            listingId || null,
-          locale,
-        market,
-          scores:
-            selectedQuality.scores,
-          issues:
-            selectedQuality.issues,
-          similarities:
-            selectedQuality.similarities,
-          selectedVariantCount:
-            selectedVariants.length,
-          blockingQualityIssues,
-          germanyFactAuditFindings:
-            germanyFactAudit?.findings ?? [],
-        }
+        qualityFailureDetails
       );
 
       invalidateUltraSpeedCache(
@@ -6045,7 +6198,7 @@ export async function POST(
       return NextResponse.json(
         {
           error:
-            "Die Textvarianten haben unsere QualitÃ¤tsprÃ¼fung noch nicht bestanden. Bitte versuche die Generierung erneut.",
+            "Die Textvarianten haben unsere Qualitätsprüfung noch nicht bestanden. Bitte versuche die Generierung erneut.",
           code:
             "AI_QUALITY_CHECK_FAILED",
           quality: {
