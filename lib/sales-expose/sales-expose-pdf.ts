@@ -85,10 +85,13 @@ function addCoverImage(
   );
 }
 
-export async function downloadSalesExposePdf(
+export async function buildSalesExposePdfBlob(
   document: SalesExposeDocument,
   imageFiles: File[]
-): Promise<void> {
+): Promise<{
+  blob: Blob;
+  fileName: string;
+}> {
   const { jsPDF } =
     await import("jspdf");
 
@@ -143,7 +146,6 @@ export async function downloadSalesExposePdf(
   const preparedImages =
     await Promise.all(
       imageFiles
-        .slice(0, 10)
         .map(fileToJpegDataUrl)
     );
 
@@ -607,6 +609,55 @@ export async function downloadSalesExposePdf(
   const fileName =
     `Inserat-AI-Expose-${location || "Immobilie"}.pdf`;
 
-  pdf.save(fileName);
+  return {
+    blob: pdf.output("blob"),
+    fileName,
+  };
+}
+
+export async function downloadSalesExposePdf(
+  document: SalesExposeDocument,
+  imageFiles: File[]
+): Promise<void> {
+  const {
+    blob,
+    fileName,
+  } =
+    await buildSalesExposePdfBlob(
+      document,
+      imageFiles
+    );
+
+  const url =
+    URL.createObjectURL(blob);
+
+  try {
+    const anchor =
+      window.document.createElement(
+        "a"
+      );
+
+    anchor.href =
+      url;
+
+    anchor.download =
+      fileName;
+
+    window.document.body.appendChild(
+      anchor
+    );
+
+    anchor.click();
+    anchor.remove();
+  } finally {
+    window.setTimeout(
+      () => {
+        URL.revokeObjectURL(
+          url
+        );
+      },
+      1000
+    );
+  }
 }
 

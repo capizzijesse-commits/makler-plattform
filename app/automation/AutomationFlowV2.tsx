@@ -19,6 +19,10 @@ import {
   downloadSalesExposePdf,
 } from "@/lib/sales-expose/sales-expose-pdf";
 
+import {
+  downloadSalesExposePackage,
+} from "@/lib/sales-expose/sales-expose-package";
+
 type Extracted = {
   projectName: string;
   countryCode: "CH" | "DE" | "AT";
@@ -204,18 +208,35 @@ export default function AutomationFlowV2() {
     window.print();
   }
   // SALES_EXPOSE_DOWNLOAD_V1
-  async function downloadCurrentSalesExpose() {
+  function buildCurrentSalesExposeDocument() {
+    return buildSalesExposeDocument({
+      facts: data,
+      images: imageAnalyses,
+      variants,
+    });
+  }
+
+  async function downloadCurrentSalesExposePdf() {
     const salesExposeDocument =
-      buildSalesExposeDocument({
-        facts: data,
-        images: imageAnalyses,
-        variants,
-      });
+      buildCurrentSalesExposeDocument();
 
     await downloadSalesExposePdf(
       salesExposeDocument,
       images
     );
+  }
+
+  async function downloadCurrentSalesExposePackage() {
+    const salesExposeDocument =
+      buildCurrentSalesExposeDocument();
+
+    await downloadSalesExposePackage({
+      document:
+        salesExposeDocument,
+      imageFiles:
+        images,
+      variants,
+    });
   }
 
   // AUTOMATION_ABORT_V1
@@ -254,10 +275,12 @@ export default function AutomationFlowV2() {
       setCopiedListing(false);
       setShowMobileFacts(false);
 
-      window.scrollTo({
-        top: 0,
-        left: 0,
-        behavior: "auto",
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          window.scrollTo(0, 0);
+          document.documentElement.scrollTop = 0;
+          document.body.scrollTop = 0;
+        });
       });
     };
 
@@ -303,16 +326,8 @@ export default function AutomationFlowV2() {
 
         const session = await response.json();
 
-        const normalizedPlan = String(
-          session?.user?.plan ?? ""
-        )
-          .trim()
-          .toLowerCase();
-
         const allowed =
-          normalizedPlan === "pro" ||
-          normalizedPlan === "agency" ||
-          normalizedPlan === "admin";
+          session?.user?.capabilities?.canUseGenerator === true;
 
         if (!allowed) {
           if (active) {
@@ -636,7 +651,8 @@ export default function AutomationFlowV2() {
 
   async function extractDocuments(
     files: File[],
-    signal: AbortSignal
+    signal: AbortSignal,
+    skipPdfPhotoExtraction = false
   ): Promise<ExtractExposeResult> {
     if (files.length === 0) {
       return {
@@ -710,6 +726,13 @@ export default function AutomationFlowV2() {
           file.name
         );
       }
+
+      form.append(
+        "skipPdfPhotoExtraction",
+        skipPdfPhotoExtraction
+          ? "true"
+          : "false"
+      );
 
       console.log(
         "[AUTOMATION CLIENT] direct-expose-start",
@@ -807,6 +830,7 @@ export default function AutomationFlowV2() {
               JSON.stringify({
                 files:
                   uploadedFiles,
+                skipPdfPhotoExtraction,
               }),
           }
         );
@@ -1309,7 +1333,8 @@ export default function AutomationFlowV2() {
       // supplies its own extracted property photographs.
       const exposePromise = extractDocuments(
         nextDocuments,
-        controller.signal
+        controller.signal,
+        nextImages.length > 0
       );
 
       const uploadedAnalysesPromise =
@@ -2403,32 +2428,15 @@ export default function AutomationFlowV2() {
                   <button
                     type="button"
                     className="listingAction"
-                    onClick={printCurrentListing}
+                    onClick={() => {
+                      void downloadCurrentSalesExposePdf();
+                    }}
                   >
                     <span aria-hidden="true">
-                      <svg
-                        viewBox="0 0 24 24"
-                        width="18"
-                        height="18"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M6 9V3h12v6" />
-                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                        <rect
-                          x="6"
-                          y="14"
-                          width="12"
-                          height="7"
-                        />
-                        <path d="M18 12h.01" />
-                      </svg>
+                      PDF
                     </span>
 
-                    Inserat drucken
+                    Expos{"\u00e9"} als PDF herunterladen
                   </button>
 
 
