@@ -3,6 +3,8 @@ import type { NextRequest } from "next/server";
 
 import { getEffectiveUserPlan } from "@/lib/plans";
 import { prisma } from "@/lib/prisma";
+import { notifyOperatorAboutLogin } from "@/lib/login-alert.server";
+import { recordUserActivityEvent } from "@/lib/user-activity.server";
 
 export const SESSION_COOKIE_NAME = "inserat_ai_session";
 
@@ -25,6 +27,16 @@ export async function createUserSession(userId: string) {
       expiresAt,
     },
   });
+
+
+  await recordUserActivityEvent({
+    userId,
+    type: "login",
+  });
+
+  await notifyOperatorAboutLogin(
+    userId
+  );
 
   return {
     token,

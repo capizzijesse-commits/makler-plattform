@@ -143,6 +143,14 @@ export async function GET(
           )
         : null;
 
+    const activityEvents =
+      await prisma.userActivityEvent.findMany({
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 500,
+      });
+
     return NextResponse.json({
       success: true,
       summary: {
@@ -168,6 +176,42 @@ export async function GET(
           ),
       },
       runs,
+      users:
+        presence.map(
+          (entry) => ({
+            userId:
+              entry.userId,
+            name:
+              entry.user.name,
+            email:
+              entry.user.email,
+            company:
+              entry.user.company,
+            role:
+              entry.user.role,
+            currentPath:
+              entry.currentPath,
+            sessionStartedAt:
+              entry.sessionStartedAt,
+            lastSeenAt:
+              entry.lastSeenAt,
+            isOnline:
+              entry.lastSeenAt >=
+              onlineCutoff,
+            runs:
+              runs.filter(
+                (run) =>
+                  run.userId ===
+                  entry.userId
+              ),
+            activityEvents:
+              activityEvents.filter(
+                (event) =>
+                  event.userId ===
+                  entry.userId
+              ),
+          })
+        ),
     });
   } catch (error) {
     console.error(

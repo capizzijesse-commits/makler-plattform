@@ -106,13 +106,13 @@ export default function CustomerPortalAccessPanel({
           title: "Collega un account portale esistente",
           subtitle: "Una sola configurazione. Poi Inserat-AI riutilizza il collegamento.",
           configured: "Accesso tecnico salvato in modo sicuro",
-          askTitle: "Hai giÃ  ricevuto i dati tecnici?",
+          askTitle: "Hai già ricevuto i dati tecnici?",
           askBody: "Il normale login del portale non basta. Per il trasferimento automatico servono credenziali tecniche separate fornite dal portale.",
           missingTitle: "Non ho ancora questi dati",
           missingBody: "Copia il testo qui sotto e invialo al supporto del portale o al tuo referente.",
           copy: "Copia testo per il supporto",
           copied: "âœ“ Copiato",
-          haveCredentials: "Ho giÃ  i dati tecnici",
+          haveCredentials: "Ho già i dati tecnici",
           formIntro: "Inserisci solo i dati tecnici ufficiali forniti per il trasferimento dati.",
           warning: "Non inserire qui il login Inserat-AI o la normale password del portale.",
           environment: "Ambiente",
@@ -120,28 +120,28 @@ export default function CustomerPortalAccessPanel({
           saving: "Salvataggio ...",
           test: "Test",
           production: "Produzione",
-          error: "Impossibile salvare lâ€™accesso.",
+          error: "Impossibile salvare l’accesso.",
         }
       : language === "fr"
         ? {
             title: "Connecter un compte portail existant",
-            subtitle: "Une seule configuration. Inserat-AI rÃ©utilise ensuite la connexion.",
-            configured: "AccÃ¨s technique enregistrÃ© en sÃ©curitÃ©",
-            askTitle: "Avez-vous dÃ©jÃ  reÃ§u les accÃ¨s techniques ?",
-            askBody: "Le login normal du portail ne suffit pas. La transmission automatique nÃ©cessite des accÃ¨s techniques sÃ©parÃ©s fournis par le portail.",
-            missingTitle: "Je nâ€™ai pas encore ces accÃ¨s",
-            missingBody: "Copiez le texte ci-dessous et envoyez-le au support du portail ou Ã  votre interlocuteur.",
+            subtitle: "Une seule configuration. Inserat-AI réutilise ensuite la connexion.",
+            configured: "Accès technique enregistré en sécurité",
+            askTitle: "Avez-vous déjà reçu les accès techniques ?",
+            askBody: "Le login normal du portail ne suffit pas. La transmission automatique nécessite des accès techniques séparés fournis par le portail.",
+            missingTitle: "Je n’ai pas encore ces accès",
+            missingBody: "Copiez le texte ci-dessous et envoyez-le au support du portail ou à votre interlocuteur.",
             copy: "Copier le texte support",
-            copied: "âœ“ CopiÃ©",
-            haveCredentials: "Jâ€™ai dÃ©jÃ  les accÃ¨s techniques",
-            formIntro: "Saisissez uniquement les accÃ¨s techniques officiels fournis pour le transfert de donnÃ©es.",
-            warning: "Nâ€™utilisez pas ici votre login Inserat-AI ni le mot de passe normal du portail.",
+            copied: "âœ“ Copié",
+            haveCredentials: "J’ai déjà les accès techniques",
+            formIntro: "Saisissez uniquement les accès techniques officiels fournis pour le transfert de données.",
+            warning: "N’utilisez pas ici votre login Inserat-AI ni le mot de passe normal du portail.",
             environment: "Environnement",
-            save: "Enregistrer en sÃ©curitÃ©",
+            save: "Enregistrer en sécurité",
             saving: "Enregistrement ...",
             test: "Test",
             production: "Production",
-            error: "Impossible dâ€™enregistrer lâ€™accÃ¨s.",
+            error: "Impossible d’enregistrer l’accès.",
           }
         : language === "en"
           ? {
@@ -169,13 +169,13 @@ export default function CustomerPortalAccessPanel({
               subtitle: "Einmal einrichten. Danach verwendet Inserat-AI die Verbindung automatisch.",
               configured: "Technischer Zugang sicher gespeichert",
               askTitle: "Hast du die technischen Zugangsdaten bereits erhalten?",
-              askBody: "Dein normales Portal-Login reicht fÃ¼r die automatische Ãœbertragung nicht aus. DafÃ¼r stellt das Portal separate technische Zugangsdaten bereit.",
+              askBody: "Dein normales Portal-Login reicht für die automatische Übertragung nicht aus. Dafür stellt das Portal separate technische Zugangsdaten bereit.",
               missingTitle: "Ich habe diese Daten noch nicht",
               missingBody: "Kopiere den Text unten und sende ihn an den Portal-Support oder deinen Ansprechpartner.",
               copy: "Support-Text kopieren",
-              copied: "âœ“ Kopiert â€“ jetzt an den Portal-Support senden",
+              copied: "âœ“ Kopiert – jetzt an den Portal-Support senden",
               haveCredentials: "Ich habe die technischen Zugangsdaten bereits",
-              formIntro: "Trage nur die offiziellen technischen Zugangsdaten ein, die dir fÃ¼r den Datentransfer bereitgestellt wurden.",
+              formIntro: "Trage nur die offiziellen technischen Zugangsdaten ein, die dir für den Datentransfer bereitgestellt wurden.",
               warning: "Hier niemals dein Inserat-AI-Login oder dein normales Portal-Passwort eintragen.",
               environment: "Umgebung",
               save: "Sicher speichern",
@@ -268,8 +268,8 @@ export default function CustomerPortalAccessPanel({
 
   const supportText =
     swiss
-      ? `Guten Tag, wir haben bereits ein ${label}-Konto und mÃ¶chten unseren Bestand Ã¼ber Inserat-AI automatisiert Ã¼bertragen. Bitte senden Sie uns die dafÃ¼r vorgesehenen technischen SwissRETS-Zugangsdaten: API-URL, Client ID, Client Secret, SwissRETS Benutzername, SwissRETS Passwort und Owner ID. Es geht ausdrÃ¼cklich nicht um unser normales Website-Login. Vielen Dank.`
-      : `Guten Tag, wir haben bereits ein ${label}-Konto und mÃ¶chten unseren Bestand Ã¼ber Inserat-AI automatisiert per OpenImmo Ã¼bertragen. Bitte senden Sie uns die dafÃ¼r vorgesehenen technischen Zugangsdaten: FTP-/FTPS-Server, Benutzername, Passwort sowie Anbieter-ID/ANID und bestÃ¤tigen Sie das vorgesehene Transportprofil. Es geht ausdrÃ¼cklich nicht um unser normales Website-Login. Vielen Dank.`;
+      ? `Guten Tag, wir haben bereits ein ${label}-Konto und möchten unseren Bestand über Inserat-AI automatisiert übertragen. Bitte senden Sie uns die dafür vorgesehenen technischen SwissRETS-Zugangsdaten: API-URL, Client ID, Client Secret, SwissRETS Benutzername, SwissRETS Passwort und Owner ID. Es geht ausdrücklich nicht um unser normales Website-Login. Vielen Dank.`
+      : `Guten Tag, wir haben bereits ein ${label}-Konto und möchten unseren Bestand über Inserat-AI automatisiert per OpenImmo übertragen. Bitte senden Sie uns die dafür vorgesehenen technischen Zugangsdaten: FTP-/FTPS-Server, Benutzername, Passwort sowie Anbieter-ID/ANID und bestätigen Sie das vorgesehene Transportprofil. Es geht ausdrücklich nicht um unser normales Website-Login. Vielen Dank.`;
 
   const requiredKeys =
     swiss
@@ -509,7 +509,7 @@ export default function CustomerPortalAccessPanel({
               {swiss ? (
                 <>
                   <label className={labelClass}>
-                    SwissRETS API URL â€“ vom Portal erhalten
+                    SwissRETS API URL – vom Portal erhalten
                     <input
                       type="url"
                       name="portal-swissrets-url"
@@ -522,7 +522,7 @@ export default function CustomerPortalAccessPanel({
                   </label>
 
                   <label className={labelClass}>
-                    Client ID â€“ vom Portal erhalten
+                    Client ID – vom Portal erhalten
                     <input
                       type="text"
                       name="portal-client-identifier"
@@ -537,7 +537,7 @@ export default function CustomerPortalAccessPanel({
                   </label>
 
                   <label className={labelClass}>
-                    Client Secret â€“ vom Portal erhalten
+                    Client Secret – vom Portal erhalten
                     <input
                       type="password"
                       name="portal-client-secret"
@@ -551,7 +551,7 @@ export default function CustomerPortalAccessPanel({
                   </label>
 
                   <label className={labelClass}>
-                    SwissRETS Benutzername â€“ vom Portal erhalten
+                    SwissRETS Benutzername – vom Portal erhalten
                     <input
                       type="text"
                       name="portal-swissrets-account"
@@ -566,7 +566,7 @@ export default function CustomerPortalAccessPanel({
                   </label>
 
                   <label className={labelClass}>
-                    SwissRETS Passwort â€“ vom Portal erhalten
+                    SwissRETS Passwort – vom Portal erhalten
                     <input
                       type="password"
                       name="portal-swissrets-secret"
@@ -580,7 +580,7 @@ export default function CustomerPortalAccessPanel({
                   </label>
 
                   <label className={labelClass}>
-                    Owner ID â€“ vom Portal erhalten
+                    Owner ID – vom Portal erhalten
                     <input
                       type="text"
                       name="portal-owner-identifier"
@@ -595,7 +595,7 @@ export default function CustomerPortalAccessPanel({
               ) : (
                 <>
                   <label className={labelClass}>
-                    FTP-/FTPS-Server â€“ vom Portal erhalten
+                    FTP-/FTPS-Server – vom Portal erhalten
                     <input
                       type="text"
                       name="portal-transfer-server"
@@ -608,7 +608,7 @@ export default function CustomerPortalAccessPanel({
                   </label>
 
                   <label className={labelClass}>
-                    FTP-Benutzername â€“ vom Portal erhalten
+                    FTP-Benutzername – vom Portal erhalten
                     <input
                       type="text"
                       name="portal-transfer-account"
@@ -623,7 +623,7 @@ export default function CustomerPortalAccessPanel({
                   </label>
 
                   <label className={labelClass}>
-                    FTP-Passwort â€“ vom Portal erhalten
+                    FTP-Passwort – vom Portal erhalten
                     <input
                       type="password"
                       name="portal-transfer-secret"
@@ -637,7 +637,7 @@ export default function CustomerPortalAccessPanel({
                   </label>
 
                   <label className={labelClass}>
-                    OpenImmo Anbieter-ID / ANID â€“ vom Portal erhalten
+                    OpenImmo Anbieter-ID / ANID – vom Portal erhalten
                     <input
                       type="text"
                       name="portal-provider-identifier"

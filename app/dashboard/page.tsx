@@ -3573,7 +3573,7 @@ return (
 {!canUseDashboardImages && (
   <div className="mb-4 rounded-2xl border border-amber-300/30 bg-amber-400/10 p-4 text-sm leading-6 text-amber-100">
     <div className="font-black text-amber-300">
-      ðŸ“· {
+      📷 {
         locale === "de" &&
         market === "DE"
           ? "Bilder für die 9,90-€-Einzelimmobilie vorbereiten"
@@ -3655,35 +3655,35 @@ return (
   >
     {analyzingImage
       ? locale === "de"
-        ? `ðŸ” Bild ${
+        ? `🔍 Bild ${
             analysisProgressIndex !== null
               ? analysisProgressIndex + 1
               : 1
           } von ${imagePreviews.length} wird analysiert ⬦`
         : locale === "it"
-          ? `ðŸ” Analisi dell'immagine ${
+          ? `🔍 Analisi dell'immagine ${
               analysisProgressIndex !== null
                 ? analysisProgressIndex + 1
                 : 1
             } di ${imagePreviews.length} ⬦`
           : locale === "fr"
-            ? `ðŸ” Analyse de l'image ${
+            ? `🔍 Analyse de l'image ${
                 analysisProgressIndex !== null
                   ? analysisProgressIndex + 1
                   : 1
               } sur ${imagePreviews.length} ⬦`
-            : `ðŸ” Analysing image ${
+            : `🔍 Analysing image ${
                 analysisProgressIndex !== null
                   ? analysisProgressIndex + 1
                   : 1
               } of ${imagePreviews.length} ⬦`
       : locale === "de"
-        ? "ðŸ” Fotoanalyse starten"
+        ? "🔍 Fotoanalyse starten"
         : locale === "it"
-          ? "ðŸ” Avvia analisi delle foto"
+          ? "🔍 Avvia analisi delle foto"
           : locale === "fr"
             ? "🔍 Lancer l’analyse des photos"
-            : "ðŸ” Start photo analysis"}
+            : "🔍 Start photo analysis"}
   </button>
 
   {imageAnalysisMessage && (

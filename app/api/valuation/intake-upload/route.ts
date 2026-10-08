@@ -92,7 +92,7 @@ export async function POST(
                   : {};
             } catch {
               throw new Error(
-                "UngÃ¼ltige Upload-Daten."
+                "Ungültige Upload-Daten."
               );
             }
 
@@ -182,7 +182,7 @@ export async function POST(
               size <= 0
             ) {
               throw new Error(
-                "UngÃ¼ltige DateigrÃ¶sse."
+                "Ungültige Dateigrösse."
               );
             }
 
@@ -257,7 +257,7 @@ export async function POST(
              * V1:
              * Die Analyse bekommt die
              * Blob-Referenz direkt vom
-             * Browser zurÃ¼ck.
+             * Browser zurück.
              *
              * Persistenz folgt erst,
              * wenn der Analyseflow

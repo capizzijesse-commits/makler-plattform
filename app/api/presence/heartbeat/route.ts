@@ -3,12 +3,14 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/session";
+import { recordUserActivityEvent } from "@/lib/user-activity.server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 type HeartbeatBody = {
   currentPath?: unknown;
+  pageView?: unknown;
 };
 
 function normalizePath(
@@ -27,7 +29,10 @@ function normalizePath(
     return "/";
   }
 
-  return trimmed.slice(0, 500);
+  return trimmed.slice(
+    0,
+    500
+  );
 }
 
 export async function POST(
@@ -61,16 +66,21 @@ export async function POST(
         body.currentPath
       );
 
+    const isPageView =
+      body.pageView === true;
+
     const now =
       new Date();
 
     const presence =
       await prisma.userPresence.upsert({
         where: {
-          userId: user.id,
+          userId:
+            user.id,
         },
         create: {
-          userId: user.id,
+          userId:
+            user.id,
           currentPath,
           sessionStartedAt:
             now,
@@ -89,6 +99,17 @@ export async function POST(
           lastSeenAt: true,
         },
       });
+
+    if (isPageView) {
+      await recordUserActivityEvent({
+        userId:
+          user.id,
+        type:
+          "page_view",
+        path:
+          currentPath,
+      });
+    }
 
     return NextResponse.json({
       success: true,

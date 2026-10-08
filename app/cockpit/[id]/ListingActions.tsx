@@ -99,7 +99,7 @@ if (!confirmed) {
 
       if (!response.ok || !data.success) {
         throw new Error(
-          data.error || "Der Objektstatus konnte nicht geÃ¤ndert werden."
+          data.error || "Der Objektstatus konnte nicht geändert werden."
         );
       }
 
@@ -108,7 +108,7 @@ if (!confirmed) {
       setError(
         archiveError instanceof Error
           ? archiveError.message
-          : "Der Objektstatus konnte nicht geÃ¤ndert werden."
+          : "Der Objektstatus konnte nicht geändert werden."
       );
 
       setBusyAction(null);
@@ -120,7 +120,7 @@ if (!confirmed) {
 
     if (!archived) {
       setError(
-        "Bitte archiviere das Objekt zuerst. Aktive Objekte kÃ¶nnen aus SicherheitsgrÃ¼nden nicht gelÃ¶scht werden."
+        "Bitte archiviere das Objekt zuerst. Aktive Objekte können aus Sicherheitsgründen nicht gelöscht werden."
       );
       return;
     }
@@ -162,7 +162,7 @@ if (!confirmed) {
 
       if (!response.ok || !data.success) {
         throw new Error(
-          data.error || "Das Objekt konnte nicht gelÃ¶scht werden."
+          data.error || "Das Objekt konnte nicht gelöscht werden."
         );
       }
 
@@ -171,7 +171,7 @@ if (!confirmed) {
       setError(
         deleteError instanceof Error
           ? deleteError.message
-          : "Das Objekt konnte nicht gelÃ¶scht werden."
+          : "Das Objekt konnte nicht gelöscht werden."
       );
 
       setBusyAction(null);
@@ -400,7 +400,7 @@ if (!confirmed) {
           }}
         >
           {busyAction === "archive"
-            ? "Status wird geÃ¤ndert ..."
+            ? "Status wird geändert ..."
             : archived
               ? "Objekt wieder aktivieren"
               : "Objekt archivieren"}
@@ -429,7 +429,7 @@ if (!confirmed) {
           }}
         >
           {busyAction === "delete"
-            ? "Objekt wird gelÃ¶scht ..."
+            ? "Objekt wird gelöscht ..."
             : archived
               ? "Objekt dauerhaft löschen"
               : "Zum Löschen zuerst archivieren"}
@@ -495,7 +495,7 @@ if (!confirmed) {
                 letterSpacing: "0.14em",
               }}
             >
-              ENDGÃœLTIG Löschen
+              ENDGÜLTIG Löschen
             </span>
 
             <h3
@@ -518,7 +518,7 @@ if (!confirmed) {
             >
               Alle Objektdaten und gespeicherten Inseratvarianten
               werden dauerhaft entfernt. Dieser Vorgang kann nicht
-              rÃ¼ckgÃ¤ngig gemacht werden.
+              rückgängig gemacht werden.
             </p>
 
             <label

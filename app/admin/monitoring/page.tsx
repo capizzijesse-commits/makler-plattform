@@ -291,6 +291,47 @@ export default function AdminMonitoringPage() {
   const recentUsers =
     data.presence?.recent ?? [];
 
+  const onlineUserIds =
+    new Set(
+      onlineUsers.map(
+        (entry) =>
+          entry.userId
+      )
+    );
+
+  const recentOfflineUsers =
+    recentUsers.filter(
+      (entry) =>
+        !onlineUserIds.has(
+          entry.userId
+        )
+    );
+
+  function openUser(
+    userId: string
+  ) {
+    window.location.href =
+      `/admin/monitoring/users/${encodeURIComponent(
+        userId
+      )}`;
+  }
+
+  function handleUserKeyDown(
+    event:
+      React.KeyboardEvent<HTMLDivElement>,
+    userId: string
+  ) {
+    if (
+      event.key === "Enter" ||
+      event.key === " "
+    ) {
+      event.preventDefault();
+      openUser(
+        userId
+      );
+    }
+  }
+
   return (
     <main className="monitoringPage">
       <div className="monitoringShell">
@@ -399,7 +440,7 @@ export default function AdminMonitoringPage() {
               </div>
 
               <p>
-                Aktuelle und letzte Aktivit?t
+                Aktuelle und letzte Aktivität
                 in Inserat-AI
               </p>
             </div>
@@ -441,8 +482,22 @@ export default function AdminMonitoringPage() {
                 onlineUsers.map(
                   (entry) => (
                     <div
-                      className="presenceUser"
+                      className="presenceUser presenceUserClickable"
                       key={entry.userId}
+                      role="link"
+                      tabIndex={0}
+                      onClick={() =>
+                        openUser(
+                          entry.userId
+                        )
+                      }
+                      onKeyDown={(event) =>
+                        handleUserKeyDown(
+                          event,
+                          entry.userId
+                        )
+                      }
+                      title="Benutzer ?ffnen"
                     >
                       <div className="presenceIdentity">
                         <span className="onlineIndicator" />
@@ -479,15 +534,36 @@ export default function AdminMonitoringPage() {
                 Zuletzt aktiv
               </div>
 
-              {recentUsers
-                .slice(0, 8)
-                .map(
+              {recentOfflineUsers.length ===
+              0 ? (
+                <div className="presenceEmpty">
+                  Keine weiteren Benutzer
+                  zuletzt aktiv.
+                </div>
+              ) : (
+                recentOfflineUsers
+                  .slice(0, 8)
+                  .map(
                   (entry) => (
                     <div
-                      className="presenceUser"
+                      className="presenceUser presenceUserClickable"
                       key={
                         `recent-${entry.userId}`
                       }
+                      role="link"
+                      tabIndex={0}
+                      onClick={() =>
+                        openUser(
+                          entry.userId
+                        )
+                      }
+                      onKeyDown={(event) =>
+                        handleUserKeyDown(
+                          event,
+                          entry.userId
+                        )
+                      }
+                      title="Benutzer ?ffnen"
                     >
                       <div className="presenceIdentity">
                         <div className="recentIndicator" />
@@ -515,7 +591,8 @@ export default function AdminMonitoringPage() {
                       </div>
                     </div>
                   )
-                )}
+                )
+              )}
             </div>
           </div>
         </section>
@@ -884,6 +961,43 @@ const styles = `
 
   .presenceUser:last-child {
     border-bottom: 0;
+  }
+
+  .presenceUserClickable {
+    cursor: pointer;
+    transition:
+      background 140ms ease,
+      transform 140ms ease;
+    margin:
+      0 -10px;
+    padding-left:
+      10px;
+    padding-right:
+      10px;
+    border-radius:
+      10px;
+  }
+
+  .presenceUserClickable:hover {
+    background:
+      rgba(
+        202,
+        168,
+        94,
+        0.055
+      );
+  }
+
+  .presenceUserClickable:focus-visible {
+    outline:
+      1px solid #caa85e;
+    outline-offset:
+      2px;
+  }
+
+  .presenceUserClickable:active {
+    transform:
+      translateY(1px);
   }
 
   .presenceIdentity {

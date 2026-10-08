@@ -27,7 +27,7 @@ function optionalNumber(value: unknown): number | null {
 
   const normalized =
     typeof value === "string"
-      ? value.replace(/['â€™\s]/g, "").replace(",", ".")
+      ? value.replace(/['’\s]/g, "").replace(",", ".")
       : value;
 
   const number = Number(normalized);
@@ -182,7 +182,7 @@ export async function GET(
         generatedVariants: hasCoreAccess
           ? parseJsonValue(listing.generatedVariants)
           : null,
-        // Social Media ist fÃ¼r alle angemeldeten Nutzer kostenlos.
+        // Social Media ist für alle angemeldeten Nutzer kostenlos.
         socialVariants: parseJsonValue(listing.socialVariants),
         imageAnalysis: hasCoreAccess
           ? listing.imageAnalysis
@@ -284,7 +284,7 @@ export async function PATCH(
         {
           success: false,
           error:
-            "Diese Inhalte sind fÃ¼r das Objekt erst nach der Freischaltung verfÃ¼gbar.",
+            "Diese Inhalte sind für das Objekt erst nach der Freischaltung verfügbar.",
           code: "LISTING_PAYMENT_REQUIRED",
         },
         {
@@ -421,7 +421,7 @@ export async function POST(
       return NextResponse.json(
         {
           success: false,
-          error: "UngÃ¼ltiger Archivstatus.",
+          error: "Ungültiger Archivstatus.",
         },
         { status: 400 }
       );
@@ -487,7 +487,7 @@ export async function POST(
     return NextResponse.json(
       {
         success: false,
-        error: "Der Objektstatus konnte nicht geÃ¤ndert werden.",
+        error: "Der Objektstatus konnte nicht geändert werden.",
       },
       { status: 500 }
     );
@@ -538,15 +538,15 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
-      message: "Objekt wurde dauerhaft gelÃ¶scht.",
+      message: "Objekt wurde dauerhaft gelöscht.",
     });
   } catch (error) {
-    console.error("Fehler beim LÃ¶schen des Objekts:", error);
+    console.error("Fehler beim Löschen des Objekts:", error);
 
     return NextResponse.json(
       {
         success: false,
-        error: "Das Objekt konnte nicht gelÃ¶scht werden.",
+        error: "Das Objekt konnte nicht gelöscht werden.",
       },
       { status: 500 }
     );

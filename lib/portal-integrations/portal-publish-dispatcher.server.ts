@@ -121,7 +121,7 @@ export async function executePortalPublishJobDryRun(
     case "kleinanzeigen_de": {
 
       /*
-       * Dry-Run ist ausschlieÃŸlich
+       * Dry-Run ist ausschließlich
        * im Test-Environment erlaubt.
        *
        * Kein Production Dry-Run.
@@ -135,7 +135,7 @@ export async function executePortalPublishJobDryRun(
 
         throw dispatcherError(
           "PORTAL_PRODUCTION_NOT_ENABLED",
-          "Kleinanzeigen DE Dry-Run ist ausschlieÃŸlich im Testmodus erlaubt."
+          "Kleinanzeigen DE Dry-Run ist ausschließlich im Testmodus erlaubt."
         );
       }
 
@@ -153,7 +153,7 @@ export async function executePortalPublishJobDryRun(
        * XML selbst wird NICHT als
        * Worker-Ergebnis gespeichert.
        *
-       * Persistiert werden ausschlieÃŸlich
+       * Persistiert werden ausschließlich
        * kleine, nicht-sensitive Metadaten.
        */
       return {
@@ -215,7 +215,7 @@ export async function executePortalPublishJobDryRun(
 
         throw dispatcherError(
           "PORTAL_PRODUCTION_NOT_ENABLED",
-          "Immowelt DE Dry-Run ist ausschlieÃŸlich im Testmodus erlaubt."
+          "Immowelt DE Dry-Run ist ausschließlich im Testmodus erlaubt."
         );
       }
 
@@ -228,7 +228,7 @@ export async function executePortalPublishJobDryRun(
 
         throw dispatcherError(
           "PORTAL_DRY_RUN_PROVIDER_MISSING",
-          "Immowelt OpenImmo Provider-Konfiguration fehlt fÃ¼r den Dry-Run."
+          "Immowelt OpenImmo Provider-Konfiguration fehlt für den Dry-Run."
         );
       }
 
@@ -304,7 +304,7 @@ export async function executePortalPublishJobDryRun(
 
         throw dispatcherError(
           "PORTAL_PRODUCTION_NOT_ENABLED",
-          "Immobilien.de Preflight ist ausschlieÃŸlich im Testmodus erlaubt."
+          "Immobilien.de Preflight ist ausschließlich im Testmodus erlaubt."
         );
       }
 
@@ -317,7 +317,7 @@ export async function executePortalPublishJobDryRun(
 
         throw dispatcherError(
           "PORTAL_DRY_RUN_PROVIDER_MISSING",
-          "Immobilien.de OpenImmo Provider-Konfiguration fehlt fÃ¼r den Preflight."
+          "Immobilien.de OpenImmo Provider-Konfiguration fehlt für den Preflight."
         );
       }
 
@@ -359,7 +359,7 @@ export async function executePortalPublishJobDryRun(
 
         throw dispatcherError(
           "PORTAL_PRODUCTION_NOT_ENABLED",
-          "WG-Gesucht Preflight ist ausschlieÃŸlich im Testmodus erlaubt."
+          "WG-Gesucht Preflight ist ausschließlich im Testmodus erlaubt."
         );
       }
 
@@ -372,7 +372,7 @@ export async function executePortalPublishJobDryRun(
 
         throw dispatcherError(
           "PORTAL_DRY_RUN_PROVIDER_MISSING",
-          "WG-Gesucht OpenImmo Provider-Konfiguration fehlt fÃ¼r den Preflight."
+          "WG-Gesucht OpenImmo Provider-Konfiguration fehlt für den Preflight."
         );
       }
 
@@ -465,7 +465,7 @@ export async function executePortalPublishJob(
 
   /*
    * Echter Dispatcher bleibt
-   * vollstÃ¤ndig gesperrt.
+   * vollständig gesperrt.
    *
    * Der Dry-Run oben wird NICHT
    * automatisch von diesem

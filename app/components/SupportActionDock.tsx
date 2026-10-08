@@ -67,7 +67,7 @@ export default function SupportActionDock() {
           : 0
       );
     } catch {
-      // Auf Ã¶ffentlichen Seiten oder
+      // Auf öffentlichen Seiten oder
       // ohne Login bleibt der Badge leer.
     }
   }
@@ -170,7 +170,7 @@ export default function SupportActionDock() {
             40
           );
         }}
-        aria-label="Inserat-AI Chat Ã¶ffnen"
+        aria-label="Inserat-AI Chat öffnen"
       >
         <span
           className="supportIcon"
@@ -209,7 +209,7 @@ export default function SupportActionDock() {
           type="button"
           className="supportAction supportGuide"
           onClick={() => openAction("guide")}
-          aria-label="Inserat-AI Guide Ã¶ffnen"
+          aria-label="Inserat-AI Guide öffnen"
         >
           <span className="supportIcon" aria-hidden="true">
             <svg viewBox="0 0 24 24">
@@ -236,7 +236,7 @@ export default function SupportActionDock() {
         type="button"
         className="supportAction supportFeedback"
         onClick={() => openAction("feedback")}
-        aria-label="Feedback Ã¶ffnen"
+        aria-label="Feedback öffnen"
       >
         <span className="supportIcon" aria-hidden="true">
           <svg viewBox="0 0 24 24">
@@ -261,7 +261,7 @@ export default function SupportActionDock() {
         type="button"
         className="supportAction supportContact"
         onClick={() => openAction("contact")}
-        aria-label="WhatsApp Kontakt Ã¶ffnen"
+        aria-label="WhatsApp Kontakt öffnen"
       >
         <span className="supportIcon" aria-hidden="true">
           <svg viewBox="0 0 24 24">
@@ -307,8 +307,8 @@ export default function SupportActionDock() {
         aria-expanded={isDockOpen}
         aria-label={
           isDockOpen
-            ? "Inserat-AI MenÃ¼ schlieÃŸen"
-            : "Inserat-AI Connect Ã¶ffnen"
+            ? "Inserat-AI Menü schließen"
+            : "Inserat-AI Connect öffnen"
         }
       >
         <span
@@ -349,7 +349,7 @@ export default function SupportActionDock() {
 
         <span className="supportLauncherText">
           {isDockOpen
-            ? "SchlieÃŸen"
+            ? "Schließen"
             : "Inserat-AI Connect"}
         </span>
       </button>

@@ -1,0 +1,2 @@
+ALTER TABLE "Listing"
+ADD COLUMN "plotArea" DOUBLE PRECISION;

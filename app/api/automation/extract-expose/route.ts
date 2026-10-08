@@ -6,6 +6,7 @@ import * as unzipper from "unzipper";
 import { XMLParser } from "fast-xml-parser";
 
 import { getAuthenticatedUser } from "@/lib/session";
+import { recordUserActivityEvent } from "@/lib/user-activity.server";
 
 import {
   completeAutomationMonitoringRun,
@@ -201,7 +202,7 @@ async function extractXlsxText(
       MAX_XLSX_XML_ENTRY_BYTES
     ) {
       throw new Error(
-        `Die Tabellen-Unterlage "${fileName}" enthÃ¤lt eine zu grosse XML-Datei.`
+        `Die Tabellen-Unterlage "${fileName}" enthält eine zu grosse XML-Datei.`
       );
     }
 
@@ -245,7 +246,7 @@ async function extractXlsxText(
         }
 
         throw new Error(
-          `Die Tabellen-Unterlage "${fileName}" ist unvollstÃ¤ndig: ${path}`
+          `Die Tabellen-Unterlage "${fileName}" ist unvollständig: ${path}`
         );
       }
 
@@ -257,7 +258,7 @@ async function extractXlsxText(
         MAX_XLSX_XML_ENTRY_BYTES
       ) {
         throw new Error(
-          `Die Tabellen-Unterlage "${fileName}" enthÃ¤lt eine zu grosse XML-Datei.`
+          `Die Tabellen-Unterlage "${fileName}" enthält eine zu grosse XML-Datei.`
         );
       }
 
@@ -610,7 +611,7 @@ async function extractXlsxText(
 
   if (!text) {
     throw new Error(
-      `Die Tabellen-Unterlage "${fileName}" enthÃ¤lt keine lesbaren Daten.`
+      `Die Tabellen-Unterlage "${fileName}" enthält keine lesbaren Daten.`
     );
   }
 
@@ -638,7 +639,7 @@ async function extractSpreadsheetText(
 
     if (!text) {
       throw new Error(
-        `Die Tabellen-Unterlage "${fileName}" enthÃ¤lt keine lesbaren Daten.`
+        `Die Tabellen-Unterlage "${fileName}" enthält keine lesbaren Daten.`
       );
     }
 
@@ -657,7 +658,7 @@ async function extractSpreadsheetText(
     )
   ) {
     throw new Error(
-      "Legacy-XLS wird aus SicherheitsgrÃ¼nden derzeit nicht verarbeitet. Bitte als XLSX oder CSV speichern."
+      "Legacy-XLS wird aus Sicherheitsgründen derzeit nicht verarbeitet. Bitte als XLSX oder CSV speichern."
     );
   }
 
@@ -1105,7 +1106,7 @@ function parseJsonObject(text: string): unknown {
       return JSON.parse(trimmed.slice(start, end + 1));
     }
 
-    throw new Error("Das ExposÃ© konnte nicht strukturiert ausgewertet werden.");
+    throw new Error("Das Exposé konnte nicht strukturiert ausgewertet werden.");
   }
 }
 
@@ -1133,7 +1134,7 @@ function friendlyOpenAiError(error: unknown) {
       status: 503,
       code: "AI_TEMPORARILY_UNAVAILABLE",
       message:
-        "Die KI-Auswertung ist momentan nicht verfÃ¼gbar. Deine Datei wurde nicht dauerhaft gespeichert. Sobald der API-Zugang wieder aktiv ist, kannst du denselben Ablauf erneut starten.",
+        "Die KI-Auswertung ist momentan nicht verfügbar. Deine Datei wurde nicht dauerhaft gespeichert. Sobald der API-Zugang wieder aktiv ist, kannst du denselben Ablauf erneut starten.",
     };
   }
 
@@ -1142,7 +1143,7 @@ function friendlyOpenAiError(error: unknown) {
       status: 502,
       code: "EXPOSE_FILE_PROCESSING_FAILED",
       message:
-        "Das ExposÃ© konnte technisch nicht gelesen werden. Bitte denselben Upload erneut versuchen.",
+        "Das Exposé konnte technisch nicht gelesen werden. Bitte denselben Upload erneut versuchen.",
     };
   }
 
@@ -1150,7 +1151,7 @@ function friendlyOpenAiError(error: unknown) {
     status: 500,
     code: "EXPOSE_EXTRACTION_FAILED",
     message:
-      "Das ExposÃ© konnte gerade nicht automatisch ausgewertet werden. Bitte spÃ¤ter erneut versuchen.",
+      "Das Exposé konnte gerade nicht automatisch ausgewertet werden. Bitte später erneut versuchen.",
   };
 }
 
@@ -1428,6 +1429,18 @@ export async function POST(request: NextRequest) {
         },
       });
 
+
+
+    await recordUserActivityEvent({
+      userId: user.id,
+      type: "automation_started",
+      path: "/automation",
+      metadata: {
+        monitoringRunId,
+        documentCount:
+          files.length,
+      },
+    });
 
     const preparedDocuments =
       await Promise.all(
@@ -2209,6 +2222,22 @@ ALLGEMEIN:
             monitoringStartedAt
           ),
       });
+
+      await recordUserActivityEvent({
+        userId: user.id,
+        type: "automation_ready",
+        path: "/automation",
+        metadata: {
+          monitoringRunId,
+          imageCount:
+            extractedPhotos.length,
+          durationMs:
+            Math.round(
+              performance.now() -
+              monitoringStartedAt
+            ),
+        },
+      });
     }
 
     return NextResponse.json({
@@ -2241,6 +2270,18 @@ ALLGEMEIN:
         errorMessage:
           monitoringError.errorMessage,
       });
+
+      await recordUserActivityEvent({
+        userId: user.id,
+        type: "automation_failed",
+        path: "/automation",
+        metadata: {
+          monitoringRunId,
+          errorStage:
+            "expose_extraction",
+        },
+      });
+
     }
 
     const friendly = friendlyOpenAiError(error);

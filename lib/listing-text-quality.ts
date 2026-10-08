@@ -297,6 +297,100 @@ const GENERIC_OPENINGS: Record<
   ],
 };
 
+/*
+ * INSERAT_AI_PROFESSIONAL_COPY_GATE_V1
+ *
+ * Harte Sperre fuer Meta-, Mangel- und Prozesssprache,
+ * die nicht in ein professionelles Immobilieninserat gehoert.
+ *
+ * Unicode-Escapes vermeiden Encoding-Probleme beim Patchen.
+ */
+const UNPROFESSIONAL_META_COPY_RULES: Record<
+  ListingTextLocale,
+  PhraseRule[]
+> = {
+  de: [
+    {
+      label: "nicht angegeben",
+      pattern:
+        /\bnicht angegeben\b/i,
+    },
+    {
+      label: "nicht naeher spezifiziert",
+      pattern:
+        /\bnicht (?:n\u00e4her )?spezifiziert\b/i,
+    },
+    {
+      label: "nicht dokumentiert",
+      pattern:
+        /\bnicht dokumentiert\b/i,
+    },
+    {
+      label: "liegen nicht vor",
+      pattern:
+        /\bliegen nicht vor\b/i,
+    },
+    {
+      label: "keine Angaben",
+      pattern:
+        /\bkeine angaben\b/i,
+    },
+    {
+      label: "keine Informationen",
+      pattern:
+        /\bkeine informationen\b/i,
+    },
+    {
+      label: "bestaetigte Eckdaten",
+      pattern:
+        /\bbest\u00e4tigt(?:e|en|er|es|em)? eckdaten\b/i,
+    },
+    {
+      label: "Objektunterlagen",
+      pattern:
+        /\bobjektunterlagen\b/i,
+    },
+    {
+      label: "Verkaufsunterlagen",
+      pattern:
+        /\bverkaufsunterlagen\b/i,
+    },
+    {
+      label: "Verkaufsdokumentation",
+      pattern:
+        /\bverkaufsdokumentation\b/i,
+    },
+    {
+      label: "weitere Auskuenfte",
+      pattern:
+        /\bweitere ausk(?:u|\u00fc)nfte\b/i,
+    },
+    {
+      label: "weitere Informationen",
+      pattern:
+        /\bweitere informationen\b/i,
+    },
+    {
+      label: "vor Ort beurteilen",
+      pattern:
+        /\bvor ort beurteilen\b/i,
+    },
+    {
+      label: "Besichtigung zur Beurteilung",
+      pattern:
+        /\bbesichtigung\b[^.!?]{0,90}\b(?:beurteil|pr\u00fcf|einsch\u00e4tz)/i,
+    },
+    {
+      label: "fundierte Grundlage fuer die eigene Entscheidung",
+      pattern:
+        /\bfundierte grundlage f(?:u|\u00fc)r die eigene entscheidung\b/i,
+    },
+  ],
+  it: [],
+  fr: [],
+  en: [],
+};
+
 const ABSOLUTE_PROMISES: Record<
   ListingTextLocale,
   PhraseRule[]
@@ -1337,8 +1431,8 @@ export function evaluateListingQuality(
       }
 
       if (
-        wordCount < 110 ||
-        wordCount > 200
+        wordCount < 80 ||
+        wordCount > 180
       ) {
         deductScore(
           scores,
@@ -1351,10 +1445,10 @@ export function evaluateListingQuality(
           code:
             "WORD_COUNT_OUTSIDE_TARGET",
           message:
-            `Variante ${index + 1} enthält ${wordCount} Wörter. Der bevorzugte Bereich liegt bei 110 bis 200 Wörtern.`,
+            `Variante ${index + 1} enthält ${wordCount} Wörter. Der bevorzugte Bereich liegt bei 80 bis 180 Wörtern.`,
           severity:
-            wordCount < 95 ||
-            wordCount > 240
+            wordCount < 65 ||
+            wordCount > 220
               ? "error"
               : "warning",
         });
@@ -1408,6 +1502,41 @@ export function evaluateListingQuality(
               `Variante ${index + 1} beginnt generisch mit „${rule.label}“.`,
             severity:
               "warning",
+          });
+        }
+      }
+
+      /*
+       * Professional-copy hard gate.
+       * Diese Muster sind keine Warnung, sondern blockieren
+       * die Auslieferung und aktivieren den gezielten Repair.
+       */
+      for (
+        const rule of
+        UNPROFESSIONAL_META_COPY_RULES[
+          locale
+        ]
+      ) {
+        if (
+          rule.pattern.test(
+            `${title} ${text}`
+          )
+        ) {
+          deductScore(
+            scores,
+            index,
+            24
+          );
+
+          issues.push({
+            variantIndex:
+              index,
+            code:
+              "UNPROFESSIONAL_META_COPY",
+            message:
+              `Variante ${index + 1} enth\u00e4lt unprofessionelle Meta- oder Mangelsprache: "${rule.label}".`,
+            severity:
+              "error",
           });
         }
       }

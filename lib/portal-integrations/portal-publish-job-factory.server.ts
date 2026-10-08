@@ -170,7 +170,7 @@ export async function createGermanPortalPublishJobFromListing(
   /*
    * HARD GATE:
    *
-   * Job-Erzeugung ist standardmÃ¤ssig AUS.
+   * Job-Erzeugung ist standardmässig AUS.
    * Ohne explizites Queue-Gate
    * wird nicht einmal ein Queue-Eintrag
    * erstellt.
@@ -227,7 +227,7 @@ export async function createGermanPortalPublishJobFromListing(
 
 
   /*
-   * Listing zuerst prÃ¼fen.
+   * Listing zuerst prüfen.
    *
    * Keine Payment-/Unlock-Manipulation.
    */
@@ -284,6 +284,9 @@ export async function createGermanPortalPublishJobFromListing(
           true,
 
         livingArea:
+          true,
+
+        plotArea:
           true,
 
         price:
@@ -353,6 +356,39 @@ export async function createGermanPortalPublishJobFromListing(
 
             mimeType:
               true,
+
+            analysis:
+              true,
+          },
+        },
+
+        floorPlans: {
+          orderBy: [
+            {
+              sortOrder:
+                "asc",
+            },
+            {
+              createdAt:
+                "asc",
+            },
+          ],
+
+          select: {
+            url:
+              true,
+
+            fileName:
+              true,
+
+            mimeType:
+              true,
+
+            floorLevel:
+              true,
+
+            sortOrder:
+              true,
           },
         },
       },
@@ -403,13 +439,13 @@ export async function createGermanPortalPublishJobFromListing(
     throw new GermanPortalJobCreationError(
       "PORTAL_LISTING_NOT_UNLOCKED",
       409,
-      "Inserat ist fÃ¼r Portal-Transfer noch nicht freigeschaltet."
+      "Inserat ist für Portal-Transfer noch nicht freigeschaltet."
     );
   }
 
 
   /*
-   * Portal-Verbindung gehÃ¶rt
+   * Portal-Verbindung gehört
    * zwingend demselben User.
    */
   const connection =
@@ -498,8 +534,8 @@ export async function createGermanPortalPublishJobFromListing(
    * Listing-Snapshot.
    *
    * Dieser Snapshot wird gleichzeitig
-   * fÃ¼r den Payload-Fingerprint und
-   * damit fÃ¼r Idempotency verwendet.
+   * für den Payload-Fingerprint und
+   * damit für Idempotency verwendet.
    */
   const payloadSnapshot = {
     schemaVersion:
@@ -561,6 +597,9 @@ export async function createGermanPortalPublishJobFromListing(
 
       livingArea:
         listing.livingArea,
+
+      plotArea:
+        listing.plotArea,
 
       price:
         listing.price,
@@ -625,6 +664,31 @@ export async function createGermanPortalPublishJobFromListing(
 
             mimeType:
               image.mimeType,
+
+            analysis:
+              image.analysis,
+          })
+        ),
+
+      floorPlans:
+        listing.floorPlans.map(
+          (
+            floorPlan
+          ) => ({
+            url:
+              floorPlan.url,
+
+            fileName:
+              floorPlan.fileName,
+
+            mimeType:
+              floorPlan.mimeType,
+
+            floorLevel:
+              floorPlan.floorLevel,
+
+            sortOrder:
+              floorPlan.sortOrder,
           })
         ),
     },

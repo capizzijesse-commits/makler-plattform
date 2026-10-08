@@ -577,7 +577,7 @@ body {
     width: 100% !important;
   }
 
-  /* Ã°Å¸â€Â¥ DAS HIER FEHLT BEI DIR */
+  /* DAS HIER FEHLT BEI DIR */
   .landingPage .pricingGrid {
     grid-template-columns: 1fr !important;
     padding: 0 16px !important;
@@ -733,12 +733,12 @@ body {
     max-width: 100% !important;
     text-align: center !important;
   }
- /* Erzwingt das durchsichtige Grau fÃƒÂ¼r alle Browser */
+ /* Erzwingt das durchsichtige Grau für alle Browser */
 input::placeholder,
 textarea::placeholder {
   color: #94A3B8 !important;
-  opacity: 0.4 !important; /* Etwas niedriger fÃƒÂ¼r echtes "Durchscheinen" */
-  -webkit-text-fill-color: #94A3B8 !important; /* Speziell fÃƒÂ¼r Safari/iOS */
+  opacity: 0.4 !important; /* Etwas niedriger für echtes "Durchscheinen" */
+  -webkit-text-fill-color: #94A3B8 !important; /* Speziell für Safari/iOS */
 }
 
 /* Verhindert, dass der Browser den Text beim Reinklicken schwarz macht */
@@ -2007,7 +2007,7 @@ input:focus::placeholder {
     grid-template-columns: 1fr;
   }
 }
-/* Weicher ÃƒÅ“bergang von Hero zu Preisen */
+/* Weicher Übergang von Hero zu Preisen */
 
 .landingHero {
   position: relative;
@@ -2054,7 +2054,7 @@ input:focus::placeholder {
     display: none;
   }
 }
-/* Trust-/Vorteile-Balken schÃƒÂ¶ner und grÃƒÂ¶sser */
+/* Trust-/Vorteile-Balken schöner und grösser */
 
 .landingTrustBar {
   min-height: 116px;
@@ -2467,7 +2467,7 @@ input:focus::placeholder {
     text-align: center !important;
   }
 
-  /* BegrÃƒÂ¼ssung */
+  /* Begrüssung */
 
   .heroSection {
     align-items: stretch !important;
@@ -2500,7 +2500,7 @@ input:focus::placeholder {
     min-height: 48px !important;
   }
 
-  /* Statistik-Karten: 2 Ãƒâ€” 2 statt vier nebeneinander */
+  /* Statistik-Karten: 2 × 2 statt vier nebeneinander */
 
   .statsGrid {
     display: grid !important;
@@ -2854,7 +2854,7 @@ input:focus::placeholder {
     color: #fbbf24 !important;
   }
 
-  /* Statistik-Karten kompakt als 2 Ãƒâ€” 2 */
+  /* Statistik-Karten kompakt als 2 × 2 */
 
   .statsGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -2888,7 +2888,7 @@ input:focus::placeholder {
     font-size: 16px !important;
   }
 
-  /* Kontaktbutton kleiner und nÃƒÂ¤her am Rand */
+  /* Kontaktbutton kleiner und näher am Rand */
 
   .fixed.bottom-24.right-5.z-50 {
     right: 9px !important;
@@ -2972,7 +2972,7 @@ input:focus::placeholder {
     box-sizing: border-box !important;
   }
 }/* =========================================================
-   INSERAT-AI: MOBILE DASHBOARD Ã¢â‚¬â€œ FINALER EINGABEBEREICH
+   INSERAT-AI: MOBILE DASHBOARD – FINALER EINGABEBEREICH
    ========================================================= */
 
 .saveCockpitButton {
@@ -3051,7 +3051,7 @@ input:focus::placeholder {
     display: none !important;
   }
 
-  /* Auch die Ausgabekarte normal ÃƒÂ¼ber die Seite scrollen lassen */
+  /* Auch die Ausgabekarte normal über die Seite scrollen lassen */
 
   .outputSection,
   .outputCard {
@@ -3113,7 +3113,7 @@ input:focus::placeholder {
     text-align: center !important;
   }
 }
-/* Virtual Tour Studio Ã¢â‚¬â€œ elegante Scrollbereiche */
+/* Virtual Tour Studio – elegante Scrollbereiche */
 
 @media (min-width: 901px) {
   .tourPanel {
@@ -3182,7 +3182,7 @@ input:focus::placeholder {
     display: none;
   }
 }
-/* Virtual Tour Studio Ã¢â‚¬â€œ haftender Aktionsbutton */
+/* Virtual Tour Studio – haftender Aktionsbutton */
 
 .tourStickyActionBar {
   position: sticky;
@@ -3261,7 +3261,7 @@ input:focus::placeholder {
   }
 }
 /* =========================================================
-   INSERAT-AI Ã¢â‚¬â€œ ZENTRALE APP-NAVIGATION
+   INSERAT-AI – ZENTRALE APP-NAVIGATION
    ========================================================= */
 
 .appCentralNavbar {
@@ -3643,7 +3643,7 @@ input:focus::placeholder {
     font-size: 12px;
   }
 }
-/* GLOBALER PRIVATSPHÃƒâ€žRE-MODUS */
+/* GLOBALER PRIVATSPHÄRE-MODUS */
 
 html.privacy-mode main img:not([data-privacy-exempt="true"]),
 html.privacy-mode main video:not([data-privacy-exempt="true"]) {
@@ -3707,7 +3707,7 @@ html.privacy-mode main video:not([data-privacy-exempt="true"]) {
     font-size: 11px;
   }
 }
-/* PREMIUM-PRIVATSPHÃƒâ€žRE-SCHALTER IN DER NAVBAR */
+/* PREMIUM-PRIVATSPHÄRE-SCHALTER IN DER NAVBAR */
 
 .globalPrivacyButton {
   position: relative !important;
@@ -3928,7 +3928,7 @@ html.privacy-mode main video:not([data-privacy-exempt="true"]) {
     0 0 24px rgba(251,191,36,0.18) !important;
 }
 
-/* Karte 2 Ã¢â‚¬â€œ Cyan */
+/* Karte 2 – Cyan */
 .quickGrid > a.quickCard:nth-child(2) {
   border-color: rgba(56, 189, 248, 0.52) !important;
   background:
@@ -3961,7 +3961,7 @@ html.privacy-mode main video:not([data-privacy-exempt="true"]) {
     0 0 24px rgba(56,189,248,0.2) !important;
 }
 
-/* Karte 3 Ã¢â‚¬â€œ Violett / Gold */
+/* Karte 3 – Violett / Gold */
 .quickGrid > a.quickCard:nth-child(3) {
   border-color: rgba(129, 140, 248, 0.48) !important;
   background:
@@ -4046,7 +4046,7 @@ html.privacy-mode main video:not([data-privacy-exempt="true"]) {
     min-height: 190px !important;
   }
 }
-/* SCHNELLZUGRIFF Ã¢â‚¬â€œ FARBEN DEZENTER */
+/* SCHNELLZUGRIFF – FARBEN DEZENTER */
 
 .quickGrid > a.quickCard {
   border-color: rgba(251, 191, 36, 0.28) !important;
@@ -4077,7 +4077,7 @@ html.privacy-mode main video:not([data-privacy-exempt="true"]) {
     0 0 8px rgba(251, 191, 36, 0.18) !important;
 }
 
-/* Bilder analysieren Ã¢â‚¬â€œ dezentes Cyan */
+/* Bilder analysieren – dezentes Cyan */
 
 .quickGrid > a.quickCard:nth-child(2) {
   border-color: rgba(56, 189, 248, 0.32) !important;
@@ -4106,7 +4106,7 @@ html.privacy-mode main video:not([data-privacy-exempt="true"]) {
     0 0 8px rgba(56, 189, 248, 0.2) !important;
 }
 
-/* Objekte verwalten Ã¢â‚¬â€œ dezentes Violett */
+/* Objekte verwalten – dezentes Violett */
 
 .quickGrid > a.quickCard:nth-child(3) {
   border-color: rgba(129, 140, 248, 0.3) !important;
@@ -4149,7 +4149,7 @@ html.privacy-mode main video:not([data-privacy-exempt="true"]) {
     0 0 18px rgba(251, 191, 36, 0.07) !important;
 }
 /* =========================================================
-   INSERAT-AI Ã¢â‚¬â€œ GLOBALE SMARTPHONE-BASIS
+   INSERAT-AI – GLOBALE SMARTPHONE-BASIS
    Finale Regeln bewusst am Dateiende
    ========================================================= */
 
@@ -4184,7 +4184,7 @@ svg {
 }
 
 /* =========================================================
-   Ãƒâ€“FFENTLICHE MOBILE-NAVIGATION
+   ÖFFENTLICHE MOBILE-NAVIGATION
    ========================================================= */
 
 @media (max-width: 700px) {
@@ -4328,7 +4328,7 @@ svg {
   }
 }
 /* =========================================================
-   INSERAT-AI Ã¢â‚¬â€œ FINALE Ãƒâ€“FFENTLICHE MOBILE-NAVBAR
+   INSERAT-AI – FINALE ÖFFENTLICHE MOBILE-NAVBAR
    ========================================================= */
 
 .siteCtaMobileText {
@@ -4440,7 +4440,7 @@ svg {
   }
 }
 
-/* Auf sehr schmalen GerÃƒÂ¤ten nur das Logo-Symbol */
+/* Auf sehr schmalen Geräten nur das Logo-Symbol */
 @media (max-width: 370px) {
   .siteNavbar:not(.appCentralNavbar)
     .siteBrandText {
@@ -4459,8 +4459,8 @@ svg {
   }
 }
 /* =========================================================
-   INSERAT-AI Ã¢â‚¬â€œ Ãƒâ€“FFENTLICHE MOBILE-NAVBAR V2
-   ÃƒÅ“berschreibt bewusst alle ÃƒÂ¤lteren Mobile-Regeln
+   INSERAT-AI – ÖFFENTLICHE MOBILE-NAVBAR V2
+   Überschreibt bewusst alle älteren Mobile-Regeln
    ========================================================= */
 
 @media screen and (max-width: 700px) {
@@ -4607,7 +4607,7 @@ svg {
 }
 
 /* =========================================================
-   INSERAT-AI â€“ MOBILER LOGIN MIT NORMALEM SEITENSCROLLEN
+   INSERAT-AI – MOBILER LOGIN MIT NORMALEM SEITENSCROLLEN
    ========================================================= */
 
 @media (max-width: 700px) {
@@ -4665,7 +4665,7 @@ svg {
   }
 
   /*
-   WÃ¤hrend der Eingabe entsteht echter Platz unter dem Formular.
+   Während der Eingabe entsteht echter Platz unter dem Formular.
    Die Seite bleibt normales Dokument und keine interne Scrollbox.
   */
   .loginPage:focus-within {
@@ -4686,7 +4686,7 @@ svg {
   }
 }
 /* =========================================================
-   INSERAT-AI â€“ PRIVATSPHÃ„RE FEST IM APP-MENÃœ
+   INSERAT-AI – PRIVATSPHÄRE FEST IM APP-MENÜ
    ========================================================= */
 
 .appMenuPrivacyCard {
@@ -4783,8 +4783,8 @@ svg {
   background: linear-gradient(180deg, #f59e0b, #ea580c);
 }
 /* =========================================================
-   INSERAT-AI â€“ MOBILE APP-NAVBAR V3
-   Nur fÃ¼r den eingeloggten App-Bereich
+   INSERAT-AI – MOBILE APP-NAVBAR V3
+   Nur für den eingeloggten App-Bereich
    ========================================================= */
 
 .appMenuMobileMeta {
@@ -4962,12 +4962,12 @@ svg {
   }
 }
 /* =========================================================
-   INSERAT-AI â€“ PUBLIC LANDING MOBILE V3
-   Ã–ffentliche Landingpage bei kleinen Bildschirmbreiten
+   INSERAT-AI – PUBLIC LANDING MOBILE V3
+   Öffentliche Landingpage bei kleinen Bildschirmbreiten
    ========================================================= */
 
 @media screen and (max-width: 700px) {
-  /* Ã–ffentlicher Header */
+  /* Öffentlicher Header */
 
   .appPublicNavbar {
     width: 100% !important;
@@ -5035,7 +5035,7 @@ svg {
   }
 
   /*
-   * Mobil gehÃ¶ren diese Informationen nicht alle
+   * Mobil gehören diese Informationen nicht alle
    * gleichzeitig in die obere Navigationsleiste.
    */
   .appPublicNavbar .appHeaderPrivacy,
@@ -5288,14 +5288,14 @@ svg {
   }
 }
 /* =========================================================
-   INSERAT-AI â€“ PUBLIC LANDING MOBILE V4
-   Optimierung Startseite / Header fÃ¼r ca. 390 px
+   INSERAT-AI – PUBLIC LANDING MOBILE V4
+   Optimierung Startseite / Header für ca. 390 px
    ========================================================= */
 
 @media screen and (max-width: 430px) {
 
   /* -------------------------------------------------------
-     Ã–FFENTLICHER HEADER
+     ÖFFENTLICHER HEADER
      ------------------------------------------------------- */
 
   .appPublicNavbar {
@@ -5647,7 +5647,7 @@ svg {
 }
 
 
-/* Sehr kleine GerÃ¤te */
+/* Sehr kleine Geräte */
 
 @media screen and (max-width: 360px) {
 
@@ -5666,7 +5666,7 @@ svg {
 }
 
 /* =========================================================
-   INSERAT-AI â€“ MOBILE COOKIE SETTINGS V1
+   INSERAT-AI – MOBILE COOKIE SETTINGS V1
    Kompakter Datenschutz-Zugriff auf kleinen Displays
    ========================================================= */
 
@@ -5716,7 +5716,7 @@ svg {
 }
 
 /* =========================================================
-   INSERAT-AI â€“ PUBLIC LANDING MOBILE V4.1
+   INSERAT-AI – PUBLIC LANDING MOBILE V4.1
    Trust + Future-Bereich bei ca. 390 px
    ========================================================= */
 
@@ -5798,7 +5798,7 @@ svg {
 }
 
 /* =========================================================
-   INSERAT-AI â€“ PUBLIC LANDING MOBILE V4.2
+   INSERAT-AI – PUBLIC LANDING MOBILE V4.2
    Marketing Hub bei ca. 390 px
    ========================================================= */
 
@@ -7780,7 +7780,7 @@ svg {
 
 /*
  * Einzelanalysen sind eine Mobile-Darstellung.
- * Desktop behÃ¤lt vorerst seine bestehende Gesamtanalyse.
+ * Desktop behält vorerst seine bestehende Gesamtanalyse.
  */
 .dashboardImageAnalysisItem {
   display: none;
@@ -7887,7 +7887,7 @@ svg {
 
 
   /* =======================================================
-     LÃ–SCHEN = ECHTE TOUCHFLÃ„CHE
+     LÖSCHEN = ECHTE TOUCHFLÄCHE
      ======================================================= */
 
   .dashboardPage
@@ -8555,7 +8555,7 @@ svg {
 
 
   /* =======================================================
-     AKTIONEN / NÃ„CHSTE SCHRITTE
+     AKTIONEN / NÄCHSTE SCHRITTE
      ======================================================= */
 
   .detailPage .nextSteps p {
@@ -8815,7 +8815,7 @@ svg {
 
 
   /* =======================================================
-     OBJEKT AUSWÃ„HLEN
+     OBJEKT AUSWÄHLEN
      ======================================================= */
 
   body:has(#marketing-listing)
@@ -8900,7 +8900,7 @@ svg {
 
 
   /* =======================================================
-     FORTSCHRITT + NÃ„CHSTER SCHRITT
+     FORTSCHRITT + NÄCHSTER SCHRITT
      ======================================================= */
 
   body:has(#marketing-listing)
@@ -9012,7 +9012,7 @@ svg {
 
 
   /* =======================================================
-     EMPFOHLENER NÃ„CHSTER SCHRITT
+     EMPFOHLENER NÄCHSTER SCHRITT
      ======================================================= */
 
   body:has(#marketing-listing)
@@ -9429,7 +9429,7 @@ svg {
 
   /* =======================================================
      KARTEN
-     Keine Desktop-MindesthÃ¶hen auf Mobile
+     Keine Desktop-Mindesthöhen auf Mobile
      ======================================================= */
 
   .socialMediaPage section,
@@ -9518,7 +9518,7 @@ svg {
   /* =======================================================
      AUSGABE
      Wichtigster Fix:
-     nur Inhalts-HÃ¶he, nie auf EingabehÃ¶he strecken.
+     nur Inhalts-Höhe, nie auf Eingabehöhe strecken.
      ======================================================= */
 
   .socialMediaPage
@@ -9735,13 +9735,13 @@ svg {
 
 /* =========================================================
    INSERAT-AI - HOME STAGING MOBILE STYLE V1
-   Stilwahl + eigene WÃ¼nsche
+   Stilwahl + eigene Wünsche
    ========================================================= */
 
 @media (max-width: 640px) {
 
   /* -------------------------------------------------------
-     EINRICHTUNGSSTIL â€“ KOMPAKTES 2x2 PREMIUM GRID
+     EINRICHTUNGSSTIL – KOMPAKTES 2x2 PREMIUM GRID
      ------------------------------------------------------- */
 
   .stagingPage .styleOptionGrid {
@@ -9867,7 +9867,7 @@ svg {
 
 
   /* -------------------------------------------------------
-     EIGENE WÃœNSCHE â€“ RUHIGER PREMIUM INPUT
+     EIGENE WÜNSCHE – RUHIGER PREMIUM INPUT
      ------------------------------------------------------- */
 
   .stagingPage .customPromptPanel {
@@ -9953,7 +9953,7 @@ svg {
 
 
   /* -------------------------------------------------------
-     HINWEIS + ZEICHENZÃ„HLER
+     HINWEIS + ZEICHENZÄHLER
      ------------------------------------------------------- */
 
   .stagingPage .customPromptFooter {
@@ -10021,8 +10021,8 @@ svg {
     overflow-x: hidden;
   }
 
-  /* Eingabefelder mÃ¼ssen sich auf Mobile wie echte
-     App-Controls anfÃ¼hlen und nicht wie Desktop-Inputs. */
+  /* Eingabefelder müssen sich auf Mobile wie echte
+     App-Controls anfühlen und nicht wie Desktop-Inputs. */
   .financeMobilePage input {
     width: 100%;
     min-height: 48px;
@@ -10068,7 +10068,7 @@ svg {
     line-height: 1.4;
   }
 
-  /* KÃ¤ufer-Finanzierung:
+  /* Käufer-Finanzierung:
      Ergebnisse bleiben auf Mobile ruhig untereinander. */
   .financeMobilePage
     [data-section="FINANCING-CHECK-V1"] {
@@ -10100,7 +10100,7 @@ svg {
 
 /* =========================================================
    INSERAT-AI - EXAMPLE RESULT MOBILE WIDTH V1
-   Mehr nutzbare Textbreite im Ã¶ffentlichen Demo-Ergebnis
+   Mehr nutzbare Textbreite im öffentlichen Demo-Ergebnis
    ========================================================= */
 
 @media (max-width: 700px) {
@@ -10255,7 +10255,7 @@ svg {
   }
 
 
-  /* Icons wieder normale Mobile-GrÃ¶sse */
+  /* Icons wieder normale Mobile-Grösse */
 
   body:has(.detailPage)
   .supportDock
@@ -10559,7 +10559,7 @@ svg {
 
 
   /* -------------------------------------------------------
-     Aktionen bleiben unterhalb der ScrollflÃ¤che
+     Aktionen bleiben unterhalb der Scrollfläche
      ------------------------------------------------------- */
 
   .dashboardPage .actions {
@@ -10600,7 +10600,7 @@ svg {
     overflow-x: hidden !important;
   }
 
-  /* Aktionen vollstÃ¤ndig unter dem Scrollfenster */
+  /* Aktionen vollständig unter dem Scrollfenster */
   .dashboardPage .actions {
     position: relative !important;
     flex: none !important;
@@ -11908,7 +11908,7 @@ svg {
 
 /* =========================================================
    INSERAT-AI BRAND DEPTH V1
-   Farbe/Licht ×‘×œ×‘×“ â€“ kein Layout
+   Farbe/Licht ×‘×œ×‘×“ – kein Layout
    ========================================================= */
 
 .iaOnePage {
@@ -12298,7 +12298,7 @@ svg {
 
 
 /* =========================================================
-   INSERAT-AI HERO - ZÃœRICH SKYLINE VIDEO
+   INSERAT-AI HERO - ZÜRICH SKYLINE VIDEO
    ========================================================= */
 
 

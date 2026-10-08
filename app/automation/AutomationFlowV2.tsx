@@ -2422,7 +2422,7 @@ export default function AutomationFlowV2() {
 
                     {copiedListing
                       ? "Kopiert"
-                      : "Inserat kopieren"}
+                      : "Inserat-Text kopieren"}
                   </button>
 
                   <button
@@ -2442,36 +2442,11 @@ export default function AutomationFlowV2() {
 
                 </div>
 
-                <div className="publishZone">
-                  <div className="publishCopy">
-                    <span className="publishReady">
-                      BEREIT FÜR DEINE PORTALE
-                    </span>
-
-                    <strong>
-                      Ein Klick bis zur Veröffentlichung
-                    </strong>
-
-                    <small>
-                      Objektdaten, Bilder und der gewählte
-                      Text werden automatisch übernommen.
-                    </small>
-                  </div>
-
-                  <button
-                    className="publish"
-                    disabled
-                    aria-disabled="true"
-                    title="Portal-Anbindungen werden derzeit freigeschaltet."
-                  >
-                    {"PORTAL-VER\u00d6FFENTLICHUNG \u2013 IN VERARBEITUNG"}
-                  </button>
-                </div>
-
-                <p className="publishHint">
-                  Keine erneute Dateneingabe. Du wählst
-                  danach nur noch deine verbundenen Portale.
-                </p>
+                {/* PORTAL_PUBLISH_UI_HIDDEN_V1
+                    Portal publishing UI intentionally hidden
+                    until live portal publishing is ready.
+                    Internal save/publish logic remains available.
+                */}
               </div>
             )}
                       {(stage === "edit" || stage === "publish") && (

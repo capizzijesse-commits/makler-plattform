@@ -47,6 +47,7 @@ model User {
   listings                                                                Listing[]
   sessions                                                                Session[]
   presence                                                                UserPresence?
+  activityEvents                                                          UserActivityEvent[]
   valuations                                                              Valuation[]
   portalConnections                                                       PortalConnection[]
   portalCredentials                                                       PortalCredential[]
@@ -645,6 +646,7 @@ model Listing {
   propertyType String
   rooms        Float?
   livingArea   Float?
+  plotArea     Float?
   price        Int?
   highlights   String?
   style        String?
@@ -839,7 +841,7 @@ model FloorPlan {
   calibratedDistanceMeters Float?
   calibrationData          Json?
 
-  // FÃ¼r die spÃ¤tere 3D-Konstruktion
+  // Für die spätere 3D-Konstruktion
   floorHeightMeters Float?
   analysis          Json?
   analysisVersion   String?
@@ -962,6 +964,24 @@ model HomeStagingImage {
   @@index([listingId, createdAt])
 }
 
+model UserActivityEvent {
+  id Int @id @default(autoincrement())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type String
+  path String?
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+  @@index([createdAt])
+}
+
 model UserPresence {
   userId String @id
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -1001,7 +1021,7 @@ model Valuation {
 
   status String @default("draft")
 
-  // BestÃ¤tigte Schweizer Adresse
+  // Bestätigte Schweizer Adresse
   addressLabel String
   street       String?
   postalCode   String?

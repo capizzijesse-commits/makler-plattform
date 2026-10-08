@@ -6,6 +6,19 @@ type ListingImageInput = {
   url: string;
   fileName?: string | null;
   mimeType?: string | null;
+
+  position?: number | null;
+  isPrimary?: boolean | null;
+  analysis?: string | null;
+};
+
+type ListingFloorPlanInput = {
+  url: string;
+  fileName?: string | null;
+  mimeType?: string | null;
+
+  floorLevel?: string | null;
+  sortOrder?: number | null;
 };
 
 type ListingFinanceInput = {
@@ -40,6 +53,7 @@ export type PrismaPortalListingInput = {
 
   rooms?: number | null;
   livingArea?: number | null;
+  plotArea?: number | null;
   price?: number | null;
 
   highlights?: string | null;
@@ -56,6 +70,8 @@ export type PrismaPortalListingInput = {
   updatedAt: Date;
 
   images?: ListingImageInput[];
+
+  floorPlans?: ListingFloorPlanInput[];
 
   finance?: ListingFinanceInput | null;
 };
@@ -524,6 +540,33 @@ function resolveImages(
                   ),
               }
             : {}),
+
+          ...(typeof image.position ===
+            "number"
+            ? {
+                position:
+                  image.position,
+              }
+            : {}),
+
+          ...(typeof image.isPrimary ===
+            "boolean"
+            ? {
+                isPrimary:
+                  image.isPrimary,
+              }
+            : {}),
+
+          ...(cleanText(
+            image.analysis
+          )
+            ? {
+                analysis:
+                  cleanText(
+                    image.analysis
+                  ),
+              }
+            : {}),
         };
       }
     )
@@ -534,6 +577,80 @@ function resolveImages(
         typeof image
       > =>
         image !== null
+    );
+}
+
+function resolveFloorPlans(
+  listing:
+    PrismaPortalListingInput
+) {
+  return (
+    listing.floorPlans ?? []
+  )
+    .map(
+      (floorPlan) => {
+        const url =
+          cleanText(
+            floorPlan.url
+          );
+
+        if (!url) {
+          return null;
+        }
+
+        return {
+          url,
+
+          ...(cleanText(
+            floorPlan.fileName
+          )
+            ? {
+                fileName:
+                  cleanText(
+                    floorPlan.fileName
+                  ),
+              }
+            : {}),
+
+          ...(cleanText(
+            floorPlan.mimeType
+          )
+            ? {
+                mimeType:
+                  cleanText(
+                    floorPlan.mimeType
+                  ),
+              }
+            : {}),
+
+          ...(cleanText(
+            floorPlan.floorLevel
+          )
+            ? {
+                floorLevel:
+                  cleanText(
+                    floorPlan.floorLevel
+                  ),
+              }
+            : {}),
+
+          ...(typeof floorPlan.sortOrder ===
+            "number"
+            ? {
+                sortOrder:
+                  floorPlan.sortOrder,
+              }
+            : {}),
+        };
+      }
+    )
+    .filter(
+      (
+        floorPlan
+      ): floorPlan is NonNullable<
+        typeof floorPlan
+      > =>
+        floorPlan !== null
     );
 }
 
@@ -569,6 +686,11 @@ export function mapPrismaListingToPortal(
 
   const images =
     resolveImages(
+      listing
+    );
+
+  const floorPlans =
+    resolveFloorPlans(
       listing
     );
 
@@ -638,11 +760,25 @@ export function mapPrismaListingToPortal(
         }
       : {}),
 
+    ...(typeof listing
+      .plotArea === "number"
+      ? {
+          plotArea:
+            listing.plotArea,
+        }
+      : {}),
+
     ...(typeof listing.rooms ===
       "number"
       ? {
           rooms:
             listing.rooms,
+        }
+      : {}),
+
+    ...(floorPlans.length > 0
+      ? {
+          floorPlans,
         }
       : {}),
 

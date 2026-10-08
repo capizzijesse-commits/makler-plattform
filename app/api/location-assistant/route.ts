@@ -24,7 +24,7 @@ const CANTON_NAMES: Record<string, string> = {
   FR: "Freiburg",
   GE: "Genf",
   GL: "Glarus",
-  GR: "GraubÃ¼nden",
+  GR: "Graubünden",
   JU: "Jura",
   LU: "Luzern",
   NE: "Neuenburg",
@@ -40,7 +40,7 @@ const CANTON_NAMES: Record<string, string> = {
   VD: "Waadt",
   VS: "Wallis",
   ZG: "Zug",
-  ZH: "ZÃ¼rich",
+  ZH: "Zürich",
 };
 
 function normalizeText(value: unknown): string {
@@ -147,8 +147,8 @@ export function buildLocationDescription(
 
   return [
     `Die Immobilie befindet sich in ${match.zip} ${match.name} im Kanton ${cantonName}.`,
-    "Die Lage verbindet ein angenehmes Wohnumfeld mit den vielfÃ¤ltigen MÃ¶glichkeiten der umliegenden Region.",
-    "Angebote fÃ¼r den tÃ¤glichen Bedarf, Bildung, MobilitÃ¤t und Freizeit tragen zu einer ausgewogenen StandortqualitÃ¤t bei und machen die Umgebung fÃ¼r unterschiedliche Lebenssituationen attraktiv.",
+    "Die Lage verbindet ein angenehmes Wohnumfeld mit den vielfältigen Möglichkeiten der umliegenden Region.",
+    "Angebote für den täglichen Bedarf, Bildung, Mobilität und Freizeit tragen zu einer ausgewogenen Standortqualität bei und machen die Umgebung für unterschiedliche Lebenssituationen attraktiv.",
   ].join(" ");
 }
 
@@ -212,24 +212,24 @@ export async function POST(request: NextRequest) {
       categories: [
         {
           key: "publicTransport",
-          label: "Ã–ffentlicher Verkehr",
+          label: "Öffentlicher Verkehr",
           status: "address_required",
           text:
-            "Die konkrete Erschliessung durch den Ã¶ffentlichen Verkehr wird anhand der vollstÃ¤ndigen Objektadresse prÃ¤zise ausgewiesen.",
+            "Die konkrete Erschliessung durch den öffentlichen Verkehr wird anhand der vollständigen Objektadresse präzise ausgewiesen.",
         },
         {
           key: "schools",
           label: "Schulen und Betreuung",
           status: "address_required",
           text:
-            "Schulen, KindergÃ¤rten und Betreuungseinrichtungen im nÃ¤heren Umfeld werden standortbezogen aufbereitet.",
+            "Schulen, Kindergärten und Betreuungseinrichtungen im näheren Umfeld werden standortbezogen aufbereitet.",
         },
         {
           key: "shopping",
           label: "Einkaufen und Versorgung",
           status: "address_required",
           text:
-            "Einkaufs- und VersorgungsmÃ¶glichkeiten in der Umgebung werden objektbezogen ausgewiesen.",
+            "Einkaufs- und Versorgungsmöglichkeiten in der Umgebung werden objektbezogen ausgewiesen.",
         },
         {
           key: "leisure",
@@ -262,7 +262,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error:
-          "Der Schweizer Standort-Assistent konnte nicht ausgefÃ¼hrt werden.",
+          "Der Schweizer Standort-Assistent konnte nicht ausgeführt werden.",
       },
       { status: 500 }
     );

@@ -113,7 +113,7 @@ export async function POST(
                 ) as AutopilotUploadPayload;
             } catch {
               throw new Error(
-                "UngÃ¼ltige Upload-Daten."
+                "Ungültige Upload-Daten."
               );
             }
 
@@ -133,7 +133,7 @@ export async function POST(
               listingId.length > 128
             ) {
               throw new Error(
-                "UngÃ¼ltiger Autopilot-Entwurf."
+                "Ungültiger Autopilot-Entwurf."
               );
             }
 
@@ -195,7 +195,7 @@ export async function POST(
               )
             ) {
               throw new Error(
-                "UngÃ¼ltiger Autopilot-Speicherpfad."
+                "Ungültiger Autopilot-Speicherpfad."
               );
             }
 
@@ -250,7 +250,7 @@ export async function POST(
                 };
             } catch {
               throw new Error(
-                "UngÃ¼ltiger Autopilot-Upload-Kontext."
+                "Ungültiger Autopilot-Upload-Kontext."
               );
             }
 

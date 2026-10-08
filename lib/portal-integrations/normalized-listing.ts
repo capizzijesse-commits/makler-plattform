@@ -29,6 +29,19 @@ export type PortalImage = {
   title?: string;
   description?: string;
   mimeType?: string;
+
+  position?: number;
+  isPrimary?: boolean;
+  analysis?: string;
+};
+
+export type PortalFloorPlan = {
+  url: string;
+  fileName?: string;
+  mimeType?: string;
+
+  floorLevel?: string;
+  sortOrder?: number;
 };
 
 export type PortalAddress = {
@@ -65,7 +78,10 @@ export type PortalNormalizedListing = {
   category?: string;
 
   livingArea?: number;
+  plotArea?: number;
   rooms?: number;
+
+  floorPlans?: PortalFloorPlan[];
 
   createdAt?: Date;
   updatedAt?: Date;

@@ -33,7 +33,7 @@ const MAX_IMAGE_SIZE =
 
 /*
  * Direkter Function-Upload.
- * FÃƒÂ¼r grÃƒÂ¶ssere Dokumentpakete folgt
+ * Für grössere Dokumentpakete folgt
  * Direct-to-Blob Upload.
  */
 const MAX_TOTAL_UPLOAD_SIZE =
@@ -157,7 +157,7 @@ async function resolveUploadedReference(
     )
   ) {
     throw new Error(
-      "UngÃƒÂ¼ltige Upload-Referenz."
+      "Ungültige Upload-Referenz."
     );
   }
 
@@ -227,7 +227,7 @@ async function resolveUploadedReference(
     actualSize <= 0
   ) {
     throw new Error(
-      "Die DateigrÃƒÂ¶sse konnte nicht verifiziert werden."
+      "Die Dateigrösse konnte nicht verifiziert werden."
     );
   }
 
@@ -948,7 +948,7 @@ export async function POST(
           {
             success: false,
             error:
-              "Mindestens eine Upload-Referenz ist ungÃƒÂ¼ltig.",
+              "Mindestens eine Upload-Referenz ist ungültig.",
           },
           {
             status: 400,
@@ -964,7 +964,7 @@ export async function POST(
           {
             success: false,
             error:
-              "Der sichere Direktupload benÃƒÂ¶tigt einen Objektbezug.",
+              "Der sichere Direktupload benötigt einen Objektbezug.",
           },
           {
             status: 400,
@@ -1097,7 +1097,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Die hochgeladenen Dateien dÃƒÂ¼rfen zusammen maximal 4 MB gross sein.",
+            "Die hochgeladenen Dateien dürfen zusammen maximal 4 MB gross sein.",
         },
         {
           status: 400,
@@ -1254,7 +1254,7 @@ export async function POST(
         {
           success: false,
           error:
-            "Dokumente und Bilder dÃƒÂ¼rfen zusammen maximal 50 MB gross sein.",
+            "Dokumente und Bilder dürfen zusammen maximal 50 MB gross sein.",
         },
         {
           status: 400,

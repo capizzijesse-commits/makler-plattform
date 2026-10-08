@@ -134,7 +134,7 @@ export default function AutomationPublishOverlay() {
       selectedFiles.length > MAX_FILES
     ) {
       setError(
-        "Maximal 1 ExposÃ©-PDF und 10 Bilder pro Objekt."
+        "Maximal 1 Exposé-PDF und 10 Bilder pro Objekt."
       );
       return;
     }
@@ -208,7 +208,7 @@ export default function AutomationPublishOverlay() {
       setRunning(true);
 
       setStage(
-        "Objekt wird vorbereitet â€¦"
+        "Objekt wird vorbereitet …"
       );
 
       const draftResponse =
@@ -259,7 +259,7 @@ export default function AutomationPublishOverlay() {
       setListingId(nextListingId);
 
       setStage(
-        `${selectedFiles.length} Dateien werden parallel hochgeladen â€¦`
+        `${selectedFiles.length} Dateien werden parallel hochgeladen …`
       );
 
       const uploadedRefs =
@@ -474,8 +474,8 @@ setProgress(
           `Inserat vorbereitet. ${missingFields.length} ${
             missingFields.length === 1
               ? "Angabe muss"
-              : "Angaben mÃ¼ssen"
-          } noch bestÃ¤tigt werden.`
+              : "Angaben müssen"
+          } noch bestätigt werden.`
         );
       }
     } catch (automationError) {
@@ -591,7 +591,7 @@ setProgress(
       className="automationOverlay"
       role="dialog"
       aria-modal="true"
-      aria-label="Automatisch verÃ¶ffentlichen"
+      aria-label="Automatisch veröffentlichen"
       onMouseDown={(event) => {
         if (
           event.target ===
