@@ -1555,7 +1555,18 @@ export default function AutomationFlowV2() {
   }
 
   async function handleIncomingFiles(event: ChangeEvent<HTMLInputElement>) {
-    const incoming = Array.from(event.target.files || []);
+    const selected = Array.from(event.target.files || []);
+    const incoming = selected.filter(
+      (file) =>
+        file.type === "application/pdf" ||
+        /\.pdf$/i.test(file.name)
+    );
+
+    if (incoming.length !== selected.length) {
+      setError("Bitte ausschliesslich PDF-Dateien hochladen.");
+      event.target.value = "";
+      return;
+    }
     event.target.value = "";
     if (!incoming.length) return;
 
@@ -1795,7 +1806,7 @@ export default function AutomationFlowV2() {
                   <input
                     type="file"
                     multiple
-                    accept=".pdf,.docx,.txt,.xlsx,.xls,.csv,image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/plain,text/csv,application/csv"
+                    accept=".pdf,application/pdf"
                     disabled={stage === "working"}
                     onChange={handleIncomingFiles}
                   />
