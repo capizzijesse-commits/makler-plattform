@@ -19,6 +19,7 @@ const compiled = ts.transpileModule(
 let uploads = 0;
 let reads = 0;
 let lastTitleImage = null;
+let lastOrder = null;
 let mode = "accepted";
 
 const testExports = {};
@@ -31,11 +32,23 @@ vm.runInNewContext(compiled, {
     if (name.endsWith("image-package.server")) {
       return {
         prepareImmoScout24DeImagePackageV1(images) {
-          return images;
+          return [...images]
+            .sort(
+              (a, b) =>
+                Number(b.isPrimary) - Number(a.isPrimary) ||
+                a.position - b.position ||
+                a.id.localeCompare(b.id)
+            )
+            .map((image, index) => ({
+              ...image,
+              order: index + 1,
+              isTitleImage: index === 0,
+            }));
         },
         async readImmoScout24DeImageV1(image) {
           reads++;
           lastTitleImage = image.isTitleImage;
+          lastOrder = image.order;
           return image;
         },
       };
@@ -109,8 +122,9 @@ function makeDb(options = {}) {
     id: "image-1",
     listingId: "listing-1",
     storageKey: "test/cover.jpg",
-    position: 0,
-    isPrimary: options.nonPrimary ? false : true,
+    position: 4,
+    isPrimary:
+      !options.nonPrimary && !options.primaryOther,
   };
 
   const prisma = {
@@ -129,15 +143,32 @@ function makeDb(options = {}) {
     },
 
     listingImage: {
-      async findFirst({ where }) {
-        if (options.noImage) return null;
+      async findMany({ where }) {
+        if (where.listingId !== image.listingId) {
+          return [];
+        }
 
-        return (
-          where.id === image.id &&
-          where.listingId === image.listingId
-        )
-          ? image
-          : null;
+        const gallery = [
+          image,
+          {
+            ...image,
+            id: "image-2",
+            storageKey: "test/second.jpg",
+            position: 1,
+            isPrimary: !!options.primaryOther,
+          },
+          {
+            ...image,
+            id: "image-3",
+            storageKey: "test/third.jpg",
+            position: 2,
+            isPrimary: false,
+          },
+        ];
+
+        return options.noImage
+          ? gallery.filter(item => item.id !== image.id)
+          : gallery;
       },
     },
 
@@ -232,6 +263,18 @@ async function main() {
   assert.equal(lastTitleImage, false);
 
   console.log("PASS EXTRA: Normales Galeriebild bleibt ohne Titelbild-Markierung");
+
+  assert.equal(lastOrder, 3);
+  console.log("PASS EXTRA: Galeriebild hat korrekte Position 3");
+
+  const dbOrder = makeDb({ primaryOther: true });
+  const orderedResult = await run(input(dbOrder));
+
+  assert.equal(orderedResult.status, "http_accepted");
+  assert.equal(lastOrder, 3);
+  assert.equal(lastTitleImage, false);
+
+  console.log("PASS EXTRA: Fremdes Titelbild aendert Bildreihenfolge korrekt");
 
   const db2 = makeDb();
   const before = uploads;

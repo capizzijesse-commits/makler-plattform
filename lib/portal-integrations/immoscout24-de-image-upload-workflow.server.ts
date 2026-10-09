@@ -87,12 +87,15 @@ export async function runImmoScout24DeImageUploadWorkflowV1(
   }
 
   // Bild muss wirklich zum zugeordneten Inserat gehoeren.
-  const image = await input.prisma.listingImage.findFirst({
+  const images = await input.prisma.listingImage.findMany({
     where: {
-      id: input.imageId,
       listingId: objectLink.listingId,
     },
   });
+
+  const image = images.find(
+    (item) => item.id === input.imageId
+  );
 
   if (!image) {
     return {
@@ -103,11 +106,19 @@ export async function runImmoScout24DeImageUploadWorkflowV1(
 
   // Noch kein HTTP-Upload und noch kein Reservierungs-Write.
   const packageItems =
-    prepareImmoScout24DeImagePackageV1([image]);
+    prepareImmoScout24DeImagePackageV1(images);
+
+  const selected = packageItems.find(
+    (item) => item.id === image.id
+  );
+
+  if (!selected) {
+    fail("IMMOSCOUT24_DE_IMAGE_PACKAGE_SELECTION_FAILED");
+  }
 
   const loaded =
     await readImmoScout24DeImageV1({
-      ...packageItems[0],
+      ...selected,
       isTitleImage: image.isPrimary,
     });
 
