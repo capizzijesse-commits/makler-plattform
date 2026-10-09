@@ -1214,3 +1214,35 @@ model AutomationMonitoringEvent {
   @@index([stage, status, createdAt])
   @@index([status, createdAt])
 }
+
+/// Dauerhafte Zuordnung einer Inserat-AI-Immobilie
+/// zu einer ImmoScout24-DE-Maklerverbindung.
+///
+/// Status wird durch die spätere Service-Schicht verwaltet:
+/// reserved | creating | created | uncertain
+///
+/// Keine Secrets oder OAuth-Tokens speichern.
+model ImmoScout24DeObjectLink {
+  id String @id @default(cuid())
+
+  userId       String
+  listingId    String
+  connectionId String
+
+  externalId       String
+  externalObjectId String?
+
+  status String @default("reserved")
+
+  lastErrorCode String?
+  lastCheckedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([connectionId, listingId])
+  @@unique([connectionId, externalId])
+  @@unique([connectionId, externalObjectId])
+  @@index([userId, status])
+  @@index([status, updatedAt])
+}
