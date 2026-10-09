@@ -3,6 +3,10 @@ import "server-only";
 import type { PrismaClient } from "@prisma/client";
 
 import {
+  checkImmoScout24DeImageConnectionV1,
+} from "./immoscout24-de-image-connection-guard.server";
+
+import {
   prepareImmoScout24DeImagePackageV1,
   readImmoScout24DeImageV1,
 } from "./immoscout24-de-image-package.server";
@@ -65,6 +69,20 @@ export async function runImmoScout24DeImageUploadWorkflowV1(
     !input.imageId?.trim()
   ) {
     fail("IMMOSCOUT24_DE_IMAGE_WORKFLOW_INPUT_INVALID");
+  }
+
+  const connection =
+    await checkImmoScout24DeImageConnectionV1({
+      prisma: input.prisma,
+      userId: input.userId,
+      connectionId: input.connectionId,
+    });
+
+  if (!connection.allowed) {
+    return {
+      status: "blocked",
+      reason: connection.reason,
+    };
   }
 
   // Eigentuemerkontext und Objektstatus pruefen.

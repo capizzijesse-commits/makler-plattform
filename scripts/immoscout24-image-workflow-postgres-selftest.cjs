@@ -45,6 +45,16 @@ vm.runInNewContext(
     require(name) {
       if (name === "server-only") return {};
 
+      if (name.endsWith("image-connection-guard.server")) {
+        return {
+          async checkImmoScout24DeImageConnectionV1() {
+            // Nur die DB-Workflow-Integration wird hier
+            // getestet, nicht die PortalConnection.
+            return { allowed: true };
+          },
+        };
+      }
+
       if (name.endsWith("image-package.server")) {
         return {
           prepareImmoScout24DeImagePackageV1(images) {

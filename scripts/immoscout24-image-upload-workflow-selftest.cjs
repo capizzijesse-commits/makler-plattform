@@ -29,6 +29,30 @@ vm.runInNewContext(compiled, {
   require(name) {
     if (name === "server-only") return {};
 
+    if (name.endsWith("image-connection-guard.server")) {
+      return {
+        async checkImmoScout24DeImageConnectionV1(input) {
+          const connection =
+            await input.prisma.portalConnection.findFirst({
+              where: {
+                id: input.connectionId,
+                userId: input.userId,
+                portal: "immoscout24_de",
+                environment: "test",
+                status: "verified",
+              },
+            });
+
+          return connection
+            ? { allowed: true }
+            : {
+                allowed: false,
+                reason: "CONNECTION_NOT_VERIFIED",
+              };
+        },
+      };
+    }
+
     if (name.endsWith("image-package.server")) {
       return {
         prepareImmoScout24DeImagePackageV1(images) {
@@ -128,6 +152,19 @@ function makeDb(options = {}) {
   };
 
   const prisma = {
+    portalConnection: {
+      async findFirst({ where }) {
+        if (options.invalidConnection) return null;
+        return (
+          where.id === "connection-1" &&
+          where.userId === "user-1" &&
+          where.portal === "immoscout24_de" &&
+          where.environment === "test" &&
+          where.status === "verified"
+        ) ? { id: "connection-1" } : null;
+      },
+    },
+
     immoScout24DeObjectLink: {
       async findFirst({ where }) {
         if (options.noObject) return null;
@@ -316,6 +353,25 @@ async function main() {
   assert.equal(noImage.reason, "IMAGE_NOT_IN_LISTING");
 
   console.log("PASS 5: Fremdes Bild blockiert");
+
+  const dbBlocked = makeDb({ invalidConnection: true });
+  const uploadsBeforeGuard = uploads;
+  const readsBeforeGuard = reads;
+
+  const guardBlocked = await run(input(dbBlocked));
+
+  assert.equal(guardBlocked.status, "blocked");
+  assert.equal(
+    guardBlocked.reason,
+    "CONNECTION_NOT_VERIFIED"
+  );
+  assert.equal(uploads, uploadsBeforeGuard);
+  assert.equal(reads, readsBeforeGuard);
+  assert.equal(dbBlocked.records.size, 0);
+
+  console.log(
+    "PASS EXTRA: Verbindungssperre vor Bildlesen, Reservierung und HTTP"
+  );
 
   mode = "throw";
 
