@@ -241,6 +241,8 @@ export default function AutomationFlowV2() {
 
   // AUTOMATION_ABORT_V1
   const automationAbortRef = useRef<AbortController | null>(null);
+  // MANUAL_READY_EDIT_RETURN_V1
+  const manualEditFromReadyRef = useRef(false);
   // MOBILE_AUTOMATION_FACTS_TOGGLE_V1
   const [showMobileFacts, setShowMobileFacts] = useState(false);
 
@@ -1539,9 +1541,9 @@ export default function AutomationFlowV2() {
   }
 
   function improveManually() {
-    automationAbortRef.current?.abort();
-    automationAbortRef.current = null;
+    if (stage !== "publish") return;
 
+    manualEditFromReadyRef.current = true;
     setError("");
     setStage("edit");
     setStatusText("Du kannst die erkannten Angaben jetzt selbst verbessern.");
@@ -1619,6 +1621,14 @@ export default function AutomationFlowV2() {
 
   async function finishAfterManualEdit() {
     if (requiredMissing.length > 0) return;
+
+    if (manualEditFromReadyRef.current && variants.length > 0) {
+      manualEditFromReadyRef.current = false;
+      setError("");
+      setStage("publish");
+      setStatusText("Deine Änderungen wurden übernommen.");
+      return;
+    }
 
     setError("");
     setStage("working");
@@ -1831,13 +1841,6 @@ export default function AutomationFlowV2() {
                       Verarbeitung stoppen
                     </button>
 
-                    <button
-                      type="button"
-                      className="workingImprove"
-                      onClick={improveManually}
-                    >
-                      Angaben selbst verbessern
-                    </button>
                   </div>
                 )}
 
@@ -2398,6 +2401,28 @@ export default function AutomationFlowV2() {
                 </div>
 
                 <div className="listingActions">
+                  {/* IMPROVE_ACTION_BOTTOM_V1 */}
+                  <button
+                    type="button"
+                    className="listingAction"
+                    onClick={improveManually}
+                  >
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#fbbf24"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M12 20h9" />
+                      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L9 17l-4 1 1-4Z" />
+                    </svg>
+                    Angaben selbst verbessern
+                  </button>
                   <button
                     type="button"
                     className="listingAction"
