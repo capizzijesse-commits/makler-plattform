@@ -30,7 +30,15 @@ type ListingImage = {
   position: number;
   isPrimary: boolean;
 };
+type EditorVariant = {
+  title: string;
+  text: string;
+  highlights?: string[];
+  [key: string]: unknown;
+};
+
 type Listing = {
+  generatedVariants?: unknown;
   id: string;
   market?: string | null;
   countryCode?: string | null;
@@ -77,6 +85,10 @@ export default function EditListingPage() {
 
   const rawId = params.id;
   const listingId = Array.isArray(rawId) ? rawId[0] : rawId;
+
+  // COCKPIT_TEXT_VARIANTS_EDITOR_V1
+  const [variants, setVariants] = useState<EditorVariant[]>([]);
+  const [canEditVariants, setCanEditVariants] = useState(false);
 
   const [form, setForm] = useState<EditForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(true);
@@ -212,6 +224,39 @@ setImages(
           listing.locationDescription || ""
         );
         setLocationData(listing.locationData || null);
+
+        setCanEditVariants(listing.hasCoreAccess === true);
+
+        let parsedVariants: unknown = listing.generatedVariants;
+
+        if (typeof parsedVariants === "string") {
+          try {
+            parsedVariants = JSON.parse(parsedVariants);
+          } catch {
+            parsedVariants = null;
+          }
+        }
+
+        const validVariants =
+          Array.isArray(parsedVariants) &&
+          parsedVariants.length === 3 &&
+          parsedVariants.every(
+            (item: unknown) =>
+              typeof item === "object" &&
+              item !== null &&
+              "title" in item &&
+              typeof item.title === "string" &&
+              "text" in item &&
+              typeof item.text === "string"
+          );
+
+        setVariants(
+          validVariants
+            ? (parsedVariants as EditorVariant[]).map(
+                (item) => ({ ...item })
+              )
+            : []
+        );
       } catch (loadError) {
         if (
           loadError instanceof DOMException &&
@@ -549,6 +594,19 @@ async function deleteListingImage(imageId: string) {
       return;
     }
 
+    if (
+      canEditVariants &&
+      variants.length > 0 &&
+      !variants.every(
+        (item) => item.title.trim() && item.text.trim()
+      )
+    ) {
+      setError(
+        "Bitte ergänze Titel und Beschreibung aller drei Textvarianten."
+      );
+      return;
+    }
+
     try {
       setSaving(true);
       setError("");
@@ -570,6 +628,9 @@ async function deleteListingImage(imageId: string) {
             price: form.price,
             highlights: form.highlights,
             style: form.style,
+            ...(canEditVariants && variants.length === 3
+              ? { generatedVariants: variants }
+              : {}),
             locationDescription,
             locationData,
           }),
@@ -636,7 +697,7 @@ async function deleteListingImage(imageId: string) {
           <h1>Objekt bearbeiten</h1>
           <p>
             Passe die gespeicherten Angaben an. Deine vorhandenen
-            AI-Inseratvarianten bleiben erhalten.
+            AI-Inseratvarianten bleiben erhalten und können hier bearbeitet werden.
           </p>
         </header>
 
@@ -797,6 +858,58 @@ async function deleteListingImage(imageId: string) {
             </label>
           </div>
 
+          {canEditVariants && variants.length === 3 && (
+            <div className="formSection">
+              <div className="sectionHeading">
+                <span>INSERATTEXTE</span>
+                <h2>Drei Textvarianten bearbeiten</h2>
+              </div>
+
+              {variants.map((variant, index) => (
+                <div className="formSection" key={index}>
+                  <div className="sectionHeading">
+                    <span>VARIANTE {index + 1}</span>
+                    <h2>Inserattext {index + 1}</h2>
+                  </div>
+
+                  <label className="fullField">
+                    <span>Titel *</span>
+                    <input
+                      value={variant.title}
+                      onChange={(event) =>
+                        setVariants((current) =>
+                          current.map((item, i) =>
+                            i === index
+                              ? { ...item, title: event.target.value }
+                              : item
+                          )
+                        )
+                      }
+                      required
+                    />
+                  </label>
+
+                  <label className="fullField">
+                    <span>Beschreibung *</span>
+                    <textarea
+                      value={variant.text}
+                      onChange={(event) =>
+                        setVariants((current) =>
+                          current.map((item, i) =>
+                            i === index
+                              ? { ...item, text: event.target.value }
+                              : item
+                          )
+                        )
+                      }
+                      rows={8}
+                      required
+                    />
+                  </label>
+                </div>
+              ))}
+            </div>
+          )}
           {error && (
             <div className="errorMessage">
               {error}

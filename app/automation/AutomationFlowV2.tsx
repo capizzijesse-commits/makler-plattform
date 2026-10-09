@@ -118,8 +118,7 @@ function isExposeFile(file: File) {
 export default function AutomationFlowV2() {
   const router = useRouter();
   // AUTOMATION_PLAN_GUARD_V1
-  const [automationAccessReady, setAutomationAccessReady] =
-    useState(false);
+  const [automationAccessReady, setAutomationAccessReady] = useState(false);
   const [market, setMarket] = useState<InseratAiMarket>("CH");
   const [stage, setStage] = useState<Stage>("receive");
   const [documentFiles, setDocumentFiles] = useState<File[]>([]);
@@ -243,6 +242,14 @@ export default function AutomationFlowV2() {
   const automationAbortRef = useRef<AbortController | null>(null);
   // MANUAL_READY_EDIT_RETURN_V1
   const manualEditFromReadyRef = useRef(false);
+
+  // LISTING_TEXT_EDITOR_V1
+  const editorSnapshotRef = useRef<{
+    data: Extracted;
+    variants: Variant[];
+    activeVariant: number;
+    statusText: string;
+  } | null>(null);
   // MOBILE_AUTOMATION_FACTS_TOGGLE_V1
   const [showMobileFacts, setShowMobileFacts] = useState(false);
 
@@ -1541,12 +1548,40 @@ export default function AutomationFlowV2() {
   }
 
   function improveManually() {
-    if (stage !== "publish") return;
+    if (stage !== "publish" || variants.length === 0) return;
+
+    editorSnapshotRef.current = {
+      data: { ...data },
+      variants: variants.map((variant) => ({ ...variant })),
+      activeVariant,
+      statusText,
+    };
 
     manualEditFromReadyRef.current = true;
+    setShowMobileFacts(true);
     setError("");
     setStage("edit");
-    setStatusText("Du kannst die erkannten Angaben jetzt selbst verbessern.");
+    setStatusText("Du kannst dein Inserat jetzt bearbeiten.");
+  }
+
+  function cancelListingEdit() {
+    if (!manualEditFromReadyRef.current) return;
+
+    const snapshot = editorSnapshotRef.current;
+
+    if (snapshot) {
+      setData({ ...snapshot.data });
+      setVariants(
+        snapshot.variants.map((variant) => ({ ...variant }))
+      );
+      setActiveVariant(snapshot.activeVariant);
+      setStatusText(snapshot.statusText);
+    }
+
+    editorSnapshotRef.current = null;
+    manualEditFromReadyRef.current = false;
+    setError("");
+    setStage("publish");
   }
 
   // AUTOMATION_RESTART_V1
@@ -1623,6 +1658,16 @@ export default function AutomationFlowV2() {
     if (requiredMissing.length > 0) return;
 
     if (manualEditFromReadyRef.current && variants.length > 0) {
+      if (
+        !variants.every(
+          (variant) => variant.title.trim() && variant.text.trim()
+        )
+      ) {
+        setError("Bitte ergänze Titel und Beschreibung aller Textvarianten.");
+        return;
+      }
+
+      editorSnapshotRef.current = null;
       manualEditFromReadyRef.current = false;
       setError("");
       setStage("publish");
@@ -1903,7 +1948,7 @@ export default function AutomationFlowV2() {
 
             {/* RESULT_BEFORE_FACTS_V1 */}
             {/* INSERAT_AI_OUTPUT_DESIGN_V1 */}
-            {stage === "publish" && variants.length > 0 && (
+            {(stage === "publish" || (stage === "edit" && manualEditFromReadyRef.current)) && variants.length > 0 && (
               <div className="result">
                 <div className="outputGlow" />
 
@@ -2300,6 +2345,7 @@ export default function AutomationFlowV2() {
 
                   <textarea
                     className="titleEdit"
+                    readOnly={stage !== "edit" || !manualEditFromReadyRef.current}
                     rows={2}
                     aria-label="Inserattitel"
                     value={
@@ -2378,6 +2424,7 @@ export default function AutomationFlowV2() {
 
                   <textarea
                     className="textEdit"
+                    readOnly={stage !== "edit" || !manualEditFromReadyRef.current}
                     aria-label="Inserattext"
                     value={
                       variants[activeVariant]?.text || ""
@@ -2401,28 +2448,49 @@ export default function AutomationFlowV2() {
                 </div>
 
                 <div className="listingActions">
-                  {/* IMPROVE_ACTION_BOTTOM_V1 */}
-                  <button
-                    type="button"
-                    className="listingAction"
-                    onClick={improveManually}
-                  >
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#fbbf24"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
+                  {stage === "publish" && (
+                    <button
+                      type="button"
+                      className="listingAction"
+                      onClick={improveManually}
                     >
-                      <path d="M12 20h9" />
-                      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L9 17l-4 1 1-4Z" />
-                    </svg>
-                    Angaben selbst verbessern
-                  </button>
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#fbbf24"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M12 20h9" />
+                        <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L9 17l-4 1 1-4Z" />
+                      </svg>
+                      Inserat bearbeiten
+                    </button>
+                  )}
+
+                  {stage === "edit" && manualEditFromReadyRef.current && (
+                    <>
+                      <button
+                        type="button"
+                        className="listingAction"
+                        onClick={cancelListingEdit}
+                      >
+                        Abbrechen
+                      </button>
+                      <button
+                        type="button"
+                        className="listingAction"
+                        disabled={requiredMissing.length > 0}
+                        onClick={() => void finishAfterManualEdit()}
+                      >
+                        Änderungen speichern
+                      </button>
+                    </>
+                  )}
                   <button
                     type="button"
                     className="listingAction"
@@ -2533,7 +2601,7 @@ export default function AutomationFlowV2() {
                   <Field label="Highlights" value={data.highlights} wide onChange={(value) => setData({ ...data, highlights: value })} />
                 </div>
 
-                {stage === "edit" && (
+                {stage === "edit" && !manualEditFromReadyRef.current && (
                   <button className="primary" disabled={requiredMissing.length > 0} onClick={finishAfterManualEdit}>
                     Fehlende Angaben übernehmen →
                   </button>
