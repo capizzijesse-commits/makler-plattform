@@ -211,7 +211,9 @@ export default function AutomationFlowV2() {
     return buildSalesExposeDocument({
       facts: data,
       images: imageAnalyses,
-      variants,
+      variants: variants[activeVariant]
+        ? [variants[activeVariant]]
+        : [],
     });
   }
 
