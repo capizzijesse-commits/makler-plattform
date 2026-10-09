@@ -97,18 +97,18 @@ export function buildImmoScout24DeImageMultipartV1(
   const formData = new FormData();
 
   formData.append(
-    "metadata",
-    new Blob([xml], { type: "application/xml" }),
-    "body.xml"
-  );
-
-  formData.append(
     "attachment",
     new Blob(
       [new Uint8Array(image.bytes)],
       { type: image.mimeType }
     ),
     safeFileName
+  );
+
+  formData.append(
+    "metadata",
+    new Blob([xml], { type: "application/xml" }),
+    "body.xml"
   );
 
   return {

@@ -64,7 +64,12 @@ async function main() {
   assert.equal(result.formData.has("metadata"), true);
   assert.equal(result.formData.has("attachment"), true);
 
-  console.log("PASS 1: Beide Multipart-Felder vorhanden");
+  assert.deepEqual(
+    [...result.formData.keys()],
+    ["attachment", "metadata"]
+  );
+
+  console.log("PASS 1: Beide Multipart-Felder in definierter Reihenfolge");
 
   const metadata = result.formData.get("metadata");
   const xml = await metadata.text();
