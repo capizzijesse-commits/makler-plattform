@@ -1272,5 +1272,6 @@ model ImmoScout24DeImageUpload {
 
   @@unique([objectLinkId, imageId])
   @@unique([objectLinkId, externalId])
+  @@unique([objectLinkId, externalAttachmentId])
   @@index([status, updatedAt])
 }
