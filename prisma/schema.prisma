@@ -1240,9 +1240,37 @@ model ImmoScout24DeObjectLink {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  imageUploads ImmoScout24DeImageUpload[]
+
   @@unique([connectionId, listingId])
   @@unique([connectionId, externalId])
   @@unique([connectionId, externalObjectId])
   @@index([userId, status])
+  @@index([status, updatedAt])
+}
+
+
+model ImmoScout24DeImageUpload {
+  id String @id @default(cuid())
+
+  objectLinkId String
+  objectLink ImmoScout24DeObjectLink @relation(fields: [objectLinkId], references: [id], onDelete: Cascade)
+
+  imageId String
+
+  externalId String
+  checksum   String
+
+  status String @default("reserved")
+
+  externalAttachmentId String?
+  lastErrorCode       String?
+  lastCheckedAt       DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([objectLinkId, imageId])
+  @@unique([objectLinkId, externalId])
   @@index([status, updatedAt])
 }
