@@ -1,5 +1,11 @@
 import "server-only";
 
+import { prisma } from "@/lib/prisma";
+
+import {
+  assessImmoScout24DeImagePublishReadinessV1,
+} from "@/lib/portal-integrations/immoscout24-de-image-publish-readiness.server";
+
 import type {
   PortalPublishExecutionResult,
   PortalPublishWorkerJob,
@@ -436,6 +442,40 @@ export async function executeImmoScout24DeControlledPublishV1(
     );
   }
 
+
+  /*
+   * IMAGE READINESS GATE:
+   * All current listing images must be verified.
+   * No upload, confirmation or provider HTTP here.
+   */
+  const listingId =
+    clean(job.listingId);
+
+  const connectionId =
+    clean(job.connectionId);
+
+  if (!listingId || !connectionId) {
+    fail(
+      "IMMOSCOUT24_DE_IMAGE_NOT_READY",
+      "ImmoScout24-Bildfreigabe blockiert: Inserat- oder Verbindungs-ID fehlt."
+    );
+  }
+
+  const imageReadiness =
+    await assessImmoScout24DeImagePublishReadinessV1({
+      prisma,
+      userId: job.userId,
+      listingId,
+      connectionId,
+      externalObjectId: objectId,
+    });
+
+  if (imageReadiness.status !== "ready") {
+    fail(
+      "IMMOSCOUT24_DE_IMAGE_NOT_READY",
+      `ImmoScout24-Bildfreigabe blockiert: ${imageReadiness.reason}`
+    );
+  }
 
   const config =
     getImmoScout24DeOAuthConfig();
