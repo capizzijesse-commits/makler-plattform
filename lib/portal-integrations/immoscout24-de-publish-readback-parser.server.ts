@@ -93,9 +93,20 @@ export function parseImmoScout24DePublishReadbackV1(input: {
     ) ||
     !exactKeys(root, [
       "@_xmlns:common",
+      "@_xmlns:gis",
+      "@_xmlns:search",
+      "@_xmlns:ns5",
       "@_xmlns:xlink",
       "publishObject",
-    ])
+    ]) ||
+    ["@_xmlns:gis", "@_xmlns:search", "@_xmlns:ns5"].some(
+      key =>
+        root[key] !== undefined &&
+        (
+          typeof root[key] !== "string" ||
+          !/^https?:\/\/\S+$/.test(root[key])
+        )
+    )
   ) return unconfirmed("READBACK_ROOT_INVALID");
 
   const entries = root["publishObject"];

@@ -49,6 +49,23 @@ const good = begin + item + end;
 
 const cases = [
   ["Valid mapping", good, "confirmed", 200],
+  ["Real sandbox empty namespace collection",
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<common:publishObjects ' +
+    'xmlns:common="http://rest.immobilienscout24.de/schema/common/1.0" ' +
+    'xmlns:gis="http://example.test/gis" ' +
+    'xmlns:search="http://example.test/search" ' +
+    'xmlns:ns5="http://example.test/ns5" ' +
+    'xmlns:xlink="http://www.w3.org/1999/xlink"/>',
+    "unconfirmed", 200],
+  ["Namespace collection with valid mapping",
+    good.replace(
+      'xmlns:common=',
+      'xmlns:gis="http://example.test/gis" ' +
+      'xmlns:search="http://example.test/search" ' +
+      'xmlns:ns5="http://example.test/ns5" xmlns:common='
+    ),
+    "confirmed", 200],
   ["Provider XML with titles and xlink",
     '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
     '<common:publishObjects xmlns:common="http://rest.immobilienscout24.de/schema/common/1.0" xmlns:xlink="http://www.w3.org/1999/xlink">' +
