@@ -1773,54 +1773,102 @@ export async function markPortalPublishJobFailed(
   }
 
 
-  return prisma.portalPublishJob.updateMany({
+  /*
+   * FAILURE_SAFETY_AFTER_PROVIDER_RESERVATION_V1
+   *
+   * Die Entscheidung ist atomar:
+   * - begonnene Provider-Operation => Quarantaene
+   * - unbegonnene Provider-Operation => bisherige Retry-Regeln
+   *
+   * Jede UPDATE-Bedingung prueft den aktuellen DB-Zustand.
+   */
+  const commonWhere = {
+    id: job.id,
+    status: "processing",
+    lockedBy: workerId,
+    attemptCount: job.attemptCount,
+    maxAttempts: job.maxAttempts,
+  };
+
+  const startedCondition = {
+    OR: [
+      {
+        providerOperationId: {
+          not: null,
+        },
+      },
+      {
+        providerOperationState: {
+          not: null,
+        },
+      },
+    ],
+  };
+
+  const failureData = {
+    status: "failed",
+    failedAt: now,
+    errorCode,
+    errorMessage,
+    lockedAt: null,
+    lockedBy: null,
+  };
+
+  async function quarantineStartedOperation() {
+    return prisma.portalPublishJob.updateMany({
+      where: {
+        ...commonWhere,
+        ...startedCondition,
+      },
+      data: {
+        ...failureData,
+        nextAttemptAt: null,
+        providerOperationState: "reconciliation_required",
+        providerOperationUpdatedAt: now,
+      },
+    });
+  }
+
+  // Zuerst bereits reservierte Operationen abfangen.
+  const started = await quarantineStartedOperation();
+
+  if (started.count === 1) {
+    return started;
+  }
+
+  // Ein Retry ist nur zulaessig, wenn BEIDE
+  // Provider-Operationsfelder weiterhin NULL sind.
+  const unstarted = await prisma.portalPublishJob.updateMany({
     where: {
-      id:
-        job.id,
-
-      status:
-        "processing",
-
-      lockedBy:
-        workerId,
-
-      attemptCount:
-        job.attemptCount,
-
-      maxAttempts:
-        job.maxAttempts,
+      ...commonWhere,
+      providerOperationId: null,
+      providerOperationState: null,
     },
-
     data: {
-      status:
-        "failed",
-
-      failedAt:
-        now,
-
-      errorCode,
-
-      errorMessage,
-
+      ...failureData,
       nextAttemptAt,
-
-      lockedAt:
-        null,
-
-      lockedBy:
-        null,
-
       ...(requiresReconciliation
         ? {
-            providerOperationState:
-              "reconciliation_required",
-
-            providerOperationUpdatedAt:
-              now,
+            providerOperationState: "reconciliation_required",
+            providerOperationUpdatedAt: now,
           }
         : {}),
     },
   });
+
+  if (unstarted.count === 1) {
+    return unstarted;
+  }
+
+  /*
+   * Race-Schutz:
+   * Falls zwischen den beiden Updates eine Reservierung
+   * gespeichert wurde, nochmals Quarantaene versuchen.
+   *
+   * Ein bereits abgeschlossener oder uebernommener Job
+   * wird wegen commonWhere nicht ueberschrieben.
+   */
+  return quarantineStartedOperation();
 }
 
 
