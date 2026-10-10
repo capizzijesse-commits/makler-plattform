@@ -241,10 +241,7 @@ export default function Navbar() {
       ? "19,90 €"
       : "CHF 19.90";
 
-  const proPrice =
-    dashboardMarket === "DE"
-      ? "79,90 €"
-      : "CHF 79.90";
+
 
   useEffect(() => {
     const hostname =
@@ -999,7 +996,7 @@ export default function Navbar() {
                         fontSize: "18px",
                       }}
                     >
-                      {proPrice} / Monat
+                      Vorübergehend nicht verfügbar
                     </strong>
 
                     <small
@@ -1015,7 +1012,7 @@ export default function Navbar() {
 
                     <button
                       type="button"
-                      disabled={upgradeBusy}
+                      disabled={true}
                       onClick={() => {
                         const normalizedPlan =
                           userPlan
@@ -1057,7 +1054,7 @@ export default function Navbar() {
                     >
                       {upgradeBusy
                         ? "Checkout wird geöffnet …"
-                        : "Pro abonnieren"}
+                        : "Pro derzeit nicht buchbar"}
                     </button>
                   </div>
 

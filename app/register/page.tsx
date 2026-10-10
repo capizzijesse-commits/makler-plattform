@@ -172,9 +172,11 @@ function handleRegisterFormStart() {
     window.location.search
   ).get("plan");
 
+  const PRO_SALES_PAUSED = true;
+
   const normalizedPlan: RequestedPlan =
     plan === "founder" ||
-    (plan === "pro" && PRO_PUBLIC_LAUNCH_ENABLED) ||
+    (plan === "pro" && PRO_PUBLIC_LAUNCH_ENABLED && !PRO_SALES_PAUSED) ||
     plan === "single-object"
       ? plan
       : "";

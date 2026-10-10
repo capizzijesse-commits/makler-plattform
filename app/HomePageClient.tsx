@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import {
@@ -275,32 +275,18 @@ export default function HomePageClient({
             </div>
           </a>
 
-          <a href="/register?plan=pro" className="iaOnePlan iaOnePlanPro iaOnePlanLink">
-            <div className="iaOneRecommended">
-              ★ EMPFOHLEN
-            </div>
-
+          <div className="iaOnePlan iaOnePlanPro">
             <div className="iaOnePlanLabel">
               PRO · AUTOPILOT
             </div>
-
-            <div className="iaOnePrice">
-              <strong>
-                {currency} 79.90
-              </strong>
-              <span>/ Monat</span>
-            </div>
-
             <p>
-              Exposé + Bilder hochladen.
-              Inserat-AI übernimmt den
-              gesamten Erstellungsprozess.
+              Technische Optimierungen: Unser Autopilot
+              ist vorübergehend nicht buchbar.
             </p>
-
-            <div className="iaOnePlanMode iaOnePlanModePro">
-              Vollautomatisch arbeiten
+            <div className="iaOnePlanMode">
+              Wir sind in Kürze wieder für Sie da.
             </div>
-          </a>
+          </div>
         </div>
       </section>
     </main>

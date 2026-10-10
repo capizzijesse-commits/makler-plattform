@@ -136,13 +136,12 @@ export default function PricingSection({
     },
   ];
 
-  const visiblePlans = isGermany
-    ? plans.filter(
-        (plan) =>
-          plan.id === "founder" ||
-          plan.id === "pro"
-      )
-    : plans;
+  // PRO_SALES_PAUSED_V1
+  const visiblePlans = plans.filter(
+    (plan) =>
+      plan.id !== "pro" &&
+      (!isGermany || plan.id === "founder")
+  );
 
   const singleObjectFeatures = isGermany
     ? [
@@ -302,7 +301,7 @@ export default function PricingSection({
       : checkoutError ===
           "founder-unavailable"
         ? isGermany
-          ? "Das Founder-Angebot ist derzeit nicht verfügbar. Du kannst stattdessen Inserat-AI Pro für 79,90 € pro Monat wählen."
+          ? "Das Founder-Angebot ist derzeit nicht verfügbar."
           : "Die verfügbaren Founder-Plätze sind bereits vergeben."
         : checkoutError === "generic"
           ? t("errors.checkoutStart")

@@ -249,6 +249,18 @@ export async function POST(
         ? body.plan.trim().toLowerCase()
         : "";
 
+    // PRO_SALES_PAUSED_V1
+    if (requestedPlan === "pro") {
+      return NextResponse.json(
+        {
+          success: false,
+          proUnavailable: true,
+          error:
+            "Inserat-AI Pro ist aufgrund technischer Optimierungen vorübergehend nicht buchbar.",
+        },
+        { status: 503 }
+      );
+    }
     const requestedMarketValue =
       typeof body?.market === "string"
         ? body.market.trim().toUpperCase()
