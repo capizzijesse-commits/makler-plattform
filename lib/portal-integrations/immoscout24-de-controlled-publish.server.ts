@@ -1,5 +1,9 @@
 import "server-only";
 
+import {
+  parseImmoScout24DePublishReadbackV1,
+} from "@/lib/portal-integrations/immoscout24-de-publish-readback-parser.server";
+
 import { prisma } from "@/lib/prisma";
 
 import {
@@ -705,6 +709,39 @@ export async function executeImmoScout24DeControlledPublishV1(
   }
 
 
+  /* PUBLISH_READBACK_VERIFIED_V1 */
+  const verifyUrl =
+    `${config.baseUrl}` +
+    "/restapi/api/offer/v1.0/publish" +
+    `?realestate=${encodeURIComponent(objectId)}` +
+    `&publishchannel=${encodeURIComponent(PUBLISH_CHANNEL_ID)}`;
+
+  const verified = await oauthGet({
+    url: verifyUrl,
+    accessToken: access.accessToken,
+    accessTokenSecret: access.accessTokenSecret,
+  });
+
+  if (!verified.ok || verified.statusCode !== 200) {
+    fail(
+      "PORTAL_RECONCILIATION_REQUIRED",
+      "ImmoScout24 Publish wurde gesendet, aber der Read-back ist nicht bestaetigt."
+    );
+  }
+
+  const readback = parseImmoScout24DePublishReadbackV1({
+    httpStatus: verified.statusCode,
+    raw: verified.raw,
+    expectedObjectId: objectId,
+    expectedChannelId: PUBLISH_CHANNEL_ID,
+  });
+
+  if (readback.status !== "confirmed") {
+    fail(
+      "PORTAL_RECONCILIATION_REQUIRED",
+      `ImmoScout24 Read-back unconfirmed: ${readback.reason}`
+    );
+  }
   return {
     externalObjectId:
       objectId,
@@ -727,6 +764,12 @@ export async function executeImmoScout24DeControlledPublishV1(
 
       upstreamMessageCode:
         messageCode,
+
+      readBackVerified:
+        true,
+
+      externalPublishId:
+        readback.publishId,
 
       networkAttempted:
         true,
