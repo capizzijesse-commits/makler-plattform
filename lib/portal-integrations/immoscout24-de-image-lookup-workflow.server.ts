@@ -3,8 +3,8 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 
 import {
-  checkImmoScout24DeImageConnectionV1,
-} from "./immoscout24-de-image-connection-guard.server";
+  assessImmoScout24DeSandboxImageReadinessV1,
+} from "./immoscout24-de-sandbox-image-readiness.server";
 
 import {
   getImmoScout24DeSandboxAccess,
@@ -70,15 +70,24 @@ export async function lookupImmoScout24DeImageProtectedV1(
     return blocked("INVALID_LOOKUP_CONTEXT");
   }
 
-  const connection =
-    await checkImmoScout24DeImageConnectionV1({
-      prisma,
+  // Only this read-only sandbox lookup accepts configured.
+  // Publishing and database confirmation guards are unchanged.
+  const connection = await prisma.portalConnection.findFirst({
+    where: {
+      id: input.connectionId,
       userId: input.userId,
-      connectionId: input.connectionId,
-    });
+      portal: "immoscout24_de",
+      environment: "test",
+      status: { in: ["configured", "verified"] },
+    },
+    select: {
+      status: true,
+      environment: true,
+    },
+  });
 
-  if (!connection.allowed) {
-    return blocked(connection.reason);
+  if (!connection) {
+    return blocked("CONNECTION_NOT_CONFIGURED");
   }
 
   const objectLink =
@@ -183,6 +192,23 @@ export async function lookupImmoScout24DeImageProtectedV1(
 
   if (outcome.status !== "candidate") {
     return blocked(outcome.reason);
+  }
+
+  // The transport has already enforced the sandbox origin,
+  // HTTP 200, safe XML and matching attachment identity.
+  const readiness = assessImmoScout24DeSandboxImageReadinessV1({
+    environment: "sandbox",
+    connectionEnvironment: connection.environment,
+    connectionStatus: connection.status,
+    lookupStatus: outcome.status,
+    expectedExternalId: upload.externalId,
+    candidateExternalId: outcome.externalId,
+    expectedChecksum: upload.checksum,
+    candidateChecksum: outcome.checksum,
+  });
+
+  if (!readiness.allowed) {
+    return blocked(readiness.reason);
   }
 
   return {
