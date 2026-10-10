@@ -16,6 +16,39 @@ const compiled = ts.transpileModule(
   }
 ).outputText;
 
+
+const readinessFile =
+  "lib/portal-integrations/immoscout24-de-sandbox-image-readiness.server.ts";
+
+const readinessCompiled = ts.transpileModule(
+  fs.readFileSync(readinessFile, "utf8"),
+  {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2022,
+    },
+  }
+).outputText;
+
+const readinessExports = {};
+
+vm.runInNewContext(
+  readinessCompiled,
+  {
+    exports: readinessExports,
+    require(name) {
+      if (name === "server-only") return {};
+      throw Error("UNEXPECTED_READINESS_IMPORT");
+    },
+  },
+  { filename: readinessFile, timeout: 3000 }
+);
+
+assert.equal(
+  typeof readinessExports.assessImmoScout24DeSandboxImageReadinessV1,
+  "function"
+);
+
 const ctx = {
   userId: "user-1",
   connectionId: "connection-1",
@@ -47,6 +80,7 @@ function reset(overrides = {}) {
 
   calls = {
     guard: 0,
+    connection: 0,
     link: 0,
     image: 0,
     upload: 0,
@@ -57,6 +91,24 @@ function reset(overrides = {}) {
 }
 
 const prisma = {
+  portalConnection: {
+    async findFirst({ where }) {
+      calls.connection++;
+
+      assert.equal(where.id, ctx.connectionId);
+      assert.equal(where.userId, ctx.userId);
+      assert.equal(where.portal, "immoscout24_de");
+      assert.equal(where.environment, "test");
+      assert.equal(
+        JSON.stringify(where.status.in),
+        JSON.stringify(["configured", "verified"])
+      );
+
+      return state.connectionAllowed
+        ? { status: "verified", environment: "test" }
+        : null;
+    },
+  },
   immoScout24DeObjectLink: {
     async findFirst({ where }) {
       calls.link++;
@@ -117,6 +169,13 @@ vm.runInNewContext(
 
       if (name === "@/lib/prisma") {
         return { prisma };
+      }
+
+      if (name.endsWith("immoscout24-de-sandbox-image-readiness.server")) {
+        return {
+          assessImmoScout24DeSandboxImageReadinessV1:
+            readinessExports.assessImmoScout24DeSandboxImageReadinessV1,
+        };
       }
 
       if (name.endsWith("image-connection-guard.server")) {
@@ -253,7 +312,7 @@ async function main() {
   await check(
     2, "Verbindung nicht verifiziert",
     { connectionAllowed: false },
-    "blocked", "CONNECTION_NOT_VERIFIED", 0
+    "blocked", "CONNECTION_NOT_CONFIGURED", 0
   );
 
   await check(

@@ -59,7 +59,105 @@ function xml(body, attrs = 'id="123456"') {
   return `<common:attachment ${attrs} ${required}>${body}</common:attachment>`;
 }
 
+function collection(...attachments) {
+  return (
+    '<common:attachments ' +
+    'xmlns:common="http://rest.immobilienscout24.de/schema/common/1.0">' +
+    attachments.join("") +
+    '</common:attachments>'
+  );
+}
+
+function liveCollection(body, extraAttributes = "") {
+  const child = xml(body)
+    .replace("<common:attachment ", '<attachment modification="2026-10-10T10:00:00" ')
+    .replace("</common:attachment>", "</attachment>")
+    .replace("ns5:href=", "xlink:href=")
+    .replace(
+      'xmlns:ns5="http://www.w3.org/1999/xlink" ',
+      ""
+    );
+
+  return (
+    '<common:attachments ' +
+    'xmlns:common="http://rest.immobilienscout24.de/schema/common/1.0" ' +
+    'xmlns:xlink="http://www.w3.org/1999/xlink" ' +
+    'xmlns:offerlistelement="http://example.invalid/schema/1.0" ' +
+    extraAttributes +
+    ">" +
+    child +
+    "</common:attachments>"
+  );
+}
+
 const cases = [
+  ["Live-Format mit vererbten Namespaces",
+    liveCollection(fields), "candidate", 200],
+  ["Live-Format mit XML-Zeichenreferenzen",
+    liveCollection(fields + "<title>Haus &amp; Garten</title>"),
+    "candidate", 200],
+  ["Live-Format falscher Link",
+    liveCollection(fields).replace(
+      "/attachment/123456",
+      "/attachment/999999"
+    ), "unconfirmed", 200],
+  ["Live-Format doppelte Anhaenge",
+    liveCollection(fields).replace(
+      "</common:attachments>",
+      '<attachment id="999999"/></common:attachments>'
+    ), "unconfirmed", 200],
+  ["Live-Format falsche Pruefsumme",
+    liveCollection(fields.replace(checksum, "b".repeat(64))),
+    "unconfirmed", 200],
+  ["Live-Format unbekannter Namespace",
+    liveCollection(fields, 'xmlns:unexpected="urn:unknown" '),
+    "unconfirmed", 200],
+  ["Live-Format falscher xlink-Namespace",
+    liveCollection(fields).replace(
+      'xmlns:xlink="http://www.w3.org/1999/xlink"',
+      'xmlns:xlink="https://example.invalid/wrong"'
+    ), "unconfirmed", 200],
+
+  ["Gueltige Bildsammlung",
+    collection(xml(fields)), "candidate", 200],
+  ["Leere Bildsammlung",
+    collection(), "unconfirmed", 200],
+  ["Doppelte passende Bilder in Sammlung",
+    collection(xml(fields), xml(fields)),
+    "unconfirmed", 200],
+  ["Falsche Pruefsumme in Sammlung",
+    collection(xml(fields.replace(checksum, "b".repeat(64)))),
+    "unconfirmed", 200],
+  ["Falsche Kennung in Sammlung",
+    collection(xml(fields.replace(externalId, "iai-wrong"))),
+    "unconfirmed", 200],
+  ["Unbekanntes Element in Sammlung",
+    collection(xml(fields)).replace(
+      "</common:attachments>",
+      "<unexpected>test</unexpected></common:attachments>"
+    ), "unconfirmed", 200],
+  ["Unbekanntes Attribut an Sammlung",
+    collection(xml(fields)).replace(
+      "<common:attachments ",
+      '<common:attachments other="unexpected" '
+    ), "unconfirmed", 200],
+  ["Fehlender Attachment-Link in Sammlung",
+    collection(
+      xml(fields).replace(/\s+ns5:href="[^"]*"/, "")
+    ), "unconfirmed", 200],
+  ["Fehlender Bildtyp in Sammlung",
+    collection(
+      xml(fields).replace(/\s+xsi:type="[^"]*"/, "")
+    ), "unconfirmed", 200],
+  ["Gueltige XML-Zeichenreferenz",
+    xml(fields + "<title>Haus &amp; Garten</title>"),
+    "candidate", 200],
+  ["Unbekannte XML-Entity",
+    xml(fields + "<title>Haus &unknown;</title>"),
+    "unconfirmed", 200],
+  ["Numerische Zeichenreferenz weiterhin gesperrt",
+    xml(fields + "<title>Haus &#38; Garten</title>"),
+    "unconfirmed", 200],
   ["Gueltige Teststruktur", xml(fields), "candidate", 200],
   ["HTTP 404", xml(fields), "unconfirmed", 404],
   ["Falsche Bildkennung",

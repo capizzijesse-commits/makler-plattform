@@ -109,7 +109,7 @@ export function parseImmoScout24DeImageLookupV1(
   // No DTD, entities, CDATA or document-level
   // instructions except the XML declaration.
   if (
-    /<!|&|<\?(?!xml(?:\s|\?>))/i.test(xml)
+    /<!|&(?!(?:amp|lt|gt|quot|apos);)|<\?(?!xml(?:\s|\?>))/i.test(xml)
   ) {
     return unconfirmed("LOOKUP_XML_UNSAFE");
   }
@@ -143,7 +143,109 @@ export function parseImmoScout24DeImageLookupV1(
     return unconfirmed("LOOKUP_STRUCTURE_UNKNOWN");
   }
 
-  const root = record(document["common:attachment"]);
+  // Provider supports a single attachment and collection
+  // responses. Normalize only a strictly validated shape.
+  const collection = record(document["common:attachments"]);
+  let root = record(document["common:attachment"]);
+
+  if (collection) {
+    const allowedCollectionKeys = new Set([
+      "@_xmlns:common",
+      "@_xmlns:xlink",
+      "@_xmlns:offerlistelement",
+      "@_xmlns:ns5",
+      "@_xmlns:ns6",
+      "@_xmlns:realestates",
+      "@_xmlns:ns8",
+      "@_xmlns:gis",
+      "@_xmlns:search",
+      "@_xmlns:videoupload",
+      "@_xmlns:ns12",
+      "attachment",
+      "common:attachment",
+    ]);
+
+    if (
+      Object.keys(collection).some(
+        (key) => !allowedCollectionKeys.has(key)
+      ) ||
+      collection["@_xmlns:common"] !==
+        "http://rest.immobilienscout24.de/schema/common/1.0"
+    ) {
+      return unconfirmed("LOOKUP_STRUCTURE_UNKNOWN");
+    }
+
+    for (const [key, value] of Object.entries(collection)) {
+      if (!key.startsWith("@_xmlns:")) continue;
+
+      if (
+        typeof value !== "string" ||
+        value.length > 256 ||
+        !/^https?:\/\/[^\s<>"']+$/.test(value)
+      ) {
+        return unconfirmed("LOOKUP_NAMESPACE_INVALID");
+      }
+    }
+
+    const bare = collection["attachment"];
+    const prefixed = collection["common:attachment"];
+
+    if (bare !== undefined && prefixed !== undefined) {
+      return unconfirmed("LOOKUP_ATTACHMENT_COUNT_INVALID");
+    }
+
+    const entries = bare !== undefined ? bare : prefixed;
+
+    if (Array.isArray(entries)) {
+      if (entries.length !== 1) {
+        return unconfirmed("LOOKUP_ATTACHMENT_COUNT_INVALID");
+      }
+      root = record(entries[0]);
+    } else {
+      root = record(entries);
+    }
+
+    if (bare !== undefined && root) {
+      if (
+        collection["@_xmlns:xlink"] !==
+          "http://www.w3.org/1999/xlink" ||
+        typeof root["@_xlink:href"] !== "string" ||
+        root["@_ns5:href"] !== undefined ||
+        root["@_xmlns:ns5"] !== undefined ||
+        (
+          root["@_xmlns:common"] !== undefined &&
+          root["@_xmlns:common"] !==
+            collection["@_xmlns:common"]
+        )
+      ) {
+        return unconfirmed("LOOKUP_HREF_INVALID");
+      }
+
+      const modification = root["@_modification"];
+
+      if (
+        modification !== undefined &&
+        (
+          typeof modification !== "string" ||
+          modification.length < 1 ||
+          modification.length > 128 ||
+          !/^[\x20-\x7e]+$/.test(modification)
+        )
+      ) {
+        return unconfirmed("LOOKUP_METADATA_INVALID");
+      }
+
+      root = {
+        ...root,
+        "@_xmlns:common": collection["@_xmlns:common"],
+        "@_xmlns:ns5": collection["@_xmlns:xlink"],
+        "@_ns5:href": root["@_xlink:href"],
+      };
+
+      delete root["@_xlink:href"];
+      delete root["@_modification"];
+    }
+  }
 
   if (!root) {
     return unconfirmed("LOOKUP_STRUCTURE_UNKNOWN");
@@ -169,7 +271,7 @@ export function parseImmoScout24DeImageLookupV1(
 
   const allowedDocumentKeys = new Set([
     "?xml",
-    "common:attachment",
+    collection ? "common:attachments" : "common:attachment",
   ]);
 
   if (
