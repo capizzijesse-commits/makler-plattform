@@ -7,6 +7,10 @@ import {
 import { prisma } from "@/lib/prisma";
 
 import {
+  setPortalPublishProviderOperation,
+} from "@/lib/portal-integrations/portal-publish-job-store.server";
+
+import {
   assessImmoScout24DeImagePublishReadinessV1,
 } from "@/lib/portal-integrations/immoscout24-de-image-publish-readiness.server";
 
@@ -644,6 +648,56 @@ export async function executeImmoScout24DeControlledPublishV1(
     `<publishChannel id="${PUBLISH_CHANNEL_ID}"/>` +
     '</common:publishObject>';
 
+
+  /*
+   * DURABLE PUBLISH INTENT:
+   *
+   * Erst nach bestaetigtem DB-Update darf
+   * der externe Publish-POST erfolgen.
+   *
+   * Ein bereits markierter Auftrag darf
+   * nicht erneut publiziert werden.
+   */
+  const publishWorkerId =
+    clean(job.lockedBy);
+
+  if (!publishWorkerId) {
+    fail(
+      "PORTAL_RECONCILIATION_REQUIRED",
+      "ImmoScout24 Publish blockiert: Worker-Lock fehlt."
+    );
+  }
+
+  let reservationCount = 0;
+
+  try {
+    const reservation =
+      await setPortalPublishProviderOperation({
+        jobId: job.id,
+        workerId: publishWorkerId,
+        operationId:
+          "immoscout24_de_publish_" + job.id,
+        operationType: "publish",
+        operationState: "initiated",
+        externalObjectId: objectId,
+        requireUnstarted: true,
+      });
+
+    reservationCount = reservation.count;
+  }
+  catch {
+    fail(
+      "PORTAL_RECONCILIATION_REQUIRED",
+      "ImmoScout24 Publish blockiert: Provider-Operation konnte nicht eindeutig reserviert werden."
+    );
+  }
+
+  if (reservationCount !== 1) {
+    fail(
+      "PORTAL_RECONCILIATION_REQUIRED",
+      "ImmoScout24 Publish blockiert: Provider-Operation ist bereits reserviert oder der Worker-Lock ist ungueltig."
+    );
+  }
 
   const publish =
     await oauthPost({

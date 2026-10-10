@@ -854,6 +854,13 @@ export async function setPortalPublishProviderOperation(
 
     updatedAt?:
       Date;
+
+    /*
+     * Atomare Reservierung:
+     * Nur eine bisher unbegonnene Provider-Operation.
+     */
+    requireUnstarted?:
+      boolean;
   }
 ) {
 
@@ -886,6 +893,16 @@ export async function setPortalPublishProviderOperation(
 
       lockedBy:
         workerId,
+
+      ...(input.requireUnstarted === true
+        ? {
+            providerOperationId:
+              null,
+
+            providerOperationState:
+              null,
+          }
+        : {}),
     },
 
     data: {
