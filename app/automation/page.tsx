@@ -56,9 +56,9 @@ export default function AutomationPage() {
               marginBottom: 20,
             }}
           >
-            Wir verbessern derzeit unseren Inserat-AI Autopiloten,
-            um Ihnen ein noch schnelleres und zuverlässigeres
-            Erlebnis zu bieten.
+            Wir optimieren derzeit den Inserat-AI Autopiloten,
+            um die Erstellung Ihrer Immobilieninserate noch
+            schneller und zuverlässiger zu gestalten.
           </p>
 
           <p
@@ -68,31 +68,9 @@ export default function AutomationPage() {
               marginBottom: 32,
             }}
           >
-            Wir sind in Kürze wieder für Sie da.
+            Unser Autopilot steht Ihnen in Kürze wieder zur Verfügung.
           </p>
 
-          <button
-            type="button"
-            onClick={() => {
-              window.alert(
-                "Wir sind in Kürze wieder für Sie da."
-              );
-            }}
-            style={{
-              display: "block",
-              width: "100%",
-              padding: "32px 20px",
-              borderRadius: 16,
-              border: "1px dashed rgba(245,158,11,0.65)",
-              background: "#142840",
-              color: "#ffffff",
-              cursor: "pointer",
-              fontSize: 17,
-              fontWeight: 600,
-            }}
-          >
-            Wir sind in Kürze wieder für Sie da.
-          </button>
         </section>
       </main>
     );
