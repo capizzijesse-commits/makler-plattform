@@ -1,4 +1,6 @@
-﻿import sharp from "sharp";
+import { hasMeaningfulPdfText, pdfDocumentImageIndices } from "./pdf-document-evidence";
+import { fingerprintImageContent } from "./image-content-fingerprint.server";
+import sharp from "sharp";
 
 export type ExtractedPdfImage = {
   buffer: Buffer;
@@ -84,7 +86,11 @@ export async function extractPdfImages(
       const page = await pdf.getPage(pageNumber);
       const operatorList =
         await page.getOperatorList();
+      const pageText = await page.getTextContent();
+      if (!hasMeaningfulPdfText(pageText.items.map(item => "str" in item ? item.str : "").join(" "))) { page.cleanup(); continue; }
 
+      const pageView = page.getViewport({scale:1});
+      const documentImageIndices = pdfDocumentImageIndices(operatorList,pdfjs.OPS,pageView.width*pageView.height);
       for (
         let index = 0;
         index < operatorList.fnArray.length &&
@@ -98,6 +104,7 @@ export async function extractPdfImages(
           continue;
         }
 
+        if (documentImageIndices.has(index)) continue;
         const args =
           operatorList.argsArray[index];
 
@@ -183,17 +190,7 @@ export async function extractPdfImages(
             })
             .toBuffer();
 
-        /*
-         * Cheap duplicate protection.
-         * Same embedded image normally produces
-         * the same compressed byte size here.
-         */
-        const fingerprint =
-          width +
-          "x" +
-          height +
-          ":" +
-          output.length;
+        const fingerprint = await fingerprintImageContent(output);
 
         if (
           fingerprints.has(fingerprint)

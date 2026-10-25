@@ -9,6 +9,7 @@ generator client {
 }
 
 model User {
+  premiumQualityAssessments PremiumQualityAssessment[]
   id                  String    @id @default(cuid())
   name                String
   email               String    @unique
@@ -629,6 +630,7 @@ model PortalPublishJobTransition {
 }
 
 model Listing {
+  premiumQualityAssessments PremiumQualityAssessment[]
   id String @id @default(cuid())
 
   userId String
@@ -1213,4 +1215,20 @@ model AutomationMonitoringEvent {
   @@index([runId, createdAt])
   @@index([stage, status, createdAt])
   @@index([status, createdAt])
+}
+
+model PremiumQualityAssessment {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listingId String?
+  listing Listing? @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  kind String
+  version String
+  snapshotHash String
+  payload Json
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  @@index([userId, kind, createdAt])
+  @@index([listingId, kind, createdAt])
 }

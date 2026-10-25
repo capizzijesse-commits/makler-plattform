@@ -1,13 +1,15 @@
-"use client";
-
 import AutomationFlowV2 from "./AutomationFlowV2";
+import { isIsolatedLocalAutomationTest } from "@/lib/local-automation-test-access.server";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 // AUTOPILOT_PUBLIC_MAINTENANCE_V1
 // Wartungsanzeige deaktivieren: auf false setzen.
 const AUTOPILOT_PUBLIC_MAINTENANCE = true;
 
-export default function AutomationPage() {
-  if (AUTOPILOT_PUBLIC_MAINTENANCE) {
+export default async function AutomationPage() {
+  if (AUTOPILOT_PUBLIC_MAINTENANCE && !(await isIsolatedLocalAutomationTest())) {
     return (
       <main
         style={{

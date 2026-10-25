@@ -1,0 +1,33 @@
+{
+  "sourceRun": "tests/support/portable/9z-source",
+  "records": [
+    {
+      "file": "text-response-02.jsonl",
+      "providerCall": 2,
+      "sha256": "23bb1149fa20c90e67b52afe42409629f01c8ab2f6d47eb94dcc0c4696212010"
+    },
+    {
+      "file": "text-response-03.jsonl",
+      "providerCall": 3,
+      "sha256": "f7c39b983ee235a48c6c66128454ca5a4a02a82ff9b4b23bfa37dd34b32171f5"
+    },
+    {
+      "file": "text-response-04.jsonl",
+      "providerCall": 4,
+      "sha256": "9a0046a9aa43d29e378106b8c8631d4ceaf3d59421d81c45c2a2a92c6c476aff"
+    },
+    {
+      "file": "text-response-05.jsonl",
+      "providerCall": 5,
+      "sha256": "fea8a34e2d33532b7b3f96b67ab41fa3702d8e64359234eb38ec419d1dbfd911"
+    },
+    {
+      "file": "text-response-06.jsonl",
+      "providerCall": 6,
+      "sha256": "65dda0fb0c614fda53e5b0754ca4e3916ec217a114e9ff820899277fe2b9d63c"
+    }
+  ],
+  "sourceContextSha256": "d0895dd3a7cf77a027c0bdd92b40e2e7c7af4bb632e04756195c8aeda92d3b8d",
+  "sourceFactsSha256": "282f99b07a34bf2bee08a58ca51092b1a0f12d4320bb642cd64b286954b96036",
+  "sourceResponsesSha256": "3371491828320534b6600cbd22a4da98470e0cfce3403a6dfd34c5dedcca6540"
+}

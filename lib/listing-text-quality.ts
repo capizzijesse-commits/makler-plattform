@@ -323,7 +323,7 @@ const UNPROFESSIONAL_META_COPY_RULES: Record<
     {
       label: "nicht dokumentiert",
       pattern:
-        /\bnicht dokumentiert\b/i,
+        /\bnicht (?:n\u00e4her )?dokumentiert\b/i,
     },
     {
       label: "liegen nicht vor",
@@ -1432,7 +1432,7 @@ export function evaluateListingQuality(
 
       if (
         wordCount < 80 ||
-        wordCount > 180
+        wordCount > 280
       ) {
         deductScore(
           scores,
@@ -1445,10 +1445,10 @@ export function evaluateListingQuality(
           code:
             "WORD_COUNT_OUTSIDE_TARGET",
           message:
-            `Variante ${index + 1} enthält ${wordCount} Wörter. Der bevorzugte Bereich liegt bei 80 bis 180 Wörtern.`,
+            `Variante ${index + 1} enthält ${wordCount} Wörter. Der bevorzugte Bereich liegt bei 80 bis 280 Wörtern.`,
           severity:
-            wordCount < 65 ||
-            wordCount > 220
+            wordCount < 30 ||
+            wordCount > 340
               ? "error"
               : "warning",
         });
@@ -1568,6 +1568,83 @@ export function evaluateListingQuality(
         }
       }
 
+      // ROOM_MATERIAL_EVIDENCE_V2
+      // Separate property features do not establish a room-material relationship.
+      if (locale === "de") {
+        const sourceFacts = [
+          String(facts?.highlights ?? ""),
+          String(
+            (facts as { verifiedFeatures?: unknown } | undefined)
+              ?.verifiedFeatures ?? ""
+          ),
+        ]
+          .join(";")
+          .split(/[;\r\n]+/)
+          .map((part) => part.trim())
+          .filter(
+            (part) =>
+              part.length > 0 &&
+              !/^(?:kein(?:e|en|er|es)?|ohne)\b/i.test(part) &&
+              !/\b(?:nicht bestätigt|nicht belegt|unbestätigt)\b/i.test(part)
+          );
+
+        const statements = text.split(/[.!?]+/);
+
+        const rooms = [
+          "wohnzimmer",
+          "schlafzimmer",
+          "küche",
+          "kueche",
+          "badezimmer",
+          "arbeitszimmer",
+        ];
+
+        for (const room of rooms) {
+          const relation = new RegExp(
+            `\\b${room}\\b\\s+` +
+              `(?:ist\\s+mit|verfügt\\s+über|hat|besitzt)` +
+              `[^.!?]{0,55}\\bparkett(?:boden)?\\b` +
+              `|\\b(?:im|in\\s+der|in\\s+dem)\\s+${room}\\b` +
+              `[^.!?]{0,55}\\bparkett(?:boden)?\\b` +
+              `|\\bparkett(?:boden)?\\b\\s+` +
+              `(?:im|in\\s+der|in\\s+dem)\\s+${room}\\b`,
+            "i"
+          );
+
+          if (
+            statements.some((statement) => relation.test(statement)) &&
+            !sourceFacts.some((fact) => relation.test(fact))
+          ) {
+            deductScore(scores, index, 18);
+            issues.push({
+              variantIndex: index,
+              code: "ROOM_MATERIAL_WITHOUT_EVIDENCE",
+              message:
+                `Variante ${index + 1} ordnet Parkettboden ` +
+                `dem Raum "${room}" ohne ausdrücklichen Beleg zu.`,
+              severity: "error",
+            });
+          }
+        }
+
+        const coverage =
+          /\bparkett(?:boden)?\b.{0,75}\b(?:gesamte[nr]?\s+wohnfläche|allen\s+räumen|sämtlichen\s+räumen|durchgehend)\b|\b(?:gesamte[nr]?\s+wohnfläche|allen\s+räumen|sämtlichen\s+räumen|durchgehend)\b.{0,75}\bparkett(?:boden)?\b/i;
+
+        if (
+          statements.some((statement) => coverage.test(statement)) &&
+          !sourceFacts.some((fact) => coverage.test(fact))
+        ) {
+          deductScore(scores, index, 18);
+          issues.push({
+            variantIndex: index,
+            code: "PARKETT_COVERAGE_WITHOUT_EVIDENCE",
+            message:
+              `Variante ${index + 1} behauptet eine ` +
+              `nicht belegte vollständige Parkettverlegung.`,
+            severity: "error",
+          });
+        }
+      }
       const normalizedVariant =
         normalizeText(
           `${title} ${text}`
@@ -1601,10 +1678,18 @@ export function evaluateListingQuality(
           containsClaim &&
           !hasEvidence
         ) {
+          // GERMANY_EDITORIAL_CLAIM_WARNING_V1
+          // Subjective marketing cliches are editorial warnings.
+          // Unsupported material property claims remain errors.
+          const editorialOnlyClaim =
+            listingMarket === "DE" &&
+            rule.label ===
+              "unbelegte Steigerung der Lebensqualität";
+
           deductScore(
             scores,
             index,
-            14
+            editorialOnlyClaim ? 3 : 14
           );
 
           issues.push({
@@ -1613,8 +1698,11 @@ export function evaluateListingQuality(
             code:
               "CLAIM_WITHOUT_EVIDENCE",
             message:
-              `Variante ${index + 1} behauptet „${rule.label}“, obwohl dafür keine Grundlage in den Objektdaten vorhanden ist.`,
-            severity: "error",
+              editorialOnlyClaim
+                ? `Variante ${index + 1} enthält eine allgemeine Werbefloskel: „${rule.label}“.`
+                : `Variante ${index + 1} behauptet „${rule.label}“, obwohl dafür keine Grundlage in den Objektdaten vorhanden ist.`,
+            severity:
+              editorialOnlyClaim ? "warning" : "error",
           });
         }
       }

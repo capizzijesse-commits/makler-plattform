@@ -1,3 +1,4 @@
+import { getSafeImageRoomEvidence, type SafeImageRoomEvidence } from "@/lib/image-expose-consistency";
 import {
   extractPdfImageCandidates,
   type PdfImageCandidate,
@@ -9,6 +10,10 @@ import {
 
 
 export type ExtractedPdfPropertyPhoto = {
+  room?: string | null;
+  roomConfidence?: number | null;
+  roomIndependentFacts?: { fact: string; confidence: number }[];
+
   buffer: Buffer;
   width: number;
   height: number;
@@ -18,6 +23,8 @@ export type ExtractedPdfPropertyPhoto = {
   confidence: number;
   reason: string;
   analysis?: string;
+  roofShape?: "flat" | "pitched" | "unknown";
+  roofConfidence?: number;
 };
 
 export type ExtractPdfPropertyPhotosResult = {
@@ -80,6 +87,17 @@ export async function extractPropertyPhotosFromPdf(
     analysis: string;
   };
 
+  const roomEvidenceByCandidateIndex = new Map<number, SafeImageRoomEvidence>();
+
+  // PDF_ROOF_METADATA_T209C3
+  const roofEvidenceByCandidateIndex = new Map<
+    number,
+    {
+      roofShape: "flat" | "pitched" | "unknown";
+      roofConfidence: number;
+    }
+  >();
+
   const analysisPromises:
     Promise<StreamedAnalysis[]>[] = [];
 
@@ -136,6 +154,27 @@ export async function extractPropertyPhotosFromPdf(
                     return null;
                   }
 
+                   roomEvidenceByCandidateIndex.set(source.candidateIndex, getSafeImageRoomEvidence(analysis));
+                   const shape = analysis.roofShape;
+                   const confidence = analysis.roofConfidence;
+
+                   if (
+                     (shape === "flat" || shape === "pitched") &&
+                     typeof confidence === "number" &&
+                     Number.isFinite(confidence) &&
+                     confidence >= 0 &&
+                     confidence <= 1
+                   ) {
+                     roofEvidenceByCandidateIndex.set(
+                       source.candidateIndex,
+                       {
+                         roofShape: shape,
+                         roofConfidence: confidence,
+                       }
+                     );
+                   }
+
+
                   return {
                     candidateIndex:
                       source.candidateIndex,
@@ -172,12 +211,11 @@ export async function extractPropertyPhotosFromPdf(
     );
   };
 
-  const candidates =
-    await extractPdfImageCandidates(
+  const candidates = await extractPdfImageCandidates(
       pdfBuffer,
       {
         renderPages:
-          options.renderPages === true,
+          false,
 
         onCandidate:
           (candidate) => {
@@ -199,6 +237,7 @@ export async function extractPropertyPhotosFromPdf(
           },
       }
     );
+  // Document page renders are not property photographs. No page-render fallback.
 
   /*
    * The final batch may contain fewer than 5 images.
@@ -259,20 +298,74 @@ export async function extractPropertyPhotosFromPdf(
    * Preserve candidate order and defer semantic filtering to
    * that existing batch analysis.
    */
+  const segmentationEnabled =
+    process.env.IA_PDF_COLLAGE_SPLIT_V1 === "enabled-local-test";
+
+  const photoSources: Array<{
+    candidate: PdfImageCandidate;
+    originalIndex: number;
+    segmented: boolean;
+  }> = candidates.map((candidate, originalIndex) => ({
+    candidate,
+    originalIndex,
+    segmented: false,
+  }));
+
+  if (segmentationEnabled && candidates.length === 1) {
+    const { segmentEmbeddedPdfPage } = await import(
+      "@/lib/pdf-segment-embedded-page.server"
+    );
+
+    const segments = await segmentEmbeddedPdfPage(
+      candidates[0].buffer
+    );
+
+    if (segments && segments.length > 1) {
+      photoSources.splice(
+        0,
+        photoSources.length,
+        ...segments.map((segment) => ({
+          candidate: {
+            ...candidates[0],
+            buffer: segment.buffer,
+            width: segment.width,
+            height: segment.height,
+          },
+          originalIndex: 0,
+          segmented: true,
+        }))
+      );
+
+      console.log("[PDF COLLAGE SEGMENTATION]", {
+        originalCandidates: candidates.length,
+        segmentedImages: segments.length,
+        reviewRequired: true,
+      });
+    }
+  }
+
   const photos: ExtractedPdfPropertyPhoto[] =
-    candidates.map((candidate, candidateIndex) => ({
-      buffer: candidate.buffer,
-      width: candidate.width,
-      height: candidate.height,
-      pageNumber: candidate.pageNumber,
-      imageIndex: candidate.imageIndex,
+    photoSources.map((entry, candidateIndex) => ({
+      buffer: entry.candidate.buffer,
+      width: entry.candidate.width,
+      height: entry.candidate.height,
+      pageNumber: entry.candidate.pageNumber,
+      imageIndex: entry.candidate.imageIndex,
       candidateIndex,
-      confidence: 1,
-      reason: "deferred_to_batch_image_analysis",
-      analysis:
-        analysisByCandidateIndex.get(
-          candidateIndex
-        ),
+      confidence: entry.segmented ? 0 : 1,
+      reason: entry.segmented
+        ? "collage_segment_requires_review"
+        : "deferred_to_batch_image_analysis",
+      analysis: entry.segmented
+        ? undefined
+        : analysisByCandidateIndex.get(entry.originalIndex),
+      ...getSafeImageRoomEvidence(entry.segmented ? null : roomEvidenceByCandidateIndex.get(entry.originalIndex)),
+      roofShape: entry.segmented
+        ? undefined
+        : roofEvidenceByCandidateIndex.get(entry.originalIndex)?.roofShape,
+      roofConfidence: entry.segmented
+        ? undefined
+        : roofEvidenceByCandidateIndex.get(entry.originalIndex)?.roofConfidence,
     }));
 
   console.log("[PDF PHOTO SPEED] total", {

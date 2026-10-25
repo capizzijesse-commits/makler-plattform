@@ -1,0 +1,65 @@
+// ISOLATED 9N COPY ONLY. Never copied into the release candidate.
+import 'server-only';
+import { appendFileSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { randomUUID, createHash } from 'node:crypto';
+import { isIsolatedLocalAutomationTest } from './local-automation-test-access.server';
+import { prisma } from './prisma';
+import { PREMIUM_QUALITY_VERSION, stableQualityHash, type PremiumSourceAudit } from './premium-quality-gate.server';
+
+const fields = ['countryCode','market','locale','propertyType','marketingType','transactionType','price','currency','rooms','livingArea','plotArea','highlights','verifiedFeatures','priceOnRequestConfirmed','manualFactsConfirmed','sourceAssessmentId'] as const;
+export type SourceDiagnosticContext = { correlationId: string; requestId: string };
+const redact = (s: string) => s.replace(/sk-[A-Za-z0-9_-]+/g,'[REDACTED]').replace(/\bBearer\s+\S+/gi,'[REDACTED]').replace(/\b(?:password|api[_ -]?key|token|secret)\s*[:=]\s*\S+/gi,'[REDACTED]').slice(0,1000);
+function selectedFacts(body: Record<string, unknown>) {
+  return Object.fromEntries(fields.map(field => {
+    const value = body[field], type = value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value;
+    return [field, { present: Object.prototype.hasOwnProperty.call(body,field), type,
+      ...(typeof value === 'string' ? {value:redact(value)} : typeof value === 'boolean' || typeof value === 'number' && Number.isFinite(value) || value === null ? {value} : {}) }];
+  }));
+}
+function context(id: unknown): SourceDiagnosticContext {
+  return { correlationId: '9N-'+createHash('sha256').update(typeof id === 'string' ? id : 'MISSING_SOURCE_ID').digest('hex').slice(0,24), requestId:randomUUID() };
+}
+async function enabled() {
+  return process.env.NODE_ENV === 'development' && process.env.INSERAT_AI_SOURCE_DIAGNOSTICS === 'SYNTHETIC_9N_ONLY' && await isIsolatedLocalAutomationTest();
+}
+function write(event: Record<string, unknown>) {
+  const folder=join(process.cwd(),'.source-diagnostics');mkdirSync(folder,{recursive:true,mode:0o700});
+  appendFileSync(join(folder,'events.jsonl'),JSON.stringify({at:new Date().toISOString(),...event})+'\n',{mode:0o600});
+}
+export async function recordSourceSaved(record: {id:string; version?:string; expiresAt?:Date}, extracted: Record<string,unknown>) {
+  try { if (!await enabled()) return;write({...context(record.id),stage:'extraction_saved',sourceAssessmentId:redact(record.id),version:record.version?redact(record.version):null,expiresAt:record.expiresAt?.toISOString()??null,facts:selectedFacts(extracted)}); } catch { /* Diagnostics never change a decision or expose errors. */ }
+}
+export async function startSourceDiagnostics(userId: string, body: Record<string,unknown>): Promise<SourceDiagnosticContext|null> {
+  try {
+    if (!await enabled()) return null;
+    const ctx=context(body.sourceAssessmentId),id=body.sourceAssessmentId;
+    const validId=typeof id==='string'&&/^[A-Za-z0-9_-]{1,128}$/.test(id);
+    const record=validId?await prisma.premiumQualityAssessment.findUnique({where:{id},select:{id:true,userId:true,kind:true,version:true,expiresAt:true,snapshotHash:true,payload:true}}):null;
+    const extracted=(record?.payload as {extracted?:Record<string,unknown>})?.extracted;
+    const compared=['countryCode','street','postalCode','location','propertyType','highlights','marketingType','transactionType','currency','commercialUse','rentPeriod','priceOnRequestConfirmed','commercialArea','plotArea'];
+    const nonAffirmative=(v:unknown)=>v===undefined||v===null||v===false;
+    const changedFieldNames=record?compared.filter(key=>key==='priceOnRequestConfirmed'
+      ? !(nonAffirmative(body[key])&&nonAffirmative(extracted?.[key]))&&body[key]!==extracted?.[key]
+      : body[key]!==undefined&&body[key]!==''&&String(body[key])!==String(extracted?.[key]??'')):[];
+    write({...ctx,stage:'generate_received',facts:selectedFacts(body),lookup:{idValid:validId,recordFound:!!record,
+      userMatches:record?record.userId===userId:null,kindMatches:record?record.kind==='expose':null,
+      versionMatches:record?record.version===PREMIUM_QUALITY_VERSION:null,notExpired:record?record.expiresAt.getTime()>Date.now():null,
+      snapshotMatches:record?record.snapshotHash===stableQualityHash(record.payload):null,
+      storedVersion:record?redact(record.version):null,expectedVersion:PREMIUM_QUALITY_VERSION,expiresAt:record?.expiresAt.toISOString()??null},
+      sourceFacts:record?selectedFacts(extracted??{}):null,changedFieldNames});
+    return ctx;
+  } catch { return null; }
+}
+export async function recordSourceDecision(ctx: SourceDiagnosticContext|null|undefined, flags: {
+  recordReadable:boolean; changedUnconfirmed?:boolean; countryUnconfirmed?:boolean; documented?:boolean; rental?:boolean; ambiguousRent?:boolean;
+}, audit: PremiumSourceAudit) {
+  try { if (!ctx||!await enabled()) return;write({...ctx,stage:'source_audit_decision',flags,status:audit.status,
+    conflicts:audit.conflicts.map(x=>({field:x.field,status:x.status})),documentReview:(audit.documents??[]).map((x,index)=>({index,requiresReview:(x.analysis as {requiresReview?:boolean})?.requiresReview===true}))}); } catch {}
+}
+export async function recordSourceGuard(ctx: SourceDiagnosticContext|null|undefined, audit: PremiumSourceAudit) {
+  try { if (!ctx||!await enabled()) return;
+    const branches=[...(audit.status!=='passed'?['AUDIT_STATUS_NOT_PASSED']:[]),...(audit.conflicts.some(x=>x.status==='unresolved')?['UNRESOLVED_SOURCE_CONFLICT']:[]),...(audit.documents?.some(x=>(x.analysis as {requiresReview?:boolean})?.requiresReview===true)?['DOCUMENT_REVIEW_REQUIRED']:[])];
+    write({...ctx,stage:'before_source_guard',status:audit.status,branches,blocked:branches.length>0,conflictFields:audit.conflicts.filter(x=>x.status==='unresolved').map(x=>x.field),documentReview:(audit.documents??[]).map((x,index)=>({index,requiresReview:(x.analysis as {requiresReview?:boolean})?.requiresReview===true}))});
+  } catch {}
+}

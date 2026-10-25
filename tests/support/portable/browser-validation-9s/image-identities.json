@@ -1,0 +1,90 @@
+{
+  "synthetic": true,
+  "provenance": "9R captured input bytes matched by exact decoded fingerprint to persisted image receipt; original source hashes from 9R input manifest",
+  "bindings": [
+    {
+      "id": "S01",
+      "requestSha256": "c82e9204da1900b94626ed5a662a76a67b1fc83bf2c6178478ff755890c4efa7",
+      "decodedFingerprint": "3c5eaebe53c8f714dc90ad22f931b0b293c94c98f7edf4321056b7adcb874f4d",
+      "sourceSha256": "2381f07fae891c12689a5a9998cffe223b276fc47506234ef8b44e7f41178e99",
+      "sourceFile": "../../shared-images/S01.png"
+    },
+    {
+      "id": "S02",
+      "requestSha256": "f9f85985ba965e2c7965a5ad40828464208bde214d3a778338494d69efeb21ff",
+      "decodedFingerprint": "b5ce7c90e136c878a184b69b6d73c9ef020f78ae1c370c17ecec6bf37e7695cd",
+      "sourceSha256": "f9f85985ba965e2c7965a5ad40828464208bde214d3a778338494d69efeb21ff",
+      "sourceFile": "../../shared-images/S02.jpg"
+    },
+    {
+      "id": "S03",
+      "requestSha256": "d321aa9a4bae9e25a0faecfaf365f384843b80648d55255ca89836e3516593a8",
+      "decodedFingerprint": "db35f89e0ff575873084a2d5e06a0718b63c3d388c89aeab31ce9258155c513e",
+      "sourceSha256": "d321aa9a4bae9e25a0faecfaf365f384843b80648d55255ca89836e3516593a8",
+      "sourceFile": "../../shared-images/S03.jpg"
+    },
+    {
+      "id": "S04",
+      "requestSha256": "f832b1b5ddaa296012399d017b13054b0d3dfc0e563447eb7992f2a7b4c3989c",
+      "decodedFingerprint": "87415c23564c8646f8f9fa949f3107c54801f39095c04287138ca0d4b5e86854",
+      "sourceSha256": "f832b1b5ddaa296012399d017b13054b0d3dfc0e563447eb7992f2a7b4c3989c",
+      "sourceFile": "../../shared-images/S04.jpg"
+    },
+    {
+      "id": "S05",
+      "requestSha256": "e8671265b111bf435aa34753f38787e601f3e256c82466accb5a1a199c133025",
+      "decodedFingerprint": "951b69e4abacdb25ee744b4fb377c529f9685659c846b4facb453cad7ede7003",
+      "sourceSha256": "e8671265b111bf435aa34753f38787e601f3e256c82466accb5a1a199c133025",
+      "sourceFile": "../../shared-images/S05.jpg"
+    },
+    {
+      "id": "S06",
+      "requestSha256": "aadf36999ffad1298f802780b3b8973a7a9d26eee16829ffe6c6ee5980e34af6",
+      "decodedFingerprint": "fb370f137ce97b004d5775b7f5f78d41112d0084284a7b5b8005734ec12eb3ec",
+      "sourceSha256": "aadf36999ffad1298f802780b3b8973a7a9d26eee16829ffe6c6ee5980e34af6",
+      "sourceFile": "../../shared-images/S06.jpg"
+    },
+    {
+      "id": "S07",
+      "requestSha256": "919558baaf578cb9b5332be06e9722c86836426b8049e89832b2a014acf9437c",
+      "decodedFingerprint": "cc0e19e59df8e2cb9717341579c411a4e67b513de5dd0cf8e7c61af420ab892d",
+      "sourceSha256": "919558baaf578cb9b5332be06e9722c86836426b8049e89832b2a014acf9437c",
+      "sourceFile": "../../shared-images/S07.jpg"
+    },
+    {
+      "id": "S08",
+      "requestSha256": "8c0f0a7980b99895d23c4df9f1e504204071940e876ece9147157c4f5b2512da",
+      "decodedFingerprint": "f3f594eda322f5d0c3e832505d3a358b857fcd710896abcb001d07a47e926c4b",
+      "sourceSha256": "8c0f0a7980b99895d23c4df9f1e504204071940e876ece9147157c4f5b2512da",
+      "sourceFile": "../../shared-images/S08.jpg"
+    },
+    {
+      "id": "S09",
+      "requestSha256": "e765c5e428227a538b72552744ee48eb7f42218225f89638123a95f6cbdb1c96",
+      "decodedFingerprint": "20dc37ec0f41f4490c7293681a6ab99c6a47937fe8d8b62010e23ff5331e462d",
+      "sourceSha256": "e765c5e428227a538b72552744ee48eb7f42218225f89638123a95f6cbdb1c96",
+      "sourceFile": "../../shared-images/S09.jpg"
+    },
+    {
+      "id": "S10",
+      "requestSha256": "3b13d3612e426e929840ddc874b5189b4a51d77194a9a84bd0ae855d58b8d572",
+      "decodedFingerprint": "a3f747e16fbbe61a2ead9001536ccba6daac3bc8c858da430a2c087a340d9aa2",
+      "sourceSha256": "3b13d3612e426e929840ddc874b5189b4a51d77194a9a84bd0ae855d58b8d572",
+      "sourceFile": "../../shared-images/S10.jpg"
+    },
+    {
+      "id": "S11",
+      "requestSha256": "5474c344892d6f45600f394ec68a9b59c843715d187717397f8d4d65bff72bf6",
+      "decodedFingerprint": "adac39bd57904889dcbb41490d11b5a6ce060aa5e6f8b64e5cf7b7164e095df2",
+      "sourceSha256": "2c341645a885a3bdfb5bc932ebc45797559fa91e25a5b1ff12af2c3e89271c4e",
+      "sourceFile": "../../shared-images/S11.png"
+    },
+    {
+      "id": "S12",
+      "requestSha256": "dc07a29f5b981950878e1cc1ac3fba43f28c7aa1001466886c50b960eb1ddfcf",
+      "decodedFingerprint": "6d8b266d04f6cd6f71d7b5e49158ab2b0c87b237ed48a591be88427113d6c872",
+      "sourceSha256": "dc07a29f5b981950878e1cc1ac3fba43f28c7aa1001466886c50b960eb1ddfcf",
+      "sourceFile": "../../shared-images/S12.jpg"
+    }
+  ]
+}

@@ -1,0 +1,949 @@
+{
+  "simulation": false,
+  "facts": {
+    "locale": "de",
+    "market": "DE",
+    "location": "Starnberg, Bayern",
+    "propertyType": "Einfamilienhaus",
+    "rooms": "6",
+    "livingArea": "178",
+    "plotArea": 620,
+    "price": "1390000",
+    "currency": "EUR",
+    "marketingType": "sale",
+    "highlights": "Baujahr 2020; 2 Badezimmer; 2 Stellplätze; Energieeffizienzklasse A+; Wärmepumpe; Fußbodenheizung",
+    "verifiedFeatures": "Baujahr 2020; 2 Badezimmer; 2 Stellplätze; Energieeffizienzklasse A+; Wärmepumpe; Fußbodenheizung",
+    "imageAnalysis": "",
+    "countryCode": "DE",
+    "imageEvidence": []
+  },
+  "documents": [
+    {
+      "documentAnalysis": {
+        "type": "machine_readable",
+        "pages": [
+          {
+            "text": "SYNTHETISCHES TESTEXPOSE - KEIN REALES VERKAUFSOBJEKT\nEinfamilienhaus\nOrt: Starnberg, Bayern\nPostleitzahl: 82319\nZimmer: 6\nWohnfläche: 178 m²\nGrundstücksfläche: 620 m²\nKaufpreis: 1.390.000 EUR\nBaujahr: 2020\nBadezimmer: 2\nHeizung: Wärmepumpe\nFußbodenheizung\nEnergieeffizienzklasse: A+\nStellplätze: 2",
+            "width": 595.28,
+            "words": [
+              {
+                "box": [
+                  42.519685,
+                  43.692913,
+                  420.446,
+                  13
+                ],
+                "line": "785.1970866141731",
+                "text": "SYNTHETISCHES TESTEXPOSE - KEIN REALES VERKAUFSOBJEKT",
+                "confidence": null
+              },
+              {
+                "box": [
+                  42.519685,
+                  58.642913,
+                  91.754,
+                  13
+                ],
+                "line": "770.2470866141731",
+                "text": "Einfamilienhaus",
+                "confidence": null
+              },
+              {
+                "box": [
+                  42.519685,
+                  73.592913,
+                  130.78,
+                  13
+                ],
+                "line": "755.297086614173",
+                "text": "Ort: Starnberg, Bayern",
+                "confidence": null
+              },
+              {
+                "box": [
+                  42.519685,
+                  88.542913,
+                  109.837,
+                  13
+                ],
+                "line": "740.347086614173",
+                "text": "Postleitzahl: 82319",
+                "confidence": null
+              },
+              {
+                "box": [
+                  42.519685,
+                  103.492913,
+                  58.5,
+                  13
+                ],
+                "line": "725.397086614173",
+                "text": "Zimmer: 6",
+                "confidence": null
+              },
+              {
+                "box": [
+                  42.519685,
+                  118.442913,
+                  116.324,
+                  13
+                ],
+                "line": "710.4470866141729",
+                "text": "Wohnfläche: 178 m²",
+                "confidence": null
+              },
+              {
+                "box": [
+                  42.519685,
+                  133.392913,
+                  155.337,
+                  13
+                ],
+                "line": "695.4970866141729",
+                "text": "Grundstücksfläche: 620 m²",
+                "confidence": null
+              },
+              {
+                "box": [
+                  42.519685,
+                  148.342913,
+                  151.021,
+                  13
+                ],
+                "line": "680.5470866141728",
+                "text": "Kaufpreis: 1.390.000 EUR",
+                "confidence": null
+              },
+              {
+                "box": [
+                  42.519685,
+                  163.292913,
+                  80.938,
+                  13
+                ],
+                "line": "665.5970866141728",
+                "text": "Baujahr: 2020",
+                "confidence": null
+              },
+              {
+                "box": [
+                  42.519685,
+                  178.242913,
+                  87.412,
+                  13
+                ],
+                "line": "650.6470866141727",
+                "text": "Badezimmer: 2",
+                "confidence": null
+              },
+              {
+                "box": [
+                  42.519685,
+                  193.192913,
+                  136.539,
+                  13
+                ],
+                "line": "635.6970866141727",
+                "text": "Heizung: Wärmepumpe",
+                "confidence": null
+              },
+              {
+                "box": [
+                  42.519685,
+                  208.142913,
+                  104.78,
+                  13
+                ],
+                "line": "620.7470866141726",
+                "text": "Fußbodenheizung",
+                "confidence": null
+              },
+              {
+                "box": [
+                  42.519685,
+                  223.092913,
+                  152.815,
+                  13
+                ],
+                "line": "605.7970866141726",
+                "text": "Energieeffizienzklasse: A+",
+                "confidence": null
+              },
+              {
+                "box": [
+                  42.519685,
+                  238.042913,
+                  74.425,
+                  13
+                ],
+                "line": "590.8470866141726",
+                "text": "Stellplätze: 2",
+                "confidence": null
+              }
+            ],
+            "height": 841.89,
+            "issues": [],
+            "method": "native",
+            "hasImages": false,
+            "nativeText": "SYNTHETISCHES TESTEXPOSE - KEIN REALES VERKAUFSOBJEKT\nEinfamilienhaus\nOrt: Starnberg, Bayern\nPostleitzahl: 82319\nZimmer: 6\nWohnfläche: 178 m²\nGrundstücksfläche: 620 m²\nKaufpreis: 1.390.000 EUR\nBaujahr: 2020\nBadezimmer: 2\nHeizung: Wärmepumpe\nFußbodenheizung\nEnergieeffizienzklasse: A+\nStellplätze: 2",
+            "pageNumber": 1,
+            "coveringImage": false
+          }
+        ],
+        "issues": [],
+        "version": "PDF_OCR_INTELLIGENCE_V1",
+        "multiPage": false,
+        "pageCount": 1,
+        "documentText": "[PAGE 1][native]\nSYNTHETISCHES TESTEXPOSE - KEIN REALES VERKAUFSOBJEKT\nEinfamilienhaus\nOrt: Starnberg, Bayern\nPostleitzahl: 82319\nZimmer: 6\nWohnfläche: 178 m²\nGrundstücksfläche: 620 m²\nKaufpreis: 1.390.000 EUR\nBaujahr: 2020\nBadezimmer: 2\nHeizung: Wärmepumpe\nFußbodenheizung\nEnergieeffizienzklasse: A+\nStellplätze: 2",
+        "scanCandidate": false,
+        "textPageCount": 1,
+        "requiresReview": false,
+        "coordinateSystem": "page_viewport_points",
+        "tableInterpretation": "layout_only_unverified"
+      },
+      "structuredFacts": {
+        "version": "PDF_STRUCTURED_FACTS_V1",
+        "values": {
+          "location": "Starnberg",
+          "rooms": 6,
+          "livingArea": 178,
+          "plotArea": 620,
+          "price": 1390000,
+          "currency": "EUR",
+          "constructionYear": 2020,
+          "bathrooms": 2,
+          "heatingSystem": "Wärmepumpe",
+          "floorHeating": "Fussbodenheizung",
+          "energyClass": "A+",
+          "parkingSpaces": 2
+        },
+        "fields": [
+          {
+            "field": "location",
+            "value": "Starnberg",
+            "status": "reported",
+            "reasons": [],
+            "evidence": [
+              {
+                "field": "location",
+                "value": "Starnberg",
+                "unitValid": true,
+                "evidence": {
+                  "page": 1,
+                  "pass": "native",
+                  "line": "755.297086614173",
+                  "text": "Ort: Starnberg, Bayern",
+                  "box": [
+                    42.519685,
+                    73.592913,
+                    173.299685,
+                    86.592913
+                  ],
+                  "valueText": "Starnberg",
+                  "confidence": null
+                }
+              }
+            ]
+          },
+          {
+            "field": "rooms",
+            "value": 6,
+            "status": "reported",
+            "reasons": [],
+            "evidence": [
+              {
+                "field": "rooms",
+                "value": 6,
+                "unitValid": true,
+                "evidence": {
+                  "page": 1,
+                  "pass": "native",
+                  "line": "725.397086614173",
+                  "text": "Zimmer: 6",
+                  "box": [
+                    42.519685,
+                    103.492913,
+                    101.01968500000001,
+                    116.492913
+                  ],
+                  "valueText": "6",
+                  "confidence": null
+                }
+              }
+            ]
+          },
+          {
+            "field": "livingArea",
+            "value": 178,
+            "unit": "m2",
+            "status": "reported",
+            "reasons": [],
+            "evidence": [
+              {
+                "field": "livingArea",
+                "value": 178,
+                "unit": "m2",
+                "unitValid": true,
+                "evidence": {
+                  "page": 1,
+                  "pass": "native",
+                  "line": "710.4470866141729",
+                  "text": "Wohnfläche: 178 m²",
+                  "box": [
+                    42.519685,
+                    118.442913,
+                    158.843685,
+                    131.442913
+                  ],
+                  "valueText": "178 m²",
+                  "confidence": null
+                }
+              }
+            ]
+          },
+          {
+            "field": "plotArea",
+            "value": 620,
+            "unit": "m2",
+            "status": "reported",
+            "reasons": [],
+            "evidence": [
+              {
+                "field": "plotArea",
+                "value": 620,
+                "unit": "m2",
+                "unitValid": true,
+                "evidence": {
+                  "page": 1,
+                  "pass": "native",
+                  "line": "695.4970866141729",
+                  "text": "Grundstücksfläche: 620 m²",
+                  "box": [
+                    42.519685,
+                    133.392913,
+                    197.856685,
+                    146.392913
+                  ],
+                  "valueText": "620 m²",
+                  "confidence": null
+                }
+              }
+            ]
+          },
+          {
+            "field": "price",
+            "value": 1390000,
+            "status": "reported",
+            "reasons": [],
+            "evidence": [
+              {
+                "field": "price",
+                "value": 1390000,
+                "unitValid": true,
+                "evidence": {
+                  "page": 1,
+                  "pass": "native",
+                  "line": "680.5470866141728",
+                  "text": "Kaufpreis: 1.390.000 EUR",
+                  "box": [
+                    42.519685,
+                    148.342913,
+                    193.540685,
+                    161.342913
+                  ],
+                  "valueText": "1.390.000",
+                  "confidence": null
+                }
+              }
+            ]
+          },
+          {
+            "field": "currency",
+            "value": "EUR",
+            "status": "reported",
+            "reasons": [],
+            "evidence": [
+              {
+                "field": "currency",
+                "value": "EUR",
+                "unitValid": true,
+                "evidence": {
+                  "page": 1,
+                  "pass": "native",
+                  "line": "680.5470866141728",
+                  "text": "Kaufpreis: 1.390.000 EUR",
+                  "box": [
+                    42.519685,
+                    148.342913,
+                    193.540685,
+                    161.342913
+                  ],
+                  "valueText": "EUR",
+                  "confidence": null
+                }
+              }
+            ]
+          },
+          {
+            "field": "constructionYear",
+            "value": 2020,
+            "status": "reported",
+            "reasons": [],
+            "evidence": [
+              {
+                "field": "constructionYear",
+                "value": 2020,
+                "unitValid": true,
+                "evidence": {
+                  "page": 1,
+                  "pass": "native",
+                  "line": "665.5970866141728",
+                  "text": "Baujahr: 2020",
+                  "box": [
+                    42.519685,
+                    163.292913,
+                    123.457685,
+                    176.292913
+                  ],
+                  "valueText": "2020",
+                  "confidence": null
+                }
+              }
+            ]
+          },
+          {
+            "field": "bathrooms",
+            "value": 2,
+            "status": "reported",
+            "reasons": [],
+            "evidence": [
+              {
+                "field": "bathrooms",
+                "value": 2,
+                "unitValid": true,
+                "evidence": {
+                  "page": 1,
+                  "pass": "native",
+                  "line": "650.6470866141727",
+                  "text": "Badezimmer: 2",
+                  "box": [
+                    42.519685,
+                    178.242913,
+                    129.93168500000002,
+                    191.242913
+                  ],
+                  "valueText": "2",
+                  "confidence": null
+                }
+              }
+            ]
+          },
+          {
+            "field": "heatingSystem",
+            "value": "Wärmepumpe",
+            "status": "reported",
+            "reasons": [],
+            "evidence": [
+              {
+                "field": "heatingSystem",
+                "value": "Wärmepumpe",
+                "unitValid": true,
+                "evidence": {
+                  "page": 1,
+                  "pass": "native",
+                  "line": "635.6970866141727",
+                  "text": "Heizung: Wärmepumpe",
+                  "box": [
+                    42.519685,
+                    193.192913,
+                    179.058685,
+                    206.192913
+                  ],
+                  "valueText": "Wärmepumpe",
+                  "confidence": null
+                }
+              }
+            ]
+          },
+          {
+            "field": "floorHeating",
+            "value": "Fussbodenheizung",
+            "status": "reported",
+            "reasons": [],
+            "evidence": [
+              {
+                "field": "floorHeating",
+                "value": "Fussbodenheizung",
+                "unitValid": true,
+                "evidence": {
+                  "page": 1,
+                  "pass": "native",
+                  "line": "620.7470866141726",
+                  "text": "Fußbodenheizung",
+                  "box": [
+                    42.519685,
+                    208.142913,
+                    147.299685,
+                    221.142913
+                  ],
+                  "valueText": "Fußbodenheizung",
+                  "confidence": null
+                }
+              }
+            ]
+          },
+          {
+            "field": "energyClass",
+            "value": "A+",
+            "status": "reported",
+            "reasons": [],
+            "evidence": [
+              {
+                "field": "energyClass",
+                "value": "A+",
+                "unitValid": true,
+                "evidence": {
+                  "page": 1,
+                  "pass": "native",
+                  "line": "605.7970866141726",
+                  "text": "Energieeffizienzklasse: A+",
+                  "box": [
+                    42.519685,
+                    223.092913,
+                    195.334685,
+                    236.092913
+                  ],
+                  "valueText": "A+",
+                  "confidence": null
+                }
+              }
+            ]
+          },
+          {
+            "field": "parkingSpaces",
+            "value": 2,
+            "status": "reported",
+            "reasons": [],
+            "evidence": [
+              {
+                "field": "parkingSpaces",
+                "value": 2,
+                "unitValid": true,
+                "evidence": {
+                  "page": 1,
+                  "pass": "native",
+                  "line": "590.8470866141726",
+                  "text": "Stellplätze: 2",
+                  "box": [
+                    42.519685,
+                    238.042913,
+                    116.94468499999999,
+                    251.042913
+                  ],
+                  "valueText": "2",
+                  "confidence": null
+                }
+              }
+            ]
+          }
+        ],
+        "propertyFacts": [
+          {
+            "key": "location",
+            "value": "Starnberg",
+            "source": "document",
+            "sourceReference": "page:1:755.297086614173",
+            "evidence": "Ort: Starnberg, Bayern",
+            "status": "reported"
+          },
+          {
+            "key": "rooms",
+            "value": 6,
+            "source": "document",
+            "sourceReference": "page:1:725.397086614173",
+            "evidence": "Zimmer: 6",
+            "status": "reported"
+          },
+          {
+            "key": "livingArea",
+            "value": 178,
+            "unit": "m2",
+            "source": "document",
+            "sourceReference": "page:1:710.4470866141729",
+            "evidence": "Wohnfläche: 178 m²",
+            "status": "reported"
+          },
+          {
+            "key": "plotArea",
+            "value": 620,
+            "unit": "m2",
+            "source": "document",
+            "sourceReference": "page:1:695.4970866141729",
+            "evidence": "Grundstücksfläche: 620 m²",
+            "status": "reported"
+          },
+          {
+            "key": "constructionYear",
+            "value": 2020,
+            "source": "document",
+            "sourceReference": "page:1:665.5970866141728",
+            "evidence": "Baujahr: 2020",
+            "status": "reported"
+          },
+          {
+            "key": "bathrooms",
+            "value": 2,
+            "source": "document",
+            "sourceReference": "page:1:650.6470866141727",
+            "evidence": "Badezimmer: 2",
+            "status": "reported"
+          },
+          {
+            "key": "heatingSystem",
+            "value": "Wärmepumpe",
+            "source": "document",
+            "sourceReference": "page:1:635.6970866141727",
+            "evidence": "Heizung: Wärmepumpe",
+            "status": "reported"
+          },
+          {
+            "key": "parkingSpaces",
+            "value": 2,
+            "source": "document",
+            "sourceReference": "page:1:590.8470866141726",
+            "evidence": "Stellplätze: 2",
+            "status": "reported"
+          }
+        ],
+        "requiresReview": false,
+        "issues": []
+      }
+    }
+  ],
+  "plan": {
+    "version": "EDITORIAL_FACT_PLAN_9C",
+    "propertyKind": "residential",
+    "verification": "Planning uses supplied validated data; it does not create independent verification. Unknown, image-derived or merely stylistic properties are never promoted to facts.",
+    "required": [
+      {
+        "id": "propertyType",
+        "field": "propertyType",
+        "value": "Einfamilienhaus",
+        "group": "building",
+        "source": "supplied object facts.propertyType",
+        "independentlyVerified": false
+      },
+      {
+        "id": "location",
+        "field": "location",
+        "value": "Starnberg, Bayern",
+        "group": "location",
+        "source": "supplied object facts.location",
+        "independentlyVerified": false
+      },
+      {
+        "id": "rooms",
+        "field": "rooms",
+        "value": "6",
+        "group": "rooms",
+        "source": "supplied object facts.rooms",
+        "independentlyVerified": false
+      },
+      {
+        "id": "livingArea",
+        "field": "livingArea",
+        "value": "178",
+        "group": "dimensions",
+        "source": "supplied object facts.livingArea",
+        "independentlyVerified": false
+      },
+      {
+        "id": "plotArea",
+        "field": "plotArea",
+        "value": 620,
+        "group": "dimensions",
+        "source": "supplied object facts.plotArea",
+        "independentlyVerified": false
+      },
+      {
+        "id": "price",
+        "field": "price",
+        "value": "1390000",
+        "group": "offer",
+        "source": "supplied object facts.price",
+        "independentlyVerified": false
+      },
+      {
+        "id": "currency",
+        "field": "currency",
+        "value": "EUR",
+        "group": "offer",
+        "source": "supplied object facts.currency",
+        "independentlyVerified": false
+      }
+    ],
+    "optional": [
+      {
+        "id": "marketingType",
+        "field": "marketingType",
+        "value": "sale",
+        "group": "offer",
+        "source": "supplied object facts.marketingType",
+        "independentlyVerified": false
+      },
+      {
+        "id": "feature-0",
+        "field": "verifiedFeatures",
+        "value": "Baujahr 2020",
+        "group": "building",
+        "source": "supplied object facts.verifiedFeatures",
+        "independentlyVerified": false
+      },
+      {
+        "id": "feature-1",
+        "field": "verifiedFeatures",
+        "value": "2 Badezimmer",
+        "group": "rooms",
+        "source": "supplied object facts.verifiedFeatures",
+        "independentlyVerified": false
+      },
+      {
+        "id": "feature-2",
+        "field": "verifiedFeatures",
+        "value": "2 Stellplätze",
+        "group": "equipment",
+        "source": "supplied object facts.verifiedFeatures",
+        "independentlyVerified": false
+      },
+      {
+        "id": "feature-3",
+        "field": "verifiedFeatures",
+        "value": "Energieeffizienzklasse A+",
+        "group": "equipment",
+        "source": "supplied object facts.verifiedFeatures",
+        "independentlyVerified": false
+      },
+      {
+        "id": "feature-4",
+        "field": "verifiedFeatures",
+        "value": "Wärmepumpe",
+        "group": "equipment",
+        "source": "supplied object facts.verifiedFeatures",
+        "independentlyVerified": false
+      },
+      {
+        "id": "feature-5",
+        "field": "verifiedFeatures",
+        "value": "Fußbodenheizung",
+        "group": "equipment",
+        "source": "supplied object facts.verifiedFeatures",
+        "independentlyVerified": false
+      }
+    ],
+    "unknown": [
+      "commercialArea",
+      "commercialUse",
+      "transactionType",
+      "rentPeriod",
+      "priceOnRequestConfirmed",
+      "storeys",
+      "floorPlan",
+      "roomAllocation",
+      "buildingCondition",
+      "constructionStandards",
+      "actualConsumption",
+      "heatingCoverage",
+      "parkingLocation",
+      "locationQuality"
+    ],
+    "missingRequired": [],
+    "excludedInputs": [
+      "imageAnalysis",
+      "imageEvidence",
+      "styleText",
+      "unverified highlights"
+    ],
+    "variants": [
+      {
+        "variant": 1,
+        "perspective": "factual-property-portrait",
+        "sections": [
+          {
+            "topic": "building",
+            "factIds": [
+              "propertyType",
+              "feature-0"
+            ]
+          },
+          {
+            "topic": "location",
+            "factIds": [
+              "location"
+            ]
+          },
+          {
+            "topic": "dimensions",
+            "factIds": [
+              "livingArea",
+              "plotArea"
+            ]
+          },
+          {
+            "topic": "rooms",
+            "factIds": [
+              "rooms",
+              "feature-1"
+            ]
+          },
+          {
+            "topic": "equipment",
+            "factIds": [
+              "feature-2",
+              "feature-3",
+              "feature-4",
+              "feature-5"
+            ]
+          },
+          {
+            "topic": "offer",
+            "factIds": [
+              "price",
+              "currency",
+              "marketingType"
+            ]
+          }
+        ],
+        "mustCoverFactIds": [
+          "propertyType",
+          "location",
+          "rooms",
+          "livingArea",
+          "plotArea",
+          "price",
+          "currency"
+        ],
+        "guidance": "Group adjacent topics into natural paragraphs. Each planned fact is used once; optional facts only where useful. Adapt to the object and omit empty topics. No sentence templates, invented relationships or word quota."
+      },
+      {
+        "variant": 2,
+        "perspective": "reader-oriented-residential",
+        "sections": [
+          {
+            "topic": "rooms",
+            "factIds": [
+              "rooms",
+              "feature-1"
+            ]
+          },
+          {
+            "topic": "location",
+            "factIds": [
+              "location"
+            ]
+          },
+          {
+            "topic": "dimensions",
+            "factIds": [
+              "livingArea",
+              "plotArea"
+            ]
+          },
+          {
+            "topic": "offer",
+            "factIds": [
+              "price",
+              "currency",
+              "marketingType"
+            ]
+          },
+          {
+            "topic": "building",
+            "factIds": [
+              "propertyType",
+              "feature-0"
+            ]
+          },
+          {
+            "topic": "equipment",
+            "factIds": [
+              "feature-2",
+              "feature-3",
+              "feature-4",
+              "feature-5"
+            ]
+          }
+        ],
+        "mustCoverFactIds": [
+          "propertyType",
+          "location",
+          "rooms",
+          "livingArea",
+          "plotArea",
+          "price",
+          "currency"
+        ],
+        "guidance": "Group adjacent topics into natural paragraphs. Each planned fact is used once; optional facts only where useful. Adapt to the object and omit empty topics. No sentence templates, invented relationships or word quota."
+      },
+      {
+        "variant": 3,
+        "perspective": "compact-offer",
+        "sections": [
+          {
+            "topic": "offer",
+            "factIds": [
+              "price",
+              "currency",
+              "marketingType"
+            ]
+          },
+          {
+            "topic": "location",
+            "factIds": [
+              "location"
+            ]
+          },
+          {
+            "topic": "building",
+            "factIds": [
+              "propertyType",
+              "feature-0"
+            ]
+          },
+          {
+            "topic": "dimensions",
+            "factIds": [
+              "livingArea",
+              "plotArea"
+            ]
+          },
+          {
+            "topic": "rooms",
+            "factIds": [
+              "rooms",
+              "feature-1"
+            ]
+          },
+          {
+            "topic": "equipment",
+            "factIds": [
+              "feature-2",
+              "feature-3",
+              "feature-4",
+              "feature-5"
+            ]
+          }
+        ],
+        "mustCoverFactIds": [
+          "propertyType",
+          "location",
+          "rooms",
+          "livingArea",
+          "plotArea",
+          "price",
+          "currency"
+        ],
+        "guidance": "Group adjacent topics into natural paragraphs. Each planned fact is used once; optional facts only where useful. Adapt to the object and omit empty topics. No sentence templates, invented relationships or word quota."
+      }
+    ]
+  }
+}

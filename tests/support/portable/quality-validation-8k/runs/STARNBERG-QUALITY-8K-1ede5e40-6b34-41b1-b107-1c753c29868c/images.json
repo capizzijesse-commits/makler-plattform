@@ -1,0 +1,922 @@
+{
+  "simulation": false,
+  "syntheticOnly": true,
+  "analyses": [
+    {
+      "imageId": "S01",
+      "imageIndex": 1,
+      "room": "Wohnzimmer",
+      "roomConfidence": 0.9,
+      "roomIndependentFacts": [
+        {
+          "fact": "Fenster",
+          "confidence": 1
+        },
+        {
+          "fact": "Große Fenster",
+          "confidence": 1
+        },
+        {
+          "fact": "Tageslicht",
+          "confidence": 1
+        },
+        {
+          "fact": "Helle Wände",
+          "confidence": 1
+        },
+        {
+          "fact": "Weiße Wände",
+          "confidence": 1
+        }
+      ],
+      "condition": "sehr gut",
+      "visibleFacts": [
+        "große Fensterfront",
+        "helles Holzboden"
+      ],
+      "category": "living",
+      "sharpnessScore": 90,
+      "exposureScore": 90,
+      "suitabilityConfidence": 0.95,
+      "suitabilityReason": "Helles, attraktives Wohnzimmer mit Gartenblick",
+      "qualityScore": 90,
+      "titleScore": 95,
+      "suitable": true
+    },
+    {
+      "imageId": "S02",
+      "imageIndex": 2,
+      "room": "Küche",
+      "roomConfidence": 1,
+      "roomIndependentFacts": [
+        {
+          "fact": "Fenster",
+          "confidence": 1
+        },
+        {
+          "fact": "Tageslicht",
+          "confidence": 1
+        },
+        {
+          "fact": "Helle Wände",
+          "confidence": 1
+        },
+        {
+          "fact": "Weiße Wände",
+          "confidence": 1
+        },
+        {
+          "fact": "Fliesenboden",
+          "confidence": 1
+        }
+      ],
+      "condition": "sehr gut",
+      "visibleFacts": [
+        "weiße Küche",
+        "große Fenster"
+      ],
+      "category": "kitchen",
+      "sharpnessScore": 90,
+      "exposureScore": 90,
+      "suitabilityConfidence": 0.95,
+      "suitabilityReason": "Helle und moderne Küche mit Tageslicht",
+      "qualityScore": 90,
+      "titleScore": 90,
+      "suitable": true
+    },
+    {
+      "imageId": "S03",
+      "imageIndex": 3,
+      "room": "Schlafzimmer",
+      "roomConfidence": 1,
+      "roomIndependentFacts": [
+        {
+          "fact": "Fenster",
+          "confidence": 1
+        },
+        {
+          "fact": "Tageslicht",
+          "confidence": 1
+        },
+        {
+          "fact": "Helle Wände",
+          "confidence": 1
+        },
+        {
+          "fact": "Weiße Wände",
+          "confidence": 1
+        },
+        {
+          "fact": "Holzboden",
+          "confidence": 1
+        }
+      ],
+      "condition": "sehr gut",
+      "visibleFacts": [
+        "großes Fenster",
+        "Holzboden"
+      ],
+      "category": "bedroom",
+      "sharpnessScore": 90,
+      "exposureScore": 90,
+      "suitabilityConfidence": 0.95,
+      "suitabilityReason": "Helles Schlafzimmer mit Tageslicht",
+      "qualityScore": 90,
+      "titleScore": 80,
+      "suitable": true
+    },
+    {
+      "imageId": "S04",
+      "imageIndex": 4,
+      "room": "Badezimmer",
+      "roomConfidence": 1,
+      "roomIndependentFacts": [
+        {
+          "fact": "Fenster",
+          "confidence": 1
+        },
+        {
+          "fact": "Tageslicht",
+          "confidence": 1
+        },
+        {
+          "fact": "Helle Wände",
+          "confidence": 1
+        },
+        {
+          "fact": "Weiße Wände",
+          "confidence": 1
+        },
+        {
+          "fact": "Fliesenboden",
+          "confidence": 1
+        }
+      ],
+      "condition": "sehr gut",
+      "visibleFacts": [
+        "Fenster",
+        "Dusche mit Glaswand"
+      ],
+      "category": "bathroom",
+      "sharpnessScore": 90,
+      "exposureScore": 90,
+      "suitabilityConfidence": 0.9,
+      "suitabilityReason": "Helles Bad mit Tageslicht",
+      "qualityScore": 90,
+      "titleScore": 85,
+      "suitable": true
+    },
+    {
+      "imageId": "S05",
+      "imageIndex": 5,
+      "room": null,
+      "roomConfidence": 0,
+      "roomIndependentFacts": [
+        {
+          "fact": "Fenster",
+          "confidence": 1
+        },
+        {
+          "fact": "Tageslicht",
+          "confidence": 1
+        }
+      ],
+      "condition": "sehr gut",
+      "visibleFacts": [
+        "weißer Außenputz",
+        "Garage links"
+      ],
+      "category": "exterior",
+      "sharpnessScore": 90,
+      "exposureScore": 90,
+      "suitabilityConfidence": 0.9,
+      "suitabilityReason": "Schöne Außenansicht mit gutem Licht",
+      "qualityScore": 90,
+      "titleScore": 90,
+      "suitable": true
+    },
+    {
+      "imageId": "S06",
+      "imageIndex": 6,
+      "room": null,
+      "roomConfidence": 0,
+      "roomIndependentFacts": [
+        {
+          "fact": "Fenster",
+          "confidence": 1
+        },
+        {
+          "fact": "Tageslicht",
+          "confidence": 1
+        },
+        {
+          "fact": "Helle Wände",
+          "confidence": 1
+        }
+      ],
+      "condition": "sehr gut",
+      "visibleFacts": [
+        "weißer Außenputz",
+        "Garten mit Terrasse"
+      ],
+      "category": "exterior",
+      "sharpnessScore": 90,
+      "exposureScore": 90,
+      "suitabilityConfidence": 0.9,
+      "suitabilityReason": "Attraktive Außenaufnahme mit Garten",
+      "qualityScore": 90,
+      "titleScore": 90,
+      "suitable": true
+    },
+    {
+      "imageId": "S07",
+      "imageIndex": 7,
+      "room": null,
+      "roomConfidence": 1,
+      "roomIndependentFacts": [],
+      "condition": "klar und scharf",
+      "visibleFacts": [
+        "Raumaufteilung sichtbar"
+      ],
+      "category": "floorplan",
+      "sharpnessScore": 95,
+      "exposureScore": 90,
+      "suitabilityConfidence": 0.8,
+      "suitabilityReason": "Grundriss zeigt Raumaufteilung, nicht als Titelbild geeignet",
+      "qualityScore": 85,
+      "titleScore": 20,
+      "suitable": false,
+      "roomCategoryIssue": "ROOM_CATEGORY_UNCONFIRMED"
+    },
+    {
+      "imageId": "S08",
+      "imageIndex": 8,
+      "room": "Wohnzimmer",
+      "roomConfidence": 0.9,
+      "roomIndependentFacts": [
+        {
+          "fact": "Fenster",
+          "confidence": 1
+        },
+        {
+          "fact": "Große Fenster",
+          "confidence": 1
+        },
+        {
+          "fact": "Tageslicht",
+          "confidence": 1
+        },
+        {
+          "fact": "Helle Wände",
+          "confidence": 1
+        },
+        {
+          "fact": "Weiße Wände",
+          "confidence": 1
+        }
+      ],
+      "condition": "sehr gut",
+      "visibleFacts": [
+        "helle Raumaufnahme",
+        "große Fenster"
+      ],
+      "category": "living",
+      "sharpnessScore": 90,
+      "exposureScore": 90,
+      "suitabilityConfidence": 0.95,
+      "suitabilityReason": "Helles attraktives Wohnzimmer mit Gartenblick",
+      "qualityScore": 90,
+      "titleScore": 95,
+      "suitable": true
+    },
+    {
+      "imageId": "S09",
+      "imageIndex": 9,
+      "room": null,
+      "roomConfidence": 0,
+      "roomIndependentFacts": [],
+      "condition": "dunkel",
+      "visibleFacts": [
+        "dunkle Raumaufnahme"
+      ],
+      "category": "living",
+      "sharpnessScore": 30,
+      "exposureScore": 20,
+      "suitabilityConfidence": 0.1,
+      "suitabilityReason": "Dunkle und unscharfe Aufnahme, nicht geeignet",
+      "qualityScore": 30,
+      "titleScore": 10,
+      "suitable": false
+    },
+    {
+      "imageId": "S10",
+      "imageIndex": 10,
+      "room": null,
+      "roomConfidence": 0,
+      "roomIndependentFacts": [],
+      "condition": "unscharf",
+      "visibleFacts": [
+        "unscharfes Bild",
+        "helles Fenster"
+      ],
+      "category": "bedroom",
+      "sharpnessScore": 20,
+      "exposureScore": 70,
+      "suitabilityConfidence": 0.2,
+      "suitabilityReason": "Sehr unscharfes Bild, keine sichere Raumerkennung",
+      "qualityScore": 20,
+      "titleScore": 5,
+      "suitable": false
+    },
+    {
+      "imageId": "S11",
+      "imageIndex": 11,
+      "room": null,
+      "roomConfidence": 0,
+      "roomIndependentFacts": [
+        {
+          "fact": "Fenster",
+          "confidence": 1
+        },
+        {
+          "fact": "Tageslicht",
+          "confidence": 1
+        }
+      ],
+      "condition": "sehr gut",
+      "visibleFacts": [
+        "weißer Außenputz",
+        "Garten"
+      ],
+      "category": "exterior",
+      "sharpnessScore": 90,
+      "exposureScore": 90,
+      "suitabilityConfidence": 0.9,
+      "suitabilityReason": "Externe Ansicht mit gutem Licht",
+      "qualityScore": 90,
+      "titleScore": 90,
+      "suitable": true
+    },
+    {
+      "imageId": "S12",
+      "imageIndex": 12,
+      "room": null,
+      "roomConfidence": 0,
+      "roomIndependentFacts": [],
+      "condition": "keine eindeutigen Fakten",
+      "visibleFacts": [
+        "weiße Wand"
+      ],
+      "category": "other",
+      "sharpnessScore": 40,
+      "exposureScore": 80,
+      "suitabilityConfidence": 0.1,
+      "suitabilityReason": "Unklare Raumnutzung, keine relevanten Fakten",
+      "qualityScore": 40,
+      "titleScore": 5,
+      "suitable": false,
+      "roomCategoryIssue": "ROOM_CATEGORY_UNCONFIRMED"
+    }
+  ],
+  "selection": {
+    "entries": [
+      {
+        "imageId": "S01",
+        "fileName": "inputs/images/S01.png",
+        "contentFingerprint": "b7c4e536ff764c567162313edb08fccf456e8ead75acc771bae4a5bb8f38de33",
+        "analysis": {
+          "imageId": "S01",
+          "imageIndex": 1,
+          "room": "Wohnzimmer",
+          "roomConfidence": 0.9,
+          "roomIndependentFacts": [
+            {
+              "fact": "Fenster",
+              "confidence": 1
+            },
+            {
+              "fact": "Große Fenster",
+              "confidence": 1
+            },
+            {
+              "fact": "Tageslicht",
+              "confidence": 1
+            },
+            {
+              "fact": "Helle Wände",
+              "confidence": 1
+            },
+            {
+              "fact": "Weiße Wände",
+              "confidence": 1
+            }
+          ],
+          "condition": "sehr gut",
+          "visibleFacts": [
+            "große Fensterfront",
+            "helles Holzboden"
+          ],
+          "category": "living",
+          "sharpnessScore": 90,
+          "exposureScore": 90,
+          "suitabilityConfidence": 0.95,
+          "suitabilityReason": "Helles, attraktives Wohnzimmer mit Gartenblick",
+          "qualityScore": 90,
+          "titleScore": 95,
+          "suitable": true
+        },
+        "originalIndex": 0,
+        "duplicateOf": null,
+        "reasons": [],
+        "reviewedReasons": [],
+        "selected": true
+      },
+      {
+        "imageId": "S02",
+        "fileName": "inputs/images/S02.jpg",
+        "contentFingerprint": "b5ce7c90e136c878a184b69b6d73c9ef020f78ae1c370c17ecec6bf37e7695cd",
+        "analysis": {
+          "imageId": "S02",
+          "imageIndex": 2,
+          "room": "Küche",
+          "roomConfidence": 1,
+          "roomIndependentFacts": [
+            {
+              "fact": "Fenster",
+              "confidence": 1
+            },
+            {
+              "fact": "Tageslicht",
+              "confidence": 1
+            },
+            {
+              "fact": "Helle Wände",
+              "confidence": 1
+            },
+            {
+              "fact": "Weiße Wände",
+              "confidence": 1
+            },
+            {
+              "fact": "Fliesenboden",
+              "confidence": 1
+            }
+          ],
+          "condition": "sehr gut",
+          "visibleFacts": [
+            "weiße Küche",
+            "große Fenster"
+          ],
+          "category": "kitchen",
+          "sharpnessScore": 90,
+          "exposureScore": 90,
+          "suitabilityConfidence": 0.95,
+          "suitabilityReason": "Helle und moderne Küche mit Tageslicht",
+          "qualityScore": 90,
+          "titleScore": 90,
+          "suitable": true
+        },
+        "originalIndex": 1,
+        "duplicateOf": null,
+        "reasons": [],
+        "reviewedReasons": [],
+        "selected": true
+      },
+      {
+        "imageId": "S03",
+        "fileName": "inputs/images/S03.jpg",
+        "contentFingerprint": "db35f89e0ff575873084a2d5e06a0718b63c3d388c89aeab31ce9258155c513e",
+        "analysis": {
+          "imageId": "S03",
+          "imageIndex": 3,
+          "room": "Schlafzimmer",
+          "roomConfidence": 1,
+          "roomIndependentFacts": [
+            {
+              "fact": "Fenster",
+              "confidence": 1
+            },
+            {
+              "fact": "Tageslicht",
+              "confidence": 1
+            },
+            {
+              "fact": "Helle Wände",
+              "confidence": 1
+            },
+            {
+              "fact": "Weiße Wände",
+              "confidence": 1
+            },
+            {
+              "fact": "Holzboden",
+              "confidence": 1
+            }
+          ],
+          "condition": "sehr gut",
+          "visibleFacts": [
+            "großes Fenster",
+            "Holzboden"
+          ],
+          "category": "bedroom",
+          "sharpnessScore": 90,
+          "exposureScore": 90,
+          "suitabilityConfidence": 0.95,
+          "suitabilityReason": "Helles Schlafzimmer mit Tageslicht",
+          "qualityScore": 90,
+          "titleScore": 80,
+          "suitable": true
+        },
+        "originalIndex": 2,
+        "duplicateOf": null,
+        "reasons": [],
+        "reviewedReasons": [],
+        "selected": true
+      },
+      {
+        "imageId": "S04",
+        "fileName": "inputs/images/S04.jpg",
+        "contentFingerprint": "87415c23564c8646f8f9fa949f3107c54801f39095c04287138ca0d4b5e86854",
+        "analysis": {
+          "imageId": "S04",
+          "imageIndex": 4,
+          "room": "Badezimmer",
+          "roomConfidence": 1,
+          "roomIndependentFacts": [
+            {
+              "fact": "Fenster",
+              "confidence": 1
+            },
+            {
+              "fact": "Tageslicht",
+              "confidence": 1
+            },
+            {
+              "fact": "Helle Wände",
+              "confidence": 1
+            },
+            {
+              "fact": "Weiße Wände",
+              "confidence": 1
+            },
+            {
+              "fact": "Fliesenboden",
+              "confidence": 1
+            }
+          ],
+          "condition": "sehr gut",
+          "visibleFacts": [
+            "Fenster",
+            "Dusche mit Glaswand"
+          ],
+          "category": "bathroom",
+          "sharpnessScore": 90,
+          "exposureScore": 90,
+          "suitabilityConfidence": 0.9,
+          "suitabilityReason": "Helles Bad mit Tageslicht",
+          "qualityScore": 90,
+          "titleScore": 85,
+          "suitable": true
+        },
+        "originalIndex": 3,
+        "duplicateOf": null,
+        "reasons": [],
+        "reviewedReasons": [],
+        "selected": true
+      },
+      {
+        "imageId": "S05",
+        "fileName": "inputs/images/S05.jpg",
+        "contentFingerprint": "951b69e4abacdb25ee744b4fb377c529f9685659c846b4facb453cad7ede7003",
+        "analysis": {
+          "imageId": "S05",
+          "imageIndex": 5,
+          "room": null,
+          "roomConfidence": 0,
+          "roomIndependentFacts": [
+            {
+              "fact": "Fenster",
+              "confidence": 1
+            },
+            {
+              "fact": "Tageslicht",
+              "confidence": 1
+            }
+          ],
+          "condition": "sehr gut",
+          "visibleFacts": [
+            "weißer Außenputz",
+            "Garage links"
+          ],
+          "category": "exterior",
+          "sharpnessScore": 90,
+          "exposureScore": 90,
+          "suitabilityConfidence": 0.9,
+          "suitabilityReason": "Schöne Außenansicht mit gutem Licht",
+          "qualityScore": 90,
+          "titleScore": 90,
+          "suitable": true
+        },
+        "originalIndex": 4,
+        "duplicateOf": null,
+        "reasons": [
+          "ROOM_OR_CATEGORY_UNCONFIRMED"
+        ],
+        "reviewedReasons": [],
+        "selected": false
+      },
+      {
+        "imageId": "S06",
+        "fileName": "inputs/images/S06.jpg",
+        "contentFingerprint": "fb370f137ce97b004d5775b7f5f78d41112d0084284a7b5b8005734ec12eb3ec",
+        "analysis": {
+          "imageId": "S06",
+          "imageIndex": 6,
+          "room": null,
+          "roomConfidence": 0,
+          "roomIndependentFacts": [
+            {
+              "fact": "Fenster",
+              "confidence": 1
+            },
+            {
+              "fact": "Tageslicht",
+              "confidence": 1
+            },
+            {
+              "fact": "Helle Wände",
+              "confidence": 1
+            }
+          ],
+          "condition": "sehr gut",
+          "visibleFacts": [
+            "weißer Außenputz",
+            "Garten mit Terrasse"
+          ],
+          "category": "exterior",
+          "sharpnessScore": 90,
+          "exposureScore": 90,
+          "suitabilityConfidence": 0.9,
+          "suitabilityReason": "Attraktive Außenaufnahme mit Garten",
+          "qualityScore": 90,
+          "titleScore": 90,
+          "suitable": true
+        },
+        "originalIndex": 5,
+        "duplicateOf": null,
+        "reasons": [
+          "ROOM_OR_CATEGORY_UNCONFIRMED"
+        ],
+        "reviewedReasons": [],
+        "selected": false
+      },
+      {
+        "imageId": "S07",
+        "fileName": "inputs/images/S07.jpg",
+        "contentFingerprint": "cc0e19e59df8e2cb9717341579c411a4e67b513de5dd0cf8e7c61af420ab892d",
+        "analysis": {
+          "imageId": "S07",
+          "imageIndex": 7,
+          "room": null,
+          "roomConfidence": 1,
+          "roomIndependentFacts": [],
+          "condition": "klar und scharf",
+          "visibleFacts": [
+            "Raumaufteilung sichtbar"
+          ],
+          "category": "floorplan",
+          "sharpnessScore": 95,
+          "exposureScore": 90,
+          "suitabilityConfidence": 0.8,
+          "suitabilityReason": "Grundriss zeigt Raumaufteilung, nicht als Titelbild geeignet",
+          "qualityScore": 85,
+          "titleScore": 20,
+          "suitable": false,
+          "roomCategoryIssue": "ROOM_CATEGORY_UNCONFIRMED"
+        },
+        "originalIndex": 6,
+        "duplicateOf": null,
+        "reasons": [
+          "ROOM_CATEGORY_UNCONFIRMED",
+          "UNSUITABLE_IMAGE",
+          "SUITABILITY_UNCERTAIN",
+          "ROOM_OR_CATEGORY_UNCONFIRMED"
+        ],
+        "reviewedReasons": [],
+        "selected": false
+      },
+      {
+        "imageId": "S08",
+        "fileName": "inputs/images/S08.jpg",
+        "contentFingerprint": "f3f594eda322f5d0c3e832505d3a358b857fcd710896abcb001d07a47e926c4b",
+        "analysis": {
+          "imageId": "S08",
+          "imageIndex": 8,
+          "room": "Wohnzimmer",
+          "roomConfidence": 0.9,
+          "roomIndependentFacts": [
+            {
+              "fact": "Fenster",
+              "confidence": 1
+            },
+            {
+              "fact": "Große Fenster",
+              "confidence": 1
+            },
+            {
+              "fact": "Tageslicht",
+              "confidence": 1
+            },
+            {
+              "fact": "Helle Wände",
+              "confidence": 1
+            },
+            {
+              "fact": "Weiße Wände",
+              "confidence": 1
+            }
+          ],
+          "condition": "sehr gut",
+          "visibleFacts": [
+            "helle Raumaufnahme",
+            "große Fenster"
+          ],
+          "category": "living",
+          "sharpnessScore": 90,
+          "exposureScore": 90,
+          "suitabilityConfidence": 0.95,
+          "suitabilityReason": "Helles attraktives Wohnzimmer mit Gartenblick",
+          "qualityScore": 90,
+          "titleScore": 95,
+          "suitable": true
+        },
+        "originalIndex": 7,
+        "duplicateOf": null,
+        "reasons": [],
+        "reviewedReasons": [],
+        "selected": true
+      },
+      {
+        "imageId": "S09",
+        "fileName": "inputs/images/S09.jpg",
+        "contentFingerprint": "20dc37ec0f41f4490c7293681a6ab99c6a47937fe8d8b62010e23ff5331e462d",
+        "analysis": {
+          "imageId": "S09",
+          "imageIndex": 9,
+          "room": null,
+          "roomConfidence": 0,
+          "roomIndependentFacts": [],
+          "condition": "dunkel",
+          "visibleFacts": [
+            "dunkle Raumaufnahme"
+          ],
+          "category": "living",
+          "sharpnessScore": 30,
+          "exposureScore": 20,
+          "suitabilityConfidence": 0.1,
+          "suitabilityReason": "Dunkle und unscharfe Aufnahme, nicht geeignet",
+          "qualityScore": 30,
+          "titleScore": 10,
+          "suitable": false
+        },
+        "originalIndex": 8,
+        "duplicateOf": null,
+        "reasons": [
+          "UNSUITABLE_IMAGE",
+          "SUITABILITY_UNCERTAIN",
+          "ROOM_OR_CATEGORY_UNCONFIRMED",
+          "QUALITY_REVIEW_REQUIRED",
+          "SHARPNESS_REVIEW_REQUIRED",
+          "EXPOSURE_REVIEW_REQUIRED"
+        ],
+        "reviewedReasons": [],
+        "selected": false
+      },
+      {
+        "imageId": "S10",
+        "fileName": "inputs/images/S10.jpg",
+        "contentFingerprint": "a3f747e16fbbe61a2ead9001536ccba6daac3bc8c858da430a2c087a340d9aa2",
+        "analysis": {
+          "imageId": "S10",
+          "imageIndex": 10,
+          "room": null,
+          "roomConfidence": 0,
+          "roomIndependentFacts": [],
+          "condition": "unscharf",
+          "visibleFacts": [
+            "unscharfes Bild",
+            "helles Fenster"
+          ],
+          "category": "bedroom",
+          "sharpnessScore": 20,
+          "exposureScore": 70,
+          "suitabilityConfidence": 0.2,
+          "suitabilityReason": "Sehr unscharfes Bild, keine sichere Raumerkennung",
+          "qualityScore": 20,
+          "titleScore": 5,
+          "suitable": false
+        },
+        "originalIndex": 9,
+        "duplicateOf": null,
+        "reasons": [
+          "UNSUITABLE_IMAGE",
+          "SUITABILITY_UNCERTAIN",
+          "ROOM_OR_CATEGORY_UNCONFIRMED",
+          "QUALITY_REVIEW_REQUIRED",
+          "SHARPNESS_REVIEW_REQUIRED"
+        ],
+        "reviewedReasons": [],
+        "selected": false
+      },
+      {
+        "imageId": "S11",
+        "fileName": "inputs/images/S11.png",
+        "contentFingerprint": "bfa245f9da5c41822ca1f680979e281940b42a7f2fb54475e09094707b26bfb0",
+        "analysis": {
+          "imageId": "S11",
+          "imageIndex": 11,
+          "room": null,
+          "roomConfidence": 0,
+          "roomIndependentFacts": [
+            {
+              "fact": "Fenster",
+              "confidence": 1
+            },
+            {
+              "fact": "Tageslicht",
+              "confidence": 1
+            }
+          ],
+          "condition": "sehr gut",
+          "visibleFacts": [
+            "weißer Außenputz",
+            "Garten"
+          ],
+          "category": "exterior",
+          "sharpnessScore": 90,
+          "exposureScore": 90,
+          "suitabilityConfidence": 0.9,
+          "suitabilityReason": "Externe Ansicht mit gutem Licht",
+          "qualityScore": 90,
+          "titleScore": 90,
+          "suitable": true
+        },
+        "originalIndex": 10,
+        "duplicateOf": null,
+        "reasons": [
+          "ROOM_OR_CATEGORY_UNCONFIRMED"
+        ],
+        "reviewedReasons": [],
+        "selected": false
+      },
+      {
+        "imageId": "S12",
+        "fileName": "inputs/images/S12.jpg",
+        "contentFingerprint": "6d8b266d04f6cd6f71d7b5e49158ab2b0c87b237ed48a591be88427113d6c872",
+        "analysis": {
+          "imageId": "S12",
+          "imageIndex": 12,
+          "room": null,
+          "roomConfidence": 0,
+          "roomIndependentFacts": [],
+          "condition": "keine eindeutigen Fakten",
+          "visibleFacts": [
+            "weiße Wand"
+          ],
+          "category": "other",
+          "sharpnessScore": 40,
+          "exposureScore": 80,
+          "suitabilityConfidence": 0.1,
+          "suitabilityReason": "Unklare Raumnutzung, keine relevanten Fakten",
+          "qualityScore": 40,
+          "titleScore": 5,
+          "suitable": false,
+          "roomCategoryIssue": "ROOM_CATEGORY_UNCONFIRMED"
+        },
+        "originalIndex": 11,
+        "duplicateOf": null,
+        "reasons": [
+          "ROOM_CATEGORY_UNCONFIRMED",
+          "UNSUITABLE_IMAGE",
+          "SUITABILITY_UNCERTAIN",
+          "ROOM_OR_CATEGORY_UNCONFIRMED",
+          "QUALITY_REVIEW_REQUIRED",
+          "SHARPNESS_REVIEW_REQUIRED"
+        ],
+        "reviewedReasons": [],
+        "selected": false
+      }
+    ],
+    "selectedImageIds": [
+      "S01",
+      "S08",
+      "S02",
+      "S03",
+      "S04"
+    ],
+    "primaryImageId": "S01",
+    "requiresReview": true,
+    "reasons": []
+  },
+  "brokerApproved": false
+}

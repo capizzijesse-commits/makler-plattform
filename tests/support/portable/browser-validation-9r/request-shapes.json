@@ -1,0 +1,242 @@
+[
+  [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Analysiere ausschliesslich die bereitgestellten Immobilienbilder. Erfinde keine nicht sichtbaren Fakten. Gib fuer jede angeforderte imageId genau eine Analyse mit unveraenderter imageId und imageIndex zurueck. Erwartete Bild-IDs: [\"1\"]. Kein Bild ueberspringen, zusammenfassen oder neu nummerieren: auch Duplikate, dunkle, unscharfe, gedrehte Bilder und unklare Details einzeln analysieren. Bei Unsicherheit room leer und roomConfidence 0 angeben, niemals eine Analyse weglassen oder Fakten erfinden. Gib Raumtyp, sichtbaren Zustand und maximal zwei sehr kurze sichtbare Merkmale zurueck. roomConfidence von 0 bis 1; bei unklarer Raumnutzung 0. roomIndependentFacts nur unabhängig sichtbare Merkmale als {fact,confidence}: Fenster, Große Fenster, Tageslicht, Helle Wände, Weiße Wände, Holzboden, Parkettboden, Fliesenboden, Sichtbare Holzbalken. Keine Raumnutzung aus Möbeln ableiten. Bewerte ausserdem category, qualityScore von 0 bis 100, titleScore von 0 bis 100 und suitable. titleScore bewertet ausschliesslich die Eignung als verkaufsstarkes Titelbild. Bevorzuge helle, klare, attraktive Wohnraeume oder eine starke Aussenansicht. Grundrisse, Logos, Dokumentseiten, unscharfe, dunkle oder offensichtlich ungeeignete Bilder erhalten einen niedrigen titleScore. imageIndex beginnt bei 1 und entspricht exakt der Reihenfolge der Bilder. category muss einer dieser Werte sein: living, exterior, kitchen, outdoor, dining, bedroom, bathroom, office, hallway, storage, floorplan, document, logo, other. Unterscheide Wohnzimmer, Küche, Schlafzimmer, Bad und Außenbereiche nur anhand sichtbarer Belege; bei unklarer Nutzung room leer und roomConfidence 0. sharpnessScore und exposureScore von 0 bis 100 bewerten tatsächliche Schärfe und Belichtung. suitabilityConfidence von 0 bis 1 bewertet die Sicherheit der Eignungsentscheidung; suitabilityReason begründet sie knapp. Bei unsicherer Eignung keine positive Sicherheit vortäuschen. Logos, Dokumente und Grundrisse sind keine Immobilienfotos. Keine rechtlichen, technischen oder nicht sichtbaren Eigenschaften aus Bildern ableiten."
+        },
+        {
+          "type": "input_text",
+          "text": "Bild 1; imageId=1"
+        },
+        {
+          "type": "input_image",
+          "image_url": "data:image/jpeg;base64",
+          "detail": "low"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Analysiere ausschliesslich die bereitgestellten Immobilienbilder. Erfinde keine nicht sichtbaren Fakten. Gib fuer jede angeforderte imageId genau eine Analyse mit unveraenderter imageId und imageIndex zurueck. Erwartete Bild-IDs: [\"1\"]. Kein Bild ueberspringen, zusammenfassen oder neu nummerieren: auch Duplikate, dunkle, unscharfe, gedrehte Bilder und unklare Details einzeln analysieren. Bei Unsicherheit room leer und roomConfidence 0 angeben, niemals eine Analyse weglassen oder Fakten erfinden. Gib Raumtyp, sichtbaren Zustand und maximal zwei sehr kurze sichtbare Merkmale zurueck. roomConfidence von 0 bis 1; bei unklarer Raumnutzung 0. roomIndependentFacts nur unabhängig sichtbare Merkmale als {fact,confidence}: Fenster, Große Fenster, Tageslicht, Helle Wände, Weiße Wände, Holzboden, Parkettboden, Fliesenboden, Sichtbare Holzbalken. Keine Raumnutzung aus Möbeln ableiten. Bewerte ausserdem category, qualityScore von 0 bis 100, titleScore von 0 bis 100 und suitable. titleScore bewertet ausschliesslich die Eignung als verkaufsstarkes Titelbild. Bevorzuge helle, klare, attraktive Wohnraeume oder eine starke Aussenansicht. Grundrisse, Logos, Dokumentseiten, unscharfe, dunkle oder offensichtlich ungeeignete Bilder erhalten einen niedrigen titleScore. imageIndex beginnt bei 1 und entspricht exakt der Reihenfolge der Bilder. category muss einer dieser Werte sein: living, exterior, kitchen, outdoor, dining, bedroom, bathroom, office, hallway, storage, floorplan, document, logo, other. Unterscheide Wohnzimmer, Küche, Schlafzimmer, Bad und Außenbereiche nur anhand sichtbarer Belege; bei unklarer Nutzung room leer und roomConfidence 0. sharpnessScore und exposureScore von 0 bis 100 bewerten tatsächliche Schärfe und Belichtung. suitabilityConfidence von 0 bis 1 bewertet die Sicherheit der Eignungsentscheidung; suitabilityReason begründet sie knapp. Bei unsicherer Eignung keine positive Sicherheit vortäuschen. Logos, Dokumente und Grundrisse sind keine Immobilienfotos. Keine rechtlichen, technischen oder nicht sichtbaren Eigenschaften aus Bildern ableiten."
+        },
+        {
+          "type": "input_text",
+          "text": "Bild 1; imageId=1"
+        },
+        {
+          "type": "input_image",
+          "image_url": "data:image/jpeg;base64",
+          "detail": "low"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Analysiere ausschliesslich die bereitgestellten Immobilienbilder. Erfinde keine nicht sichtbaren Fakten. Gib fuer jede angeforderte imageId genau eine Analyse mit unveraenderter imageId und imageIndex zurueck. Erwartete Bild-IDs: [\"1\"]. Kein Bild ueberspringen, zusammenfassen oder neu nummerieren: auch Duplikate, dunkle, unscharfe, gedrehte Bilder und unklare Details einzeln analysieren. Bei Unsicherheit room leer und roomConfidence 0 angeben, niemals eine Analyse weglassen oder Fakten erfinden. Gib Raumtyp, sichtbaren Zustand und maximal zwei sehr kurze sichtbare Merkmale zurueck. roomConfidence von 0 bis 1; bei unklarer Raumnutzung 0. roomIndependentFacts nur unabhängig sichtbare Merkmale als {fact,confidence}: Fenster, Große Fenster, Tageslicht, Helle Wände, Weiße Wände, Holzboden, Parkettboden, Fliesenboden, Sichtbare Holzbalken. Keine Raumnutzung aus Möbeln ableiten. Bewerte ausserdem category, qualityScore von 0 bis 100, titleScore von 0 bis 100 und suitable. titleScore bewertet ausschliesslich die Eignung als verkaufsstarkes Titelbild. Bevorzuge helle, klare, attraktive Wohnraeume oder eine starke Aussenansicht. Grundrisse, Logos, Dokumentseiten, unscharfe, dunkle oder offensichtlich ungeeignete Bilder erhalten einen niedrigen titleScore. imageIndex beginnt bei 1 und entspricht exakt der Reihenfolge der Bilder. category muss einer dieser Werte sein: living, exterior, kitchen, outdoor, dining, bedroom, bathroom, office, hallway, storage, floorplan, document, logo, other. Unterscheide Wohnzimmer, Küche, Schlafzimmer, Bad und Außenbereiche nur anhand sichtbarer Belege; bei unklarer Nutzung room leer und roomConfidence 0. sharpnessScore und exposureScore von 0 bis 100 bewerten tatsächliche Schärfe und Belichtung. suitabilityConfidence von 0 bis 1 bewertet die Sicherheit der Eignungsentscheidung; suitabilityReason begründet sie knapp. Bei unsicherer Eignung keine positive Sicherheit vortäuschen. Logos, Dokumente und Grundrisse sind keine Immobilienfotos. Keine rechtlichen, technischen oder nicht sichtbaren Eigenschaften aus Bildern ableiten."
+        },
+        {
+          "type": "input_text",
+          "text": "Bild 1; imageId=1"
+        },
+        {
+          "type": "input_image",
+          "image_url": "data:image/jpeg;base64",
+          "detail": "low"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Analysiere ausschliesslich die bereitgestellten Immobilienbilder. Erfinde keine nicht sichtbaren Fakten. Gib fuer jede angeforderte imageId genau eine Analyse mit unveraenderter imageId und imageIndex zurueck. Erwartete Bild-IDs: [\"1\"]. Kein Bild ueberspringen, zusammenfassen oder neu nummerieren: auch Duplikate, dunkle, unscharfe, gedrehte Bilder und unklare Details einzeln analysieren. Bei Unsicherheit room leer und roomConfidence 0 angeben, niemals eine Analyse weglassen oder Fakten erfinden. Gib Raumtyp, sichtbaren Zustand und maximal zwei sehr kurze sichtbare Merkmale zurueck. roomConfidence von 0 bis 1; bei unklarer Raumnutzung 0. roomIndependentFacts nur unabhängig sichtbare Merkmale als {fact,confidence}: Fenster, Große Fenster, Tageslicht, Helle Wände, Weiße Wände, Holzboden, Parkettboden, Fliesenboden, Sichtbare Holzbalken. Keine Raumnutzung aus Möbeln ableiten. Bewerte ausserdem category, qualityScore von 0 bis 100, titleScore von 0 bis 100 und suitable. titleScore bewertet ausschliesslich die Eignung als verkaufsstarkes Titelbild. Bevorzuge helle, klare, attraktive Wohnraeume oder eine starke Aussenansicht. Grundrisse, Logos, Dokumentseiten, unscharfe, dunkle oder offensichtlich ungeeignete Bilder erhalten einen niedrigen titleScore. imageIndex beginnt bei 1 und entspricht exakt der Reihenfolge der Bilder. category muss einer dieser Werte sein: living, exterior, kitchen, outdoor, dining, bedroom, bathroom, office, hallway, storage, floorplan, document, logo, other. Unterscheide Wohnzimmer, Küche, Schlafzimmer, Bad und Außenbereiche nur anhand sichtbarer Belege; bei unklarer Nutzung room leer und roomConfidence 0. sharpnessScore und exposureScore von 0 bis 100 bewerten tatsächliche Schärfe und Belichtung. suitabilityConfidence von 0 bis 1 bewertet die Sicherheit der Eignungsentscheidung; suitabilityReason begründet sie knapp. Bei unsicherer Eignung keine positive Sicherheit vortäuschen. Logos, Dokumente und Grundrisse sind keine Immobilienfotos. Keine rechtlichen, technischen oder nicht sichtbaren Eigenschaften aus Bildern ableiten."
+        },
+        {
+          "type": "input_text",
+          "text": "Bild 1; imageId=1"
+        },
+        {
+          "type": "input_image",
+          "image_url": "data:image/jpeg;base64",
+          "detail": "low"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Analysiere ausschliesslich die bereitgestellten Immobilienbilder. Erfinde keine nicht sichtbaren Fakten. Gib fuer jede angeforderte imageId genau eine Analyse mit unveraenderter imageId und imageIndex zurueck. Erwartete Bild-IDs: [\"1\"]. Kein Bild ueberspringen, zusammenfassen oder neu nummerieren: auch Duplikate, dunkle, unscharfe, gedrehte Bilder und unklare Details einzeln analysieren. Bei Unsicherheit room leer und roomConfidence 0 angeben, niemals eine Analyse weglassen oder Fakten erfinden. Gib Raumtyp, sichtbaren Zustand und maximal zwei sehr kurze sichtbare Merkmale zurueck. roomConfidence von 0 bis 1; bei unklarer Raumnutzung 0. roomIndependentFacts nur unabhängig sichtbare Merkmale als {fact,confidence}: Fenster, Große Fenster, Tageslicht, Helle Wände, Weiße Wände, Holzboden, Parkettboden, Fliesenboden, Sichtbare Holzbalken. Keine Raumnutzung aus Möbeln ableiten. Bewerte ausserdem category, qualityScore von 0 bis 100, titleScore von 0 bis 100 und suitable. titleScore bewertet ausschliesslich die Eignung als verkaufsstarkes Titelbild. Bevorzuge helle, klare, attraktive Wohnraeume oder eine starke Aussenansicht. Grundrisse, Logos, Dokumentseiten, unscharfe, dunkle oder offensichtlich ungeeignete Bilder erhalten einen niedrigen titleScore. imageIndex beginnt bei 1 und entspricht exakt der Reihenfolge der Bilder. category muss einer dieser Werte sein: living, exterior, kitchen, outdoor, dining, bedroom, bathroom, office, hallway, storage, floorplan, document, logo, other. Unterscheide Wohnzimmer, Küche, Schlafzimmer, Bad und Außenbereiche nur anhand sichtbarer Belege; bei unklarer Nutzung room leer und roomConfidence 0. sharpnessScore und exposureScore von 0 bis 100 bewerten tatsächliche Schärfe und Belichtung. suitabilityConfidence von 0 bis 1 bewertet die Sicherheit der Eignungsentscheidung; suitabilityReason begründet sie knapp. Bei unsicherer Eignung keine positive Sicherheit vortäuschen. Logos, Dokumente und Grundrisse sind keine Immobilienfotos. Keine rechtlichen, technischen oder nicht sichtbaren Eigenschaften aus Bildern ableiten."
+        },
+        {
+          "type": "input_text",
+          "text": "Bild 1; imageId=1"
+        },
+        {
+          "type": "input_image",
+          "image_url": "data:image/jpeg;base64",
+          "detail": "low"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Analysiere ausschliesslich die bereitgestellten Immobilienbilder. Erfinde keine nicht sichtbaren Fakten. Gib fuer jede angeforderte imageId genau eine Analyse mit unveraenderter imageId und imageIndex zurueck. Erwartete Bild-IDs: [\"1\"]. Kein Bild ueberspringen, zusammenfassen oder neu nummerieren: auch Duplikate, dunkle, unscharfe, gedrehte Bilder und unklare Details einzeln analysieren. Bei Unsicherheit room leer und roomConfidence 0 angeben, niemals eine Analyse weglassen oder Fakten erfinden. Gib Raumtyp, sichtbaren Zustand und maximal zwei sehr kurze sichtbare Merkmale zurueck. roomConfidence von 0 bis 1; bei unklarer Raumnutzung 0. roomIndependentFacts nur unabhängig sichtbare Merkmale als {fact,confidence}: Fenster, Große Fenster, Tageslicht, Helle Wände, Weiße Wände, Holzboden, Parkettboden, Fliesenboden, Sichtbare Holzbalken. Keine Raumnutzung aus Möbeln ableiten. Bewerte ausserdem category, qualityScore von 0 bis 100, titleScore von 0 bis 100 und suitable. titleScore bewertet ausschliesslich die Eignung als verkaufsstarkes Titelbild. Bevorzuge helle, klare, attraktive Wohnraeume oder eine starke Aussenansicht. Grundrisse, Logos, Dokumentseiten, unscharfe, dunkle oder offensichtlich ungeeignete Bilder erhalten einen niedrigen titleScore. imageIndex beginnt bei 1 und entspricht exakt der Reihenfolge der Bilder. category muss einer dieser Werte sein: living, exterior, kitchen, outdoor, dining, bedroom, bathroom, office, hallway, storage, floorplan, document, logo, other. Unterscheide Wohnzimmer, Küche, Schlafzimmer, Bad und Außenbereiche nur anhand sichtbarer Belege; bei unklarer Nutzung room leer und roomConfidence 0. sharpnessScore und exposureScore von 0 bis 100 bewerten tatsächliche Schärfe und Belichtung. suitabilityConfidence von 0 bis 1 bewertet die Sicherheit der Eignungsentscheidung; suitabilityReason begründet sie knapp. Bei unsicherer Eignung keine positive Sicherheit vortäuschen. Logos, Dokumente und Grundrisse sind keine Immobilienfotos. Keine rechtlichen, technischen oder nicht sichtbaren Eigenschaften aus Bildern ableiten."
+        },
+        {
+          "type": "input_text",
+          "text": "Bild 1; imageId=1"
+        },
+        {
+          "type": "input_image",
+          "image_url": "data:image/jpeg;base64",
+          "detail": "low"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Analysiere ausschliesslich die bereitgestellten Immobilienbilder. Erfinde keine nicht sichtbaren Fakten. Gib fuer jede angeforderte imageId genau eine Analyse mit unveraenderter imageId und imageIndex zurueck. Erwartete Bild-IDs: [\"1\"]. Kein Bild ueberspringen, zusammenfassen oder neu nummerieren: auch Duplikate, dunkle, unscharfe, gedrehte Bilder und unklare Details einzeln analysieren. Bei Unsicherheit room leer und roomConfidence 0 angeben, niemals eine Analyse weglassen oder Fakten erfinden. Gib Raumtyp, sichtbaren Zustand und maximal zwei sehr kurze sichtbare Merkmale zurueck. roomConfidence von 0 bis 1; bei unklarer Raumnutzung 0. roomIndependentFacts nur unabhängig sichtbare Merkmale als {fact,confidence}: Fenster, Große Fenster, Tageslicht, Helle Wände, Weiße Wände, Holzboden, Parkettboden, Fliesenboden, Sichtbare Holzbalken. Keine Raumnutzung aus Möbeln ableiten. Bewerte ausserdem category, qualityScore von 0 bis 100, titleScore von 0 bis 100 und suitable. titleScore bewertet ausschliesslich die Eignung als verkaufsstarkes Titelbild. Bevorzuge helle, klare, attraktive Wohnraeume oder eine starke Aussenansicht. Grundrisse, Logos, Dokumentseiten, unscharfe, dunkle oder offensichtlich ungeeignete Bilder erhalten einen niedrigen titleScore. imageIndex beginnt bei 1 und entspricht exakt der Reihenfolge der Bilder. category muss einer dieser Werte sein: living, exterior, kitchen, outdoor, dining, bedroom, bathroom, office, hallway, storage, floorplan, document, logo, other. Unterscheide Wohnzimmer, Küche, Schlafzimmer, Bad und Außenbereiche nur anhand sichtbarer Belege; bei unklarer Nutzung room leer und roomConfidence 0. sharpnessScore und exposureScore von 0 bis 100 bewerten tatsächliche Schärfe und Belichtung. suitabilityConfidence von 0 bis 1 bewertet die Sicherheit der Eignungsentscheidung; suitabilityReason begründet sie knapp. Bei unsicherer Eignung keine positive Sicherheit vortäuschen. Logos, Dokumente und Grundrisse sind keine Immobilienfotos. Keine rechtlichen, technischen oder nicht sichtbaren Eigenschaften aus Bildern ableiten."
+        },
+        {
+          "type": "input_text",
+          "text": "Bild 1; imageId=1"
+        },
+        {
+          "type": "input_image",
+          "image_url": "data:image/jpeg;base64",
+          "detail": "low"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Analysiere ausschliesslich die bereitgestellten Immobilienbilder. Erfinde keine nicht sichtbaren Fakten. Gib fuer jede angeforderte imageId genau eine Analyse mit unveraenderter imageId und imageIndex zurueck. Erwartete Bild-IDs: [\"1\"]. Kein Bild ueberspringen, zusammenfassen oder neu nummerieren: auch Duplikate, dunkle, unscharfe, gedrehte Bilder und unklare Details einzeln analysieren. Bei Unsicherheit room leer und roomConfidence 0 angeben, niemals eine Analyse weglassen oder Fakten erfinden. Gib Raumtyp, sichtbaren Zustand und maximal zwei sehr kurze sichtbare Merkmale zurueck. roomConfidence von 0 bis 1; bei unklarer Raumnutzung 0. roomIndependentFacts nur unabhängig sichtbare Merkmale als {fact,confidence}: Fenster, Große Fenster, Tageslicht, Helle Wände, Weiße Wände, Holzboden, Parkettboden, Fliesenboden, Sichtbare Holzbalken. Keine Raumnutzung aus Möbeln ableiten. Bewerte ausserdem category, qualityScore von 0 bis 100, titleScore von 0 bis 100 und suitable. titleScore bewertet ausschliesslich die Eignung als verkaufsstarkes Titelbild. Bevorzuge helle, klare, attraktive Wohnraeume oder eine starke Aussenansicht. Grundrisse, Logos, Dokumentseiten, unscharfe, dunkle oder offensichtlich ungeeignete Bilder erhalten einen niedrigen titleScore. imageIndex beginnt bei 1 und entspricht exakt der Reihenfolge der Bilder. category muss einer dieser Werte sein: living, exterior, kitchen, outdoor, dining, bedroom, bathroom, office, hallway, storage, floorplan, document, logo, other. Unterscheide Wohnzimmer, Küche, Schlafzimmer, Bad und Außenbereiche nur anhand sichtbarer Belege; bei unklarer Nutzung room leer und roomConfidence 0. sharpnessScore und exposureScore von 0 bis 100 bewerten tatsächliche Schärfe und Belichtung. suitabilityConfidence von 0 bis 1 bewertet die Sicherheit der Eignungsentscheidung; suitabilityReason begründet sie knapp. Bei unsicherer Eignung keine positive Sicherheit vortäuschen. Logos, Dokumente und Grundrisse sind keine Immobilienfotos. Keine rechtlichen, technischen oder nicht sichtbaren Eigenschaften aus Bildern ableiten."
+        },
+        {
+          "type": "input_text",
+          "text": "Bild 1; imageId=1"
+        },
+        {
+          "type": "input_image",
+          "image_url": "data:image/jpeg;base64",
+          "detail": "low"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Analysiere ausschliesslich die bereitgestellten Immobilienbilder. Erfinde keine nicht sichtbaren Fakten. Gib fuer jede angeforderte imageId genau eine Analyse mit unveraenderter imageId und imageIndex zurueck. Erwartete Bild-IDs: [\"1\"]. Kein Bild ueberspringen, zusammenfassen oder neu nummerieren: auch Duplikate, dunkle, unscharfe, gedrehte Bilder und unklare Details einzeln analysieren. Bei Unsicherheit room leer und roomConfidence 0 angeben, niemals eine Analyse weglassen oder Fakten erfinden. Gib Raumtyp, sichtbaren Zustand und maximal zwei sehr kurze sichtbare Merkmale zurueck. roomConfidence von 0 bis 1; bei unklarer Raumnutzung 0. roomIndependentFacts nur unabhängig sichtbare Merkmale als {fact,confidence}: Fenster, Große Fenster, Tageslicht, Helle Wände, Weiße Wände, Holzboden, Parkettboden, Fliesenboden, Sichtbare Holzbalken. Keine Raumnutzung aus Möbeln ableiten. Bewerte ausserdem category, qualityScore von 0 bis 100, titleScore von 0 bis 100 und suitable. titleScore bewertet ausschliesslich die Eignung als verkaufsstarkes Titelbild. Bevorzuge helle, klare, attraktive Wohnraeume oder eine starke Aussenansicht. Grundrisse, Logos, Dokumentseiten, unscharfe, dunkle oder offensichtlich ungeeignete Bilder erhalten einen niedrigen titleScore. imageIndex beginnt bei 1 und entspricht exakt der Reihenfolge der Bilder. category muss einer dieser Werte sein: living, exterior, kitchen, outdoor, dining, bedroom, bathroom, office, hallway, storage, floorplan, document, logo, other. Unterscheide Wohnzimmer, Küche, Schlafzimmer, Bad und Außenbereiche nur anhand sichtbarer Belege; bei unklarer Nutzung room leer und roomConfidence 0. sharpnessScore und exposureScore von 0 bis 100 bewerten tatsächliche Schärfe und Belichtung. suitabilityConfidence von 0 bis 1 bewertet die Sicherheit der Eignungsentscheidung; suitabilityReason begründet sie knapp. Bei unsicherer Eignung keine positive Sicherheit vortäuschen. Logos, Dokumente und Grundrisse sind keine Immobilienfotos. Keine rechtlichen, technischen oder nicht sichtbaren Eigenschaften aus Bildern ableiten."
+        },
+        {
+          "type": "input_text",
+          "text": "Bild 1; imageId=1"
+        },
+        {
+          "type": "input_image",
+          "image_url": "data:image/jpeg;base64",
+          "detail": "low"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Analysiere ausschliesslich die bereitgestellten Immobilienbilder. Erfinde keine nicht sichtbaren Fakten. Gib fuer jede angeforderte imageId genau eine Analyse mit unveraenderter imageId und imageIndex zurueck. Erwartete Bild-IDs: [\"1\"]. Kein Bild ueberspringen, zusammenfassen oder neu nummerieren: auch Duplikate, dunkle, unscharfe, gedrehte Bilder und unklare Details einzeln analysieren. Bei Unsicherheit room leer und roomConfidence 0 angeben, niemals eine Analyse weglassen oder Fakten erfinden. Gib Raumtyp, sichtbaren Zustand und maximal zwei sehr kurze sichtbare Merkmale zurueck. roomConfidence von 0 bis 1; bei unklarer Raumnutzung 0. roomIndependentFacts nur unabhängig sichtbare Merkmale als {fact,confidence}: Fenster, Große Fenster, Tageslicht, Helle Wände, Weiße Wände, Holzboden, Parkettboden, Fliesenboden, Sichtbare Holzbalken. Keine Raumnutzung aus Möbeln ableiten. Bewerte ausserdem category, qualityScore von 0 bis 100, titleScore von 0 bis 100 und suitable. titleScore bewertet ausschliesslich die Eignung als verkaufsstarkes Titelbild. Bevorzuge helle, klare, attraktive Wohnraeume oder eine starke Aussenansicht. Grundrisse, Logos, Dokumentseiten, unscharfe, dunkle oder offensichtlich ungeeignete Bilder erhalten einen niedrigen titleScore. imageIndex beginnt bei 1 und entspricht exakt der Reihenfolge der Bilder. category muss einer dieser Werte sein: living, exterior, kitchen, outdoor, dining, bedroom, bathroom, office, hallway, storage, floorplan, document, logo, other. Unterscheide Wohnzimmer, Küche, Schlafzimmer, Bad und Außenbereiche nur anhand sichtbarer Belege; bei unklarer Nutzung room leer und roomConfidence 0. sharpnessScore und exposureScore von 0 bis 100 bewerten tatsächliche Schärfe und Belichtung. suitabilityConfidence von 0 bis 1 bewertet die Sicherheit der Eignungsentscheidung; suitabilityReason begründet sie knapp. Bei unsicherer Eignung keine positive Sicherheit vortäuschen. Logos, Dokumente und Grundrisse sind keine Immobilienfotos. Keine rechtlichen, technischen oder nicht sichtbaren Eigenschaften aus Bildern ableiten."
+        },
+        {
+          "type": "input_text",
+          "text": "Bild 1; imageId=1"
+        },
+        {
+          "type": "input_image",
+          "image_url": "data:image/jpeg;base64",
+          "detail": "low"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Analysiere ausschliesslich die bereitgestellten Immobilienbilder. Erfinde keine nicht sichtbaren Fakten. Gib fuer jede angeforderte imageId genau eine Analyse mit unveraenderter imageId und imageIndex zurueck. Erwartete Bild-IDs: [\"1\"]. Kein Bild ueberspringen, zusammenfassen oder neu nummerieren: auch Duplikate, dunkle, unscharfe, gedrehte Bilder und unklare Details einzeln analysieren. Bei Unsicherheit room leer und roomConfidence 0 angeben, niemals eine Analyse weglassen oder Fakten erfinden. Gib Raumtyp, sichtbaren Zustand und maximal zwei sehr kurze sichtbare Merkmale zurueck. roomConfidence von 0 bis 1; bei unklarer Raumnutzung 0. roomIndependentFacts nur unabhängig sichtbare Merkmale als {fact,confidence}: Fenster, Große Fenster, Tageslicht, Helle Wände, Weiße Wände, Holzboden, Parkettboden, Fliesenboden, Sichtbare Holzbalken. Keine Raumnutzung aus Möbeln ableiten. Bewerte ausserdem category, qualityScore von 0 bis 100, titleScore von 0 bis 100 und suitable. titleScore bewertet ausschliesslich die Eignung als verkaufsstarkes Titelbild. Bevorzuge helle, klare, attraktive Wohnraeume oder eine starke Aussenansicht. Grundrisse, Logos, Dokumentseiten, unscharfe, dunkle oder offensichtlich ungeeignete Bilder erhalten einen niedrigen titleScore. imageIndex beginnt bei 1 und entspricht exakt der Reihenfolge der Bilder. category muss einer dieser Werte sein: living, exterior, kitchen, outdoor, dining, bedroom, bathroom, office, hallway, storage, floorplan, document, logo, other. Unterscheide Wohnzimmer, Küche, Schlafzimmer, Bad und Außenbereiche nur anhand sichtbarer Belege; bei unklarer Nutzung room leer und roomConfidence 0. sharpnessScore und exposureScore von 0 bis 100 bewerten tatsächliche Schärfe und Belichtung. suitabilityConfidence von 0 bis 1 bewertet die Sicherheit der Eignungsentscheidung; suitabilityReason begründet sie knapp. Bei unsicherer Eignung keine positive Sicherheit vortäuschen. Logos, Dokumente und Grundrisse sind keine Immobilienfotos. Keine rechtlichen, technischen oder nicht sichtbaren Eigenschaften aus Bildern ableiten."
+        },
+        {
+          "type": "input_text",
+          "text": "Bild 1; imageId=1"
+        },
+        {
+          "type": "input_image",
+          "image_url": "data:image/jpeg;base64",
+          "detail": "low"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Analysiere ausschliesslich die bereitgestellten Immobilienbilder. Erfinde keine nicht sichtbaren Fakten. Gib fuer jede angeforderte imageId genau eine Analyse mit unveraenderter imageId und imageIndex zurueck. Erwartete Bild-IDs: [\"1\"]. Kein Bild ueberspringen, zusammenfassen oder neu nummerieren: auch Duplikate, dunkle, unscharfe, gedrehte Bilder und unklare Details einzeln analysieren. Bei Unsicherheit room leer und roomConfidence 0 angeben, niemals eine Analyse weglassen oder Fakten erfinden. Gib Raumtyp, sichtbaren Zustand und maximal zwei sehr kurze sichtbare Merkmale zurueck. roomConfidence von 0 bis 1; bei unklarer Raumnutzung 0. roomIndependentFacts nur unabhängig sichtbare Merkmale als {fact,confidence}: Fenster, Große Fenster, Tageslicht, Helle Wände, Weiße Wände, Holzboden, Parkettboden, Fliesenboden, Sichtbare Holzbalken. Keine Raumnutzung aus Möbeln ableiten. Bewerte ausserdem category, qualityScore von 0 bis 100, titleScore von 0 bis 100 und suitable. titleScore bewertet ausschliesslich die Eignung als verkaufsstarkes Titelbild. Bevorzuge helle, klare, attraktive Wohnraeume oder eine starke Aussenansicht. Grundrisse, Logos, Dokumentseiten, unscharfe, dunkle oder offensichtlich ungeeignete Bilder erhalten einen niedrigen titleScore. imageIndex beginnt bei 1 und entspricht exakt der Reihenfolge der Bilder. category muss einer dieser Werte sein: living, exterior, kitchen, outdoor, dining, bedroom, bathroom, office, hallway, storage, floorplan, document, logo, other. Unterscheide Wohnzimmer, Küche, Schlafzimmer, Bad und Außenbereiche nur anhand sichtbarer Belege; bei unklarer Nutzung room leer und roomConfidence 0. sharpnessScore und exposureScore von 0 bis 100 bewerten tatsächliche Schärfe und Belichtung. suitabilityConfidence von 0 bis 1 bewertet die Sicherheit der Eignungsentscheidung; suitabilityReason begründet sie knapp. Bei unsicherer Eignung keine positive Sicherheit vortäuschen. Logos, Dokumente und Grundrisse sind keine Immobilienfotos. Keine rechtlichen, technischen oder nicht sichtbaren Eigenschaften aus Bildern ableiten."
+        },
+        {
+          "type": "input_text",
+          "text": "Bild 1; imageId=1"
+        },
+        {
+          "type": "input_image",
+          "image_url": "data:image/jpeg;base64",
+          "detail": "low"
+        }
+      ]
+    }
+  ]
+]

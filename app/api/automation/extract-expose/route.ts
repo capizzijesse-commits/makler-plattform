@@ -1,4 +1,11 @@
-﻿import OpenAI, { toFile } from "openai";
+import { extractPdfDocumentFacts, pdfDocumentReviewError } from "@/lib/pdf-document-facts.server";
+import { applyDocumentedAutomationFacts } from "@/lib/automation-source-facts";
+import { applyObjectCountryEvidence } from "@/lib/expose-object-country";
+import { savePremiumAssessment } from "@/lib/premium-quality-store.server";
+import { stableQualityHash } from "@/lib/premium-quality-gate.server";
+import { collectExposeCoreFacts, applyExposeCoreEvidence, hasUnresolvedExposeConflicts, type ExposeFactConflict } from "@/lib/expose-core-fact-conflicts";
+import OpenAI, { toFile } from "openai";
+import { extractSupplementaryFactsFromDocumentText } from "@/lib/property-facts-document.server";
 import { del } from "@vercel/blob";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -669,124 +676,6 @@ async function extractSpreadsheetText(
 }
 
 // PDF_TEXT_FAST_PATH_V1
-async function extractPdfTextFast(
-  bytes: Uint8Array
-): Promise<{
-  text: string;
-  pageCount: number;
-  textPageCount: number;
-}> {
-  await import(
-    "pdfjs-dist/legacy/build/pdf.worker.mjs"
-  );
-
-  const pdfjs =
-    await import(
-      "pdfjs-dist/legacy/build/pdf.mjs"
-    );
-
-  const loadingTask =
-    pdfjs.getDocument({
-      data:
-        new Uint8Array(bytes),
-      useSystemFonts:
-        false,
-    });
-
-  const pdf =
-    await loadingTask.promise;
-
-  const pageTexts: string[] = [];
-
-  try {
-    for (
-      let pageNumber = 1;
-      pageNumber <= pdf.numPages;
-      pageNumber += 1
-    ) {
-      const page =
-        await pdf.getPage(
-          pageNumber
-        );
-
-      try {
-        const content =
-          await page.getTextContent();
-
-        const text =
-          content.items
-            .map((item) =>
-              "str" in item
-                ? item.str
-                : ""
-            )
-            .join(" ")
-            .replace(/\s+/g, " ")
-            .trim();
-
-        if (text) {
-          pageTexts.push(
-            `[PAGE ${pageNumber}]\n${text}`
-          );
-        }
-      } finally {
-        page.cleanup();
-      }
-    }
-
-    return {
-      text:
-        pageTexts.join(
-          "\n\n"
-        ),
-      pageCount:
-        pdf.numPages,
-      textPageCount:
-        pageTexts.length,
-    };
-  } finally {
-    await loadingTask.destroy();
-  }
-}
-
-function isPdfTextFastPathUsable(
-  result: {
-    text: string;
-    pageCount: number;
-    textPageCount: number;
-  }
-): boolean {
-  const normalized =
-    result.text.trim();
-
-  if (
-    normalized.length < 1000
-  ) {
-    return false;
-  }
-
-  if (
-    result.textPageCount < 2
-  ) {
-    return false;
-  }
-
-  const textCoverage =
-    result.pageCount > 0
-      ? result.textPageCount /
-        result.pageCount
-      : 0;
-
-  if (
-    result.pageCount >= 4 &&
-    textCoverage < 0.2
-  ) {
-    return false;
-  }
-
-  return true;
-}
-
 const ALLOWED_CONTENT_TYPES = new Set([
   "application/pdf",
   "text/plain",
@@ -799,8 +688,13 @@ const ALLOWED_CONTENT_TYPES = new Set([
 ]);
 
 type ExtractedExpose = {
+  plotArea?: string;
+  currency?: string;
+  verifiedFeatures?: string;
+  factConflicts?: ExposeFactConflict[];
+  requiresManualReview?: boolean;
   projectName: string;
-  countryCode: "CH" | "DE" | "AT";
+  countryCode: "CH" | "DE" | "AT" | "";
   street: string;
   postalCode: string;
   location: string;
@@ -828,7 +722,7 @@ type ExtractRequest = ExtractDocumentRequest & {
 function emptyResult(): ExtractedExpose {
   return {
     projectName: "",
-    countryCode: "CH",
+    countryCode: "",
     street: "",
     postalCode: "",
     location: "",
@@ -847,7 +741,45 @@ function cleanString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function normalizeResult(value: unknown): ExtractedExpose {
+function cleanExposeLocation(value: unknown): string {
+  const text = cleanString(value).replace(/\s+/g, " ");
+
+  if (
+    !text ||
+    text.length > 45 ||
+    text.split(" ").length > 4 ||
+    /[.!?;:,0-9]/.test(text) ||
+    !/^[\p{L}][\p{L}\p{M} '\u2019-]*$/u.test(text) ||
+    /\b(?:stehen|gehoeren|gehören|verfuegung|verfügung|sowie|befinden|verfügt|verfuegt)\b/i.test(text)
+  ) {
+    return "";
+  }
+
+  return text;
+}
+
+function cleanExposePostalCode(value: unknown): string {
+  const text = cleanString(value);
+  return /^[0-9]{4,5}$/.test(text) ? text : "";
+}
+
+function cleanExposeProjectName(value: unknown): string {
+  const text = cleanString(value).replace(/\s+/g, " ");
+
+  if (
+    text.length > 90 ||
+    /[.!?]/.test(text) ||
+    /\b(?:stehen|gehören|gehoeren|verfügung|verfuegung)\b/i.test(text)
+  ) {
+    return "";
+  }
+
+  return text;
+}
+function normalizeResult(
+  value: unknown,
+  fallbackMarket: "CH" | "DE" = "CH"
+): ExtractedExpose {
   const raw =
     value && typeof value === "object"
       ? (value as Record<string, unknown>)
@@ -855,7 +787,9 @@ function normalizeResult(value: unknown): ExtractedExpose {
 
   const country = cleanString(raw.countryCode).toUpperCase();
   const countryCode: ExtractedExpose["countryCode"] =
-    country === "DE" || country === "AT" ? country : "CH";
+    country === "DE" || country === "AT" || country === "CH"
+      ? country
+      : "";
 
   const missingFields = Array.isArray(raw.missingFields)
     ? raw.missingFields.map(cleanString).filter(Boolean).slice(0, 20)
@@ -863,11 +797,11 @@ function normalizeResult(value: unknown): ExtractedExpose {
 
   return {
     ...emptyResult(),
-    projectName: cleanString(raw.projectName),
+    projectName: cleanExposeProjectName(raw.projectName),
     countryCode,
     street: cleanString(raw.street),
-    postalCode: cleanString(raw.postalCode),
-    location: cleanString(raw.location),
+    postalCode: cleanExposePostalCode(raw.postalCode),
+    location: cleanExposeLocation(raw.location),
     propertyType: cleanString(raw.propertyType),
     rooms: cleanString(raw.rooms),
     livingArea: cleanString(raw.livingArea),
@@ -962,10 +896,15 @@ function hasExplicitSalePriceEvidence(
 
 // SPEED_BOOSTER_V2_LOCAL_FACTS
 function extractLocalFastFacts(
-  documentText: string
+  documentText: string,
+  fallbackMarket: "CH" | "DE" = "CH"
 ): ExtractedExpose {
-  const result =
-    emptyResult();
+  // EXPOSE_FAST_PATH_MARKET_V1
+  // CH darf nicht ohne Laenderbeleg voreingestellt werden.
+  const result: ExtractedExpose = {
+    ...emptyResult(),
+    countryCode: "",
+  };
 
   const text =
     documentText
@@ -992,16 +931,16 @@ function extractLocalFastFacts(
     return "";
   };
 
+  // EXPOSE_LOCATION_FIREWALL_V1
+  // Keine beliebigen Jahreszahlen oder Satzfragmente als Adresse.
   result.postalCode =
     firstMatch([
-      /(?:PLZ|Postleitzahl)\s*[:\-]?\s*([0-9]{4,5})\b/i,
-      /\b([0-9]{4})\s+[A-Z???][A-Za-z???????\- ]{2,50}\b/,
+      /^[ \t]*(?:PLZ|Postleitzahl)[ \t]*[:\-][ \t]*([0-9]{4,5})\b/im,
     ]);
 
   result.location =
     firstMatch([
-      /(?:Ort|Gemeinde|Ortschaft)\s*[:\-]?\s*([^\n,;]{2,60})/i,
-      /\b[0-9]{4}\s+([A-Z???][A-Za-z???????\- ]{2,50})\b/,
+      /^[ \t]*(?:Ort|Gemeinde|Ortschaft|Standort)[ \t]*[:\-][ \t]*([^\r\n,;]{2,60})/im,
     ]);
 
   result.street =
@@ -1009,6 +948,7 @@ function extractLocalFastFacts(
       /(?:Strasse|Stra?e|Adresse)\s*[:\-]?\s*([^\n,;]{3,100})/i,
     ]);
 
+  /* Core values are reconciled below from all plausible source candidates. */
   result.rooms =
     firstMatch([
       /(?:Zimmer|Zimmerzahl|Anzahl Zimmer)\s*[:\-]?\s*([0-9]+(?:[.,][0-9]+)?)/i,
@@ -1078,18 +1018,55 @@ function extractLocalFastFacts(
       )
       .map(String);
 
-  return result;
+  return applyExposeCoreEvidence(result, collectExposeCoreFacts(documentText));
 }
 
+// EXPOSE_STABLE_SOURCE_LOCATION_V1
+// Only accept explicit place labels or postal-code/place pairs.
+// Never infer an address from a project title alone.
+function extractSourceDocumentLocation(
+  documentText: string
+): string {
+  const candidates = new Set<string>();
+
+  const patterns = [
+    /^[ \t]*(?:Ort|Gemeinde|Ortschaft|Standort|Immobilienstandort)[ \t]*[:\-][ \t]*([\p{L}][\p{L}\p{M} '\u2019-]{1,44})[ \t]*$/gimu,
+    /^[ \t]*(?:PLZ(?:[ \t]*\/[ \t]*Ort)?|Postleitzahl(?:[ \t]*\/[ \t]*Ort)?|Objektadresse|Anschrift)[ \t]*[:\-][ \t]*(?:DE[ \t-]*)?[0-9]{5}[ \t]+([\p{L}][\p{L}\p{M} '\u2019-]{1,44})[ \t]*$/gimu,
+    /^[ \t]*(?:DE[ \t-]*)?[0-9]{5}[ \t]+([\p{L}][\p{L}\p{M} '\u2019-]{1,44})[ \t]*$/gimu,
+  ];
+
+  for (const pattern of patterns) {
+    for (const match of documentText.matchAll(pattern)) {
+      const location = cleanExposeLocation(match[1]);
+
+      if (location) {
+        candidates.add(location);
+      }
+    }
+  }
+
+  // Conflicting places must not be guessed or merged.
+  return candidates.size === 1
+    ? [...candidates][0]
+    : "";
+}
 function isLocalFastFactsReady(
   facts: ExtractedExpose
 ): boolean {
+  // EXPOSE_FAST_PATH_READY_VALIDATION_V1
+  // Nur plausible Daten duerfen den KI-Fallback ueberspringen.
+  const postalCode =
+    cleanExposePostalCode(facts.postalCode);
+  const location =
+    cleanExposeLocation(facts.location);
+
   return Boolean(
-    facts.postalCode &&
-    facts.location &&
-    facts.propertyType &&
-    facts.rooms &&
-    facts.livingArea
+    !hasUnresolvedExposeConflicts(facts) &&
+    postalCode &&
+    location &&
+    facts.propertyType.trim() &&
+    facts.rooms.trim() &&
+    facts.livingArea.trim()
   );
 }
 
@@ -1236,6 +1213,9 @@ export async function POST(request: NextRequest) {
       bytes?: Uint8Array;
     }> = [];
 
+    // EXPOSE_TARGET_MARKET_V1
+    let targetMarket: "CH" | "DE" = "CH";
+
     let skipPdfPhotoExtraction =
       false;
 
@@ -1246,6 +1226,11 @@ export async function POST(request: NextRequest) {
     ) {
       const form =
         await request.formData();
+
+      const submittedMarket = form.get("targetMarket");
+      if (submittedMarket === "DE" || submittedMarket === "CH") {
+        targetMarket = submittedMarket;
+      }
 
       skipPdfPhotoExtraction =
         form.get(
@@ -1286,6 +1271,13 @@ export async function POST(request: NextRequest) {
     } else {
       const body =
         (await request.json()) as ExtractRequest;
+
+      const submittedMarket =
+        (body as ExtractRequest & { targetMarket?: unknown }).targetMarket;
+
+      if (submittedMarket === "DE" || submittedMarket === "CH") {
+        targetMarket = submittedMarket;
+      }
 
       skipPdfPhotoExtraction =
         body.skipPdfPhotoExtraction ===
@@ -1504,23 +1496,8 @@ export async function POST(request: NextRequest) {
               file.fileName
             );
 
-          const propertyPhotosPromise =
-            file.fileType === "application/pdf" &&
-            !skipPdfPhotoExtraction
-              ? extractPropertyPhotosFromPdf(
-                  Buffer.from(bytes),
-                  {
-                    minimumConfidence: 0.7,
-                    renderPages:
-                      shouldRenderPdfPages,
-                  }
-                )
-              : Promise.resolve({
-                  candidateCount: 0,
-                  propertyPhotoCount: 0,
-                  photos: [],
-                });
-
+          let pdfAnalysis: Awaited<ReturnType<typeof extractPdfDocumentFacts>>["documentAnalysis"] | null = null;
+          let pdfStructuredFacts: Awaited<ReturnType<typeof extractPdfDocumentFacts>>["structuredFacts"] | undefined;
           let fastText = "";
           let useFastText = false;
 
@@ -1562,58 +1539,40 @@ export async function POST(request: NextRequest) {
             const pdfTextStartedAt =
               performance.now();
 
-            try {
-              const pdfTextResult =
-                await extractPdfTextFast(
-                  bytes
-                );
-
-              useFastText =
-                isPdfTextFastPathUsable(
-                  pdfTextResult
-                );
-
-              if (useFastText) {
-                fastText =
-                  pdfTextResult.text;
-              }
-
-              console.log(
-                "[EXPOSE PDF TEXT FAST PATH]",
-                {
-                  fileName:
-                    file.fileName,
-                  usable:
-                    useFastText,
-                  pages:
-                    pdfTextResult.pageCount,
-                  textPages:
-                    pdfTextResult.textPageCount,
-                  characters:
-                    pdfTextResult.text.length,
-                  durationMs:
-                    Math.round(
-                      performance.now() -
-                        pdfTextStartedAt
-                    ),
-                }
-              );
-            } catch (error) {
-              console.warn(
-                "[EXPOSE PDF TEXT FAST PATH] fallback",
-                file.fileName,
-                error
-              );
-
-              fastText = "";
-              useFastText = false;
-            }
+            const pdfFacts = await extractPdfDocumentFacts(Buffer.from(bytes));
+            pdfAnalysis = pdfFacts.documentAnalysis;
+            pdfStructuredFacts = pdfFacts.structuredFacts;
+            if (pdfFacts.documentAnalysis.requiresReview) throw pdfDocumentReviewError(pdfFacts.documentAnalysis);
+            fastText = pdfFacts.documentText;
+            useFastText = true;
+            console.log("[EXPOSE PDF VERIFIED TEXT]", { pages:pdfFacts.documentAnalysis.pageCount, durationMs:Math.round(performance.now()-pdfTextStartedAt) });
           }
+
+          const propertyPhotosPromise = () =>
+            file.fileType === "application/pdf" &&
+            !skipPdfPhotoExtraction
+              ? extractPropertyPhotosFromPdf(
+                  Buffer.from(bytes),
+                  {
+                    minimumConfidence: 0.7,
+                    renderPages:
+                      shouldRenderPdfPages,
+                  }
+                )
+              : Promise.resolve({
+                  candidateCount: 0,
+                  propertyPhotoCount: 0,
+                  photos: [],
+                });
+
+
 
           return {
             ...file,
             bytes,
             fastText,
+            pdfAnalysis,
+            pdfStructuredFacts,
             useFastText,
             propertyPhotosPromise,
           };
@@ -1648,7 +1607,8 @@ export async function POST(request: NextRequest) {
 
     const localFastFacts =
       extractLocalFastFacts(
-        combinedFastText
+        combinedFastText,
+        targetMarket
       );
 
     const localFastFactsReady =
@@ -2004,15 +1964,31 @@ ALLGEMEIN:
     const extracted =
       useLocalFactsFastPath
         ? normalizeResult(
-            localFastFacts
+            localFastFacts,
+            targetMarket
           )
         : normalizeResult(
             parseJsonObject(
               response?.output_text ||
                 ""
-            )
+            ),
+            targetMarket
           );
 
+    // EXPOSE_STABLE_SOURCE_LOCATION_V1
+    // Reconcile an empty AI location with explicit PDF text evidence.
+    if (!extracted.location && combinedFastText) {
+      const sourceLocation =
+        extractSourceDocumentLocation(combinedFastText);
+
+      if (sourceLocation) {
+        extracted.location = sourceLocation;
+        extracted.missingFields =
+          extracted.missingFields.filter(
+            (field) => field !== "location"
+          );
+      }
+    }
     if (useLocalFactsFastPath) {
       extracted.sourceSummary =
         [
@@ -2095,7 +2071,7 @@ ALLGEMEIN:
       await Promise.all(
         preparedDocuments.map(
           (document) =>
-            document.propertyPhotosPromise
+            document.propertyPhotosPromise()
         )
       );
 
@@ -2170,6 +2146,11 @@ ALLGEMEIN:
             photo.reason,
           analysis:
             photo.analysis,
+          room: photo.room,
+          roomConfidence: photo.roomConfidence,
+          roomIndependentFacts: photo.roomIndependentFacts,
+          roofShape: photo.roofShape,
+          roofConfidence: photo.roofConfidence,
           base64:
             photo.buffer.toString(
               "base64"
@@ -2240,13 +2221,108 @@ ALLGEMEIN:
       });
     }
 
+        // EXPOSE_SOURCE_IDENTITY_FIREWALL_T122
+    // Reject obvious document-note fragments as project names.
+    const suspiciousProjectName =
+      /angaben\s+dieses\s+expos|f[uü]r\s+eine\s+inserat|demo[\s-]*objekt|ausschlie[sß]lich\s+f[uü]r\s+demo/i
+        .test(extracted.projectName);
+
+    if (suspiciousProjectName) {
+      extracted.projectName = [
+        extracted.rooms ? `${extracted.rooms}-Zimmer` : "",
+        extracted.propertyType,
+        extracted.location ? `in ${extracted.location}` : "",
+      ].filter(Boolean).join(" ").trim();
+    }
+
+    // EXPOSE_POSTAL_SOURCE_EVIDENCE_T126
+    // Require an object-address source for postal codes.
+    if (combinedFastText && extracted.postalCode) {
+      const postal = extracted.postalCode;
+
+      const sourceLines = combinedFastText
+        .replace(/\r/g, "")
+        .split("\n");
+
+      const contactBoundary = sourceLines.findIndex((line) =>
+        /^\s*(?:Kontakt(?:\s*\/\s*Demo)?|Impressum|Ansprechpartner)\s*:?\s*$/i
+          .test(line.trim())
+      );
+
+      const propertyLines =
+        contactBoundary >= 0
+          ? sourceLines.slice(0, contactBoundary)
+          : sourceLines;
+
+      const postalPattern = new RegExp(
+        String.raw`^\s*(?:PLZ(?:\s*\/\s*Ort)?|Postleitzahl(?:\s*\/\s*Ort)?|Objektadresse|Immobilienadresse)\s*[:\-]?\s*${postal}(?!\d)`,
+        "i"
+      );
+
+      const explicitPostal = propertyLines.some((line) =>
+        postalPattern.test(line)
+      );
+
+      const addressHeading =
+        /^\s*(?:Objektadresse|Immobilienadresse|Adresse\s+des\s+Objekts)\s*:?\s*$/i;
+
+      const postalCity = new RegExp(
+        String.raw`^\s*${postal}\s+[\p{L}][\p{L}\p{M} .'-]{1,60}\s*$`,
+        "u"
+      );
+
+      let multilineAddress = false;
+
+      for (let i = 0; i < propertyLines.length; i++) {
+        if (!addressHeading.test(propertyLines[i])) {
+          continue;
+        }
+
+        const nearby = propertyLines.slice(i + 1, i + 4);
+
+        if (nearby.some((line) => postalCity.test(line))) {
+          multilineAddress = true;
+          break;
+        }
+      }
+
+      if (!explicitPostal && !multilineAddress) {
+        extracted.postalCode = "";
+
+        if (!extracted.missingFields.includes("postalCode")) {
+          extracted.missingFields.push("postalCode");
+        }
+      }
+    }
+const supplementaryFacts =
+      extractSupplementaryFactsFromDocumentText(combinedFastText);
+
+    const saleEvidence = collectExposeCoreFacts(combinedFastText);
+    const rentEvidence = collectExposeCoreFacts(combinedFastText, "rent");
+    const documentedOffer = saleEvidence.values.price && !rentEvidence.values.price ? "sale" : rentEvidence.values.price && !saleEvidence.values.price ? "rent" : "";
+    Object.assign(extracted, { marketingType: documentedOffer,
+      currency: documentedOffer === "sale" ? saleEvidence.currency ?? "" : documentedOffer === "rent" ? rentEvidence.currency ?? "" : "" });
+    Object.assign(extracted, applyDocumentedAutomationFacts(extracted, preparedDocuments.map(document => ({ documentAnalysis: document.pdfAnalysis ?? undefined, structuredFacts: document.pdfStructuredFacts })), targetMarket));
+    // Apply country evidence last: neither model output, market nor core-fact
+    // normalization may overwrite an unknown/conflicting object country.
+    const confirmedExtracted = applyObjectCountryEvidence(applyExposeCoreEvidence(extracted, collectExposeCoreFacts(combinedFastText)), combinedFastText);
+    const sourceAssessment = await savePremiumAssessment(user.id, "expose", {
+      extracted: confirmedExtracted,
+      evidence: collectExposeCoreFacts(combinedFastText),
+      rentEvidence: collectExposeCoreFacts(combinedFastText, "rent"),
+      sourceText: combinedFastText,
+      documents: preparedDocuments.filter(document => document.pdfAnalysis).map(document => ({reference:document.fileName,analysis:document.pdfAnalysis})),
+      sourceChecked: !!combinedFastText.trim(), sourceHash: stableQualityHash(combinedFastText),
+    });
     return NextResponse.json({
+      sourceAssessmentId: sourceAssessment.id,
       success: true,
-      extracted,
+      extracted: confirmedExtracted,
       extractedPhotos,
+      supplementaryFacts,
     });
   } catch (error) {
-    console.error("AUTOMATION EXPOSE EXTRACTION ERROR:", error);
+    console.error("AUTOMATION EXPOSE EXTRACTION ERROR:", (error as { code?:string })?.code === "PDF_DOCUMENT_REVIEW_REQUIRED" ? {code:"PDF_DOCUMENT_REVIEW_REQUIRED"} : error);
 
     if (monitoringRunId) {
       const monitoringError =
@@ -2284,6 +2360,8 @@ ALLGEMEIN:
 
     }
 
+    const pdfReview = error as { code?:string; documentAnalysis?:unknown; sourceEvidence?:unknown; structuredFacts?:unknown };
+    if (pdfReview.code === "PDF_DOCUMENT_REVIEW_REQUIRED") return NextResponse.json({ success:false, code:pdfReview.code, error:"Die PDF-Quellen benötigen eine manuelle Prüfung.", documentAnalysis:pdfReview.documentAnalysis, sourceEvidence:pdfReview.sourceEvidence, structuredFacts:pdfReview.structuredFacts }, { status:422 });
     const friendly = friendlyOpenAiError(error);
 
     return NextResponse.json(

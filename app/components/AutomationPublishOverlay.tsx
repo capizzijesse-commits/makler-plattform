@@ -230,6 +230,7 @@ export default function AutomationPublishOverlay() {
           .json()
           .catch(() => ({}))) as {
           success?: boolean;
+          code?: string;
           listingId?: string;
           error?: string;
         };
@@ -427,6 +428,7 @@ setProgress(
           .catch(() => ({}))) as {
           success?: boolean;
           error?: string;
+          code?: string;
           autopilot?: {
             stage?:
               | "needs_confirmation"
@@ -443,6 +445,10 @@ setProgress(
         return;
       }
 
+      if(runData.code==="AUTOPILOT_IMAGE_REVIEW_REQUIRED"||runData.autopilot?.stage==="needs_confirmation"){
+        window.location.href=`/cockpit/${encodeURIComponent(nextListingId)}/edit?review=${runData.code==="AUTOPILOT_IMAGE_REVIEW_REQUIRED"?"images":"final"}`;
+        return;
+      }
       if (
         !runResponse.ok ||
         !runData.success

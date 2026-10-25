@@ -1,0 +1,21 @@
+{
+  "analysis": {
+    "imageId": "1",
+    "imageIndex": 1,
+    "room": "livingRoom",
+    "category": "livingRoom",
+    "roomConfidence": 0.98,
+    "roomIndependentFacts": [],
+    "condition": "Keine Zustandsbewertung im simulierten Bedienablauf",
+    "visibleFacts": [],
+    "qualityScore": 85,
+    "titleScore": 95,
+    "suitable": true,
+    "sharpnessScore": 90,
+    "exposureScore": 90,
+    "suitabilityConfidence": 0.98,
+    "suitabilityReason": "Simulierter Bildtest",
+    "duplicateOfImageIndex": null,
+    "duplicateConfidence": 0
+  }
+}

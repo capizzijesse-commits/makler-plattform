@@ -1,0 +1,112 @@
+{
+  "assessments": [
+    {
+      "kind": "image",
+      "payload": {
+        "image": {
+          "contentFingerprint": "3c5eaebe53c8f714dc90ad22f931b0b293c94c98f7edf4321056b7adcb874f4d",
+          "fileName": "S01.jpg"
+        }
+      }
+    },
+    {
+      "kind": "image",
+      "payload": {
+        "image": {
+          "contentFingerprint": "b5ce7c90e136c878a184b69b6d73c9ef020f78ae1c370c17ecec6bf37e7695cd",
+          "fileName": "S02.jpg"
+        }
+      }
+    },
+    {
+      "kind": "image",
+      "payload": {
+        "image": {
+          "contentFingerprint": "db35f89e0ff575873084a2d5e06a0718b63c3d388c89aeab31ce9258155c513e",
+          "fileName": "S03.jpg"
+        }
+      }
+    },
+    {
+      "kind": "image",
+      "payload": {
+        "image": {
+          "contentFingerprint": "87415c23564c8646f8f9fa949f3107c54801f39095c04287138ca0d4b5e86854",
+          "fileName": "S04.jpg"
+        }
+      }
+    },
+    {
+      "kind": "image",
+      "payload": {
+        "image": {
+          "contentFingerprint": "951b69e4abacdb25ee744b4fb377c529f9685659c846b4facb453cad7ede7003",
+          "fileName": "S05.jpg"
+        }
+      }
+    },
+    {
+      "kind": "image",
+      "payload": {
+        "image": {
+          "contentFingerprint": "fb370f137ce97b004d5775b7f5f78d41112d0084284a7b5b8005734ec12eb3ec",
+          "fileName": "S06.jpg"
+        }
+      }
+    },
+    {
+      "kind": "image",
+      "payload": {
+        "image": {
+          "contentFingerprint": "cc0e19e59df8e2cb9717341579c411a4e67b513de5dd0cf8e7c61af420ab892d",
+          "fileName": "S07.jpg"
+        }
+      }
+    },
+    {
+      "kind": "image",
+      "payload": {
+        "image": {
+          "contentFingerprint": "f3f594eda322f5d0c3e832505d3a358b857fcd710896abcb001d07a47e926c4b",
+          "fileName": "S08.jpg"
+        }
+      }
+    },
+    {
+      "kind": "image",
+      "payload": {
+        "image": {
+          "contentFingerprint": "20dc37ec0f41f4490c7293681a6ab99c6a47937fe8d8b62010e23ff5331e462d",
+          "fileName": "S09.jpg"
+        }
+      }
+    },
+    {
+      "kind": "image",
+      "payload": {
+        "image": {
+          "contentFingerprint": "a3f747e16fbbe61a2ead9001536ccba6daac3bc8c858da430a2c087a340d9aa2",
+          "fileName": "S10.jpg"
+        }
+      }
+    },
+    {
+      "kind": "image",
+      "payload": {
+        "image": {
+          "contentFingerprint": "adac39bd57904889dcbb41490d11b5a6ce060aa5e6f8b64e5cf7b7164e095df2",
+          "fileName": "S11.jpg"
+        }
+      }
+    },
+    {
+      "kind": "image",
+      "payload": {
+        "image": {
+          "contentFingerprint": "6d8b266d04f6cd6f71d7b5e49158ab2b0c87b237ed48a591be88427113d6c872",
+          "fileName": "S12.jpg"
+        }
+      }
+    }
+  ]
+}

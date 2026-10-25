@@ -1,3 +1,9 @@
+import { normalizeGermanOrthographyDE } from './listing-orthography-de';
+import { premiumGenerationContract, premiumEditorialAngle, premiumRepairInstructions, repairPremiumVariants, editorialRepairIssues, coreFactRepairBrief } from './premium-editorial-generation';
+import { listingOfferContext, listingOfferInstructions } from "@/lib/listing-offer-context";
+import type { PremiumFacts } from "@/lib/premium-quality-gate.server";
+import { auditPremiumTexts } from "@/lib/premium-text-audit.server";
+import { evaluatePremiumTextQuality } from "@/lib/premium-quality-gate.server";
 import OpenAI from "openai";
 
 import {
@@ -7,6 +13,7 @@ import {
 } from "@/lib/listing-text-feature-gate";
 
 import {
+  evaluateListingQuality,
   normalizeSwissTypography,
   type ListingTextVariant,
 } from "@/lib/listing-text-quality";
@@ -15,7 +22,7 @@ const LISTING_GENERATION_MODEL =
   process.env.OPENAI_LISTING_MODEL?.trim() ||
   "gpt-4.1-mini";
 
-export type ListingTextEngineInput = {
+export type ListingTextEngineInput = PremiumFacts & {
   locale?: unknown;
   market?: unknown;
   location?: unknown;
@@ -125,7 +132,7 @@ const LANGUAGE_CONFIG: Record<
       "Schweizer Hochdeutsch",
     emptyValue: "keine Angabe",
     defaultStyle:
-      "hochwertig, modern und glaubwürdig",
+      "hochwertig, natürlich und glaubwürdig",
     fallbackTitle: "Variante",
     languageRules: [
       "Verwende konsequent Schweizer Rechtschreibung.",
@@ -223,6 +230,8 @@ function toPromptValue(
   fallback: string,
   maxLength = 4000
 ): string {
+  if (typeof value === "number" && Number.isFinite(value)) value = String(value);
+
   if (typeof value !== "string") {
     return fallback;
   }
@@ -514,7 +523,7 @@ FACTUAL STANDARD:
 - If a feature is missing, omit it.
 - Do not convert assumptions into facts.
 - Do not invent surroundings, distances, schools, public transport, views, renovations, materials, orientation, parking, accessibility or investment returns.
-- Image analysis may only support visible characteristics. It must not be used to invent hidden technical, legal or location facts.
+- Image observations are not confirmed object facts for this writing task. Do not promote image labels, furniture, views or synthetic details into property claims; use only separately supplied source-backed object facts.
 
 EDITORIAL STANDARD:
 - Avoid empty advertising language.
@@ -559,54 +568,13 @@ The style profile influences tone and sentence rhythm only.
 It must never be treated as proof of a property characteristic.
 
 MANDATORY VARIANT ARCHITECTURES:
-
-GLOBAL DIVERSITY CONTRACT:
-- Treat the three variants as three independent editorial concepts, not as rewrites of one base text.
-- Select one primary sales angle for each variant before writing.
-- A primary angle must not be reused by another variant.
-- Do not mention every available fact in every variant.
-- Shared core facts such as location, property type, room count, living area and price may be repeated when useful.
-- Secondary facts should normally appear in no more than two variants.
-- Do not present the same facts in the same sequence.
-- Do not reuse the same conclusion, viewing invitation or final argument.
-- The title, first sentence and first paragraph of every variant must be independently conceived.
-- In no more than one variant may the first sentence begin with the property type.
-- Never create artificial diversity by replacing individual words with synonyms.
-
-VARIANT 1 - FACTUAL PROPERTY PROFILE:
-- Lead with one or two concrete numerical or physical facts.
-- Use a precise and restrained broker style.
-- Recommended structure:
-  1. Core property profile
-  2. Verified layout and equipment
-  3. Relevant practical information
-- Prioritise dimensions, room offer, documented equipment and included items.
-- Avoid emotional target-group language.
-- Avoid decorative adjectives.
-- Do not begin with "Diese Immobilie", "Diese Wohnung", "In dieser Wohnung", a greeting or a question.
-
-VARIANT 2 - CONCRETE USE AND DAILY LIFE:
-- Begin with a specific usable feature, room relationship or outdoor area.
-- Do not begin with room count, living area or the same fact used to open variant 1.
-- Recommended structure:
-  1. Concrete use or daily-life benefit
-  2. Supporting property features
-  3. Carefully justified target-group relevance
-- Explain suitability through evidence instead of labels.
-- Do not simply call a property family-friendly, suitable for commuters or ideal for couples.
-- State the concrete reason only when supported, for example separate rooms, a lift, a balcony or a documented transport time.
-- Do not invent a lifestyle scene, resident or daily routine.
-
-VARIANT 3 - DISTINCTIVE FEATURE OR MARKET ANGLE:
-- Begin with one verified differentiating feature not used as an opening before.
-- Possible angles include outdoor space, architecture, condition, flexibility, parking, accessibility, materials or a documented location advantage.
-- Recommended structure:
-  1. Distinctive verified feature
-  2. Concise supporting context
-  3. Independent closing perspective
-- Do not repeat the complete property summary from variants 1 and 2.
-- Do not begin with "Diese moderne", "Dieses attraktive Objekt" or another generic evaluation.
-- Use a concise, contemporary editorial rhythm without unsupported sales language.
+- Follow the three assigned plans in FINAL PREMIUM EDITORIAL CONTRACT. These are the sole editorial architectures, including in the one-variant request below.
+- Keep supplied core facts in every variant; vary their order and emphasis, not their truth or completeness.
+- Variant 1: property/year-led factual portrait; dimensions, documented equipment, offer.
+- Variant 2: residential-space-led welcoming prose; reader-oriented residential offer, spatial and financial context, then equipment. Warmth comes from sentence rhythm and reader address, not invented benefits or room relationships.
+- Variant 3: offer/price/location-led concise connected prose; offer and essential facts, dimensions/rooms, then further equipment.
+- Give each title and opening its own information focus. A grammatical similarity alone is not a reason to invent a new feature.
+- Finish on useful supplied information. No obligatory summary, buyer formula, viewing invitation or generic final argument.
 
 FACT INTERPRETATION RULES:
 - A room count alone does not prove the existence of a living room, bedroom, kitchen, bathroom, office or another named room.
@@ -683,9 +651,7 @@ ${isGermany
 
 BODY RULES:
 - Write a complete professional real estate listing, not a teaser, summary, caption or social-media post.
-- Each body must contain 120 to 180 useful words.
-- Use 3 or 4 complete paragraphs and 8 to 12 complete sentences.
-- Silently verify that every body contains at least 110 words before returning JSON.
+- Develop the supplied information in purposeful paragraphs. Length follows distinct supported content, never a numerical quota. Preserve completeness without padding or compressing the copy into a data list.
 - The first paragraph should introduce the property and its primary verified angle.
 - The following paragraph or paragraphs should develop documented features, layout, outdoor space, parking or location information.
 ${isGermany
@@ -844,38 +810,7 @@ async function requestInitialVariants(
         : prompt.user
     ).trim();
 
-  const variantTasks = [
-    {
-      variantNumber: 1,
-      angle: `
-FACT-FIRST VARIANT:
-- Lead with the property's strongest verified core facts.
-- Prefer property type, rooms, living area, layout or another documented primary characteristic.
-- Structure the title around a concrete property fact.
-- Keep the opening direct, professional and portal-ready.
-`.trim(),
-    },
-    {
-      variantNumber: 2,
-      angle: `
-FEATURE-FIRST VARIANT:
-- Lead with the strongest verified differentiating feature.
-- Prefer documented outdoor space, parking, layout, permanent visual characteristics or another explicit highlight.
-- Do not repeat the opening structure of a fact-first listing.
-- Build the title around a verified feature rather than generic praise.
-`.trim(),
-    },
-    {
-      variantNumber: 3,
-      angle: `
-ALTERNATIVE SALES-ANGLE VARIANT:
-- Use a clearly different editorial structure.
-- Lead with verified spatial, architectural, location or usage facts when available.
-- Do not invent suitability for a target group.
-- Use a title and opening construction that differ clearly from the first two intended variants.
-`.trim(),
-    },
-  ] as const;
+  const variantTasks = [1, 2, 3].map(variantNumber => ({variantNumber, angle: premiumEditorialAngle(variantNumber - 1)}));
 
   const results =
     await Promise.all(
@@ -899,7 +834,7 @@ ALTERNATIVE SALES-ANGLE VARIANT:
                   content: `
 ${baseUserPrompt}
 
-PARALLEL SPEED MODE:
+COORDINATED SINGLE-VARIANT TASK:
 
 You are generating exactly ONE member of a coordinated three-variant real-estate listing set.
 
@@ -917,11 +852,11 @@ IMPORTANT:
 - The final copy must read like professionally written broker copy, not generic AI-generated marketing text.
 - Avoid generic AI filler, repetitive praise, exaggerated adjectives and formulaic sales phrases.
 - Return exactly one complete listing.
-- Write approximately 220 to 320 useful words when the verified facts support that length.
+- Write purposeful source-supported paragraphs; length follows available distinct information, not a word quota.
 - Quality, coherence and factual accuracy are more important than maximum speed.
 - Write like an experienced professional real-estate copywriter, not like a data summarizer.
 - Build a natural narrative instead of mechanically listing facts.
-- Use a strong opening, a substantial property description, well-developed paragraphs and a concise closing.
+- Use the assigned factual opening and well-developed source-supported paragraphs. End on a useful supplied fact; omit a closing paragraph if it would only repeat, praise or explain the writing process.
 - Every paragraph must add useful property-specific information.
 - Integrate verified facts naturally without inventing unsupported benefits.
 - Never mention that information is missing, unknown, undocumented or not provided.
@@ -1254,10 +1189,14 @@ async function repairUnsupportedVariant(
 
           content:
             [
-              `OUTPUT LANGUAGE: ${LANGUAGE_CONFIG[locale].targetLanguage}`,
+              `OUTPUT LANGUAGE: ${buildGenerationPrompt(input, locale).targetLanguage}`,
               "",
+              premiumGenerationContract(input),
+              premiumRepairInstructions(unsupportedLabels),
               "UNSUPPORTED FEATURES THAT MUST DISAPPEAR:",
               unsupportedLabels.join(", "),
+              "CONCRETE SOURCE-BOUND FINDINGS (quoted claim, field and missing evidence where available):",
+              JSON.stringify(editorialRepairIssues({ ...input, locale }, [variant])),
               "",
               "VERIFIED FACTS:",
               verifiedFacts || "No additional verified feature facts.",
@@ -1270,7 +1209,7 @@ async function repairUnsupportedVariant(
               "",
               "INSTRUCTIONS:",
               "- Keep the original copy wherever it is factually safe.",
-              "- Remove every direct or indirect reference to the unsupported features.",
+              "- Remove the unsupported claim identified by each label or quoted finding; preserve separately supported facts in that sentence. A missing source for a claimed relationship does not invalidate the supplied count or equipment itself.",
               "- Repair grammar naturally where text was removed.",
               "- Keep approximately the same length unless removal makes that impossible.",
               "- Keep the title concise, natural and professional.",
@@ -1350,117 +1289,11 @@ async function repairUnsupportedVariant(
     );
   }
 
+  const isGermany = locale === 'de' && normalizeMarket(input.market) === 'DE';
   return {
-    title,
-    text,
+    title: isGermany ? normalizeGermanOrthographyDE(title) : title,
+    text: isGermany ? normalizeGermanOrthographyDE(text) : text,
   };
-}
-
-/*
- * STRICT_LISTING_QUALITY_GATE_V1
- *
- * Rejects clearly unprofessional listing output:
- * missing-data commentary, process/meta language,
- * broken fragments and malformed titles.
- */
-const STRICT_BAD_COPY_RULES = [
-  /\bnicht angegeben\b/i,
-  /\bnicht spezifiziert\b/i,
-  /\bnicht dokumentiert\b/i,
-  /\bliegen nicht vor\b/i,
-  /\bkeine angaben\b/i,
-  /\bkeine informationen\b/i,
-  /\bweitere ausk(?:u|\u00fc)nfte\b/i,
-  /\bweitere informationen\b/i,
-  /\bbest(?:a|ae|\u00e4)tigte eckdaten\b/i,
-  /\bobjektunterlagen\b/i,
-  /\bvor ort beurteilen\b/i,
-  /\bfundierte grundlage f(?:u|ue|\u00fc)r die eigene entscheidung\b/i,
-] as const;
-
-function findStrictQualityIssues(
-  variant: ListingTextVariant
-): string[] {
-  const issues: string[] = [];
-
-  const title =
-    variant.title.trim();
-
-  const text =
-    variant.text.trim();
-
-  const combined =
-    `${title}\n${text}`;
-
-  for (
-    const pattern
-    of STRICT_BAD_COPY_RULES
-  ) {
-    if (
-      pattern.test(
-        combined
-      )
-    ) {
-      issues.push(
-        "UNPROFESSIONAL_META_COPY"
-      );
-      break;
-    }
-  }
-
-  if (
-    title.length < 8 ||
-    title.length > 100
-  ) {
-    issues.push(
-      "MALFORMED_TITLE"
-    );
-  }
-
-  if (
-    /(?:\.\.\.|[,;:]\s*)$/.test(
-      title
-    )
-  ) {
-    issues.push(
-      "BROKEN_TITLE_ENDING"
-    );
-  }
-
-  const firstSentence =
-    text
-      .split(
-        /(?<=[.!?])\s+/
-      )[0]
-      ?.trim() ??
-    "";
-
-  if (
-    firstSentence &&
-    /^[a-z\u00e4\u00f6\u00fc\u00df]/.test(
-      firstSentence
-    )
-  ) {
-    issues.push(
-      "BROKEN_OPENING_FRAGMENT"
-    );
-  }
-
-  if (
-    /\b(?:ionen|offene f)\b/i.test(
-      combined
-    )
-  ) {
-    issues.push(
-      "CORRUPTED_TEXT_FRAGMENT"
-    );
-  }
-
-  return [
-    ...new Set(
-      issues
-    ),
-  ];
 }
 
 async function repairQualityVariant(
@@ -1468,7 +1301,9 @@ async function repairQualityVariant(
   input: ListingTextEngineInput,
   variant: ListingTextVariant,
   issues: string[],
-  locale: "de" | "it" | "fr" | "en"
+  locale: "de" | "it" | "fr" | "en",
+  variantIndex = 0,
+  siblingVariants: ListingTextVariant[] = []
 ): Promise<ListingTextVariant> {
   const completion =
     await openai.chat.completions.create({
@@ -1498,10 +1333,14 @@ async function repairQualityVariant(
 
           content:
             [
-              `OUTPUT LANGUAGE: ${LANGUAGE_CONFIG[locale].targetLanguage}`,
+              `OUTPUT LANGUAGE: ${buildGenerationPrompt(input, locale).targetLanguage}`,
               "",
+              premiumGenerationContract(input),
+              "ASSIGNED PERSPECTIVE: " + premiumEditorialAngle(variantIndex),
+              "OTHER VARIANTS TO PRESERVE (read-only context): " + JSON.stringify(siblingVariants.filter((_, i) => i !== variantIndex)),
               "QUALITY ISSUES:",
               issues.join(", "),
+              coreFactRepairBrief({ ...input, locale }, variant),
               "",
               "ORIGINAL TITLE:",
               variant.title,
@@ -1509,6 +1348,7 @@ async function repairQualityVariant(
               "ORIGINAL DESCRIPTION:",
               variant.text,
               "",
+              premiumRepairInstructions(issues),
               "REPAIR RULES:",
               "- Keep verified property facts unchanged.",
               "- Remove missing-data commentary instead of rephrasing it.",
@@ -1593,9 +1433,10 @@ async function repairQualityVariant(
     );
   }
 
+  const isGermany = locale === 'de' && normalizeMarket(input.market) === 'DE';
   return {
-    title,
-    text,
+    title: isGermany ? normalizeGermanOrthographyDE(title) : title,
+    text: isGermany ? normalizeGermanOrthographyDE(text) : text,
   };
 }
 
@@ -1618,6 +1459,11 @@ export async function generateListingTextVariants(
       input,
       locale
     );
+
+  const offerContext = listingOfferContext(input);
+  Object.assign(prompt.facts, offerContext);
+  prompt.user += listingOfferInstructions(offerContext);
+  prompt.user = premiumGenerationContract({ ...input, market: prompt.market, locale }) + prompt.user;
 
   let variants =
     await requestInitialVariants(
@@ -1707,132 +1553,45 @@ export async function generateListingTextVariants(
     );
   }
 
-  const variantsWithQualityRepair =
-    await Promise.all(
-      variants.map(
-        async (
-          variant,
-          index
-        ) => {
-          const qualityIssues =
-            findStrictQualityIssues(
-              variant
-            );
+  const variantsWithQualityRepair = await repairPremiumVariants(
+    { ...input, locale }, variants,
+    (variant, issues, index, current) => repairQualityVariant(dependencies.openai, input, variant, issues, locale, index, current),
+    variant => assertNoUnsupportedPropertyFeatures(input, [variant])
+  );
 
-          if (
-            qualityIssues.length === 0
-          ) {
-            return variant;
-          }
+  if (locale === 'de' && prompt.market === 'DE') {
+    for (const variant of variantsWithQualityRepair) {
+      variant.title = normalizeGermanOrthographyDE(variant.title);
+      variant.text = normalizeGermanOrthographyDE(variant.text);
+    }
+  }
 
-          console.warn(
-            "[STRICT LISTING QUALITY REPAIR]",
-            {
-              variant:
-                index + 1,
-              issues:
-                qualityIssues,
-            }
-          );
+  // Validate the complete, final set after all existing repairs.
+  const finalQuality = evaluateListingQuality(
+    variantsWithQualityRepair,
+    locale,
+    {
+      ...prompt.facts,
+      market: prompt.market,
+      verifiedFeatures: toStrictFactText(input.verifiedFeatures),
+    }
+  );
 
-          let repaired =
-            await repairQualityVariant(
-              dependencies.openai,
-              input,
-              variant,
-              qualityIssues,
-              locale
-            );
+  if (!finalQuality.passed) {
+    console.error("[STRICT LISTING FINAL QUALITY GATE]", {
+      scores: finalQuality.scores,
+      issueCodes: finalQuality.issues.map((issue) => issue.code),
+    });
 
-          /*
-           * Fact safety remains mandatory
-           * after every quality repair.
-           */
-          assertNoUnsupportedPropertyFeatures(
-            input,
-            [
-              repaired,
-            ]
-          );
-
-          let remainingIssues =
-            findStrictQualityIssues(
-              repaired
-            );
-
-          /*
-           * QUALITY_REPAIR_RETRY_V2
-           *
-           * Ein einzelner schwacher Repair darf
-           * nicht sofort die gesamte Automation
-           * abbrechen. Die betroffene Variante
-           * erh?lt genau einen zweiten gezielten
-           * Reparaturversuch.
-           */
-          if (
-            remainingIssues.length > 0
-          ) {
-            console.warn(
-              "[STRICT LISTING QUALITY RETRY]",
-              {
-                variant:
-                  index + 1,
-                issues:
-                  remainingIssues,
-              }
-            );
-
-            repaired =
-              await repairQualityVariant(
-                dependencies.openai,
-                input,
-                repaired,
-                remainingIssues,
-                locale
-              );
-
-            assertNoUnsupportedPropertyFeatures(
-              input,
-              [
-                repaired,
-              ]
-            );
-
-            remainingIssues =
-              findStrictQualityIssues(
-                repaired
-              );
-          }
-
-          /*
-           * Fail closed bleibt erhalten:
-           * Erst wenn auch der zweite gezielte
-           * Repair fehlschl?gt, stoppen wir.
-           */
-          if (
-            remainingIssues.length > 0
-          ) {
-            console.error(
-              "[STRICT LISTING QUALITY GATE]",
-              {
-                variant:
-                  index + 1,
-                issues:
-                  remainingIssues,
-                attempts:
-                  2,
-              }
-            );
-
-            throw new Error(
-              "INSERAT_AI_TEXT_ENGINE_QUALITY_GATE_FAILED"
-            );
-          }
-
-          return repaired;
-        }
-      )
+    throw new Error(
+      "INSERAT_AI_TEXT_ENGINE_QUALITY_GATE_FAILED"
     );
+  }
+
+  const premiumFacts = { ...input, ...prompt.facts, market: prompt.market, locale, verifiedFeatures: toStrictFactText(input.verifiedFeatures) };
+  const textAudit = await auditPremiumTexts(dependencies.openai, premiumFacts, variantsWithQualityRepair);
+  const premiumTextQuality = evaluatePremiumTextQuality(premiumFacts, variantsWithQualityRepair, textAudit);
+  if (!premiumTextQuality.passed) throw new Error("INSERAT_AI_TEXT_ENGINE_QUALITY_GATE_FAILED");
 
   return {
     variants:

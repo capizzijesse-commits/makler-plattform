@@ -1,0 +1,249 @@
+{
+  "evidence": {
+    "seen": [
+      "rooms",
+      "livingArea",
+      "price"
+    ],
+    "values": {
+      "price": "1390000",
+      "rooms": "6",
+      "livingArea": "178"
+    },
+    "currency": "EUR",
+    "conflicts": []
+  },
+  "documents": [
+    {
+      "analysis": {
+        "version": "PDF_OCR_INTELLIGENCE_V1",
+        "coordinateSystem": "page_viewport_points",
+        "tableInterpretation": "layout_only_unverified",
+        "type": "machine_readable",
+        "scanCandidate": false,
+        "multiPage": false,
+        "pageCount": 1,
+        "textPageCount": 1,
+        "requiresReview": false,
+        "issues": [],
+        "pages": [
+          {
+            "pageNumber": 1,
+            "width": 595.28,
+            "height": 841.89,
+            "nativeText": "SYNTHETISCHES TESTEXPOSE - KEIN REALES VERKAUFSOBJEKT\nEinfamilienhaus\nOrt: Starnberg, Bayern\nPostleitzahl: 82319\nZimmer: 6\nWohnfläche: 178 m²\nGrundstücksfläche: 620 m²\nKaufpreis: 1.390.000 EUR\nBaujahr: 2020\nBadezimmer: 2\nHeizung: Wärmepumpe\nFußbodenheizung\nEnergieeffizienzklasse: A+\nStellplätze: 2",
+            "text": "SYNTHETISCHES TESTEXPOSE - KEIN REALES VERKAUFSOBJEKT\nEinfamilienhaus\nOrt: Starnberg, Bayern\nPostleitzahl: 82319\nZimmer: 6\nWohnfläche: 178 m²\nGrundstücksfläche: 620 m²\nKaufpreis: 1.390.000 EUR\nBaujahr: 2020\nBadezimmer: 2\nHeizung: Wärmepumpe\nFußbodenheizung\nEnergieeffizienzklasse: A+\nStellplätze: 2",
+            "hasImages": false,
+            "coveringImage": false,
+            "method": "native",
+            "words": [
+              {
+                "text": "SYNTHETISCHES TESTEXPOSE - KEIN REALES VERKAUFSOBJEKT",
+                "confidence": null,
+                "box": [
+                  42.51968503937008,
+                  43.69291338582684,
+                  420.44599999999986,
+                  13
+                ],
+                "line": "785.1970866141731"
+              },
+              {
+                "text": "Einfamilienhaus",
+                "confidence": null,
+                "box": [
+                  42.51968503937008,
+                  58.64291338582689,
+                  91.754,
+                  13
+                ],
+                "line": "770.2470866141731"
+              },
+              {
+                "text": "Ort: Starnberg, Bayern",
+                "confidence": null,
+                "box": [
+                  42.51968503937008,
+                  73.59291338582693,
+                  130.78000000000003,
+                  13
+                ],
+                "line": "755.297086614173"
+              },
+              {
+                "text": "Postleitzahl: 82319",
+                "confidence": null,
+                "box": [
+                  42.51968503937008,
+                  88.54291338582698,
+                  109.83699999999999,
+                  13
+                ],
+                "line": "740.347086614173"
+              },
+              {
+                "text": "Zimmer: 6",
+                "confidence": null,
+                "box": [
+                  42.51968503937008,
+                  103.49291338582702,
+                  58.50000000000001,
+                  13
+                ],
+                "line": "725.397086614173"
+              },
+              {
+                "text": "Wohnfläche: 178 m²",
+                "confidence": null,
+                "box": [
+                  42.51968503937008,
+                  118.44291338582707,
+                  116.32400000000001,
+                  13
+                ],
+                "line": "710.4470866141729"
+              },
+              {
+                "text": "Grundstücksfläche: 620 m²",
+                "confidence": null,
+                "box": [
+                  42.51968503937008,
+                  133.39291338582711,
+                  155.33700000000002,
+                  13
+                ],
+                "line": "695.4970866141729"
+              },
+              {
+                "text": "Kaufpreis: 1.390.000 EUR",
+                "confidence": null,
+                "box": [
+                  42.51968503937008,
+                  148.34291338582716,
+                  151.021,
+                  13
+                ],
+                "line": "680.5470866141728"
+              },
+              {
+                "text": "Baujahr: 2020",
+                "confidence": null,
+                "box": [
+                  42.51968503937008,
+                  163.2929133858272,
+                  80.93799999999999,
+                  13
+                ],
+                "line": "665.5970866141728"
+              },
+              {
+                "text": "Badezimmer: 2",
+                "confidence": null,
+                "box": [
+                  42.51968503937008,
+                  178.24291338582725,
+                  87.41200000000002,
+                  13
+                ],
+                "line": "650.6470866141727"
+              },
+              {
+                "text": "Heizung: Wärmepumpe",
+                "confidence": null,
+                "box": [
+                  42.51968503937008,
+                  193.1929133858273,
+                  136.53900000000002,
+                  13
+                ],
+                "line": "635.6970866141727"
+              },
+              {
+                "text": "Fußbodenheizung",
+                "confidence": null,
+                "box": [
+                  42.51968503937008,
+                  208.14291338582734,
+                  104.77999999999997,
+                  13
+                ],
+                "line": "620.7470866141726"
+              },
+              {
+                "text": "Energieeffizienzklasse: A+",
+                "confidence": null,
+                "box": [
+                  42.51968503937008,
+                  223.0929133858274,
+                  152.815,
+                  13
+                ],
+                "line": "605.7970866141726"
+              },
+              {
+                "text": "Stellplätze: 2",
+                "confidence": null,
+                "box": [
+                  42.51968503937008,
+                  238.04291338582743,
+                  74.425,
+                  13
+                ],
+                "line": "590.8470866141726"
+              }
+            ],
+            "issues": []
+          }
+        ],
+        "documentText": "[PAGE 1][native]\nSYNTHETISCHES TESTEXPOSE - KEIN REALES VERKAUFSOBJEKT\nEinfamilienhaus\nOrt: Starnberg, Bayern\nPostleitzahl: 82319\nZimmer: 6\nWohnfläche: 178 m²\nGrundstücksfläche: 620 m²\nKaufpreis: 1.390.000 EUR\nBaujahr: 2020\nBadezimmer: 2\nHeizung: Wärmepumpe\nFußbodenheizung\nEnergieeffizienzklasse: A+\nStellplätze: 2"
+      },
+      "reference": "SYNTHETISCH-Starnberg-9L.pdf"
+    }
+  ],
+  "extracted": {
+    "price": "1390000",
+    "rooms": "6",
+    "street": "",
+    "currency": "EUR",
+    "location": "Starnberg",
+    "plotArea": "620",
+    "styleText": "",
+    "highlights": "Baujahr 2020; 2 Badezimmer; 2 Stellplätze; Energieeffizienzklasse A+; Wärmepumpe; Fussbodenheizung",
+    "livingArea": "178",
+    "postalCode": "82319",
+    "countryCode": "DE",
+    "projectName": "Einfamilienhaus Starnberg",
+    "propertyType": "Einfamilienhaus",
+    "factConflicts": [],
+    "marketingType": "sale",
+    "missingFields": [],
+    "sourceSummary": "Einfamilienhaus, 6 Zimmer, 178 m? Wohnfl?che, 82319 Starnberg",
+    "countryEvidence": {
+      "origin": "document",
+      "status": "confirmed",
+      "candidates": [
+        {
+          "quote": "Ort: Starnberg, Bayern",
+          "countryCode": "DE"
+        }
+      ]
+    },
+    "verifiedFeatures": "Baujahr 2020; 2 Badezimmer; 2 Stellplätze; Energieeffizienzklasse A+; Wärmepumpe; Fussbodenheizung",
+    "requiresManualReview": false
+  },
+  "sourceHash": "07df6e179ef799079ec01ecc39bb54e421b4344bc1839793cf207aaaca1c9813",
+  "sourceText": "DOKUMENT 1: SYNTHETISCH-Starnberg-9L.pdf\n\n[PAGE 1][native]\nSYNTHETISCHES TESTEXPOSE - KEIN REALES VERKAUFSOBJEKT\nEinfamilienhaus\nOrt: Starnberg, Bayern\nPostleitzahl: 82319\nZimmer: 6\nWohnfläche: 178 m²\nGrundstücksfläche: 620 m²\nKaufpreis: 1.390.000 EUR\nBaujahr: 2020\nBadezimmer: 2\nHeizung: Wärmepumpe\nFußbodenheizung\nEnergieeffizienzklasse: A+\nStellplätze: 2",
+  "rentEvidence": {
+    "seen": [
+      "rooms",
+      "livingArea"
+    ],
+    "values": {
+      "price": "",
+      "rooms": "6",
+      "livingArea": "178"
+    },
+    "conflicts": []
+  },
+  "sourceChecked": true
+}

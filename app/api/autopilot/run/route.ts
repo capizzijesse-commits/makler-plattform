@@ -1,3 +1,13 @@
+import { buildConfirmedAutopilotFacts } from '@/lib/autopilot-confirmed-facts';
+import { savePremiumAssessment } from "@/lib/premium-quality-store.server";
+import { describePremiumQualityReasons } from "@/lib/premium-quality-gate.server";
+import { assertListingPremiumQualityReady, checkAndRecordPremiumQuality } from "@/lib/premium-quality.server";
+import { premiumNumber, arePremiumCoreFactsDocumented, type PremiumFacts } from "@/lib/premium-quality-gate.server";
+import { requestAutopilotImageAnalyses } from "@/lib/autopilot-image-analysis.server";
+import { fingerprintImageContent, imageComparisonEvidence } from "@/lib/image-content-fingerprint.server";
+import { selectAutopilotImages, describeAutopilotImageReview, type AutopilotImageAnalysis } from "@/lib/autopilot-image-quality";
+import { collectExposeCoreSourceFacts, hasUnresolvedExposeConflicts } from "@/lib/expose-core-fact-conflicts";
+import { getSafeImageRoomEvidence, buildSafeImageRoomPrompt } from "@/lib/image-expose-consistency";
 import OpenAI from "openai";
 
 import {
@@ -18,6 +28,7 @@ import {
 
 import {
   extractPdfDocumentFacts,
+  pdfDocumentReviewError,
 } from "@/lib/pdf-document-facts.server";
 
 import type {
@@ -100,21 +111,14 @@ type UploadedImageRef = {
 
 
 type AutopilotRunBody = {
+  qualityFacts?: PremiumFacts;
+  manualFactsConfirmed?: boolean;
   listingId?: unknown;
   uploads?: unknown;
 };
 
 
-type ImageAnalysis = {
-  imageIndex: number;
-  room: string;
-  condition: string;
-  visibleFacts: string[];
-  category: string;
-  qualityScore: number;
-  titleScore: number;
-  suitable: boolean;
-};
+type ImageAnalysis = AutopilotImageAnalysis;
 
 
 type GeneratedVariant = {
@@ -131,6 +135,7 @@ type AutopilotResult = {
   rooms: number | null;
   livingArea: number | null;
   price: number | null;
+  currency: "EUR" | "CHF" | "";
   landArea: number | null;
   yearBuilt: number | null;
   renovationYear: number | null;
@@ -285,6 +290,8 @@ export async function POST(
   request: NextRequest
 ) {
   const autopilotTotalStartedAt = Date.now();
+  const analyzingImageIds: string[] = [];
+  let imageAnalysesPersisted = false;
 
   try {
     const user =
@@ -395,6 +402,7 @@ export async function POST(
 
           select: {
             id: true,
+            locationDescription:true, locationData:true, socialVariants:true, latitude:true, longitude:true,
             projectName:
               true,
             market:
@@ -762,6 +770,7 @@ export async function POST(
               "- ZIMMERREGEL: Wenn eine eindeutige Zimmerzahl genannt wird, MUSS rooms diese Zahl enthalten. Schreibweisen wie 5? Zimmer, 5.5 Zimmer oder 5,5 Zimmer sind als 5.5 zu normalisieren.",
               "- rooms darf nur null sein, wenn in den bereitgestellten Objektdokumenten keine eindeutige Zimmerzahl belegt ist.",
               "- Keine Preise oder Zimmerzahlen erfinden oder aus anderen Angaben schaetzen.",
+              "- currency nur als EUR oder CHF aus einer ausdrücklich genannten Kaufpreiswährung übernehmen; ohne eindeutigen Beleg leer lassen. Niemals aus Markt oder Lage ableiten.",
               "- ADRESSREGEL: street, postalCode und location muessen ausschliesslich die Adresse des angebotenen Verkaufs-/Mietobjekts beschreiben.",
               "- Kontakt-, Makler-, Anbieter-, Firmen-, Verwaltungs-, Rechnungs- oder Buero-Adressen niemals als Objektadresse uebernehmen.",
               "- Wenn das Expose mehrere Adressen oder Ortsnamen enthaelt, bestimme anhand des Dokumentkontexts, welche Adresse eindeutig zum angebotenen Objekt gehoert.",
@@ -815,6 +824,25 @@ export async function POST(
 
     // FAST READY V1: CORE processes documents/data only.
     // Image analysis stays in the dedicated Creative/Vision stage.
+   // Fact extraction is mandatory and independent of optional PDF photos.
+   // Read every page of every document; never suppress a failed fact check.
+   const documentInputs = await Promise.all(
+     registeredDocuments.map(async (document) => {
+       const pdfBuffer = Buffer.from(await getObjectBytes(document.pathname));
+       const facts = await extractPdfDocumentFacts(pdfBuffer);
+       if (facts.documentAnalysis?.requiresReview) throw pdfDocumentReviewError(facts.documentAnalysis);
+       return { pdfBuffer, facts };
+     })
+   );
+   const documentTexts = documentInputs.map(document => document.facts.documentText);
+   const offerPriceKind = body?.qualityFacts?.marketingType === "rent" ? "rent" : "sale";
+   const documentEvidence = collectExposeCoreSourceFacts(documentTexts, [listing], offerPriceKind);
+   const sourceDocumentEvidence = collectExposeCoreSourceFacts(documentTexts, [], offerPriceKind);
+   if (hasUnresolvedExposeConflicts({ factConflicts: documentEvidence.conflicts })) {
+     throw new Error("EXPOSE_FACT_CONFLICT_REVIEW_REQUIRED");
+   }
+
+
    const aiStartedAt = Date.now();
 
 const aiResponsePromise = fetch(
@@ -879,6 +907,7 @@ const aiResponsePromise = fetch(
                       "rooms",
                       "livingArea",
                       "price",
+                      "currency",
                       "landArea",
                       "yearBuilt",
                       "renovationYear",
@@ -934,6 +963,10 @@ const aiResponsePromise = fetch(
                           "number",
                           "null",
                         ],
+                      },
+                      currency: {
+                        type: "string",
+                        enum: ["", "EUR", "CHF"],
                       },
                       landArea: {
                         type: [
@@ -1140,123 +1173,15 @@ const aiResponsePromise = fetch(
        20 - registeredImages.length
      );
 
-   let documentRoomsFallback:
-     number | null = null;
 
-   if (
-     registeredDocuments.length > 0
-   ) {
+   if (registeredDocuments.length > 0) {
      try {
-       const pdfImageBatches =
-         await Promise.all(
-           registeredDocuments.map(
-             async (document) => {
-               const pdfBytes =
-                 await getObjectBytes(
-                   document.pathname
-                 );
-
-               const pdfBuffer =
-                 Buffer.from(
-                   pdfBytes
-                 );
-
-               const [
-                 images,
-                 facts,
-               ] =
-                 await Promise.all([
-                   remainingPdfImageSlots > 0
-                     ? extractPdfImages(
-                         pdfBuffer,
-                         remainingPdfImageSlots
-                       )
-                     : Promise.resolve([]),
-                   extractPdfDocumentFacts(
-                     pdfBuffer
-                   ),
-                 ]);
-
-              console.info(
-  "[AUTOPILOT_PDF_FACT]",
-  {
-    listingId: listing.id,
-    fileName:
-      document.fileName,
-    bytes:
-      pdfBuffer.byteLength,
-    rooms:
-      facts.rooms,
-    evidence:
-      facts.evidence,
-  }
-);
-
-               return {
-                 images,
-                 facts,
-               };
-             }
-           )
-         );
-
-       const extractedPdfImages =
-         pdfImageBatches
-           .flatMap(
-             (batch) => batch.images
-           )
-           .slice(
-             0,
-             remainingPdfImageSlots
-           );
-
-       const documentRoomCandidates =
-         pdfImageBatches
-           .map(
-             (batch) => batch.facts.rooms
-           )
-           .filter(
-             (rooms): rooms is number =>
-               typeof rooms === "number" &&
-               Number.isFinite(rooms) &&
-               rooms > 0
-           );
-
-       const uniqueDocumentRooms =
-         Array.from(
-           new Set(
-             documentRoomCandidates
-           )
-         );
-
-       if (
-         uniqueDocumentRooms.length === 1
-       ) {
-         documentRoomsFallback =
-           uniqueDocumentRooms[0];
-
-         console.info(
-           "[AUTOPILOT_DOCUMENT_ROOMS]",
-           {
-             listingId: listing.id,
-             rooms:
-               documentRoomsFallback,
-             source:
-               "pdf-text",
-           }
-         );
-       } else if (
-         uniqueDocumentRooms.length > 1
-       ) {
-         console.warn(
-           "[AUTOPILOT_DOCUMENT_ROOMS_CONFLICT]",
-           {
-             listingId: listing.id,
-             candidates:
-               uniqueDocumentRooms,
-           }
-         );
-       }
+       const pdfImageBatches = await Promise.all(
+         documentInputs.map(document => remainingPdfImageSlots > 0
+           ? extractPdfImages(document.pdfBuffer, remainingPdfImageSlots)
+           : Promise.resolve([]))
+       );
+       const extractedPdfImages = pdfImageBatches.flat().slice(0, remainingPdfImageSlots);
 
       const firstPdfImagePosition =
         registeredImages.length;
@@ -1341,6 +1266,40 @@ const aiResponsePromise = fetch(
      }
    }
 
+   // Include stored originals from earlier attempts: publication consumers read
+   // the entire listing gallery, so no attached image may escape this check.
+   const storedImages = await prisma.listingImage.findMany({
+     where: { listingId: listing.id },
+     orderBy: { position: "asc" },
+     select: { id: true, url: true, storageKey: true, fileName: true, position: true },
+   });
+   const registeredIds = new Set(registeredImages.map(image => image.id));
+   for (const image of storedImages) {
+     if (!registeredIds.has(image.id)) {
+       registeredImages.push(image);
+       registeredIds.add(image.id);
+     }
+   }
+   const contentFingerprints = new Map<string, string>();
+   const comparisons = new Map<string, Awaited<ReturnType<typeof imageComparisonEvidence>>>();
+   if (registeredImages.length > 0) {
+     analyzingImageIds.push(...registeredImages.map(image => image.id));
+     await prisma.listingImage.updateMany({
+       where: { listingId: listing.id, id: { in: analyzingImageIds } },
+       data: { analysisStatus: "analyzing", analysis: null, analyzedAt: null, isPrimary: false },
+     });
+   if (registeredImages.length > MAX_IMAGE_COUNT || registeredIds.size !== registeredImages.length ||
+     new Set(registeredImages.map(image => image.storageKey)).size !== registeredImages.length) {
+     throw new Error("AUTOPILOT_IMAGE_IDENTITY_INVALID");
+   }
+     // Decode sequentially to bound peak memory for large original photos.
+     for (const image of registeredImages) {
+       const bytes = Buffer.from(await getObjectBytes(image.storageKey));
+       contentFingerprints.set(image.id, await fingerprintImageContent(bytes));
+       comparisons.set(image.id, await imageComparisonEvidence(bytes));
+     }
+   }
+
    const prepDurationMs =
      Date.now() - autopilotTotalStartedAt;
 
@@ -1354,142 +1313,6 @@ const aiResponsePromise = fetch(
    /*
     * FAST READY V3 - CORE + VISION PARALLEL
     */
-   const creativeStartedAt = Date.now();
-
-   const creativeContent: Array<Record<string, unknown>> = [
-     {
-       type: "input_text",
-       text:
-         "Analysiere ausschliesslich die bereitgestellten Immobilienbilder. " +
-         "Erfinde keine nicht sichtbaren Fakten. " +
-         "Gib fuer jedes Bild imageIndex, Raumtyp, sichtbaren Zustand und maximal zwei sehr kurze sichtbare Merkmale zurueck. " +
-         "Bewerte ausserdem category, qualityScore von 0 bis 100, titleScore von 0 bis 100 und suitable. " +
-         "titleScore bewertet ausschliesslich die Eignung als verkaufsstarkes Titelbild. " +
-         "Bevorzuge helle, klare, attraktive Wohnraeume oder eine starke Aussenansicht. " +
-         "Grundrisse, Logos, Dokumentseiten, unscharfe, dunkle oder offensichtlich ungeeignete Bilder erhalten einen niedrigen titleScore. " +
-         "imageIndex beginnt bei 1 und entspricht exakt der Reihenfolge der Bilder.",
-     },
-   ];
-
-   const visionImageInputs =
-     await Promise.all(
-       registeredImages.map(
-         async (image, index) => {
-           const imageReadUrl =
-             image.url ||
-             await createStorageReadUrl(
-               image.storageKey,
-               300
-             );
-
-           return {
-             index,
-             imageReadUrl,
-           };
-         }
-       )
-     );
-
-   visionImageInputs.forEach(
-     ({ index, imageReadUrl }) => {
-       creativeContent.push({
-         type: "input_text",
-         text: `Bild ${index + 1}`,
-       });
-
-       creativeContent.push({
-         type: "input_image",
-         image_url: imageReadUrl,
-         detail: "low",
-       });
-     }
-   );
-
-   const visionResponsePromise =
-     registeredImages.length > 0
-       ? fetch(
-           "https://api.openai.com/v1/responses",
-           {
-             method: "POST",
-             headers: {
-               Authorization:
-                 `Bearer ${process.env.OPENAI_API_KEY}`,
-               "Content-Type": "application/json",
-             },
-             body: JSON.stringify({
-               model:
-                 process.env.OPENAI_AUTOPILOT_MODEL ||
-                 "gpt-4.1-mini",
-               store: false,
-               max_output_tokens: 2200,
-               input: [
-                 {
-                   role: "user",
-                   content: creativeContent,
-                 },
-               ],
-               text: {
-                 format: {
-                   type: "json_schema",
-                   name: "inserat_ai_autopilot_vision",
-                   strict: true,
-                   schema: {
-                     type: "object",
-                     additionalProperties: false,
-                     properties: {
-                       imageAnalyses: {
-                         type: "array",
-                         items: {
-                           type: "object",
-                           additionalProperties: false,
-                           properties: {
-                             imageIndex: { type: "integer" },
-                             room: { type: "string" },
-                             condition: { type: "string" },
-                             visibleFacts: {
-                               type: "array",
-                               items: { type: "string" },
-                               maxItems: 2,
-                             },
-                             category: {
-                               type: "string",
-                             },
-                             qualityScore: {
-                               type: "integer",
-                               minimum: 0,
-                               maximum: 100,
-                             },
-                             titleScore: {
-                               type: "integer",
-                               minimum: 0,
-                               maximum: 100,
-                             },
-                             suitable: {
-                               type: "boolean",
-                             },
-                           },
-                           required: [
-                             "imageIndex",
-                             "room",
-                             "condition",
-                             "visibleFacts",
-                             "category",
-                             "qualityScore",
-                             "titleScore",
-                             "suitable",
-                           ],
-                         },
-                       },
-                     },
-                     required: ["imageAnalyses"],
-                   },
-                 },
-               },
-             }),
-           }
-         )
-       : Promise.resolve(null);
-
    const aiResponse =
   await aiResponsePromise;
 
@@ -1597,110 +1420,79 @@ console.info(
       price: parsed.price ?? null,
     });
 
-    const hasValidCoreRooms =
-      typeof parsed.rooms === "number" &&
-      Number.isFinite(parsed.rooms) &&
-      parsed.rooms > 0;
+    // Compare positive AI values as well: a PDF disagreement must not be
+    // hidden by the old missing-rooms-only fallback.
+    const coreEvidence = collectExposeCoreSourceFacts(documentTexts, [listing, parsed, { price: body?.manualFactsConfirmed && offerPriceKind === "rent" ? premiumNumber(body.qualityFacts?.price) : parsed.price, currency: body?.qualityFacts?.currency }], offerPriceKind);
+    if (hasUnresolvedExposeConflicts({ factConflicts: coreEvidence.conflicts })) {
+      throw new Error("EXPOSE_FACT_CONFLICT_REVIEW_REQUIRED");
+    }
+    for (const field of ["rooms", "livingArea", "price"] as const) {
+      if (coreEvidence.seen.includes(field)) {
+        parsed[field] = coreEvidence.values[field] ? Number(coreEvidence.values[field]) : null;
+      }
+    }
 
-    if (
-      !hasValidCoreRooms &&
-      documentRoomsFallback != null
-    ) {
-      parsed.rooms =
-        documentRoomsFallback;
+   const creativeStartedAt = Date.now();
 
-      console.info(
-        "[AUTOPILOT_ROOMS_FALLBACK_APPLIED]",
-        {
-          listingId: listing.id,
-          rooms:
-            documentRoomsFallback,
-          source: "pdf-text",
+   const imageUrls = await Promise.all(registeredImages.map(image =>
+     image.url || createStorageReadUrl(image.storageKey, 300)));
+   const visionImageAnalyses = await requestAutopilotImageAnalyses(imageUrls, registeredImages.map(image => image.id));
+
+
+    const imageSelection = selectAutopilotImages(registeredImages.map((image, index) => ({
+      imageId: image.id,
+      fileName: image.fileName,
+      contentFingerprint: contentFingerprints.get(image.id)!,
+      comparison: comparisons.get(image.id),
+      analysis: visionImageAnalyses[index],
+    })));
+    const orderedImageIds = [
+      ...imageSelection.selectedImageIds,
+      ...imageSelection.entries.filter(entry => !entry.selected).map(entry => entry.imageId),
+    ];
+    if (registeredImages.length > 0) {
+      await prisma.$transaction(async tx => {
+        for (const entry of imageSelection.entries) {
+          await tx.listingImage.update({
+            where: { id: entry.imageId },
+            data: {
+              position: orderedImageIds.indexOf(entry.imageId),
+              isPrimary: entry.imageId === imageSelection.primaryImageId,
+              analysisStatus: "analyzed",
+              analyzedAt: new Date(),
+              analysis: JSON.stringify({
+                ...entry.analysis,
+                // Free-form model descriptions never become verified visible facts.
+                condition: "",
+                visibleFacts: entry.analysis.roomIndependentFacts.map(item => item.fact),
+                imageId: entry.imageId,
+                contentFingerprint: entry.contentFingerprint,
+                selectionVersion: "autopilot-image-quality-v1",
+                selected: entry.selected,
+                selectionReasons: entry.reasons,
+                duplicateOf: entry.duplicateOf,
+              }),
+            },
+          });
         }
-      );
+      });
+      imageAnalysesPersisted = true;
     }
-
-    let visionImageAnalyses: ImageAnalysis[] = [];
-
-    const creativeResponse =
-      await visionResponsePromise;
-
-    if (creativeResponse) {
-      const creativeRawText =
-        await creativeResponse.text();
-
-      let creativePayload: unknown = null;
-
-      try {
-        creativePayload =
-          creativeRawText
-            ? JSON.parse(creativeRawText)
-            : null;
-      } catch {
-        creativePayload = creativeRawText;
-      }
-
-      if (!creativeResponse.ok) {
-        console.error(
-          "[autopilot/run] VISION_OPENAI_DIAGNOSTIC " +
-            JSON.stringify({
-              status: creativeResponse.status,
-              requestId:
-                creativeResponse.headers.get(
-                  "x-request-id"
-                ),
-              payload: creativePayload,
-            })
-        );
-
-        throw new Error(
-          "Inserat-AI konnte die Bilder nicht analysieren."
-        );
-      }
-
-      const creativeOutputText =
-        extractOutputText(creativePayload);
-
-      if (!creativeOutputText) {
-        throw new Error(
-          "Inserat-AI hat kein Vision-Ergebnis zurueckgegeben."
-        );
-      }
-
-      let creativeParsed: {
-        imageAnalyses: ImageAnalysis[];
-      };
-
-      try {
-        creativeParsed = JSON.parse(
-          creativeOutputText
-        ) as {
-          imageAnalyses: ImageAnalysis[];
-        };
-      } catch (visionParseError) {
-        console.error(
-          "[AUTOPILOT_VISION_JSON_PARSE_FAILED] " +
-            JSON.stringify({
-              error:
-                visionParseError instanceof Error
-                  ? visionParseError.message
-                  : String(visionParseError),
-              outputLength: creativeOutputText.length,
-              outputPreview: creativeOutputText.slice(0, 4000),
-            })
-        );
-        throw new Error(
-          "Das Vision-Ergebnis hatte kein gueltiges JSON-Format."
-        );
-      }
-
-      visionImageAnalyses =
-        Array.isArray(creativeParsed.imageAnalyses)
-          ? creativeParsed.imageAnalyses
-          : [];
-    }
-
-    parsed.imageAnalyses = visionImageAnalyses;
+    await savePremiumAssessment(user.id, "broker_vision", {images: await prisma.listingImage.findMany({where:{listingId:listing.id},select:{id:true,analysis:true,analyzedAt:true}})}, listing.id);
+    const imageSelectionResult = {
+      selectedImageIds: imageSelection.selectedImageIds,
+      primaryImageId: imageSelection.primaryImageId,
+      requiresReview: imageSelection.requiresReview,
+      reasons: imageSelection.reasons,
+      images: imageSelection.entries.map(entry => ({
+        imageId: entry.imageId, fileName: entry.fileName, selected: entry.selected,
+        reasons: entry.reasons, duplicateOf: entry.duplicateOf,
+      })),
+    };
+    parsed.imageAnalyses = visionImageAnalyses.map(analysis => ({
+      ...analysis,
+      ...getSafeImageRoomEvidence(analysis),
+    }));
 
     const sanitizeAutopilotListingText = (
       value: string
@@ -1967,8 +1759,7 @@ console.info(
         : null;
 
     const rooms =
-      coreRooms ??
-      documentRoomsFallback;
+      coreRooms;
 
 
 
@@ -1982,8 +1773,9 @@ console.info(
         ? parsed.livingArea
         : null;
 
-    const price =
-      typeof parsed.price ===
+    const price = body?.manualFactsConfirmed === true && body.qualityFacts?.marketingType === "rent"
+      ? premiumNumber(body.qualityFacts.price)
+      : typeof parsed.price ===
         "number" &&
       Number.isFinite(
         parsed.price
@@ -2119,347 +1911,6 @@ console.info(
      *
      * Document provenance will be added separately.
      */
-    const strictVerifiedFeatures = "";
-
-    const verifiedFactContext = [
-      landArea != null
-        ? `Grundstuecksflaeche: ${landArea} m2`
-        : "",
-      yearBuilt != null
-        ? `Baujahr: ${yearBuilt}`
-        : "",
-      renovationYear != null
-        ? `Renovationsjahr: ${renovationYear}`
-        : "",
-      condition
-        ? `Zustand: ${condition}`
-        : "",
-      standard
-        ? `Standard: ${standard}`
-        : "",
-      floor != null
-        ? `Etage/Geschoss: ${floor}`
-        : "",
-      lift
-        ? `Lift: ${lift}`
-        : "",
-      parking
-        ? `Parkierung: ${parking}`
-        : "",
-      outdoorArea
-        ? `Aussenbereich: ${outdoorArea}`
-        : "",
-      view
-        ? `Aussicht: ${view}`
-        : "",
-      summary
-        ? `Dokumentierte Zusammenfassung: ${summary}`
-        : "",
-      ...imageAnalyses.flatMap(
-        (analysis) =>
-          safeStringArray(
-            analysis.visibleFacts,
-            2
-          ).map(
-            (fact) =>
-              `Bild ${analysis.imageIndex}, sichtbar: ${fact}`
-          )
-      ),
-    ]
-      .filter(Boolean)
-      .join("\n");
-
-    const listingTextOpenAI =
-      new OpenAI({
-        apiKey:
-          process.env.OPENAI_API_KEY,
-      });
-
-    const generatedText =
-      await generateListingTextVariants(
-        {
-          locale: "de",
-          market:
-            listing.market === "DE"
-              ? "DE"
-              : "CH",
-          location:
-            location || undefined,
-          propertyType:
-            propertyType || undefined,
-          rooms:
-            rooms != null
-              ? String(rooms)
-              : undefined,
-          livingArea:
-            livingArea != null
-              ? String(livingArea)
-              : undefined,
-          price:
-            price != null
-              ? String(price)
-              : undefined,
-          highlights:
-            highlights.length
-              ? highlights.join(", ")
-              : undefined,
-          styleText:
-            style || undefined,
-          imageAnalysis:
-            verifiedFactContext ||
-            undefined,
-          verifiedFeatures:
-            strictVerifiedFeatures ||
-            undefined,
-        },
-        {
-          openai:
-            listingTextOpenAI,
-        }
-      );
-
-    const variants =
-      generatedText.variants
-        .map((variant) => ({
-          title:
-            safeString(
-              variant.title,
-              200
-            ),
-          text:
-            safeString(
-              variant.text,
-              12000
-            ),
-        }))
-        .filter(
-          (variant) =>
-            variant.title &&
-            variant.text
-        )
-        .slice(0, 3);
-
-    if (
-      variants.length !== 3
-    ) {
-      throw new Error(
-        "Inserat-AI konnte nicht alle drei Inseratvarianten erzeugen."
-      );
-    }
-
-    /*
-     * Einzelanalysen speichern und Bilder automatisch
-     * in eine verkaufsorientierte Reihenfolge bringen.
-     */
-    const categoryPriority = (
-      category: string
-    ) => {
-      const value =
-        category.toLowerCase();
-
-      if (
-        value.includes("living") ||
-        value.includes("wohn")
-      ) return 100;
-
-      if (
-        value.includes("exterior") ||
-        value.includes("aussen") ||
-        value.includes("fassade")
-      ) return 95;
-
-      if (
-        value.includes("kitchen") ||
-        value.includes("kueche") ||
-        value.includes("k?che")
-      ) return 90;
-
-      if (
-        value.includes("terrace") ||
-        value.includes("balcony") ||
-        value.includes("garten") ||
-        value.includes("balkon") ||
-        value.includes("terrasse")
-      ) return 85;
-
-      if (
-        value.includes("bed") ||
-        value.includes("schlaf")
-      ) return 75;
-
-      if (
-        value.includes("bath") ||
-        value.includes("bad")
-      ) return 65;
-
-      if (
-        value.includes("floorplan") ||
-        value.includes("grundriss") ||
-        value.includes("document") ||
-        value.includes("logo")
-      ) return 10;
-
-      return 50;
-    };
-
-    const rankedImages =
-      registeredImages
-        .map((image, index) => {
-          const analysis =
-            imageAnalyses.find(
-              (item) =>
-                item.imageIndex ===
-                  index + 1
-            );
-
-          const qualityScore =
-            typeof analysis?.qualityScore === "number"
-              ? Math.max(
-                  0,
-                  Math.min(
-                    100,
-                    analysis.qualityScore
-                  )
-                )
-              : 50;
-
-          const titleScore =
-            typeof analysis?.titleScore === "number"
-              ? Math.max(
-                  0,
-                  Math.min(
-                    100,
-                    analysis.titleScore
-                  )
-                )
-              : qualityScore;
-
-          const suitable =
-            typeof analysis?.suitable === "boolean"
-              ? analysis.suitable
-              : true;
-
-          const category =
-            safeString(
-              analysis?.category,
-              80
-            );
-
-          const rankingScore =
-            (suitable ? 1000 : 0) +
-            titleScore * 10 +
-            qualityScore +
-            categoryPriority(category);
-
-          return {
-            image,
-            originalIndex: index,
-            analysis,
-            rankingScore,
-          };
-        })
-        .sort(
-          (a, b) =>
-            b.rankingScore -
-              a.rankingScore ||
-            a.originalIndex -
-              b.originalIndex
-        );
-
-    await Promise.all(
-      rankedImages.map(
-        async (
-          ranked,
-          position
-        ) => {
-          const analysis =
-            ranked.analysis;
-
-          const analysisText =
-            analysis
-              ? JSON.stringify({
-                  room:
-                    safeString(
-                      analysis.room,
-                      120
-                    ),
-                  condition:
-                    safeString(
-                      analysis.condition,
-                      300
-                    ),
-                  visibleFacts:
-                    safeStringArray(
-                      analysis.visibleFacts,
-                      5
-                    ),
-                  category:
-                    safeString(
-                      analysis.category,
-                      80
-                    ),
-                  qualityScore:
-                    typeof analysis.qualityScore ===
-                    "number"
-                      ? analysis.qualityScore
-                      : 0,
-                  titleScore:
-                    typeof analysis.titleScore ===
-                    "number"
-                      ? analysis.titleScore
-                      : 0,
-                  suitable:
-                    typeof analysis.suitable ===
-                    "boolean"
-                      ? analysis.suitable
-                      : true,
-                })
-              : summary;
-
-          await prisma
-            .listingImage
-            .update({
-              where: {
-                id:
-                  ranked.image.id,
-              },
-
-              data: {
-                position,
-                isPrimary:
-                  position === 0,
-
-                analysis:
-                  analysisText,
-
-                analysisStatus:
-                  "analyzed",
-
-                analyzedAt:
-                  new Date(),
-              },
-            });
-        }
-      )
-    );
-
-    console.info(
-      "[AUTOPILOT_IMAGE_RANKING]",
-      {
-        listingId: listing.id,
-        imageCount:
-          rankedImages.length,
-        primaryImageId:
-          rankedImages[0]?.image.id ??
-          null,
-      }
-    );
-
-
-    /*
-     * Das Objekt wird jetzt automatisch
-     * vom leeren Draft zum Inserat.
-     */
     const finalPropertyType =
       propertyType ||
       listing.propertyType ||
@@ -2546,6 +1997,101 @@ console.info(
               finalLocation,
           })
         : null;
+
+    const confirmedFacts = buildConfirmedAutopilotFacts({
+      locale:"de",market:listing.market,location:finalLocation,propertyType:finalPropertyType,street,postalCode:finalPostalCode,
+      rooms,livingArea,price,currency:sourceDocumentEvidence.currency??"",marketingType:sourceDocumentEvidence.values.price?offerPriceKind:"",
+      countryCode:listing.countryCode,style:style||null,locationDescription:locationDescription||listing.locationDescription,
+      locationData:listing.locationData,socialVariants:listing.socialVariants,latitude:resolvedAddress?.latitude??listing.latitude,longitude:resolvedAddress?.longitude??listing.longitude,
+    },documentInputs.map(document=>document.facts),body?.manualFactsConfirmed===true?body.qualityFacts:undefined);
+    const strictVerifiedFeatures = String(confirmedFacts.verifiedFeatures??"");
+    const verifiedFactContext = "";
+    if (imageSelection.requiresReview) {
+      // Retain the documentary source and editable draft before returning to the broker.
+      const exposeReceipt = await savePremiumAssessment(user.id, "expose", {sourceText:documentTexts.join("\n"),extracted:parsed,evidence:sourceDocumentEvidence,sourceChecked:documentTexts.length>0,documents:documentInputs.map((document,index)=>({reference:registeredDocuments[index].pathname,analysis:document.facts.documentAnalysis}))}, listing.id);
+      await prisma.listing.update({where:{id:listing.id},data:{
+        location:String(confirmedFacts.location??""),propertyType:String(confirmedFacts.propertyType??""),postalCode:String(confirmedFacts.postalCode??""),
+        rooms:premiumNumber(confirmedFacts.rooms),livingArea:premiumNumber(confirmedFacts.livingArea),price:premiumNumber(confirmedFacts.price),plotArea:premiumNumber(confirmedFacts.plotArea),highlights:strictVerifiedFeatures,
+      }});
+
+      await savePremiumAssessment(user.id,"autopilot_draft",{facts:confirmedFacts,sourceAssessmentId:exposeReceipt.id},listing.id);
+      return NextResponse.json({
+        success: false,
+        listingId: listing.id,
+        code: "AUTOPILOT_IMAGE_REVIEW_REQUIRED",
+        reviewUrl: `/cockpit/${listing.id}/edit?review=images`,
+        error: describeAutopilotImageReview(imageSelection),
+        imageSelection: imageSelectionResult,
+      }, { status: 422 });
+    }
+
+    const listingTextOpenAI =
+      new OpenAI({
+        apiKey:
+          process.env.OPENAI_API_KEY,
+      });
+
+    const generatedText =
+      await generateListingTextVariants(
+        confirmedFacts,
+        {
+          openai:
+            listingTextOpenAI,
+        }
+      );
+
+    const variants =
+      generatedText.variants
+        .map((variant) => ({
+          title:
+            safeString(
+              variant.title,
+              200
+            ),
+          text:
+            safeString(
+              variant.text,
+              12000
+            ),
+        }))
+        .filter(
+          (variant) =>
+            variant.title &&
+            variant.text
+        )
+        .slice(0, 3);
+
+    if (
+      variants.length !== 3
+    ) {
+      throw new Error(
+        "Inserat-AI konnte nicht alle drei Inseratvarianten erzeugen."
+      );
+    }
+
+    /*
+     * Das Objekt wird jetzt automatisch
+     * vom leeren Draft zum Inserat.
+     */
+    const premiumFacts: PremiumFacts = confirmedFacts;
+    // Only the generated presentation title is added; property/source facts stay identical.
+    premiumFacts.projectName = variants[0].title.slice(0,120);
+    const premiumQuality = await checkAndRecordPremiumQuality({
+      userId: user.id, listingId: listing.id, facts: premiumFacts, variants,
+      sourceAudit: {
+        status: !coreEvidence.ambiguousPriceUnits && (body?.manualFactsConfirmed === true || (documentTexts.length > 0 && !body?.qualityFacts && arePremiumCoreFactsDocumented(premiumFacts, sourceDocumentEvidence))) ? "passed" : "missing",
+        conflicts: coreEvidence.conflicts,
+        documents: documentInputs.map((document,index) => ({reference:registeredDocuments[index].pathname,analysis:document.facts.documentAnalysis})),
+        sources: [
+          ...documentTexts.map((_, index) => ({ kind: "expose", reference: registeredDocuments[index].pathname })),
+          ...(body?.manualFactsConfirmed === true ? [{ kind: "manual_confirmation", reference: listing.id }] : []),
+        ],
+      },
+      sourceContext: documentTexts.join("\n"),
+      images: imageSelection.entries, openai: listingTextOpenAI,
+    });
+    if (!premiumQuality.ready) return NextResponse.json({ success: false, code: "PREMIUM_QUALITY_NOT_READY",
+      premiumQuality, error: describePremiumQualityReasons(premiumQuality.reasons) }, { status: 422 });
 
     const valuationPropertyType:
       InseratAIPropertyType | null =
@@ -3151,6 +2697,7 @@ console.info(
 
           data: {
             projectName,
+            plotArea: premiumNumber(premiumFacts.plotArea) ?? undefined,
 
             street:
               street ||
@@ -3160,9 +2707,7 @@ console.info(
               finalPostalCode ||
               undefined,
 
-            location:
-              finalLocation ||
-              undefined,
+            location: String(confirmedFacts.location??finalLocation),
 
             locationDescription:
               locationDescription ||
@@ -3176,30 +2721,19 @@ console.info(
               resolvedAddress?.longitude ??
               undefined,
 
-            propertyType:
-              finalPropertyType,
+            propertyType: String(confirmedFacts.propertyType??finalPropertyType),
 
-            rooms:
-              rooms ?? null,
+            rooms: premiumNumber(confirmedFacts.rooms),
 
-            livingArea:
-              livingArea ??
-              undefined,
+            livingArea: premiumNumber(confirmedFacts.livingArea),
 
-            price:
-              price ??
-              undefined,
+            price: premiumNumber(confirmedFacts.price),
 
             style:
               style ||
               null,
 
-            highlights:
-              highlights.length > 0
-                ? highlights.join(
-                    ", "
-                  )
-                : null,
+            highlights: strictVerifiedFeatures || null,
 
             imageAnalysis:
               summary ||
@@ -3238,6 +2772,8 @@ console.info(
           },
         });
 
+
+    await assertListingPremiumQualityReady(user.id, listing.id);
 
     const missingFields:
       string[] = [];
@@ -3584,16 +3120,15 @@ console.info(
         updatedListing.id,
 
       autopilot: {
+        premiumQuality,
+        imageSelection: imageSelectionResult,
         stage:
-          missingFields.length >
-          0
-            ? "needs_confirmation"
-            : "ready",
+          "needs_confirmation",
 
         analyzedImages:
           registeredImages.length,
 
-        missingFields,
+        missingFields: premiumQuality.ready ? [] : missingFields,
 
         valuation: {
           status:
@@ -3724,9 +3259,19 @@ console.info(
       },
     });
   } catch (error) {
+    if (analyzingImageIds.length > 0 && !imageAnalysesPersisted) {
+      try {
+        await prisma.listingImage.updateMany({
+          where: { id: { in: analyzingImageIds } },
+          data: { analysisStatus: "not_analyzed", analyzedAt: null, analysis: null, isPrimary: false },
+        });
+      } catch (statusError) {
+        console.error("[AUTOPILOT_IMAGE_STATUS_RESET_FAILED]", statusError);
+      }
+    }
     console.error(
       "[autopilot/run]",
-      error
+      (error as { code?:string })?.code === "PDF_DOCUMENT_REVIEW_REQUIRED" ? { code:"PDF_DOCUMENT_REVIEW_REQUIRED" } : error
     );
 
     const message =
@@ -3734,14 +3279,16 @@ console.info(
         ? error.message
         : "Der Autopilot konnte nicht abgeschlossen werden.";
 
+    const pdfReview = error as { code?:string; documentAnalysis?:unknown; sourceEvidence?:unknown; structuredFacts?:unknown };
     return NextResponse.json(
       {
         success: false,
+        ...(pdfReview.code === "PDF_DOCUMENT_REVIEW_REQUIRED" ? { code:pdfReview.code, documentAnalysis:pdfReview.documentAnalysis, sourceEvidence:pdfReview.sourceEvidence, structuredFacts:pdfReview.structuredFacts } : {}),
         error:
           message,
       },
       {
-        status: 500,
+        status: pdfReview.code === "PDF_DOCUMENT_REVIEW_REQUIRED" ? 422 : 500,
       }
     );
   }

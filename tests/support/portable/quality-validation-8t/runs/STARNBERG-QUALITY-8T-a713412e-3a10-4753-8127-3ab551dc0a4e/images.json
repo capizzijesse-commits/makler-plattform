@@ -1,0 +1,876 @@
+{
+  "simulation": false,
+  "syntheticOnly": true,
+  "analyses": [
+    {
+      "imageId": "S01",
+      "imageIndex": 1,
+      "room": "Wohnzimmer",
+      "roomConfidence": 0.9,
+      "roomIndependentFacts": [
+        {
+          "fact": "Große Fenster",
+          "confidence": 0.95
+        },
+        {
+          "fact": "Helle Wände",
+          "confidence": 0.9
+        }
+      ],
+      "condition": "Sehr gepflegt",
+      "visibleFacts": [
+        "großes Ecksofa",
+        "moderner Couchtisch"
+      ],
+      "category": "living",
+      "sharpnessScore": 90,
+      "exposureScore": 85,
+      "suitabilityConfidence": 0.95,
+      "suitabilityReason": "Helles, klares und attraktives Wohnzimmer mit großem Fenster und Gartenblick.",
+      "qualityScore": 90,
+      "titleScore": 90,
+      "suitable": true
+    },
+    {
+      "imageId": "S02",
+      "imageIndex": 2,
+      "room": "Küche",
+      "roomConfidence": 1,
+      "roomIndependentFacts": [
+        {
+          "fact": "Fenster",
+          "confidence": 0.95
+        },
+        {
+          "fact": "Helle Wände",
+          "confidence": 0.9
+        },
+        {
+          "fact": "Fliesenboden",
+          "confidence": 0.9
+        }
+      ],
+      "condition": "Sehr gepflegt",
+      "visibleFacts": [
+        "moderne Einbauküche",
+        "Essbereich mit Stühlen"
+      ],
+      "category": "kitchen",
+      "sharpnessScore": 90,
+      "exposureScore": 85,
+      "suitabilityConfidence": 0.95,
+      "suitabilityReason": "Helle und moderne Küche mit Tageslicht und Essbereich, klar und einladend.",
+      "qualityScore": 90,
+      "titleScore": 85,
+      "suitable": true
+    },
+    {
+      "imageId": "S03",
+      "imageIndex": 3,
+      "room": "Schlafzimmer",
+      "roomConfidence": 1,
+      "roomIndependentFacts": [
+        {
+          "fact": "Fenster",
+          "confidence": 0.95
+        },
+        {
+          "fact": "Helle Wände",
+          "confidence": 0.9
+        },
+        {
+          "fact": "Holzboden",
+          "confidence": 0.9
+        }
+      ],
+      "condition": "Sehr gepflegt",
+      "visibleFacts": [
+        "großes Bett",
+        "Nachtlampen"
+      ],
+      "category": "bedroom",
+      "sharpnessScore": 90,
+      "exposureScore": 85,
+      "suitabilityConfidence": 0.9,
+      "suitabilityReason": "Helles Schlafzimmer mit großem Fenster und Holzfußboden, ordentlich eingerichtet.",
+      "qualityScore": 88,
+      "titleScore": 85,
+      "suitable": true
+    },
+    {
+      "imageId": "S04",
+      "imageIndex": 4,
+      "room": "Badezimmer",
+      "roomConfidence": 1,
+      "roomIndependentFacts": [
+        {
+          "fact": "Fenster",
+          "confidence": 0.95
+        },
+        {
+          "fact": "Fliesenboden",
+          "confidence": 0.9
+        },
+        {
+          "fact": "Helle Wände",
+          "confidence": 0.9
+        }
+      ],
+      "condition": "Sehr gepflegt",
+      "visibleFacts": [
+        "Duschkabine",
+        "Badewanne"
+      ],
+      "category": "bathroom",
+      "sharpnessScore": 90,
+      "exposureScore": 85,
+      "suitabilityConfidence": 0.95,
+      "suitabilityReason": "Sauberes und modernes Badezimmer mit Fenster und Tageslicht.",
+      "qualityScore": 90,
+      "titleScore": 80,
+      "suitable": true
+    },
+    {
+      "imageId": "S05",
+      "imageIndex": 5,
+      "room": null,
+      "roomConfidence": 0,
+      "roomIndependentFacts": [
+        {
+          "fact": "Große Fenster",
+          "confidence": 0.9
+        },
+        {
+          "fact": "Tageslicht",
+          "confidence": 0.9
+        }
+      ],
+      "condition": "Sehr gepflegt",
+      "visibleFacts": [
+        "Haus mit Garage",
+        "vorderer Eingang mit Bepflanzung"
+      ],
+      "category": "exterior",
+      "sharpnessScore": 90,
+      "exposureScore": 85,
+      "suitabilityConfidence": 0.9,
+      "suitabilityReason": "Klares Außenbild eines Hauses mit schönem Wetter und Tageslicht.",
+      "qualityScore": 92,
+      "titleScore": 85,
+      "suitable": true
+    },
+    {
+      "imageId": "S06",
+      "imageIndex": 6,
+      "room": null,
+      "roomConfidence": 0,
+      "roomIndependentFacts": [
+        {
+          "fact": "Große Fenster",
+          "confidence": 0.9
+        },
+        {
+          "fact": "Tageslicht",
+          "confidence": 0.9
+        }
+      ],
+      "condition": "Sehr gepflegt",
+      "visibleFacts": [
+        "Hinterer Hausbereich mit Terrasse",
+        "Garten mit Möbeln"
+      ],
+      "category": "exterior",
+      "sharpnessScore": 90,
+      "exposureScore": 85,
+      "suitabilityConfidence": 0.9,
+      "suitabilityReason": "Außenansicht mit Garten und Terrasse, hell und einladend.",
+      "qualityScore": 92,
+      "titleScore": 85,
+      "suitable": true
+    },
+    {
+      "imageId": "S07",
+      "imageIndex": 7,
+      "room": null,
+      "roomConfidence": 1,
+      "roomIndependentFacts": [],
+      "condition": "Klar und gut lesbar",
+      "visibleFacts": [
+        "Grundrisszeichnung mit Möbeln"
+      ],
+      "category": "floorplan",
+      "sharpnessScore": 100,
+      "exposureScore": 95,
+      "suitabilityConfidence": 0.95,
+      "suitabilityReason": "Klare Grundrisszeichnung gut geeignet zur Planung, aber keine Wohnraumansicht.",
+      "qualityScore": 85,
+      "titleScore": 20,
+      "suitable": false,
+      "roomCategoryIssue": "ROOM_CATEGORY_UNCONFIRMED"
+    },
+    {
+      "imageId": "S08",
+      "imageIndex": 8,
+      "room": "Wohnzimmer",
+      "roomConfidence": 0.9,
+      "roomIndependentFacts": [
+        {
+          "fact": "Große Fenster",
+          "confidence": 0.9
+        }
+      ],
+      "condition": "Sehr gepflegt",
+      "visibleFacts": [
+        "großes Ecksofa",
+        "moderner Couchtisch"
+      ],
+      "category": "living",
+      "sharpnessScore": 90,
+      "exposureScore": 85,
+      "suitabilityConfidence": 0.95,
+      "suitabilityReason": "Identisches Bild zu S01, attraktiv und klar für Titelbild.",
+      "qualityScore": 90,
+      "titleScore": 90,
+      "suitable": true
+    },
+    {
+      "imageId": "S09",
+      "imageIndex": 9,
+      "room": null,
+      "roomConfidence": 0.75,
+      "roomIndependentFacts": [],
+      "condition": "Dunkel",
+      "visibleFacts": [
+        "großes Ecksofa",
+        "moderner Couchtisch"
+      ],
+      "category": "living",
+      "sharpnessScore": 90,
+      "exposureScore": 25,
+      "suitabilityConfidence": 0.5,
+      "suitabilityReason": "Identisches Bild zu S01, allerdings dunkel und unterbelichtet.",
+      "qualityScore": 60,
+      "titleScore": 30,
+      "suitable": false
+    },
+    {
+      "imageId": "S10",
+      "imageIndex": 10,
+      "room": null,
+      "roomConfidence": 0,
+      "roomIndependentFacts": [],
+      "condition": "Unscharf",
+      "visibleFacts": [
+        "unscharfes Bild eines Schlafzimmers"
+      ],
+      "category": "bedroom",
+      "sharpnessScore": 10,
+      "exposureScore": 50,
+      "suitabilityConfidence": 0,
+      "suitabilityReason": "Bild unscharf, Raumnutzung nur bedingt erkennbar.",
+      "qualityScore": 10,
+      "titleScore": 10,
+      "suitable": false
+    },
+    {
+      "imageId": "S11",
+      "imageIndex": 11,
+      "room": null,
+      "roomConfidence": 0,
+      "roomIndependentFacts": [
+        {
+          "fact": "Große Fenster",
+          "confidence": 0.9
+        },
+        {
+          "fact": "Tageslicht",
+          "confidence": 0.9
+        }
+      ],
+      "condition": "Sehr gepflegt",
+      "visibleFacts": [
+        "Helles Einfamilienhaus mit Eingangsbereich"
+      ],
+      "category": "exterior",
+      "sharpnessScore": 90,
+      "exposureScore": 85,
+      "suitabilityConfidence": 0.9,
+      "suitabilityReason": "Gute Außenansicht mit Tageslicht, aber nicht besonders markant.",
+      "qualityScore": 90,
+      "titleScore": 80,
+      "suitable": true
+    },
+    {
+      "imageId": "S12",
+      "imageIndex": 12,
+      "room": null,
+      "roomConfidence": 0,
+      "roomIndependentFacts": [
+        {
+          "fact": "Große Fenster",
+          "confidence": 0.9
+        },
+        {
+          "fact": "Tageslicht",
+          "confidence": 0.9
+        }
+      ],
+      "condition": "Sehr gepflegt",
+      "visibleFacts": [
+        "Außenansicht Einfamilienhaus mit Garage"
+      ],
+      "category": "exterior",
+      "sharpnessScore": 90,
+      "exposureScore": 85,
+      "suitabilityConfidence": 0.9,
+      "suitabilityReason": "Gute Außenansicht eines Hauses mit schönem Wetter.",
+      "qualityScore": 90,
+      "titleScore": 80,
+      "suitable": true
+    }
+  ],
+  "selection": {
+    "entries": [
+      {
+        "imageId": "S01",
+        "fileName": "inputs/images/S01.png",
+        "contentFingerprint": "b7c4e536ff764c567162313edb08fccf456e8ead75acc771bae4a5bb8f38de33",
+        "analysis": {
+          "imageId": "S01",
+          "imageIndex": 1,
+          "room": "Wohnzimmer",
+          "roomConfidence": 0.9,
+          "roomIndependentFacts": [
+            {
+              "fact": "Große Fenster",
+              "confidence": 0.95
+            },
+            {
+              "fact": "Helle Wände",
+              "confidence": 0.9
+            }
+          ],
+          "condition": "Sehr gepflegt",
+          "visibleFacts": [
+            "großes Ecksofa",
+            "moderner Couchtisch"
+          ],
+          "category": "living",
+          "sharpnessScore": 90,
+          "exposureScore": 85,
+          "suitabilityConfidence": 0.95,
+          "suitabilityReason": "Helles, klares und attraktives Wohnzimmer mit großem Fenster und Gartenblick.",
+          "qualityScore": 90,
+          "titleScore": 90,
+          "suitable": true
+        },
+        "comparison": {
+          "width": 1448,
+          "height": 1086,
+          "samples": "cbb9a7cdbba8cfbca8d0bca6cfbba6cebba5cfbba4cfbaa2cebaa4cebba5cfbda8cfbfaacdbfadcdbfaeccc1afccc1afcbc0afcac0afcabfaecbbfafcabfb0cabfafcabeafc8bcadc7baaac7baaac8baaac8baa9cabdaac8baa5cabca7c5b39bcfbcabd1bfaed3c1afd3c1acd3c0abd3bfaad2bfa8d2bda7d3c0aad6c4afd7c6b2d6c8b5d8cbbad8cdbed8cebed9cfc0d8cfc0d7cdc0d7cdc0d6ccbfd4cabdd3c9bcd4cabdd2c7b9cfc3b4cabdadc6b8a8cdc0afcdc0aecbbeaac3b29bbea88ed4c4b5d6c7b6d7c7b7d7c8b7d7c7b4d6c4b0d4c1acd3bea9d2bea9d4c2add9c8b6dbcdbddfd4c6e3dacde5dbcfe1d8cdded5cadbd2c7d8cec3d4cbbfd3c9bdd0c6bacdc2b5beb09fad9c89a79580b8a896d0c4b4cec1b1c4b5a0beaa92c7b59fe1d6c9e3d7cbe3d8cae3d8c9e5d9c9e6d8c8cab7a1bfa892bda690bca790af9880ae987fbeae9bc4b6a7c3b6a6bfb2a3bbae9fb9ac9db7aa9bb5a899b4a697b2a494b6a897b09e8899856c9b8770baab9ad2c7b7cfc2b1c1af9abfad96bca78dd4c6b8d9ccbed8ccbdd6c9bad6c9bbd8cbbcc1ad98b7a189b7a189b8a28aa99177af9a7fbeae9ab8aa9abaaa9cb9aa9bb7a99ab5a797b3a595b3a697b4a698b5a898bcaf9fbfae9aa59179a5927cbeb09fd3c7b8cfc3b2c2b29ebdab92b9a58abba894bfac9cc0ae9ec1b09fc3b3a2c8b8a7c0ab95bba58db9a38cb7a28cac967cbda98fd7d0c0d3cfb4cecab2c3c0a9cdc9afbdb7adc0c2b8bdbfa6d8d8addadbc6d8dac3c5b9a2a6937ba5937ec0b2a2d4cabbcfc5b5c5b5a2c5b69dbbac92c5b7a8d4cdb6cbc1acdfd9cfdfdfdacdcfc0bfae94b7a089b8a087bea387b79f83cbbba8d9dac5bec498c8cb9cc6cba5c4c7a1bdbba5bdcab4d8e0a8dce3a3eff1c6c0cba4c5bdaead9982a6947ec2b4a5d2cabfcec5b8c5b7a4bdae94bdae96cdc4bce2e2c7cbc5abd8dbccf3f4dcd7d9b3bbaa8fb39d87caac8dd9b188d0b497d9cec0d6d8c7909a7aa5aa83bcc191c7c7949d9e879aa879ced789d8de94dfe195d5d9a0ccc4b8a7947c9e8e75bfb2a2ccc5bbcbc3b9bfb3a3a3977dc3b49bd0c8c2d4d1b8b6af97d3d3aed9d899e6e0a1c3b093b49e88c5ad92d2b594c9b194dacdc0e1e2d4a8b18d87906c909971c1c38eb4ae8ec0c78bcbd484d5db8cd0d585d4d69cc9c2b694866785795aa39983bdb7aec6beb4bfb4a5918770beae95d7d0cbe4e3b6c8bf93d2d4a1aab579bfc48ebdab90b7a18bb8a58fb5a38fb49e85d7cbbdeeefdcb1b890899168a4ab71d1d490b7b28fc6cf8ecbd085c8cb84d5d88ed8dba1ccc5b97c73515952307f775f9d9990c7bdb2beb2a5817763b6a58acdc4bbc3c78fbebc81d2d69eb3be8aa7af81b8a58bbba58fb8a38eb4a08bb49f86dcd0c3dfe2d1b7c18ca8b273abb57695a170a3a3849dac70aeb674aead7ba7ae759aa67b9d9a875a543440392068614a908d80bbb0a1b8ab9b81735fa7957a716848706e38c1be97e0e1b2d7dba19ba57aae9f85bfa892b9a48eb5a08abaa48be4d8cae4e6da92a17362744362794b5c7349969b83748560858c66a7a877909b5c788669908d7c5951354b4229514a2d6e67478b8169867b64a0927ebcad9ba19880c2c69ed4d0b3dcd5adf2ebbdd5d7c0bdab97bba48db8a38dbda891c8b096f1e7dbf9f6ee9fa48a70806555674a536646888a78687558ced098dadba2d0d59ddadeccc5c0b77a6d527263477f755c615b404942268f826dae9e8cb29c849074599b81678f735ba88a6bcab897eee4cecdbba8c3ae99b7a592a59581b4a491bdaa98d1c9b7e9efcad4ddaec6d2a3b8c695b7b492b9c388abb181bbb98fc8c4bcc2c2c5cdc6c0a18e77917c66c2b7aa9c968a837460cfc7beac9c8a917455ab948097785f907c659e876e9f876ebba790d1c1afb9a48fa18e795948359c8c7a927d65a08b759e8c74e7e9b7edf5b5dfe4accdc9a3c5c59cb1ad92c3c698c2bfb3999c9fcac4bea28d7897826cc1b4a7bfb1a59a7f63bdb4aabbb0a6bea9958a735a5a4e39786e566f624a81664abba48cd0c1b1c3b19e99816a4b3b2989745f8d7f6c9684729f9185e7e8e8d9dbd69b9888867f696d6a53a7a695daddd5c1c4c6a1a4a8d0c9c69684717a6651b0967ead9279866749765537907d6eb9a3917c6246291e0a3b30176e6751655238a08469d2c2b2b8a795907a63847361a49382b8aa9ec6bcb4c5bdb9b8afabbbb2b077716326250f2d2812776b59c2b5adbbb3afbeb9b8c4bbb4978371745e47a38367ae8b6ba78668a97f5ac09875c19a7591775b6f5d48493f2a766c55726751765b40c3b19ecabaabd3c3b3d6c6b6d4c5b9b1a0917e674f786047806b5686715f7d6e5c3f35226a6965a7a6a7cac6c8d6d2d2cdc9cdb7a699927b65654f389d7b5ea883649c76569a7253b78a62d2a069b4997db3987db69c82b9a38bb09d89aa9683c0ad9bcab6a3d0bfaed8cabfd4c9c09e90845d462e7d6e63bcc2d3b2b4bc9f9da1725c459b9494c8d3e8d5d9e2e5e8efdce0ebc5bcbca6918172584099795da780619a7454936a4a9c6b459f6f488b6e51896c4e8a6d508b7157937a62a7917cb8a592bfab97bea996c2b2a3baada07c69564f3c28b8bccbafaeb6674f3b62503f5e4a35594c42b1b6c5ced2dcbebfc7c0c5d1bdbac3b4a197a88e7b8e7c6fa78a739b7252936949a26f4798653f856a4e80654981654a826950846c548a735cb8a694cebbacc4b3a3a49282ad9f9162503a7f7977d2daf2c8cfe67e6d69482b1344260b5e4531bbbfcdccd1dbb3afb2b7b6bdb6b6bfaf9f99a68d7b99827176685c9272579467439c6a4296633d886d5181664a84684c826950836c558c755fb29f8cbdab9aaa9988ac9e908c7e6d7b634ab2a2a0b7b4c2b4b3c3b0afc2998b91875d40a4928ec3cadfcbccd8b8b0b0b8b0b0bbb5b6b3a6a1a68a77a88871846b57665445926b4d9b653c96623b84694d85694e83674b80664c8169528e7760a18d799f8c79aa9a8b9b8e827f6e5e836d585c46335a46365744345b483b5a4b44543e2f5842335e4a3e6551449a8b83b4a9a4b5a8a2bbada6af9481ad896faf88697b604a64503ea2724c965f367d634885694c8065487f654c826a52907962978370978473a89a8d786b6098877a807267776c646964626b645f666363605f61646467696769756d6a69625d84776ead9e95ae9e95b9a89ebca495b68f73bd906db988616c523c674e399d6a44795f4483674a7d61457f654b826a528f7861a18e7ca594857f73688b7e71a293877a6d6367605c675e596255495850485b534d6158526f635c8b796d766f6d7f7269ae9d92af9e94b6a296c3ac9ec19d84c2936fca9265bc845659422c60442e7b6042806448795e427e644a7e67508e7760a895838173656f625698887a9a8a7e6d615857504c6c5b4d5e4d3d55463858493c5b4d406c5a4a856c57766860887a719a87799683749a86769f8a7ab89c88cb9d79cf996ee19f67bd88583f2e22896c4b8e704f795e3f7d63487d654f927c659281716b5d51907f7293837591807361554c3b35304a3d3140332641352943372b483c30554536705b488c78687e6b5a7864517f69568d7866826d597e6650a38164cc9a71d09665e29f638f684573583b866a4c826648876c4f836b528f786370625488786a9c8b7d9786788d7b6d806d5b715d4867543f64513d5e4c385a493656463450402e645344725e4d6b57426f5a45735d48745d48776049725a4271583ea57e5dc99468ca905ecd905c4838264b3a29503f2e564634614f3d6657477c6c5e927f6e968273958272927e6c8a735c8c735a8a7157897056876f5588705689705791775d836c58624e3a614d38614b35654f376b543b674f36695138654d336f5338ba8c65c79163c188573d301f3b2e1e3b2e1f3b2e1f4538297c6c5c9884739783719b87769c867497806b8e755b8c73588d73588e745a8c72578d73578d735893785d705b4557453058442f59452f59442d5f49315c462e5a442c5b442c594128967150cc996cc48e5e765f45755e447961477f674c917b639b86729c87749a85729b85739b8571957d668e755a90755a957a5e93785d91765a91755a94785d96795c67513c4f3d2954402b503c27513d27544029533e27523d26543e26503a23735538be8e65bd8a5d856d51846b508b7157957d659b8671998370a18b77a28e7a9d87739a826c937a6093785c967a5f93775c92785c91775b90765a91765a8d7258614c374e3c284f3c274a37234e3b254a37224c38234e39234e39234b362160472eb08561b7855a"
+        },
+        "originalIndex": 0,
+        "duplicateOf": null,
+        "reasons": [],
+        "reviewedReasons": [],
+        "selected": true
+      },
+      {
+        "imageId": "S02",
+        "fileName": "inputs/images/S02.jpg",
+        "contentFingerprint": "b5ce7c90e136c878a184b69b6d73c9ef020f78ae1c370c17ecec6bf37e7695cd",
+        "analysis": {
+          "imageId": "S02",
+          "imageIndex": 2,
+          "room": "Küche",
+          "roomConfidence": 1,
+          "roomIndependentFacts": [
+            {
+              "fact": "Fenster",
+              "confidence": 0.95
+            },
+            {
+              "fact": "Helle Wände",
+              "confidence": 0.9
+            },
+            {
+              "fact": "Fliesenboden",
+              "confidence": 0.9
+            }
+          ],
+          "condition": "Sehr gepflegt",
+          "visibleFacts": [
+            "moderne Einbauküche",
+            "Essbereich mit Stühlen"
+          ],
+          "category": "kitchen",
+          "sharpnessScore": 90,
+          "exposureScore": 85,
+          "suitabilityConfidence": 0.95,
+          "suitabilityReason": "Helle und moderne Küche mit Tageslicht und Essbereich, klar und einladend.",
+          "qualityScore": 90,
+          "titleScore": 85,
+          "suitable": true
+        },
+        "comparison": {
+          "width": 1448,
+          "height": 1086,
+          "samples": "bcb2a8bbb1a6b9aea3c1b7adccc4bdd3cdc7d3cfc9d0ccc6cec9c3cdc7c1cbc4bec8c1bbc6beb7c3bab4c1b9b1c1b8afc1b7adc0b6acbfb5acc0b6acbfb5a9bdb3a7beb2a6beb1a4bfb1a4bfb1a4bfb2a2bfb2a2beb1a1b6aa9ab4a694b8aa97bbb0a6bcb2a8bab0a5b8aea3b8ada1bcb2a7c5bdb4cbc4bdccc5becbc5bec9c3bcc6bfb8c4bdb6c3bcb5c2b9b1c1b7aec1b7adbfb6abbfb5abc0b5abbfb6a9c0b5a8c1b5aac1b5a9c2b6aac2b6a9c2b6a8c1b5a6bfb2a3b7aa9abaac99bbae9cc7bfb6c1b8aebaafa5bab0a6b9afa3b5aba0b3a89cb5a99cb6aca0bbb2a7c0b8afc2bab1c2b9b0c3bbb3c2b9b0c6bcb3c2b9b0c1b8aec1b8afc3bab0c5bdb2c6bcb2c6bcb2c5bbb1c6bdb2c5bbafc4baadc4b9acbeb2a4b8ab9ac0b29fbcb09fc3bcb3cac3bbc6bfb5c4bbb2bfb6abb9afa3b8ada0b5a99cb0a394aea293b4a89cbcb3a8c7c0b7ccc6becac3bbcac3bac9c3bbcbc4bcccc5bdcdc6becec6becdc4bcccc3baccc3b8cbc2b8c9bfb5c6bcafbeb2a4ada191bbad9ac2b4a2bcb09fcacdcec5c2bebdb7afbfb7adc1b8aec3b9aebeb2a7b7ac9fb8ac9db8aa9ab5a898b6aa9cc5bdb3d9d7d1dfdedadedcd7dbd8d4d7d5d0d6d2ccd7d1cbd6d1cad2cbc4cbc3bac3bab0bab0a4afa395a999898f7f70887a68bdae9abdb19fbbaf9ee7f6fee7f6ffc1c3c4cbd0d5cacdcfbbb7b0c1b8adb7ab9caba08dafa491bbae9fbcb2a4bbb2a7beb6abcac5bdd7d5cfdfdedadbd9d4d0ccc5c6c0b7bdb7acb9b1a5b3aa9f8c7f728476679283728e7e6d8174639a8c79beaf9abaad9bbbae9de2eff9e0ebf4afa89fd2d9dcecffffc9cfd4c3bab0a79d8c4f522b635f3ab4a693beb5a8cbc5bccbc5bbc2bab0bcb4a9aca497aaa294aea699a89f90a39889a99c8eb3a89c9a8c7e8a7b6ba0917e9989768c7b67a2927dc0b29fbbaf9dbcb09fd5e4eeb7b0a79e8f7eaba093e2ecf2d0d6dbc6c0b89689704c491b5d4c208c7154b4a89ad9dfe0cdcfcdc9c5bcc4beb5b4ab9dbab1a3bfb7a9c2b9aab7ab9aada090b8aea19a8e80918472a79683a08e799b866cad9c85c0b2a0bcb09fbbb2a2d9dee1988c7e95877790806ec7c5c2d6dce0c6c0b8a9987f7166358f734d9b7451ac8f73e3ebf0d3dadcdcded4c5c4bfc7c0b3cfc8bcc9c0b4cbc2b3b9ad9baa9b8ab5ab9e9085798e8070a79682a18e789f8a70b8a68f867b6ca89e8fc3baabced3d0d8c6b2d2c0a9c2ae91dcd4cbd7dbdec8c1b9aea38e75704899896fb3a08dbfb1a2e8eceddadbd1e7e8dfcccdcdc7bfb3cec9bec8c1b4cac2b4b9ad9ca69785aba1958a80747d6f5e998874a5937ca59076b9a8924c443aa09789c6bcafa7b8b3f2f6f7f1efe8cecbc0dfe1ddd4d5d7cdc6bda6977b84774e87705286694db1a191e5dea8d7d1a9e0dec8d1d2d1cbc5bdd1d1cbcbc7bdcbc6bcbbb0a19a8b78766b5f655a4c53483b756857ad9b85ac977ebaaa9561564aa49a8ec4bbafadb69ddbdfd5d2c6b1bdb9a5a4b49fd0d1cccfc9c0b19f869b8562977c5e9a7d62ac957edad17bd3d1a7d3d3b8d7d8d7cbc2b6cbc5bccdc6bbcbc1b5beb09faa9a887b6f626f6256665a4c867766af9e8ba08c74b6a5916b6255a59c90c4bcb0cacb89d4d294cfc79f9ea68967826ac0c5b8d5ccc5a49c7d978d6fab9b87907154ac9683c6c681cacba2cccdafdbdcddccb69ebfa383e4cdb5ecd4bdd5bfa9ad9e8e887e747e746a786b5f938475ac9b8a968168ae9e8a575048a39b90c5bdb27d8d5b8f9a63adb6859cad9371887bbdc1bed9d0c8858748545b129789715d401ca0805ecacab0c2c5b4c3c3b3cfccc8ae9a85846f55b6a18dcbbcb0baa99c7e664f807c787974707068628e83788e7d6b4d45298c847061584fa29a8fc4bbb15368495f744d5e76629bae9dbdcb9fd6d8cbcec7c09e967f9e917372634e5a4b19947147a69d9ba49e9b9a948f958a7e95897d8d7e6e9b8b7da39b94a3978e83726274706b6f6a6667615b71675e796a595b4b388e8274565048a1988fc5bcb29da07d9c9d759096819ea887bdcc8dd1d5c1cec6c2938c859f93886f6151634e2b826b57bac6d7b6c0cababab5bab4adb4a696b8a691b8a999c0b8afc5bdb4c8c0b7b9afa3aca092aea293aa9d8d9c8d7c91806ea99d8e595148a59d94c6beb4aeaa8e9fa07bb1b18cb9bf90a8af7dd3d6cce5dfd9d6d1c9d2cfcad0cac4c1bcb8b8b1acc3bfbbbbb6b1bbb8b0bab5b2a3978ca395879f8f7ead9f8fd0c8c0cac1b8c3b9aebdb2a3c2b5a6bdafa0afa191a89987bdb1a26c6258a0978cc0b9ae96937280794b625e23aaad72e5e7c6cbc6bbcdc4bcd5d0c9e0dcd7d9d3cbe1dcd6ddd7d0ccc2b6c6baaec2b7abbaaea0b6aa9ea89988a99782b4a593cec6bcd1c8bfc1b6abbeb3a7bdb0a2b8ab9cb4a797ad9f8ec1b6aa70675d9f978dc0b9b08284542627004d4d23dcded5efedef9e8a799c8c80a49b97cec7c0e0dcd7c2b5a8bfb1a3c8bdb2cabfb4ccc2b8c6bbb1c3b7acb2a392ab9a85b5a491c5b8a8d9d0c5d3c9bdbfb09fbfb1a2b7a99bb3a597ac9f8fc4baaf73695fa39a91b8b2a9cbd2d96d674f9c9a95dde4fbd3d7e5bfb8bbb2a29aa7968accc1b7d5cfc9927e6b8f7b66a19285a59487c5b9adc7bcb1c2b6aaafa08fac9a859f8d7893806cafa08fd6cbbdd0c0aeb9aa9bb0a395b2a698ad9f92c5bbb1675d54aaa39bbeb8b0d1d1e08b8068a19485c9c3ccd2d4e0d1cdd7c3ada3bc9c84b79579b6957aa68669a08570a391859b8a7bc7bdb1cfc5bcc3b7abafa08fab9983ac977ead957cb49f88d7c6b4d3c0ad8d79678070618171637d6f62bcb4aa80776fa09992c4bfb9a9968997887198826d987963ada1a0c7c6d4b89f95b6937ab58c6ab08360b58965b99376bea291ba9d89c1a794ae9987bfb4a9b1a291b3a18dbeab96c9b5a2cfbcaaece2d8cebdacaa927e9e87738f78647c6651ada398b2aba4b2aba4c0b9b39275628a64448764499e8e89c1c1d0c3bdcab79d95b59077b28766b1835fb08461b59075c1a28fb18d757d57378e7864bcb2a9b0a090beab97d8c9baf2eae3f6f0e9d7c9bcb19c89b19b88ae9985a7917c9c826aa49383c2bdb8bcb5afbeb7b0b6b1bb9d785fac9690ced5edcccedfc4b8bec0a496bc987db68b69b2855dbb8d68b58f748b6a52563517745639c2b7adbab1a9a99a89a6937dbcab9adacec3e2d9cfbfad9daa9380a8917da6907ca28c779e866f9a8673b4aca5b9b3adb8b4afc4c2cfb28e77b6a09ac4c2d1c7c2cebfb0b1b99c8bbd9679ba8f6cbd8f67a57852654328503722887563a5927f998a7da79c93a59585947f6991775da68c74a58b73a78e77a9907ba9927da9937fa6907ba088739d8873a6998db7b0abb4afaab9adb4ac8772b49b93c0b8c2c5bac1bea9a4ba9a88bd987cae84627e5532634328826e5e948478a896839a867187776d74665c8d7c6c896d518e7054a68a71a2866a9e80639b7d619b8065a08770a08871a08973a18c78998677b1a9a2b1aca7b7a9acb19386b39a96b6a7aebaa9adc2a9a0bf9c879971515a371a59433487776ca79686a5917d8a786394806cad9a8b9d8a7e978272937860987e65a58b729e82679b7e629a7c6096795d9a7c609d8167997f66a08a76957f6ea49a90b1aca8baabb0b59c96b9a6a6baaab0baa5a79f8173714a2b4e2f1267544699897b9a87738d7863826f5a8d7c69957e66b09d8db09d8fa89282a18c7ba48f7ca7917ea18a759d856e9b826a9a80679b7f659a7f64987e639f876f947e6a918275ada8a3ad9894baa9abbfacaeb7a3a2805e474d2a0f674c3773625592817185705b7c6955806d5b87756193826f92765caa9585b19f93aa9686a48f7ea7927faa9481a38c78a088739f877299816b977d65947a60947a619a816a97816c8672609f97908a6241a788799c8074653a157156418d817c92868594847a7f6b577a6856806d5b83715d8a7863917f6d8f7155c1ae9db2a193a79486a59181a6917ea8927ea68f79a28a759f88729d856f9a806a977e67957b63977f69937e69846e5a8d80775e4b3d885d396439137b6b649997a3847d815a4a3f8977677f6b587f6c5b806d5a83715e8a77658f7c6a846446e7d9caeee4dbc4b3a5a48f7da18c79a58f7ca48d78a7917ba28b76a28c75a28a739e856e9b826b97806995806c8c76627a685859483a8b64417146208e8d996a61605141376c5a4b8c79677a67577e6b59806d5b8370608976658d7a686c4a2bad9685ccbdaeede1d4e5d8cabca895a48f7b9f89759e8772a08974a18a73a088719f856e9f866f9d877097816c937e6b7c6754"
+        },
+        "originalIndex": 1,
+        "duplicateOf": null,
+        "reasons": [],
+        "reviewedReasons": [],
+        "selected": true
+      },
+      {
+        "imageId": "S03",
+        "fileName": "inputs/images/S03.jpg",
+        "contentFingerprint": "db35f89e0ff575873084a2d5e06a0718b63c3d388c89aeab31ce9258155c513e",
+        "analysis": {
+          "imageId": "S03",
+          "imageIndex": 3,
+          "room": "Schlafzimmer",
+          "roomConfidence": 1,
+          "roomIndependentFacts": [
+            {
+              "fact": "Fenster",
+              "confidence": 0.95
+            },
+            {
+              "fact": "Helle Wände",
+              "confidence": 0.9
+            },
+            {
+              "fact": "Holzboden",
+              "confidence": 0.9
+            }
+          ],
+          "condition": "Sehr gepflegt",
+          "visibleFacts": [
+            "großes Bett",
+            "Nachtlampen"
+          ],
+          "category": "bedroom",
+          "sharpnessScore": 90,
+          "exposureScore": 85,
+          "suitabilityConfidence": 0.9,
+          "suitabilityReason": "Helles Schlafzimmer mit großem Fenster und Holzfußboden, ordentlich eingerichtet.",
+          "qualityScore": 88,
+          "titleScore": 85,
+          "suitable": true
+        },
+        "comparison": {
+          "width": 1448,
+          "height": 1086,
+          "samples": "b5a490bcac9bc1b1a0c2b3a1c2b29ec1b09bbfae9abfae98bfac95c0ac94c4ad95cdb296daba99e7c19beac49bd6ac7fe9c196e2bc94d8b591c8a88abfa186bb9f85b79d82b49c82b49a7fb2997bb09779b09476ae9374ad9373ac9271a99170b19f89ae9d8abead9dc6b7a7c7baa8c5b6a4c4b6a2c5b6a2c4b49fc2b19bc3b099c7b198d0b699debe9ee4c4a1debc97e6c39fdcba97d1b191c2a78bbda388baa186b79f84b69d82b59b7eb3987ab19679b29779b2987ab29979ae9676a88f70ad9b8396816aa28e79b7a897c9bfb1cec5b8cec5b8cec3b4cbbfafc8baa8c6b7a3c3b39ec5b39eccb49bd2ab84d2a779d0a982caae93c2aa91bfa68dbca48ab9a186b79f82b69c7fb59a7cb59a7db69e80b69f80b69d7eb19878ab9371a78e6ab2a0868b745a806850947f67ad9b87bdafa0c7bcb0d1c8bed4ccc2d2c9becdc3b6cabeafc7bbadceb496d8a46cd5a066d29d64c2a485bca790bda48abba287b99f83b79d80b69c7fb89f83b9a185b8a182b59d7cb29a78b09876ae9573ab926fb5a28a927b60886d5391775ba58f74a28e74a38e76aa9781b1a18ebeb0a1c6bbafc6bcb0bfb3a7cfb499ddae7bdbac78daa873bf9f7eb69e85b89e81b79c7fb79d80b7a083b9a387b9a386b8a082b69f7eb79f7db49d7bb49c7ab39a78ae9674b7a58d97806493795ea68d70c0af98b6a48db3a089aa957ca69077a38e74a38d759a856d88735daf9376f1ca9ffad5a7e4bd93af9071a88c6fae9274b1977cb69e84b8a385b9a384bba483b9a181b79e7eb19977aa9170a78d6ab69d7bb19875baa9939a8266947a5eb19c84d4d8d5cdd1cebeb3a5c5b9abbcae9cb7a590b8a590a28c717d63478a735892785a886c4d755c3d6d54378b7155a88e72ae967bb59e7fb9a283b9a181b59d7db29b7db0997cb19c81b19b82a48865b8a07cb49b78bfb19d9d8569957a5ebcac99e4f2f7e5f8ffc3c2b8e2ebeadddfdfc6c5bcd4d8c9c0af9482684d99866d957e63897053866d4d7b6140856c4caa9072b09879b9a282baa384b19d82b8a58dbaa78fbdaa92bda88fbda58aaa8e6bbca27db79d77a69a81968062977c5fc4b3a0e2ebefe0f1f2b5b6aac0d6d1d8e3e9cfd6d3d8ecdec8beab866b509d8b729c8469937a5c9379598f75538d7351ad9375b59d7ebda687bca688bfab93c5b29ac4af94c2ac90af997fa08970af916fc0a580bc9f788781637c6c46977b5dcdbda9b8babfadb2a2bdb89ec8dcdcdbe1e0d1d4ced6e6dbcac1b2896f539f8e779c856b92795b9378588f7350917553b19677b89f81c0a88ac0a98c9b8973a3907ab29d85a5917b7b69557a6854b79873c7a983c7a77e636341706739947a59d5c5b4c6c7caa5a49cbbb393d1d7b4c1c7a8d1ccb6dbe4c4ccc4b48a6f549f8e779c856b947a5c957a5a937651967853b69a79bfa383c5ab8cc2ac8f8b7d6d998a79aa9986a3917f9484739a8773bd9c75d3b189d8b38522240b4447176f6432c6baa6eff0d7dce2b6c0ba92d0cf81a8ad75bcb88dd2ddb4cfc7b98a70559e8d769d866d957b5d987c5b997852997954bd9e7cd8b48bd5b794c4ae93a79888a99a8aaa9887ab9987aa9683aa937bc0a07be1bd92f0c79445402a4445187b6c3accbfaec5cc9d88974c9b9c7db3be76c7c880c2bf81d5e0abd0c8bc8c72579c8b759c866e91775b95795892724c967652bc9d7bedc291d1b08bb59f87b59f84b49e83b49d82b49c81b59d82b49c80b69d80ccab84efc593a0896c917f5c9e805fddcdc0bfc4afa3a957b0ae817a8d4cafb387c9c888e2e8bad1c9bf8c72579a887299846d8c72578e7353896a468d6f4cd1ae89ebbb82b79675a9907bac947da48c75a18a74a087709c846d9f856d96795bc1986bface94a5896ca2896ea08162dcccbbe3e2e0c7c0acbdb29fafa997afa596b5aa98cac5bfcdc4bb886e5596847097836d8b73598b70538869458a6c4bb0906cdcb5879f8c75806d54766149a28c73a59078927c62998167bd9d7e86613dc09569f7c89071583d8b6d4eb19981d0bca7d4c9bdb19c89ac9581b09984af9a83ac9682b5a595b09e8e8168508e79628d775f81684c7f62437b5c39765531835b35a68a6c897b67a28d77967b618e74556855374d38178f704fb088607f5731c49055d9ab6d816b58ac937ea78e76b49679beab97b39d87b19a82af9981ae9883ae9883ae9a859c836c8169549c8e82a79a8fa29387a19183a59487ae9d91beaa9fb6a8a0a89a8fc7b1a0c2a389664a2c493718503918a98763b08357805329ce95558f72458b6f5699806ba3886da38263b2987eaf967eb0977eaf9780ae9881ad9782a7917b8f755eb0a7a5c1c0c5c2bec0c6c1c2c4bebcc2b9b6c1b6b2c4bab5cec2bdd5c8c4d2c5bfd3c3baad9c9099897a867059b2906fcfa271a1704194673b9971495d330f82654ca4866b99785aab9077aa927ba89079a38a729d82699a7d628d6b4c967d69bdb6b4ab9e95aea29ab2a59eb5a8a0b6a9a0b7aaa0b7a89db4a398b19e91bda89bc4b1a3d7c2b4d6beadccb09ac5a588c39c77875b31663a1474481f683b168764479e7f6382614293705095704e9873519972509b7554a88569b29378b09a89aea299ac9f96a6978da29387a39285a7978aab998ca795869f867295785e937458927153a5876cb99e87b69a83ba9c819d7f645b381862350d6c4018683b16906b4ca883628d613ba47f60ae8f78b49886c9b7aadcd2cbd4cecbcdcdcfb5b1af9c8b7ea6988ea091869d8c80978577988576998575ab95808f715685664a83664b85664b8c6f56b29884ae947fb99c8295785f4a2b125229075a3310663a148f6e53bc997cc09a79d2baaad6c7bfe2d2c8e0d8d3cac7c5b8b8bab9b9bbb0aeae877c7394867c97877d9a8a7f9684769682749a8676c0ab9a977d667d5f467f614881634882654ba88e78ad947fb99d859679613f230c5027045a2f09633610a88364d4b499dec2aad5c7c1d4cdcfc7c3c7c3c4ceb2b0b6aaa9aab1b0b1b0adac9d969080766e8d7f75918074978577968375a49285bba7959c846e7b5d438062477c5e447a5d44a28771a98f7a9a7e67755b432d1a0c21100349260960340fb9916fbb9c86ab9d9ac2c4cfbfc4d3b9bcc9c5ccdcc5cbd9a8a3a4aca7a6ada9a6ada7a399918b776b638979708f7d72928075b3a298b49e8ba7907c75594080624674583e73563c8c7058765c455c432c422c19250f030a01000d030263361098775da69085aaa2a7bfc4d4c0c8d8bbc3d4c0c9dbc8d4e6b8b9c0a49c98ada7a4a9a29ea9a09b93887f72645c86756c95847bb5a293af9884b39c8882664d7c5e4272543b73563b674d3459412a644a3177593d775536613a1938170266380f8668549e8c87aca7adbcc3d5bdc6d9b8becfc1c9d9c8cedbcdd2dba9a19ea69d98a69e99a49a94a59a948f837b6d61598b7a70af9886ae9784b9a28d94775e6f5137684e37604831664c347a5c418c6a4c92705093725294735383603d62340b8c6d599c8b88a8a2a9babfd0bdc2d1bcbecac8ccd8cbced6d0d2d8b5aeaf9e928ca59a95a69a94a89c95a598918b7f776659529d887ab59c88b49c887d634c583f2a5f473074583d89694d906e509471519774549b795995725280552e60320a8366539f8f8eaea8adc1c4d0c2c4d0babac6c2c3cbc8c7ccc8c5c8bdb6b69d8e88a59a93a99c94a89a91a3958da0918981746d6e6059b59c89856c58573f2a71553c82644987684b8e6e509573549977589d7d5f906c4b88562889501c5d2f0880624fa49492aca5a9b8b8c4b9bac6b4b2bbbfbec5c2c0c5c2bec0bcb4b5a3918b9d8c83a69890a5968da4948ba29288a090858b7d74907c6c644b35775b4184664a8c6d5192735691725598765a98785b886240895424925924965e27582c05785b489d8c88a2999cb1b0b9b5b5beb3b0b7b3b2bbb2b0b7b7b0b2b0a3a3a18b84947c6fa6968ba7958aa69589a8978ba69489a08f848f7a6b85674d896a4d8c6d518e6f5294755897785c9273578559358c5525955d2a985e289d612a472509785d4c9b8882a69a9caeabb2aba7aea49ea6a8a3aaada5a9aea2a3ab9b96a78f849e7f6d9c8677aa998da89789a59385a28e81a49183a38f7f9a816c93755993745793735797785c8d6b4d85572e915828905a2b8e58289a602ba3682f49301e8064529b867f9b8d8d9f969ca29a9fa29699a49899a89b99ac9c98ad9a93a38b7e9d7d6994735ba28f81a59384a28d7da59181a59080a79182a18b7aa08671997b60997a5e8863438352268f5a298b57298753258e58279c642fa46c34"
+        },
+        "originalIndex": 2,
+        "duplicateOf": null,
+        "reasons": [],
+        "reviewedReasons": [],
+        "selected": true
+      },
+      {
+        "imageId": "S04",
+        "fileName": "inputs/images/S04.jpg",
+        "contentFingerprint": "87415c23564c8646f8f9fa949f3107c54801f39095c04287138ca0d4b5e86854",
+        "analysis": {
+          "imageId": "S04",
+          "imageIndex": 4,
+          "room": "Badezimmer",
+          "roomConfidence": 1,
+          "roomIndependentFacts": [
+            {
+              "fact": "Fenster",
+              "confidence": 0.95
+            },
+            {
+              "fact": "Fliesenboden",
+              "confidence": 0.9
+            },
+            {
+              "fact": "Helle Wände",
+              "confidence": 0.9
+            }
+          ],
+          "condition": "Sehr gepflegt",
+          "visibleFacts": [
+            "Duschkabine",
+            "Badewanne"
+          ],
+          "category": "bathroom",
+          "sharpnessScore": 90,
+          "exposureScore": 85,
+          "suitabilityConfidence": 0.95,
+          "suitabilityReason": "Sauberes und modernes Badezimmer mit Fenster und Tageslicht.",
+          "qualityScore": 90,
+          "titleScore": 80,
+          "suitable": true
+        },
+        "comparison": {
+          "width": 1448,
+          "height": 1086,
+          "samples": "cebfaadccab2ceb08dba946de1cebac2b09cc1b5a6c7bbb0cbc0b4cfc4b8d1c6bad3c7bbd3c6b9d2c5b9d2c5b8d1c3b4d2c3b4d2c3b3d2c2b2d1c1b1d0bfaecfbdabcab8a4beaa93b39d84af977daa9177a88f74b0997fbaa68ebeab93c5b29bd0c7b9cfc3b3e0d2bfb99a77ccaf92d4c4b4c1b3a4c8bfb5cdc4bbcec5bcd0c6bdd1c7bdd1c7bdd1c7bcd1c6bbd6cabdd3c7bad1c5b7d2c4b5d1c2b3d4c5b5cdbca8b49d83aa9278ae9579ad9478ae9477b29a7ebca68ebea991c6b29bc3b097d7d4cbd8d5ccd9d4cbded7cbb59675d8c4b0cabeb1cac2b8d2cdc7d2cdc8d3cec9d4cfc8d5cfc8d4cdc6d4ccc5d8cfc5d4cbc1d3c8bed2c7bcd3c7badacec1ccbba6ac9477a28a6da48c6f9c85688b7558a69074baa58cbeaa92b29d83a4896bbbb4a7c1bbafc3bdb2ccc8bebeb29fab9072cec2b4c7c0b5c4beb5ccc8c1d1cec9d4d1ccd7d4cfd9d5d1d9d5d1d8d4d0dad4cedad2ccd7cec6d5ccc3dad1c5cfbda8b89f82b9a389b6a38a806d526d5a40a89377b7a288a28b6e8f7859a08567b0a794b4aa97b7ae9bb9af9dc0b9a99c8263c0ae9ccac3b9b4a898b8ab9cbcb1a4bdb2a5bdb2a5bfb3a6c0b4a8c1b6aac3b8acc6baaec6baacc6b9abd9cfc3c8b59eaa9275b3a28aac9a829f886bb09778af977a967d5e987f60968062a78c6dbfb8a9c3bbacc3bbabc6bdadcac4b7b59875c4b09ccbc4b9bcb0a2c1b4a7c4b8abc3b7a9c4b7a9c4b6a7c5b7a8c5b8a7c3b6a5c5b7a6c5b6a4c4b6a7dbd0c4b9a68f8e785b917c608e7a5f8870537d65468168488d74549a8162978062ab8f70b8b3a6c6c3bac5c2b7c2bcb0c4c2b8b39773c5b4a2c9c2b8bfb3a4c0b6a8c5beb4cbc3bac8c0b5c6bdb2c8beb3c9bfb4cdc2b7c8bdb0c6baaac9bcacdbd0c2bba993988365988467917e637e6549745a3b7d64458a7153957c5c847055aa8e70b9b3a7e4eaf1e3eaf4dee6eee2ebf3b39878c8b8aacac6bec0b6a8c0b5a8d0cfced9dee2dadde1cac6c3c8c3bddbdbddbdbdaec0b8a5c6baacc9bcacdbd0c3bcab97a99d8da2947e9688757d6648765e3d8168498f7658977d5e907a5cad9273bbb6aae9eff6e5eef9e4ecf5e7f1fbb39a7ec7baaed5d4d2c5bcb0c5bdb4dde1e5e8f1fceef7ffd6d6d7d6d5d3eef4f89ba893b4b8a9cfc2b6cabdaedbd3c8b8ad9ec4cedcb2b1aeaaaeb1826b4d775e3c876e4f987f5f9c8364968061b2997abab5a9ebf1f8e9f2fce2eaf0e9f2faaf967cccc1b7e5e5e4c6bdb2c7c1b8dee2e6e8f0f8edf5fed4d4d4d6d2d1dae2d998a280a3a89bd2c7bcc9bfb0dbd5cebdb2a5cad4dfb2b2afadb1b4836c4f7b62408e7655977e5f9f88689c8667b4997bbebeb7e1e0cce1e0dfbdc7c5dee6ebaf967cdfd5cce8e9e9c4bbb1c8c1badddfe0e5eaf1ebf0f5d5d4d5d2cfcdbdc3b3989c70b2b4a2cec4bccabfb2dbd8d4bfb5aac9d0d8b1afabafb1b1806a4d7e6543796344745f42a08868a18a6db59b7ec4b8a7d2d3adaeaea2b6b8a4e1e5d5b39b80e3d9d0e8e9ebc4bbb2cbc5bfcbcdbee0e2cfd5ddd6c6c7b9c6c2bca7a98ac5be66c4c1a0cbc2becabfb2dbdad9bdb3a7c1c5c3b0afa9a7a69b7b6549785e3e644e3368553aa38b6ba08b6eb29a7eb69370be9f7aab957fbea781d1c087b19878e3dbd3d6d6cdc5bcb1d1cbc5a7ad8fa4a7738d9b7c9ca086cdc29fbab476b5ae58d4cea1cac2c0cbc1b3dcdddfbcb29fb2ad7ea49f8da9a7997c664779603e6651366451399f896ca18d70b29a7fc5b4a5c3af9fc2ac99bca694b19e8ab1a487c3bca0bdb9a2c6bbb2d4cec5b3af9ebab69dadb098b9b6a0d4ceb1ddd79cccc596ccc8afc4bab2c5b7a9d5d4d5b6ac9caca36f9b9275a19d8c7b684d7b624088704f8e785b917e639d8a6db7a087ccb5a0cab7a4c5b3a4cab8a9a3907570683b7b723da29c77a5967ab9a996b7a794c1b09fc6b4a3b7a796b4a698b4a89faea297a89b8ca4927ba18f7abebab7a6988895846d91826b84776275644c7b62418b7250917a5c8a785f9f8b70b39d85c4ac95c7b29ea19182a79482b0987d807150807249c1baa79f8e74a9957db3a08bb29f88ae9c85af9b83b09a81a69279998771a38e759a856c9a866fbdb8b6a698888873548d795a867359816a4c7d644388704f947e608f7c619c886db29c84b19474c7b29f9f9083b2a08db9a187ae947abfa48ad3cecda38f7ab19e89b09e89b6a591b7a591a79886988b7dac99859f8e7da8947d7a6c4e6b5e43b8b0aca597898773558e7a5e86755a80694c7d64448d7454947e608a765b9c876cb49f88aa8b67ccbbabab9d91cfbeaed6c1add2bda7d7bca0e8d7c7d5c8bcad9b8ba38b70a79278a992799f8e7a938372a28b719c88719a8267534c264a411fa79990a496888370528e7b5d8473597f6a4c7c64448d7554927c5e8b765a998569b39e86b89b7adcc9b7e0d4cbe2d8d1ece1d9efd4b8ecd4bbcec0b39a85769e8773c5bbb0c3b8aec5bab0beb5abc0b5aac1b6abbbafa4bfb3a5a7a1929e8971ab9686a7998c8f7e649a89708f7f6a7d674b7b6344876f508c75588d775a968166b29d86e3cbb3e1cebcdac8b8d3c1b0ccb5a0ceb8a3b1a1938b746291725bb29b8acfc3b7c5b5a6c1afa0bca998b8a491b09c88af9985ae9781ab9580a28c76a089709781688774588a7659837157786347755f3f856d4e8973568b785b958166af9981876e5483694e856a4f83694e7f664a866e5785674e8c6a4e95755ca48870b3987ba8896aa68667a181619a795a99795a987a5a997b5b98795a9175568e71528c7253816e50826d4e7c694f78644a755f40876f4f887356877357948065a891797756346b4b2a522f09583208563108724e2a916d4d8e6b4e9171579d8169b49a7fad9175a88b6fa385689c7e619c7e619c7f619b7f619c8062987b5e937658896f517e694b7e69497a674d79654b735e4081694b8871538c76588b785ba48e77967e66856e5951310d5a360b5b370d795430906c4a8e6b4c8c6d549c7c5fa98d71a6886ba385679f8062997a5c95775898795c93755693755795785a8e7050856a4b7a65477662437662477460456d583a7d64458872548a7558b5a28dccb6a4715c48705a444c2b0757330a5a340b754f2b956d4a88674a8e6d50987758997d5f9b7b5c9d7e5d9d7d5d997a599a7a589979569a79559878549b7b58977752886c497b6342846c4980694b796143745d3c6f583b806a4c8a7558c7b5a7ceb9a978634d76604b4c2c0a5631095732097b552f926c4c8a674b96714fa1805fa88967ac8b67af8e6bb08e6db1906db2916db2906cb3916eb1906db1906eb09271ae90709c8467937e5f917b5e8870518a7150816949755f41786548b5a291bfa7937c6651745e49492b0a542f095632097a54308e6b4e946d4da8886dd1c0b1d5c5b7d4c2b4cab6a6c7b3a4c8b5a8c6b3a6c3aea0c1ac9dc0ab9cbea797bda797baa492b8a391aa9989988873958066978163917a5c8b7355725d40998571c6ad987f695375604a482b0b512e0756320974502f946f51936c4ac4b1a1e6dfdbd1c0b5c7b4a6c4b1a2c3ac9ec4ac9cc1a896bfa693c8b9b5c7b7b0c5b3a8c4b2a5bfab9dbba898beab9ea6988d8c785e927b5f8e775b8f775a8a7152998066bda58f7e6852715c474a2d0e502d06563209775230936b4a987456cdc4c0beb3ada78b74ac8f78b2957db6977ebb9b82bb9b82b8977ac7b6adcdbebacbb9afc8b5aac4afa2bfac9ebba89abaa596b0967daa8e70a78b6ea4886a9f83649a7e5fae957c79634d6c58444c2f12512e0756320979532f94694599816da9aab2a1958e9d816ba98e78b0937cb4967dba9b81bc9c82b99678c2a997d0c2bfcebbb1cebaadcbb5a7c4afa0bfaa9cbda695bba18bb69a81b39578ae9174a487699b7e5f997d5f77624b6c57434d30144e2c0657330979522e956b487a6d638e8d939a85779c7f65a98b72ad8e75af8f75b69478b9977abb9778bb997cd1c0bbd0bdb4d1bbaed0baaccbb4a4c7af9ec6ac98c1a58cbda087b99b81b7987caf9175a88a6d92785d7b66506d58434f33144e2c065531087d542d86664a686564908887957b669b7c63a4856ba9886dae8c6fb28f71b59173b89372b58f6ccab2a2d4c0b7d2bbacd1b8a6ceb4a0cbb09ac8ac95c5a68bc1a286c1a388be9f84b5967aaf90739a7f647e6852705b4655381a4d2b05543108785028715f50706f728f817a8f725994765b9c7e61a78768aa8769ad8969b58f6eb6906db38a65c2a389d5c1b6d6bfafd3baa7cfb49eccb099caab93c5a589c3a286c1a185c0a185ba9b7faf9073a7876a"
+        },
+        "originalIndex": 3,
+        "duplicateOf": null,
+        "reasons": [],
+        "reviewedReasons": [],
+        "selected": true
+      },
+      {
+        "imageId": "S05",
+        "fileName": "inputs/images/S05.jpg",
+        "contentFingerprint": "951b69e4abacdb25ee744b4fb377c529f9685659c846b4facb453cad7ede7003",
+        "analysis": {
+          "imageId": "S05",
+          "imageIndex": 5,
+          "room": null,
+          "roomConfidence": 0,
+          "roomIndependentFacts": [
+            {
+              "fact": "Große Fenster",
+              "confidence": 0.9
+            },
+            {
+              "fact": "Tageslicht",
+              "confidence": 0.9
+            }
+          ],
+          "condition": "Sehr gepflegt",
+          "visibleFacts": [
+            "Haus mit Garage",
+            "vorderer Eingang mit Bepflanzung"
+          ],
+          "category": "exterior",
+          "sharpnessScore": 90,
+          "exposureScore": 85,
+          "suitabilityConfidence": 0.9,
+          "suitabilityReason": "Klares Außenbild eines Hauses mit schönem Wetter und Tageslicht.",
+          "qualityScore": 92,
+          "titleScore": 85,
+          "suitable": true
+        },
+        "comparison": {
+          "width": 1448,
+          "height": 1086,
+          "samples": "8b9e907694a98c8c5693a59583b2ef83b2ec84b2eb84b3ec84b4ed88b7ee8bb9ee8cbaee8dbcee8fbcee93bff096c0ef98c2ef9ac4ef9ec6efa2c8efa5c9eeaed1f5add0f5a8caf0a7caf0b2d0f0b7d2f0afceefbdd5f0d6e1f0c6daefd0dff19da58573919c76856f8594788aacc181b3f484b2e985b4ec87b6ee8ab9ee8bbaed8dbbee8fbdef91beef94bfef96c0ee9ac3ef9dc6efa0c7eea5c9edb1d6fc99b7d78190a3accdf0b2d1f0bfd6efc6d9efc5d9f0b7d1eec8daefc3d8f0bcd4f082855d6e6b36838e7086b2de86b4ed84b4ed86b5ed88b7ef8ab8ef8bbaee8cbbef8fbdef90bef092bff195c0f097c0ed9cc5efa0c7eea5caefb1d7fd87a0be676a74807a739eb7cfc7def7d9e2eee4eaf2dde6f1ceddefedeef2d9e3f1bed7f16d6a337b7d48898d608baecd86b8f487b6ed88b7ee89b8ee8ab9ee8cbbee8ebdf090bef093bff194c0f196c1f0a0ccf89fc8f1a6cdf4abd1f671859c5a585f928a77927d57909599bcd8f6bed6f0bcd5f0d3e0f0f3f2f2dce4f1c0d6f0c0d8f06965277d8a6e8aa7ac89aecf8abaf488b7ec88b8ed8ab9ee8cbbef8dbcef90bef092bff094bfef96c2f098c2ef7b9ab99ec4e89fc2e55a66784b464aa09e9bb6b1a49e8d6a8b816da8c1d9bad9f6bbd5f0c4daf0ccddf0c5daf0bfd8f0c5daf1707b5c90b7e091c1fa8cbdf38cbbef8cbbee8bbbef8ebdef90beef91bef092bff094bfef96c1ef9bc7f392bae0545155747b884f5563474042918d8ac2c0bbbbbcbeaba495958261959da3bfddf8bdd7efbbd6f1bcd6f0c2d9f0c7dbf1cbdcf0929a7a9abaca90bae292beee92bfef94bfee93bfee93bfef94c0ef99c1ee96c0ef97c2ee99c3eda5d1fc95badd54555e4a43464e474986817cb6ae9fc1c1c1bec0c1b5b5b4a092748c8374b1cae0c1dcf6bcd6efc1d9f0c5dbf1c9ddf0c9dcf0978c4b90967496ab9f9ac4f196c2ef99c3f098c1ec99c1ec9cc4ee9bc4ee9dc5ef9dc5eda6d0f892b3d25f636c564d4e574f4f7c7776bdb7acbab2a2c3c2bfbfc0c3bdbfc4aca89d8d816f99a4acc4e0fabed9eec1daf0c4dbf1c5dbf1c7dcf094956f8493858480379fc0d8a1c9f2a1c4e8c3d4ebd0dae8ced9e9cfdceba7c9ebacd4fa8ea6be5851515f55535d53506d6664bdb9b0c2c2be828c909a968ac5c6c7babbbdb0ada39887608b8575b9d1e6c5def4c2dbf0c0d9efc3daf1c6ddf28c90709ab3b49abbd1a6bdc9929a879b9e81b1d2f6b4d0edb3ceebc9d7e8d6e4f59dadbe5e55556f6e735a56585a5352b0aba4c9c5bec2c3c488a5c48f9497c8c7c6aeb2b57b796ea69b81907f60a1adb6cbe3f9c6dbedd5e9fbc3d1ddccd7e197b2c0a1afa399b8d179807170755c978d4e9eaca3a2c7eaa6cbefb2d6f8a0b2c45b514f4d4a4c625c5c564e4c9f9a96cecac1c4c3c0c4c6c7829fba8f959acbcacaa5aaaa5d615daeaba49d8e6b8d8b80d1e0ece6ecf2cac9cb958882bab1a3a7c9eea8c5d795b1c6657272757b6389844d929163afcbe3b6dafba5bace6a66695249495d5453534c4c89837cc9beadc9c7c4c6c6c4c5c5c59aa2a5989c9dcbcbce9a9d9c43463fb4b6b8a9a18a8b7d60c1c4c6d5d9df9a9187948781ae9b87aac1d0b8dcff9ab7cd5c675d70714f787646969361bfd9eca1b7cb615958675a565f55526457488a7c68c5bcaccec8bdc9c7c4c7c7c4c5c5c4c5c4bfc0c0bcc2c4c8b6b9b990938eb2b6b9b3b2ab94866793918ba8a5a0afaca7b1aea59d8f5fa5ad8ea8c0d56d7d77545d497570408380509c9b66a8aea7665d5e5c4f495d53466b5d43836f4caa8e5dcabfaed5d5d6d0cecbcccbcac8c8c7c6c6c6c3c5c7bec2c4bfc3c6c2c5c7babec1b5b8ba9d9683827963949087b9b5a5b1afaa7978439c9c567e7e6d414326625d289d8a29a191409389586154495b4f436f61478f7a54b1976baa946e9d8b6bbeb29ec6c0b7c5c1bcc6c6c8c5c8ccc5c9cfc0c3c5bec3c4bdc1c3babec0b9bdbfb7bcc0a7a496a5916f908b83ada77b8984437f805888862d7d7326625b146861088a7d109a87276c5c447b6a56998563af9976bcaa8bb8a990beb098a19784a791659b824d937e50927f5198875e9d8e6fb4b2aac1c4c7c3c7cac4c9cec0c5cababfc5b1ae95aca07ba19b75a099497d781fa29b4d8a895b8a8a6e76775870724d7470477772466c64449d8b73bdb0a0b0a89a9a9181aea79abcb5a9a49d92b5a78770653f38331c60573a937c469f8654bfbbb1c6c8cc9895828f8c769e9c8bb8bbbdacad90958f39918c3b747422827f26aa9f30a9a5969d9fac9a9ca7989ca9949aa78e929d8f8e908c867f7571608a897b5d5b4a9f9e99bbb7b2a29d95beb6a87b76653739315c5a4c948462a79674c0beb9c8cacc69654248431b655f40b6b8b6a4a68f60611d73721f5f611b7371266f6e20a19a84404243292c2a2e31312e32322427274c4c4e8a898334371c4e513b5355407d817faeadafa19b96c3bdb57f7d733d3f3b54513da29883aca08bbfbdbac4c7c783815955542f696751b6babaa8aa9a6969246967167a7523706f1e5a5e15aca180434a552d353c2e373f2b333b19202745484f7d7e7a282b0f3b3d2331341c383e3097999c9f9b98c3c2c17d7e79393c3a545446a49e96aca398bfbdbac4c6c75a5b453c412b565950b9bbbcb8b9b3535722494d09655f1d57541343440db7aa6c42474e2c33392c333b293038192027474a54818382272b153a3c28262a1525281b8b89899f9d9d9b999a5b574f3b4040535753727569747765bcbcbcbcc1c2999d9b91968f9c9c8bc5c3beadb0b22c30202124063334114741193f3f13b5a84b3b3f3c202932212a331d262f0e161d3b414b85888d3233263f3f30292a184542266a6b5988898e736e604242302b3438434a4934371d3d431dbabbbbbabab7b7b9b8a2a489959249b0ac6eb8b4a67574396b6a232d3011323118101704baaa4b5451442e333e2c333a2a3139252a303b3e434c4b4a2b2b193d392830301d43461a31370d5a6159868181636668383f42424548424140504f52a8a59d9d965fa49a5a595831323b0d70732da9a450676927676c2648481f1f1f12212511aba1459d91687978796d707a6b6d776669725e60664e4f503e3d3433301625270c20280b1b23003235275c5b5e706e7179747490897299906b9891668a8640555317827c38514d1f0d18062e37166a6b25615b2a504d2b7c724843412f45472bb2a74ca59a577f7e7a7274806f727c6e727b6d717a6c6f766b6e7463646758574e4646384746376b666194867bae976fb3a07992854b7d712e7873237d7b207b7728716d328f8a4678783b7072269e9b3ebab34ec1bb4cc0bc4996943d8b90379d9535ada258c4b5a6a39996a99e96afa39ab5a89dc0b1a3c6b6a5cbbaa8d5c2b0dec8b3ddc7b6d3bf9cb3a461877731b8a354635c23393a0b363b0d56591dafaa43bdb552c5c050c8c548ccc84acbc94abcbb3ea7aa32a8a23ca2953ec2bc4682832ab1a763dac69de3ceb1ead3bcebd3bcead3bbe7d1bae2ccb6e0cab2dfc9b2dbc6b0e2ccb8a08e6f635c1b7f782a8c8923535414393c0f363c0a6a682d9f9552999050827f417072376f7234777a3081862f747b217e80269e9c37b0ac3d96953ab3a85db6aa69cbbb8fdac5b5d1bdaccebcabd4c1afd4c0aed4c0aed3c0aed2beabd7c3b0d7c2b1b39f8f5f543c464114333309262b0832360b5550246e66305b59284b4d273c40285558307579336a70298a8c2ea8a73ca2a238a2a235a9a73e979248bbac86c8b695d4c1aed0bdadccb9a9d4c1b0d6c3b2d3bfaed5c1afd8c4b2dbc6b3d6c1ad9c918a68676b504e50312d24221e0d2e2d0a5d521f4c4b1d2f3113282a112f34194c4f17606027807e327b7c2885862f909035939235a2a4319b9549baac81cfbca5ddc7b5d9c6b4d8c4b3d3c0afd4c0afd5c1b0d7c3b1decab7dcc8b6dac6b2cdbba9a397908481828d8682776b646857445a48232e2d0d21250e272a15343512404413373a174c521c30390f363c10454c1444461c828518aea852d9c3b0d6c1afdac6b3d9c4b3d3bfaed8c4b2d2bdacccb7a7d5c1b0dac6b4d8c5b3d9c5b3dfcab7ddc8b5e4cfbbddc7b4bbaa9d877e7a57545437322c2f2a1822200e36390f3738112f340f2a320a32390e2a320d2e340f33371598982ec3b95ec9b78bd9c3b2d5c1afd4c0acd6c1b0dcc8b7d5c1afd4c0afd4c0afd9c5b5d7c2b1d9c5b3d8c5b4ddcab8dac7b6b8a89c978d899d938e9c9390817a7d6b6564554b452e2c172c2d09353a10262d0a2b33102e34113439143b4116"
+        },
+        "originalIndex": 4,
+        "duplicateOf": null,
+        "reasons": [
+          "ORIENTATION_REVIEW_REQUIRED"
+        ],
+        "reviewedReasons": [],
+        "selected": false
+      },
+      {
+        "imageId": "S06",
+        "fileName": "inputs/images/S06.jpg",
+        "contentFingerprint": "fb370f137ce97b004d5775b7f5f78d41112d0084284a7b5b8005734ec12eb3ec",
+        "analysis": {
+          "imageId": "S06",
+          "imageIndex": 6,
+          "room": null,
+          "roomConfidence": 0,
+          "roomIndependentFacts": [
+            {
+              "fact": "Große Fenster",
+              "confidence": 0.9
+            },
+            {
+              "fact": "Tageslicht",
+              "confidence": 0.9
+            }
+          ],
+          "condition": "Sehr gepflegt",
+          "visibleFacts": [
+            "Hinterer Hausbereich mit Terrasse",
+            "Garten mit Möbeln"
+          ],
+          "category": "exterior",
+          "sharpnessScore": 90,
+          "exposureScore": 85,
+          "suitabilityConfidence": 0.9,
+          "suitabilityReason": "Außenansicht mit Garten und Terrasse, hell und einladend.",
+          "qualityScore": 92,
+          "titleScore": 85,
+          "suitable": true
+        },
+        "comparison": {
+          "width": 1448,
+          "height": 1086,
+          "samples": "6a701a444e024e56088c8e3a8e963d515f105b650da4a0127a8c3c698c7878b6f28bbee484b8e572b1f776b2f576b2f576b2f577b3f67ab5f67bb7f57cb8f780baf780b9f780b9f685bbf786bdf789bef88dc0f88fc2f88ec1f890c2f795c5f766680d828406556105545e055b66096a7100768230899e808dafab77bbff6796c66787ad80bfff7abafc77b3f477b1f377b2f478b4f57cb7f67eb9f77eb9f77eb8f77fb9f781baf787bdf787bef78bbff88ec1f88ec2f98fc1f79ac6f79dc8f7555b0a676b0a8c9220898e0867866395b1889fbc9397b38e9cb69873b7ff6d81916b6057636e7f7faede80c2ff7bb7f878b4f37cb8f77db8f67eb9f67cb8f77eb9f881bbf884bdf788bff889bff88cc1f88dc2f994c4f7abcef6accff8abcff85053044c55026c7435a3b27e79a3a36fb1ff6dafff83b1c48ab9d26aa7eb8178639d885f67625f5b5253768ca781bbf381c1ff80baf685c2fd83c1fe7eb9f77fbbf781bdf785bdf788bff88cc1f88ec2f890c3f89ec9f7a1cbf7b5d5f7ecf2f7637a6058682261742e75843e779e9c72b3fd72b1f174b2f778bbff6e92b2907952af9f7eb2aa9d5f5d5e5c4e496a696f7ca1c78bcaff6690b96b94bd86c2fd83bdf686bff789c1f88cc2f88ec3f790c4f795c5f79ac8f7add1f7dde8f5dfe5ec59756363703f65773b768e4f87b3be72b4ff75b3f47bb7f677b7f67a7f7da08963b4b2acbdb7ae979184575555615451635652717f91464d578088938cc7ff89c0f58cc2f88dc3f791c5f790c5f799c8f6a4cbf6bbd8f6f2f3f5f5f5f6e5edf56b8d8c627337798e748ba07a8ab7c477b7ff79b5f27dbdfe71a2cf877758ab9f88b9babbbab9b9b8ad9c978d795c57586b5f5c6558526056539298a292c8f88fcafe8dc2f591c4f695c7f899c9f7bad7f6e0eaf6d8e5f5e3ecf6d2e3f6bbd9f8888f595a6b246683596b804487bbda7ab8f87eb9f480bffe758d9f97866bb5b2abbdbec0b4b2ab98917ebaae9a968f835953527367637064616f625e77767c90b3d59dd0ff99c9f69ecbf7a7cff8b2d4f8b8d7f6b1d4f8a6cef6a7cff8aed4f98d80278ea7a17cafd382a6a28dc1f881baf483bffa7cb5e9817b6ba8987bb7b5b0c4c3c28b8980566b7eb5b4b1c0b39d837e745d54537769656d65647971706f5f5b8999aba5d4fea4cff8a3cff8a2cef9a3d0fbaad2f6aad5fbb1d6f9b9dbf8908940aabdbfbbd8ffdce1f1eaebeed2deefaad1fc87a2ba968361998e7677766bc9c8c58b8e8f5e717cb8b7b3bab3a8bbaf9b75726d645a587868637e7e837e787a6f5d558e9baca8d8ffa3d0f9a4d0f9abd4f99badacabbebe9dadaba4ad9d858129a1a36dacc6e0c3d3e9dce1ede6eaf0cedcf18e8b84ac9a7c949490616760cbcac9898c8c53553fb7b6afbbb9b4b6afa4ac9f866e69626e63627f706a7c716d7a6d6970625d93a3b5addafeb0dcffa1c2d864684a958d49928746a1915a7b772a8e8b489cb2aba5d8ffa4cbf2add4fb9fbcd68d7d63bbb19f96999b636b67c5c4c3a2a29d9c9c92bbbab8bab8b4b7b4acbbb2a1b1a2878d7c5e80736580726a82746f7d6f6b7c7271a1aebdbfd9e995abb0646f5f817a3db89b42bd9f388a843a8d88439aa4867f89938d9198a5bace8b9da89b896dc0bdb8aeafaba9a8a1bdbdbdbcbdbabebebcbab9b8b9b9b6b9b7afb9b5adb8a483ac905ea38c65a28a6987776581736c8075728577749c9b9a666c5063694a9786479c882c7b711a827e2e8c853181733d91827cd5d3d6afadae887c6baca18fc1c1bfbfbfbfbfbebeb9bab9b8b8b6b7b7b5babab8babab7b8b7b2bdbab2a89f8c9f8d6dbfa57cc0a375bb9b6fa98e69937f67817368847776767773605b28ad8e306f67155a5a158b852a817826a89a6ce0dddeccccc2aaaeb08a7b64b2aaa0c1c5ccb1b6beb1b6bcb9b9b7bdbdbcbebebdbabab3b4b3abb7b6b1bcbbb4a19e93bcb2a3c8bba9ccbba4cdb799caaf8ac4a67cb3966d9c84638d7c6b84734d776a166d6710877a1f837e1e8c8324d0c59caaa272a19849bebfaba3a0839c95848a7f647f72499b947dbabbbe8b8875706b485f59347a7864b9bab6bbbab3a8a59ec0bcb5bdb7ae8e8270a69989bbad9bc7b7a2cdb79bd4b693b69d6b5c5831615d208b7e2083761b707118938c28a7973e646216897f2b8e864a686829aa9a6460502a443910a19a86bbbcbf636453302d043f3e196a6951b9bbb8bab9b2a9a69fc3c0bcaca79b3d2d0b53481e716747c5bdb5928870a79882a69e88454711726e2762601e736b1c5d5d15827c247c791990882aa09139786b29717062b7b1a6605a483f3c25a7a59fb8babd6c6f613f390f4444226a6943b6b7b4b9b8b2a7a49cc3c1bdbab4ac382b0d585124706a4cc8c1bf66653d79715ac1bba69e943d7b762e615f23606124787119776d1b5e5f0f7f7b25777327494b1b575c5695969f6b6b63434238a6a6a4b2b5ba6f7268594e1f2e34234c503fb2b2b1b3b4aea9a69ccbc6c0c2bca2584d253c3923676552cfcac6626346867f70c1b9a3786e2c5c5a29192300202a0c73681f594f1766631e3e42190a170835361443431d585b5c5f67672c34138e9393aeb2b6868a8380817180857e888d8ca8acaea8aaaabab8b4c1baaa8d814f92854e3a3822696957b4ac9b73703f857d5ba89e645f561d40411535370c2529062f31113d39193838170e16041a1d0741420b1a200841413d595e5d2c2b0a7a7f7e626e5356603f4b572d6f7b6b9da6b0a0a6af9fa3a3b6b09ac9beae7e6f4e6a59295048336a6658a89785826f56867a64a2977b8c806b6d5e463230145851208c8254877c5d867b66706b69666460272e1a3034345e5d654f51393a3b14484d3d2a391a39421f1e31032f40287580846e786f6d724778762daaa56992877b665a4d847b6f6f6e67887564705a47544332524334735d568c7c5b7576216c6624a89c6c79785d60694a5a6540525e3b4f593e555e4e4e54432f38141f250f1c1f0d242d14212e14102203213015323d222a360d252d0c3f4414797531827454ddcdc0eddccdcdc0b59d8f82695a4d6d5e4f736354877669c4b6a4e9dfb8b1a8959d933875772b606f0f5e6c1352620853620b51631247591144551040520f404f1333430b2b3c082c37113b411f303614252d0e44411c7a71288e832aaf9747e3d0bde7d9d0c6bab0a79c92887d717b7166827971b4a79ae6d9cff2e4e2f0e3dab4a846bbad49cac251acab3fc2c168b0b1469ea130aeaf33b0b23db1b439abaf34a9ae33a7ab32a3a82f9ea330b4b43bb7b43ca8a234a69e39988d37c1af6bddcface7dccdede0d7f4e7e4f3e5e6efe2e1dfd3cfc9bebaafa8a6b5aca39490649c9932ac9e48909127a6a45df8e4bfe2ddb19c9c3edbd48dabad40b1b232c6c245c1be44c2bf3fc2c23fc1c13dbaba35bcbd33bdbf34c1c234c5c536bebf33b9b832b6b33cbfbb4ec8c168d0c883dad0a1cfc3aaa79e97a69fa6afa4a14a4e21b3ae72cfc18f7f86319a923dae9b45e4d8b1c5ba79e5ce95c7c484a5a739999c3d94962fb8b73eb3b135b2b331bbbb3bc1c03fbcbd36b9b931b8b72db5b62fb2b328b8b730bebd2fb9b722aaaa1ba8a81fa3a22aa09d3baeab5c949267404021a79d58c1b277848a434f5c017d7e18cdbc83fbeecabcb266a8a7408d932b848925999c37a6a550a19f41b4b431b2b32d9ba0269ea22bb9ba33bdbd36999c2989901f979b25868b1c757d19636e165664145866115f6d13576508636e086670127c7e3081843c536116717b1870761e9a8f3cd5c18bbab97391981480821f9995407c7f2f8c8a34969840a8a944a1a034727816677115969a26727c1858661355641266701a7e8325606b164f5f0e485a0e4a5a10516015566416898d229a9c22747e2a5b631d4357085b6709404e055a620b80833596993f787e1ba1a524767728595d21737221888631848a399294338f92328186216670193d4e0a4d5c0e556112616d166d77196671154d5b0e44521070791a5d67144c5a134c5a0f5664113e4f05606f11546d023c4f05364301545c176f7a2b7c8705858c3b696d1e8d8e3b767a346766259592475c6224969737a5a82b636c1045510a626e1a7078237c82167d850ca0a516888f1c616e104c5b0f5b691079821d4c5a133b4e0b4f610d4f5d189ba249747b2b1b2600555a2a7a873b485801657506adb05aa29d5f9c9a377f81265c5c28777734777639aba462afa736aaa9298f92209c9e20b7b344b0ae36797e18636d0e4a59084051054e5f065c6a0b57650f45580c3f500e3e5009"
+        },
+        "originalIndex": 5,
+        "duplicateOf": null,
+        "reasons": [],
+        "reviewedReasons": [],
+        "selected": true
+      },
+      {
+        "imageId": "S07",
+        "fileName": "inputs/images/S07.jpg",
+        "contentFingerprint": "cc0e19e59df8e2cb9717341579c411a4e67b513de5dd0cf8e7c61af420ab892d",
+        "analysis": {
+          "imageId": "S07",
+          "imageIndex": 7,
+          "room": null,
+          "roomConfidence": 1,
+          "roomIndependentFacts": [],
+          "condition": "Klar und gut lesbar",
+          "visibleFacts": [
+            "Grundrisszeichnung mit Möbeln"
+          ],
+          "category": "floorplan",
+          "sharpnessScore": 100,
+          "exposureScore": 95,
+          "suitabilityConfidence": 0.95,
+          "suitabilityReason": "Klare Grundrisszeichnung gut geeignet zur Planung, aber keine Wohnraumansicht.",
+          "qualityScore": 85,
+          "titleScore": 20,
+          "suitable": false,
+          "roomCategoryIssue": "ROOM_CATEGORY_UNCONFIRMED"
+        },
+        "comparison": {
+          "width": 1448,
+          "height": 1086,
+          "samples": "fefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefffffffefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfefefefefefefefefefdfdfdfdfdfdfbfbfbfcfcfcfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfdfefefefefefefefefefefefefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6f6f6f4f4f4fefefefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefefefefefefefefefdfdfdf5f5f5f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f3f3f3f3f3f3f7f7f8f9f9f9f9f9f9f3f3f3f0f0f1f5f5f4fbfbfbf1f1f1f2f2f3f2f2f3f2f2f2f3f3f2f3f4f4f2f2f3f2f2f3f2f3f3f2f2f3f2f2f3f3f3f3f3f3f3fcfcfcfdfdfdfffffff4f4f48687898081828283848283848283848384858081827f8081c9c9c9dadadad3d3d38f9091777879adadadecebea9091927e7f808383858283858081837d7d7f8283848383848283848383848283848384857a7b7ddddddefdfdfdffffffedeeee959697d7d8d6d8d8d6d8d8d6d7d7d5dbdbd9bfbfbea2a3a3eaeaeac7c7c8d4d4d4e2e2e2cdcdcebcbcbbf0f0eeb3b3b2d2d2d3e0e0e0e0e0e0b1b1b1979898d3d3d1d1d1d0d2d3d1d2d2d1d0d0ced9d9d7969798cececffefefefffffff3f3f3d3d3d3eaeae8e4e4e2e5e5e3e4e4e2e7e7e5e8e8e6c8c8c6eaeaead3d3d2d8d8d7eeeeeee4e4e4c3c4c2f2f2efbdbdbde5e4e5f4f4f4f5f5f5bcbcbca1a1a1e7e7e4e3e3e1ebebebe9e8e8e4e4e3eaeae7b9b9b8dadadafefefefffffff4f4f5dadad9dfdfdddbdbd9dcdcdadededcdfdfdde8e8e5cececde7e7e6ebebe9e9e9e7e1e1dfc2c3c3c0c0bff2f2efbebfbed9d9d7e3e3e1e2e2e0d4d4d3a5a5a5e4e4e2e5e5e4f4f4f4f5f5f5e9e9e9e3e3e1dddddcf1f1f2fefefefffffff4f4f4d7d7d6e1e1e0e4e4e3e1e1dfe5e5e3e0e0dee8e7e5cbcbcae7e7e7e7e7e5e9e9e7dddddcafafafbebfbef2f2f0bfbfbed9d9d9e9e9e7e8e8e6dbdbdaa7a7a7e5e5e3e9e9e8f7f7f7f9f9f9ededece4e4e2dddddcf1f1f2fefefefffffff5f5f5dbdbdae1e1dfe3e3e1dcdcdadededce0e0dee8e8e6cccdcbe6e7e6e8e8e6e7e7e5e6e6e5d4d4d4c2c2c1f1f1efc1c2c1dfdfdfe9e9e7dadad8c8c8c7a7a7a6e5e5e3e9e9e9f9f9fafafafbededede4e4e2dadad9f0f0f0fdfdfdfffffff0f1f1c5c5c4e3e3e1e0e0dee3e3e2ededede6e6e5e8e8e6cfcfcde8e8e7e7e7e5e7e7e5e8e8e6dcdcdcbebfbeeeeeebc1c1c1dddddde6e6e4e0e0ded7d7d7a8a9a8e5e5e3e4e4e3ebebebececece4e4e3ececeaaaaaabd2d3d4fdfdfdffffffefefef8f9091d1d1d0e3e3e1e3e3e2e5e5e4e4e4e3e8e8e6cececde2e2e2e9e9e7e7e7e5ebebeadfdfdfbebfbdebebe9c2c2c1d9d9d8e2e2e0e7e7e6dfdfdfa9aaa9e5e5e3e3e3e2e0e0dee0e0dee1e1dfededebb8b8b8dbdbdcf6f6f6f0f0efdfdfdf848485bfbfbeebebe9e6e6e4e6e6e3e6e6e4eaeae8c0c0bfbabab9d2d3d1e9e9e7d6d6d5bdbdbdb8b8b7f0efedaaababcacac9e7e7e5c8c8c8b7b7b89c9c9ce8e8e6e7e7e5e8e8e6e8e8e6e8e8e6e7e7e5dcdcdbf1f1f1f1f1f1bdbdbcc8c8c7cdcdcceaeae8e6e6e4e7e7e5e7e7e5e6e6e4eae9e7d2d2d1b7b7b6cbcccae9e9e7cacac9b7b7b6d1d1d0eaeae8c3c3c2cccccbe8e8e6c6c6c5bcbdbbbbbbbae3e3e1e7e7e5e7e7e5e7e7e5e7e7e5e8e8e6dbdcdbf1f1f1f3f3f3c1c1c0cfcfcee1e0dfe9e8e6e6e6e4e7e7e5e7e7e5e7e7e5e7e6e4eaeae8efeeede5e5e3e1e1dfe7e7e5eeeeece9e9e7e6e6e4ededeaebebe8e7e7e5ecece9eeeeebeeeeece3e2e0e3e3e1e4e4e2e3e3e1e1e1dfe8e8e6b2b2b2d9d9d9f0f1f0e1e1dfdbdbdad9d8d8e7e7e5e6e6e4e7e7e5e7e7e5e7e7e5e7e7e5e8e8e6e6e6e4dededce5e5e3e9e9e7ebebe9ebebe9e9e9e7e6e6e4e6e6e4e7e8e6e4e4e2e3e3e1d9dad8e0e0dfdfdfdde9e9e9efefefebeaebf5f5f5a5a5a6cececef1f1f0dddddbd8d8d6d5d5d4e2e2e1e2e2e0e8e8e6e8e8e6e7e7e5e8e8e6e3e3e1d8d8d6e2e2e0d3d3d1d3d3d1d2d2d1d1d1d0e0e0dee8e8e6eaeae8d8d8d6c3c3c2e9e9e79697978788888f8f909191928f90918e8f9091929378797bd7d7d7f1f1f0dfdedcdadad8dcdcdae4e5e3e5e4e2e5e4e2e4e3e1e4e4e2efefedc1c2c1b8b8b7e8e8e6b7b7b6afb0afb1b1b0a3a4a3bcbcbbededebe8e8e6d9d9d89f9f9facacacababaadddddbdcdcdadbdbd9d6d6d6d8d8d8dfdfe09a9a9bcfd0d0f2f2f2d1d1cfcdcdcbd4d4d3e5e5e3e2e2e0e5e5e5ebebebe1e1dfececeac4c5c4cbcbcaeaeae9eeeeecf0f0eeebebe9eeeeece6e6e4e2e2e0e6e6e4e7e7e5e0e0ded6d6d5e1e1dfebebe9eaeae9eaeae8ebebeaededecf4f4f3b5b5b5d8d8d9f0f0efe0e0dfd5d5d5dbdbdaeaeae8dfdfdeeeeeeef9f9f9e3e3e3ebebe9c4c4c3cbcccceaeae9e4e4e2e5e5e3e3e3e1e0e0dee5e5e3e3e3e1e4e4e2eaeae8e7e7e5e3e3e1e6e6e4e5e5e3e3e3e1e5e5e3e6e6e4e5e5e3e5e5e3ddddddf2f2f2f0f0f0e3e3e1dddddbdbdad9eaeae8dfdfddececebf7f7f6e1e1e0ebebe8c4c4c3d6d7d7f0f0efe5e5e2e7e7e5e9e9e7dbdcdaa4a5a4e2e2e0d1d1cfa8a8a8b7b8b8e6e6e4e7e7e5e0e0dee6e6e5e3e3e1e7e7e5e8e8e6e7e7e5dddddbf1f1f1f2f3f2d1d1cfcdcdcbdcdddbeaeae8dededdebebebf7f7f7e0e0e0eaeae8c4c5c3d5d5d6efefede3e3e2e3e3e2e9e9e8d4d5d4b0b0b0ededebe2e2e1c8c8c8b6b6b7eaeae9e4e4e2e2e2e1f9f9f9e6e6e5e6e6e4e3e3e1e5e5e3dededcf2f2f2f2f2f2d4d4d2d0d0cee0e0dfeaeae8dededdecececf7f7f7e1e1e1ebebe9c4c5c4d4d4d5eeeeede4e4e2e1e1e1ececebdcdcdcb3b3b3e9e9e7e6e6e4d6d6d5bebebee9e9e9e5e5e3e2e2e1f8f8f9e6e6e5e3e3e1dadadae6e6e4acacacd5d5d6efefefdcdbdad2d2d0b0b0b0e8e8e7e3e3e2e7e7e6ebebeae2e2e1ededebc5c5c3cbcbcce9e9e8e6e6e4e2e2e1ececebdcdcdcafafafefefeee7e7e6d1d1d0bfbfc0e9e9e8e5e5e3e2e2e1f4f4f5e2e2e1e8e8e7f2f2f2f9f9f9a0a0a1cfcfd0fbfbfcfdfdfde8e8e8959696ececeaebebe9eaeae8eaeae8e9e9e7f2f1efc6c7c5cdcdcdececeae5e5e3e1e1e0efeeeddbdbdbb9b9bafefefeebebe9d0d0cfc0c0c1ececebe5e4e2e4e4e2ededede3e3e2edededf6f6f6fefefda5a6a6d0d1d1fdfdfdfffffff2f2f27a7a7b8485868787888585868585868485858687877b7c7c767677aeaeaee0e0dfd8d8d692929378797a7d7e7f8b8c8d9b9c9cd8d8d7848485999a9ae2e2e1ababac7f80818687888384858182838485856f7071d6d6d6fefefefffffffbfbfbd4d4d4cacbcbcccccdcbcccdcccccdcbcccccccccccdcecfcacbcbdcdcddf2f2f2efefefd1d1d1cbcccccececfc8c8c9d1d1d2efeff0d1d1d2d4d4d4f4f4f4dcdcddc9cacacccccdcccccdcccccdcccccccececef4f4f4fefefefefefefefefefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefefefefefefefefefefefefcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfdfdfdfdfdfdfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfdfdfdfcfcfcfcfcfcfdfdfdfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcfefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe"
+        },
+        "originalIndex": 6,
+        "duplicateOf": null,
+        "reasons": [
+          "ROOM_CATEGORY_UNCONFIRMED",
+          "UNSUITABLE_IMAGE",
+          "ROOM_OR_CATEGORY_UNCONFIRMED"
+        ],
+        "reviewedReasons": [],
+        "selected": false
+      },
+      {
+        "imageId": "S08",
+        "fileName": "inputs/images/S08.jpg",
+        "contentFingerprint": "f3f594eda322f5d0c3e832505d3a358b857fcd710896abcb001d07a47e926c4b",
+        "analysis": {
+          "imageId": "S08",
+          "imageIndex": 8,
+          "room": "Wohnzimmer",
+          "roomConfidence": 0.9,
+          "roomIndependentFacts": [
+            {
+              "fact": "Große Fenster",
+              "confidence": 0.9
+            }
+          ],
+          "condition": "Sehr gepflegt",
+          "visibleFacts": [
+            "großes Ecksofa",
+            "moderner Couchtisch"
+          ],
+          "category": "living",
+          "sharpnessScore": 90,
+          "exposureScore": 85,
+          "suitabilityConfidence": 0.95,
+          "suitabilityReason": "Identisches Bild zu S01, attraktiv und klar für Titelbild.",
+          "qualityScore": 90,
+          "titleScore": 90,
+          "suitable": true
+        },
+        "comparison": {
+          "width": 1448,
+          "height": 1086,
+          "samples": "ccbaa6cebca7cfbda8d0bda9cebca8cdbba5cfbba2d0baa2cebba4cebca7d0beaad0bfaacdbfaecdc0afcec0b0cdc1b0cbc0afcbbfafcbbfafcbbeafccbfb0ccbeb0cbbeafc9bcadc7baaac7baaac7baaac7baaacabdadc7baa5cbbba7c6b29ccfbcacd2bfafd4c2b0d3c1add2c0acd2c0add2bfa9d2bda5d2c0abd6c5b1d8c6b2d7c8b7d8cbbbd9cdbed7cdbfd7cfc0d7d0c1d6cfc0d6cec1d6cdc0d3cabed3c9bdd5cabfd4c7bacfc3b3cabdaec6b8a8cdc0b0cdc0b0cabfabc4b29bbfa88ed4c5b6d6c5b7d7c8b9d7c8b7d7c7b4d6c5b0d4c1aed4bdabd2beaad5c2aed9c9b7dbcebee1d4c6e2dacee3dccfe0d9ccddd6c9dbd3c6d7cec2d4cbbfd2c9bdcfc7b9cbc3b5beaf9fad9b89a69582b9a997d2c5b5cfc2b3c5b5a0bfaa91c9b5a0e1d6c9e2d7cbe3d9cae3d7c9e6d8cae5d9c9cbb7a1c0a892bda68fbea790af9880ae987fbeae9cc2b7a7c1b6a7beb2a3baaf9fb8ac9eb7a99cb5a899b4a696b2a594b5a898b09e889a856b9b8770bbab99d3c6b6d0c3b3c1af9bc0ad95bca78dd4c6b8d9cbbfd8cbbed7c8bcd7c9bbd7cbbdc1ae98b8a188b7a189b8a28aa89176af9a7fbeae9ab7aa9cb9ab9db8aa9bb7a99ab5a797b4a695b4a696b4a698b5a898bcb0a0bfaf9aa49278a5927cbfb09ed4c7b7d0c3b3c3b39fbeab92baa589bba893c0ac9dc0afa0c0b0a1c2b3a3c7b9a8bfab95bba58cb9a38cb8a28cac977bbda98fd8d0c0d3ceb4cecab2c4c0a9cdc9afbeb7adbfc2b7bcc0a5d8d7add9dac6d7dbc3c6b9a2a6947ba6947dc2b2a2d3cabbd0c5b6c5b6a4c4b79ebbac91c5b7a8d5ccb5ccc1added9cfdedfdacecfbfc0ae94b7a189b8a086bea386b7a083cabba8d9dbc4bdc598c8cb9dc7caa4c4c6a2bebaa5bec9b4d8dfa8dce3a4eef0c6bfcba3c5bdadac9a80a7957ec2b4a6d1cabdcdc6b9c4b7a5bdaf94bfae96cdc4bce3e2c7cac5acd8daccf3f4dcd6d9b4bbaa8fb39d87c9ac8dd9b288d0b597dacebfd6d9c7909b79a5aa83bbc190c7c7949e9e8799a879ced68adade95dfe195d5d9a0ccc4b8a6957a9f8e75bfb2a3cdc5bbccc3b9c0b4a2a4987dc4b39ccfc9c2d4d1b8b5af99d2d3aed8d899e4e0a1c3b193b49e87c5ae91d1b695c9b194d9cebfe1e3d3a8b18d87906c909971c1c38fb4ae8ec0c78bcbd484d5db8cd0d585d3d69bc9c2b7948668867959a39982bdb7afc6bdb6c0b4a6918771bfae94d7cfcbe4e4b7c8bf93d2d3a1aab578bfc38fbeab8fb8a189b9a490b4a490b39f86d7cbbfeeefddb1b9908a9168a4ab71d1d48fb8b290c6cf8fcbd085c8cb83d4d88ed8dba1ccc5b97b72525852307f775e9c9990c5bdb1beb2a5817763b6a58acdc4bbc3c68fbfbb81d2d59fb4bd89a8af81b9a68bbca68eb9a38cb6a08cb59f87ddd0c4dfe2d3b6c28ca8b173acb57595a16fa3a3859cac71afb674aead7aa7ad769aa67b9d9a875a5434403a2067604a908d7fbbb0a1b8ab9c82745fa7957a726849706e39c2bd97dfe1b1d7daa19ba47bae9f84bfa890b9a48cb6a089baa58be4d8cbe5e4db92a07262744362794a5d7349969a8375855f858c65a6a877909b5d798668908d7c5851354a4229504b2e6d66478c816a867c65a0927dbdad9ba29781c1c59ed4d0b4dbd4adf1ebbcd5d6bfbcac96bca58cbaa38bbea890c7b196f0e7dbf8f6ee9ea48a71806555674a546546888978687558ced097d8dba2cfd49edaddccc5c1b77a6d527163477f755c615b404942278e826dae9d8db39b849074589b81678f735ba8896cc8b996eee5cecebaa8c4ae99b7a693a59681b4a590bdaa97d0c9b6e8efcbd3ddafc6d3a4b8c696b8b491bac389acb080bcb790c8c5bdc2c2c4cdc6c1a18e77917d65c3b8a99c968a837561cfc7beac9c8a907457aa9481967960907c659d86709e876fbca690d0c0afb8a490a18d7a5948369b8c7b927d65a18b769d8c74e5e9b7ecf5b7dfe4accdc9a3c5c59cb1ad92c3c699c2bfb2999b9fcac5bfa28d7997826cc1b4a7bfb1a69a7f64bdb4abbab0a6beaa968a7359594e39786e586f624b81664bbba38dd0c2b1c3b19f98816b4c3b2988745f8c7f6c968472a09085e7e8e8d8dbd69a9786867f696d6a53a6a594d9ddd4c1c4c4a2a4a8d0cac79684717a6652b0967eac927a866649765536907d6db8a3927b6247291e0a3b30196e67516552389f8468d3c3b2b9a795907a64847361a49383b7aa9dc6bcb4c5bdb9b9aeabbcb2b178716426250f2c2813766b58c0b6abbbb4afbeb8b8c4bab5968470745e47a28367ad8b6ba78669a97f5bc09975c29b7491765c705d474a3f2a766c56716851765c41c3b09fcabaacd2c3b2d6c6b7d4c5bab0a1917e674f7860477f6b5784725f7e6d5c403523696866a7a6a7c9c6c8d5d2d2cdcacdb7a699927b66644f389e7b5fa882669b76569b7351b88a61d1a069b3997db2987db69d83b9a38cb09d89aa9783c1ac9bc9b6a4d0c0aed8cabfd4c9c09d90855e462f7e6e62bcc3d3b2b4bb9f9da1725c469b9394c8d3e8d5d9e1e4e8eedbe0ebc4bcbaa5918172583f99795ea680639a7455956a489d6b459f6f498a6e51886c4f896d508a7158927a63a6927cb8a592bfab98bfa998c2b1a4baaca17d69574f3c28b8bccbafadb6684f3a62503f5d4a35594c42b0b7c5cdd2dbbec0c6bfc5d2bcbac3b5a197a78e7c8e7c6fa689749b7252936947a26f4898653f856a507f654a81664b826950826c5489735cb9a696cebbadc5b3a5a59282ad9f9262513a807878d2daf2c8cfe67e6d69482b1344260b5e4532bbbfceccd0dcb3afb2b6b6bdb7b6bfb09f98a68d7b99827277685c9471579466439c694396643d886d5281664b84684d81694f826c548c765eb29f8cbeab9cab988aad9e918d7e6d7b644bb2a2a1b7b4c1b4b3c4b0afc2998c91865c41a4928ec3cadfcbccd9b9b0b1b8b0afbbb5b7b3a6a1a58b77a78971846b58665447926c4d9b653d97613b83694e85694f83674c7f674d806a528d7860a18d79a08b7aaa9b8c9b8f83806e5d826d585d46335a46355742355a483b594c43543e2f5743335e4b3e6551439b8b83b5a8a4b5a8a1bbada6af9481ac896eae886a7b604a65503da3714b965f367d624884694e7f64497e654c806a538f7a62988370988474a79a8c776c5f9787797f7267776d646964626b645f666363615e616563676a6769756d6a69615d84776fae9d96ae9e95b9a89ebda495b69072bd906dba88616d513c674f389c6a44795f4482664c7c61467f664d806a528e7860a08d7ca594877f73688a7e71a193887a6d6367605c675e5962554a584f485b534e6258526f635b8b796d756f6b7e7269ae9d93b09e94b7a296c2ac9ec29d84c2926ecb9266bc85575a412d61442d7b6043816547785e427d644b7d68508d775fa995838273666e635697887b998a7f6d6158574f4b6c5c4d5e4d3e54463858493d5b4d406c5a4a856d5675695f897b729a877a9783739a86769f897bb99c89cc9d78d0996de19f68bc88593f2f22896a4b8e7050795e407b63497c664e927c669381726a5d5190807294827491807260564d3c362f4a3c3140332740362942372b483d315545366f5b478b78687e6b5a7864517f69578d7867826c597d6751a38163cc9971d19664e19f638e684573593a86694d826647856c4f826b528e796270625589786a9d8b7d9886798e7b6d806d5b705d4967543f63513c5e4c385a493656463450402e645444725f4c6c56436f5a46735d48735d48766049735a4371573fa57f5cc99369cb905fcd905b4739284a3b2a503f2f574636614f3d6657477c6c5e937f6f968274958273917e6c89735c8b735a8b70578a6f56886e55886f5688705791775d836c57614e3b614e38614b35644f376a543c665037685239664c356f5238ba8c64c89163c288583d301e3b2e1f3b2e1f3b2e204638297d6c5d97857395846f9b87759c8674977f6b8e745b8e72578e72578f74598d71568e73588e735894785e715b4757453158442f5a452e59442d5f49325c452d5a432c5b442c5a4129967250cb986cc48e5f755f45745d447961477e664c927a629c85729c87749985729c85729b8571957e6590745990755a957a5f93785d91765b91765b94795e94795e66523d4f3e2a54402b503c27513c27543f29533e27523d26543e28503a24735538be8e65bd8a5e846d52836a4f8b7156957e659b8571998371a18a78a28d7a9e877399826c91795f93785d967b6093785d92775c91765b90755a91765b8d7258604c374e3c284f3b274a37244e3b254a37234c38224e39234e38234b362160472eaf8461b8845b"
+        },
+        "originalIndex": 7,
+        "duplicateOf": "S01",
+        "reasons": [
+          "DUPLICATE_CONTENT"
+        ],
+        "reviewedReasons": [],
+        "selected": false
+      },
+      {
+        "imageId": "S09",
+        "fileName": "inputs/images/S09.jpg",
+        "contentFingerprint": "20dc37ec0f41f4490c7293681a6ab99c6a47937fe8d8b62010e23ff5331e462d",
+        "analysis": {
+          "imageId": "S09",
+          "imageIndex": 9,
+          "room": null,
+          "roomConfidence": 0.75,
+          "roomIndependentFacts": [],
+          "condition": "Dunkel",
+          "visibleFacts": [
+            "großes Ecksofa",
+            "moderner Couchtisch"
+          ],
+          "category": "living",
+          "sharpnessScore": 90,
+          "exposureScore": 25,
+          "suitabilityConfidence": 0.5,
+          "suitabilityReason": "Identisches Bild zu S01, allerdings dunkel und unterbelichtet.",
+          "qualityScore": 60,
+          "titleScore": 30,
+          "suitable": false
+        },
+        "comparison": {
+          "width": 1448,
+          "height": 1086,
+          "samples": "48403948413a49423a49423948413948413948413948413948413948413949423a48423b48423c47423c47433d47433d47433d46433d46433d46433d47433e46433d46423d45423c45413b46413b46413b46413a46413c46413a47423a453e3547423b48433c4a433d4a433b4a433b4a433b49423a49423a4a433b4b443c4b453e4a453f4b47414b48424b48424c48434b48434b48434b48434a47424a47424947424a474249464148443f46423c45403b48433d47433d47423c443e36433b3149443f4a453f4a453f4b453f4b453e4b443c4a433b49423a49423a4a433c4b463f4d48424d4a454f4c484f4d484f4c474d4a464d49454b48434a464249464248454047433e423d373c36303a342c413b3448453f48433d453e38423b33463f364f4b464f4c474f4c474f4c46504c47504c46473f38423a324239324139323d352c3d342c423c36443f3a443f3a423e38413d37413c373f3b363f3b363e3a353e39343f3a343e372f352e25362f26413c3549454148443d433d35433c34423a314a46404b47424b47424a46414a46414b4742443c3540372f40372f4037303a32293d352c423c36403b36413b36413b36403a363f3a353f39343f3a343e3a353f3a35413d38433d3539322939322a433d3749464148443e443e37423b33413930413a33423c36433c36433d38433e3845403a433b344138314138314038303c342a413a314b494349493e47463e44433b47463d42403c42434041433a4b4b3c4c4c454b4c444441383a332b3a332b433e38494642484540444039443f36413c3244403a49473f46433c4d4b484e4e4c484943433c3340373040382f42382e3f372d47413a4b4c4542443546473645463944453842413942463f4b4e3a4d4f3953544543463945423c3c352c3a332b433f39494642484540454039423c33423c344744414f4f4546443b4b4c4755554c4a4b3e413a323e362f463b304c3d2f493f354b48424a4b4532352a393b2d41433245463337372f363a2a474b304b4d344e4f344a4b384744403b342b383128433e38474541474440433e3839342b443f354946434a49403f3d34494a3d4c4b35504d38443d333f362f453c32493f33463d334c48424e4f4a3a3e312f32253235274344313f3d31434530464a2e4a4c31494b2e494b3646433f332f232e2a1f39352d41403c45423e433e39332f27433c334b4846504f404542334949383b3f2a424432423b32403730403a323f39313f372e4b464153534c3e4032303224393c27494a32403e3245483246482e45462e4a4b314b4c384745402b281c1f1c102c292137363145423e423d392d29223f3a2f47454144453242412d494b373e42303a3d2d4039304139324039313f38303f372e4d49434d4f494043313a3e283c3f2934382739392e363c273d3f283d3c2b3a3c2935392a36362f1f1d1216140a24211a32312c413e38403c362d28203a342a2724192726134342354e4e3e4b4c3836392a3c362e433a324139313f38304139304f4b464f504b333828222817222a1a20281935352d282e212e30233a3a293236202a2e2432312a1e1c1219170e1c1a0f262418302d242e2b2338332c413c3638352c43453749483e4c4a3c5452414a4b43413b34423831403931423a32453d3454514c575653373930272c231d231a1d23182f302a24281f4848354c4c384849374c4d474543402b261c2722182c2820211f1619170d322d263c37313e362e32281f362d243128203a302546403453504747413a443c3540393339342d3e3932413b3548463f515346494d3d454939404534403f3340432f3c3d2d414032454441434344474543383129322b2343403b3634302d28214846423c363032281d3b332c342a21322b22372f26372e25413a3248433d40393138312a1f191236312a322b2238302837302850514053553f4e4f3c4746394445363d3c3343453443423e353637464442383029342c25433f3a423e39352c22423f3b413d39423b3330281e1f1b1329261d2622192c231a41393048433e443d37352c251a140e2f2821312c25342d2737322e5051514b4c4b36352f2f2c2426251c3a3a344c4d4a43444538393a484644352d272a231c3d342c3c322a2e2319281d12322c264039322b22180e0a0314100726241c231c13372e2449443e403a34322a222d282139332d403b3645413e4442403f3c3b413e3d2927220d0d050f0e0629251e433f3c413e3d42404044413e342d27282018382d233c30253a2e233b2c1f43352944352833292027201819160d29251d28241c281f16433d3746413b49443e4b45404a45413e37322c231b2a20182c251d2e27202b262015120b2424233a3a3a4645454a49494746473f3a35332a22231b13372b203a2d2336291e36281d4030224937243e352b3e352b3f362d4138303d37303b342d423c3646403948433d4b47424a464237322d21180f2c262341434a3e3f423736382820173633334649514b4c4f5051534d4e524441413a332c271e16342a203a2d2236281e33251a36251737261930261c2f251b30261c30271d332a213a322b403933433b34423b34433e39403c382b241e1c150d4041473d3c3f241c14221b15201a121f1a163e3f4448494c4243454344494241443f38343a322b322b263a302836271c3325193827183523152e251b2c23192d23192d241b2e251c30271f403a3347413b443e3839332d3c3733221b142c2a29494c544648502b2524180e06170d0320181141424747484c3e3d3e4040413f3f423c383539312b352d2729242033271e3323173725163422152f261c2d231a2e241a2d241b2e251d3128203e3730413c363a352f3c3732312b262b22193e3838403f433e3e443d3d433530322f201539333144464e47474b403d3d403d3d413f3f3e3a383a30293a2f272e251e231d1833251a3623143422142d241a2e241b2d24192c231a2d241c32292138312a37302a3b363036322d2c26202d261e2018111f18121e17121f19141f1a171d15101e1711201a15231c1736302d3f3b393f3b38413c393d332d3c30263d2f242b211a231b1638271a3421122b22182e241a2c22192c231a2d241b322922352d27342e273a36312a2521352f2a2c28242926232423222523202222222121222222232423242826252421202e29263c37333d3733403a374139343f3228413226402f21261c14241b133625182a21172d241a2b22182c231a2d241c32292138312a39342e2b2824302c2738332f2a252224212023201f221d191f1c181f1c1a211e1b26221f302a262927252c27243d37333d3733403834443c3743372e433326463323412e1e1f170f2118102b21172c23192a20172c22192c231c3128213b342d2c282326221d342f2a35302c25221e1e1c1a25201b201b151d18141e19151f1b162520192e261e2925212f2b27362f2a342e28362e2937302a40362f47372a4835264e372441301e15100b2f251a31271c2a20162b22182c231b332a23322d2724201c312c27332d29322c28211e1a14121019151115120d16120e16130f1915101d1812271f18312a242c251f2a221c2c241d312a232d261f2b231b392d224735274834234e3722312417281e142e251a2d23192f251b2e241d32292227221d2f2a2436302b352f2a312b262d261f272018241d16231b15211a131f19131e18121b150f221d1727211a251e16261f17282018282019292119271f16271e153a2c2045332546322147321f19130d1a140e1c16101e1812221b15231e182b2620332c26342d27342d27332c2530272031271f30271e2f261d2f261d30261e2f261d3229202e251e221a14221b13221a12231b13251d14231b12241c13231a11261c13413022453222422f1e15100a14100a14100a14100a18130e2b261f342e27342d27362f28362f28342c2531281f31281e31281e31281f30281e31281e31281e332a20271f181e17101e17101f170f1f170f20191020180f1f170f20180f1f160e34271b4735264431212920172920172a21182c231a322a22362e27362e28362e27362e27362d27342b2332281f31281f332a20332a2032291f32281f332a20332a20231c141b150e1d160f1b140d1c150d1d160e1d150d1c150d1d150d1c140c281d134331224130202e251c2e251b30271d342b23362f27352e2638302938312a372f28362d25332a21322920342a21332920332a2032292032281f32291f31281e221a121b150d1b150d19130b1b140c1a130b1a130b1a130b1a130b1a130b21180f3d2e21402e1f"
+        },
+        "originalIndex": 8,
+        "duplicateOf": null,
+        "reasons": [
+          "UNSUITABLE_IMAGE",
+          "SUITABILITY_UNCERTAIN",
+          "ROOM_OR_CATEGORY_UNCONFIRMED",
+          "EXPOSURE_REVIEW_REQUIRED"
+        ],
+        "reviewedReasons": [],
+        "selected": false
+      },
+      {
+        "imageId": "S10",
+        "fileName": "inputs/images/S10.jpg",
+        "contentFingerprint": "a3f747e16fbbe61a2ead9001536ccba6daac3bc8c858da430a2c087a340d9aa2",
+        "analysis": {
+          "imageId": "S10",
+          "imageIndex": 10,
+          "room": null,
+          "roomConfidence": 0,
+          "roomIndependentFacts": [],
+          "condition": "Unscharf",
+          "visibleFacts": [
+            "unscharfes Bild eines Schlafzimmers"
+          ],
+          "category": "bedroom",
+          "sharpnessScore": 10,
+          "exposureScore": 50,
+          "suitabilityConfidence": 0,
+          "suitabilityReason": "Bild unscharf, Raumnutzung nur bedingt erkennbar.",
+          "qualityScore": 10,
+          "titleScore": 10,
+          "suitable": false
+        },
+        "comparison": {
+          "width": 1448,
+          "height": 1086,
+          "samples": "b6a490bbab9ac0b1a0c3b4a1c3b29ec1b09cc0af9bbfae99bfad95c0ad94c4ae95ccb296d9ba99e7c29ceac39adab185e8c095e2bc94d7b591c8a98bbfa286bba085b79d82b59c82b49a7fb2997bb09679af9476ae9375ad9274ac9371a99170b19f88af9d8abcab9bc4b6a6c6baa8c6b7a4c6b6a2c6b6a2c4b4a0c2b29bc3b199c7b198d0b69addbe9de3c29edcb893e3c09cdcb997d0b191c3a78bbea388baa186b89f84b69d81b59b7eb2997bb19779b2987ab2987ab19879ae9675a99070ad9b8398836ca28e79b6a694c7bbacccc3b5cdc4b6cec3b4ccc0b0c8bbaac6b7a4c4b49ec6b49ecdb599d4ae85d4a97bd1aa82cbae91c3aa91c0a68dbca38ab9a186b79e81b69c7fb49b7db49a7db69d7fb69e80b59d7db19978ac9471a68e6bb09e848e775d846c54968169af9d89bcae9dc5b9accdc3b8d1c8bed0c7bcccc2b5c9beaec7bbabcdb396d6a46fd5a067d19e67c2a485bca68fbda48bbba287b99f83b79e80b69d7fb8a083b9a184b8a082b69d7db39b79b09876ae9673aa926eb4a288947c61886e5392785da59075a69279a8937cad9a85b3a391bcafa0c3b8abc3b8aabdb0a2cdb296e0b17fdfb07bdbab76bfa07eb69d84b89d81b79c7fb79d80b8a083b8a386b9a385b9a182b79f7fb69e7cb49c79b39b78b29a77ae9673b6a48b99816693795ea68d70beae97b7a691b19e87ac977fa79279a79279a7937b9d88718e7862b09476e6c095ecc69ad9b389ac8e6fa78a6ead9275b1977db69d82b8a285b9a384baa383b8a181b69d7eb29a79aa9171a9906db59e7ab19975b9a9929b8368957a5fb29e86d3d6d1cdcfccc0b6a8c4b9aabeb09eb7a591b7a590a28b7180664a8e755a9a7f60937756806546745b3c8c7356a78d72af967ab59e80b9a383b8a082b69f7fb39c7eb29b7eb29c81ae977ca78d6ab79f7cb49b78bcad999e866b967b5fbcac9ae2eff6e1f2fdc6c6bfdae1dedadcdcc7c6bcd1d5c5bcac92866d52978369947c61886f52846b4b7b6240876d4ea88f71b19979b9a282baa384b59f85b8a58cbba88fbda990bea88fb8a084ad926fbba17db89c77a3987f958061997e61c4b4a2dfe7eadcebebbabcb0c3d6d3d8e2e7cfd7d2d7e9dac5bca98b70569b886f9c846993795b9379598d73518e7452ac9274b69d7ebda687bca587bca990c1af97c2ad93bea88dad987e9f876eb09371c0a57fbc9f788680617f6f4a987d5fcbbba8bbbdc0aeb3a5bdbaa3c8d9d7d9e0dfd2d5ced7e5d9c8c0b08e74599d8b739c856b93795b9378588f7350937754b09476b99f81c0a98abda78a9f8d76a6937db29e86a5927b82705c806c57b69773c8a983c7a87f615f3d6f6639927a58d1c1b0c7c8c8abab9fbfb798cdd2afc2c8abcecbb3dae3c5cac3b28f755b9c8a729d856b947b5d967a5a937551987a55b59878c0a483c6ac8cc0a98d908171988979a99885a4927f94847298846fbd9c77d3b189d8b385292a1048481a736938c5baa4e8eacfd1d7acbfbb92cbcb85b0b47cbcb98dd3dcb4cdc6b590765c9b89739d866d957b5d997c5b9878519a7a56bb9d7bd7b38bd4b693c2ac91a89987a89888aa9785aa9784aa9782ab957bc0a07ddebb91edc59349432a4b4a1d807041c9bda9c5cb9f919e579fa17cb1ba75c0c27ec3c283d5ddabcec6b891775e9a87719c856d92785b95795892724c977753be9e7ce9bf8ed0b08ab6a086b49f86b39d84b29c83b29b81b39a7fb1987cb49b7dceac84eec6939983658f7e5a9f8261d9c9bac0c4ada6ab62acac8086955cb0b485c8c68bdee3b7cfc7bc90785e97856f99846c8d74599073548a6a4691714fcda984e8ba84b89877a89079a89079a68e77a48c76a28a72a08770a288709a7b5ec39a6ef6ca91a08467a0876aa48668dacab9dcdad4c4bda4bbb19aaba691b0a795b6ab97cbc7bcc9bfb48c745c93816c96826b8b73588b70528768448a6b49b08f69d5ae83a28d748571597e69509f89709f8a728d775d9a8166b595768b6643c09468f4c58c755b41917557af967dcebba6d2c6bab4a18fae9883b09b85ae9a84ac9784b6a696b09e8d846b548c77608f7962856c528267497e603f7b5a388b6542a98c6f90806d9d8973977d638c71536b5739564120907250ae8760845a33c18f56d5a76b806a56a68d77a78e76b5997dbeaa95b29d86b09981af9881ae9982ae9882ae9a849e856e86705c9b8e82a6998ea29487a19183a49385ac998db9a598b5a79cab9e92c6b1a0bea188705638503e20563f1fa3825eaf8458895b2fc28d51977747896b529a806aa2856aa58567b2987eb09780b09780af9880ac9780ac9580a58e78937a64aba19cbcbabcbfbbbbc2bcbac1b9b6c0b5b2c1b5b0c4b9b4cabeb9cec2bcd0c2bbcfbeb3ad9b8e97867589735bb2906ec99c6e9e6e3f956739936b4362381684664c9e81669c7b5da98d74a88f78a78d76a4896f9e82689b7e6392715399816db9b1aeaea39bafa49cb2a69fb5a8a0b6a9a1b7a9a0b7a79eb5a398b2a093bba799c2aea0d1bcadcfb8a6c7ac95c3a486bf9973875b326a3e18764a22683b17886647997a5e8867479572529976559b77579c7858a17e60ab8a6fb0937bae9a89aea198ab9e96a6988da39488a39286a7978aab998ba996879f877296796095775c957559a68a70baa089b79c84ba9c819c7e635f3c1c61350d6b3f186a3d188f6a4ba5805f936944a58062af9079b69a87c8b5a6d6cac0cfc7c2cac7c7b5afac9c8c80a4968ca191879d8c809886789885779b8777aa937f92745a85674a84664b85664b8e7157b09580af957fb89b8192765d4e2f15532a075c3410683b16937055ba977ac19b7bcfb7a5d3c3bbddcdc5dcd4d0cac7c5bababcbababcafadac8c827993857b99887e9a897e9785779582739c8879baa693987e667e61477f614880624884664da78c76ae937fb6998291755d4427104c2504582e09663914a78263d0b095d7bba5d5c7c1d3cccec9c4c8c5c5ceb4b4b9aba9aab1afb0afacaa9c958e847a728b7d74918175968477968375a59285b9a4949d856f7b5e457f61477b5d447d5f46a0846ea58a75977b647158412f1c0d241002442308643813b28b6abb9d88afa19dc3c3cec0c5d3babdcbc4cbdbc2c8d6aba8a9aba7a5ada9a6aba6a19790897c716887776e8f7d71948277b09f93b59e8ca48d787a5e457f604575573e76583f896d55785e4761473049321d2b150713060013060166391499765ca59085aba3a7bec3d3c0c7d9bcc3d4c1cadcc8d2e3b8b9c0a69e9baca5a3aba39fa79e9991877e786a6284736b96857bb29f90b09a86b099858569507b5c4073543b72543a684e365e452e664b3274563b7351345d3a1c3b1c07673912886a549d8b86aca6adbcc2d4bdc5d7b9c0d0c2c9d8c9cfddcbced7aba3a1a69c98a79e99a49a94a398918f827a74665e8a786ead9786af9885b69f8a92765d6f5237684d36634a33694f36795b4089684a926f50937251916f4e7f5a3964370e896b579d8c89a9a3aababfcfbdc2d2bcbfcbc7cad7cbcdd6cfd0d6b5afaf9f948ea49a95a69a93a89c94a4968e8a7c756e6058998577b59c88b098827d634c5d432c634a3374583d87674b906e509471539875569a7757936f4f82572f62350d8366539e8e8caea7adc0c2cfc0c3cfbbbbc6c2c3cbc8c7cdc7c6c8bcb4b4a0918ba59990a89b94a89991a3958d9e8f8781736c786960ae9683876e585d452f6f543b80624687684c8e6e519573549a77599b7a5c916b498a582c89521e5f320b806250a1928eaca5a9b8b8c3babac5b5b4bdbebdc3c2bfc5c1bcc0bab2b2a3918b9d8c83a79890a6968da4958ba3938a9e8e848c7c74907c6c6b523b75593f8466498b6c5191725691725597765a9675588b63408a5629925924965d26592d08785c499c8b87a49b9db2b0b9b5b3bdb2b0b7b3b2bbb3b1b7b7afb2b1a3a2a28c84967f72a59489a8978ba7968aa8968aa59487a08e82907c6d84674e89694d8c6d518e6f5394755995775b917053885c378c5728935c2a985e289e622a4a280c785d4c9a8882a5999badaab0aaa7aea6a0a6a8a3aaada5a8aea2a3ac9b97a68e839d806e9d8678a8978aa89587a69385a28f81a39082a28d7e9a806c94765b93745893745895765a8d6a4b8759318f58298f5a2a8e59299b612ba368304a301d7f635299867e9b8e8da0979ca39aa0a19699a49899a89b9aac9c99ac9992a38b7f9d7d6995755fa28e80a69385a28e7fa49181a59080a59080a28b799f856f997b6098795c8964438555298e59298b56298853278e58289b632fa36b34"
+        },
+        "originalIndex": 9,
+        "duplicateOf": "S03",
+        "reasons": [
+          "DUPLICATE_CONTENT",
+          "UNSUITABLE_IMAGE",
+          "SUITABILITY_UNCERTAIN",
+          "ROOM_OR_CATEGORY_UNCONFIRMED",
+          "QUALITY_REVIEW_REQUIRED",
+          "SHARPNESS_REVIEW_REQUIRED"
+        ],
+        "reviewedReasons": [],
+        "selected": false
+      },
+      {
+        "imageId": "S11",
+        "fileName": "inputs/images/S11.png",
+        "contentFingerprint": "bfa245f9da5c41822ca1f680979e281940b42a7f2fb54475e09094707b26bfb0",
+        "analysis": {
+          "imageId": "S11",
+          "imageIndex": 11,
+          "room": null,
+          "roomConfidence": 0,
+          "roomIndependentFacts": [
+            {
+              "fact": "Große Fenster",
+              "confidence": 0.9
+            },
+            {
+              "fact": "Tageslicht",
+              "confidence": 0.9
+            }
+          ],
+          "condition": "Sehr gepflegt",
+          "visibleFacts": [
+            "Helles Einfamilienhaus mit Eingangsbereich"
+          ],
+          "category": "exterior",
+          "sharpnessScore": 90,
+          "exposureScore": 85,
+          "suitabilityConfidence": 0.9,
+          "suitabilityReason": "Gute Außenansicht mit Tageslicht, aber nicht besonders markant.",
+          "qualityScore": 90,
+          "titleScore": 80,
+          "suitable": true
+        },
+        "comparison": {
+          "width": 1086,
+          "height": 1448,
+          "samples": "d0dff1bbd5f0bed6f1c0d7f0c6daf1cbdcf1c9dcf0c7dcf0c7ddf3cdd9e2bab1a2af9b87a091617776447d7e57a39c4daca231706f21565b1443440d3a3b130e150421251145482b8d9237c2bc45b0ac3da4a33694933441451b3236153d4417c6d9efc4d9f0d8e3f1c0d7efc0d8f0c8dcf0c9ddf0c5dbf2c4dbf1c2d0dc948680948781b0aea5b2afaa8884447c771f807e257271257270205854144842193432181d1e1142402f97963da2963e9e9c36a1a1388f8e35444c152d330f343915d6e1f0c8dbefedeff2dce5f0c5daf0c2daf0c4dbf1c3dbf1c1d9efd5e9fbcccbcc9a9186afaca7b8b5a6aea77a9f994774742261631b7b7523645e1c3435112b2d104949207d7349bdb948a6a03c808126a9a73a87882f373e102b340d2e3411bdd5efb7d1efcdddf0f3f2f2cbddefbcd6f0c0d9f0c2daf0c2dbf0c6daede5ebf1d6d9e0a8a5a0948f85908b83a29b74938d3a72711e6564154a4d0a2024066d6c23696e274f4c2ac1bb4ca8aa31737b21898b2f7a7c272e370d32390d29300fafcdf0c4d9f0dde6f1d2e0f0c4daf0bbd6f1bcd6efbfd9efc5def3cbe3f9d2e0edc1c5c693928b827964a5916fab9f7b948d3a60611c6a6a245156212b2e1e7574376668275f5a28bab34dbcbb3f8186306a7029827f334e541e29310a272e0bb7d1efc6d9efe4eaf2bcd5efbad5efbdd7efc1dcf6c4e0fab9d1e7a1adb68c8a808b7d5f9486669d9684a7a497b1af96acad8fa4a68fa9ac9bb9bbb5afb2b4b9b5a7a8a34f6b6c259d9a3ecbc84a76792f7578325c5d26363a172f340f353a10b2cff0bfd6f0d9e2efbdd6efbad9f6bfddf8b1c9e099a4ac8b85768f80609d8e6ca9a28bb3b2abb5b9bab7bcc0b9bfc4b8bbbeb5b7b5b5b8b8b6b9bac4c3bdaeaa6e70722f2f3817707326ccc94a7073345558314d50174044133839112c2c09a8cbf0b2d0f1c7dff7bcd8f6a8c1da959ea48b83748d826e998761a69c81adaba5b4b6b9b3b6b9babec1b9bdbfbfc5cb9f9c8b6760426b6853585b539c9c8b969248313b0d0c170678783bc7c5487071363e4228303419343512373a102e2c16a9cbf1accdf19fb8cf9195998c816d958260a19274aca89dafada37b796d5d605b43463d90938dc1c5c7babec0c4c9cf8f8c7647421954542e3b402991968fa1a489585731504c208f8946c5c04f827f404a4c26282a1225291421200d554b46acd0f58090a3807a72927e579e8d6aaba595b5b5b4bdbfc4bbbcbdafb4b6a6abac9b9e9db7bababfc3c6bec2c3c3c7ca989481676440817f56585943999d9ab7b9b8a69b5c827c38706c31bdb5519990505c5b2930311320250e2f2a186b6464aed1f598b7d6666a73938a77b7b1a4bbbdbebebfc2bfc0c3c5c6c7c8c7c6cbcacacccccfc1c5c9bec2c4bfc2c4c1c4c7c7c9cecacdcfc7caccc7cacabdc1c3bbbab79d975f5351167b7727ada8439e94506e65304c4b1d2e2d0d37322b807b7ca5c9eeb1d6fb87a1be59575ea09e9bc2c0bbc0c1c1c3c2be9995898f94968f959a989c9cc0bfbcc3c5c7bfc3c6b3b2aabeb9b0bebcb6bebcb8bdbcb8bbbbbcb8b9baa6a39b8c87417e7c21575a1e6a682f544f245d53205a48235754549c928fa2c8efa5c9eeb1d6fc71859c4b454a908d8ab6ae9fbbb3a3838c9188a6c584a0ba9ba3a5c5c3bfc5c6c6c6c9cf9d8e6fa08755a99877ada18cada4997577653d431e514f52999167767122363b0b363c0b32370b2d2b09685845877e7a9e948f9dc6eea0c7eea4caefabd1f65a6677473f4286817dbdb7acc1c1bdc1c3c4c2c5c6c4c4c4c5c5c3c8c8c7c5c8cc98875e927a45928262a09783a29e9571746931351a413f3f99916b7e732f38390b393c0e262b08231f0e776b64bbaa9d968d899ac4ef9dc5efa0c7eda5cdf39fc2e65056644e46487b7676bdb8b0cac5bec5c4c0c6c6c4c7c6c4cccbcac6c6c8927e5162583c5d5b4d55523d545445545753454c4d43464a8f897292854b645e24555615323309312d248e8682dcc7b4b8a89c97c2ef9ac3ef9cc4ef9fc8f19fc3e8757c884b4446584f4f6e6765b1ada5cec9c1c9c6c3c9c7c4d0cecbc5c1bd937e5038341c3739323e403d3a3f3c3b41422a3337383e42797473b4a079b8a3548a8722464014504f50848182e4cfbbdac7b696c0ef96c0ee96c0eca0cbf87b9ab9524f5153535b564d4e5e5350595352a09b97c9beadcec8bed6d6d6c7c1b79b824d6f643f7a76657e7c727c7e785c5750424331646769706e72ae976f887832817a2b5f553c68676ba29790ddc9b6dcc9b893bfef94bfef95c0ef97c2f098c3ee93bbe295bbdf5f636c5f55535a5658564d4b88837cc5bbacc9bfaebdb19ea89267b6a788bdb6a7c1bcb3c2c0be9a9797736d608480805c5b5e94857bb3a461625b1ab49f8f9b918acebbaadfcab7d9c5b48fbdee91beef92bff194c0f196c2f19cc7f3a5d1fc92b3d25850516f6e73625c5c544c4c8a7c68aa8d5d9c8b6b9f9582a39c90a19c94a09b969f9b979f9c9d87888c5a60583134266b6661d2bf9b9f8e6ed8c3b2d7c2addac6b2dac5b3d9c5b38ebcee8fbdef91bef093c0f193c0f096c1ef99c3eda6d0f98fa5bd5d55554d4a4b5c545363574983704daa956fbeb199bdb5aabcb7b2afafb0989a9e8c8a896c6c5b33390f1b2300464637dec8b6e2ccb9d7c3afdbc6b3dcc8b6d8c4b3d6c2b18cbaee8dbbee8fbdef90bff092c0f194c0f097c2ef9dc5eeadd4fb9eadbf5c514f534a496156536b5d44b1976bb8a990aea79a9e9d997d807f373e2f26281c45422642451a20280b474638dec8b3dcc6b0d2beacd9c5b2decab7dac7b5d9c6b58bb9ee8bbaec8cbbef8ebdf090bef092bff096c0ef9cc5efa8c9ebd6e4f5a0b1c36a66696659555d52458f7a54bcaa8b9a90805f5c4c54564131341b24281429291732321d24260c57564ed4c2b0dfc9b3d4c0aed6c2afd7c3b1d5c1b1d3c0af88b7ee8ab8ee8bb9ed8cbbef8ebcef91bef099c1ee9bc3eecedbebc9d7e8b2d7f8a5bace625a595d4f496f6147af9975b1a99b89887a4c503a3b3e243a3c283d3e2f3d3a28333117636468cabaa9e0cab2d4c0aed3bfadd5c2b1ccb8a8d3c0af84b3ed87b6ee8ab8ee8ab9ee8cbbef90beef95c0ef9cc3edcdd9e9b3ceeba6cbeeb6dafba0b5cb665d5e5b4f43998564bcaf9f74705f33361c292b0f292d16323426292a183f3e346b6d74c6b5a5e2ccb6d3c0aed7c3b2d4c0afd1bdacd5c1af84b3ed86b4ed88b7ef89b7ee8ab9ee8ebdef93bfef9ac1ecd1dae9b4d0eda2c8eaafcbe1bed9eba7ada76254497b6a569e8c748c867f8b89847e7f7a818382878a8f4e4d4c4d4e4f6c6f76c0b1a3e6d1b9d4c1afd4c1b0d3bfafd8c4b2dcc8b684b3eb83b2e986b5ed88b7ee88b7ed8bbaef93bfee98c1ecc3d4ebb1d2f59daba19290649692609c9b66948a586c5c446b62448f8e904b4b4d44474e454952393f493a3c425e60666d7179b5a89dead4bccebcabccb9a8d9c5b3d3bfaed5c1af83b2eb82b3f384b3ed87b6ed88b7ec8bbbee94bfef99c3efa1c5e89b9f83978e5089844e7977478381509e8f3f9a86267773478e929d232626181f26181f260e161d24292f6769726e717cafa39aead4bcd1beacd1bdaedac6b4d9c5b3d4c0ae83b2f08aacc185b5ed86b8f58abaf48cbbef92bfef96c2eea1c9f3919985707359757a616f71507470419d8b298a7d10747147949aa82e32322b343c2931381d26302a31396b6d786f727ca99e96ead3bcdac6b6d5c1aeddc7b6dac5b3d5c1af94a49486967b87b2e08baecc88adcd8dbef492bfee99c4f29dbed5a7bfcb7a81736673735d685e535b45635d296a630970724d989caa2e32312e373f2c333b212a332d333a6d707a727580a39a97e3ceb1cbbb8ec8b694cfbca4d7c2afd8c3b28c8b5675836c838d6d888d638aa7af90c0f98fbae196aa9f85823a9abacd9bb9d594b1c799b6cb6e7e79414326625b147678589a9ca62a2c292e353c2c33392029322d333e79787a7e7d79c3b4a4dbc7a0b7ab6bbbab86b9ac80d9c2afc7b68a7695a97593a16e6b397c7c437c8a6d90b8e09bbac89096738393829bb4b9a0afa2a8c5d7b8dcffa8c1d67c7d6c7b71258a896d9fa0ae424447434b5643474f3c403e5451459d9068a79a59afa45cafa660b1a75c99944c9d974dafa854c5ba60899c8c9da48485865a6c6a366a66286f7a5991997c968b4c9496728b8e6c97b2bfa5c8eba9c0cca5ac8c9d9c5687852d8c8b5ca8a4929e967eaca180b5a96ab4a74ab9aa49aba245b1a6489c933484852d979539a7a43aa2a22f81841795962d"
+        },
+        "originalIndex": 10,
+        "duplicateOf": null,
+        "reasons": [
+          "ORIENTATION_REVIEW_REQUIRED"
+        ],
+        "reviewedReasons": [],
+        "selected": false
+      },
+      {
+        "imageId": "S12",
+        "fileName": "inputs/images/S12.jpg",
+        "contentFingerprint": "6d8b266d04f6cd6f71d7b5e49158ab2b0c87b237ed48a591be88427113d6c872",
+        "analysis": {
+          "imageId": "S12",
+          "imageIndex": 12,
+          "room": null,
+          "roomConfidence": 0,
+          "roomIndependentFacts": [
+            {
+              "fact": "Große Fenster",
+              "confidence": 0.9
+            },
+            {
+              "fact": "Tageslicht",
+              "confidence": 0.9
+            }
+          ],
+          "condition": "Sehr gepflegt",
+          "visibleFacts": [
+            "Außenansicht Einfamilienhaus mit Garage"
+          ],
+          "category": "exterior",
+          "sharpnessScore": 90,
+          "exposureScore": 85,
+          "suitabilityConfidence": 0.9,
+          "suitabilityReason": "Gute Außenansicht eines Hauses mit schönem Wetter.",
+          "qualityScore": 90,
+          "titleScore": 80,
+          "suitable": true
+        },
+        "comparison": {
+          "width": 240,
+          "height": 140,
+          "samples": "bca186baa085baa085baa085b99f84b99f84b99f84b99f84b99e84b79e83b69e82b69e82b69e82b69e83b69e84b59d83b49c81b49c80b49c80b59b80b59b80b59b7fb39a7eb3997db2997bb1987ab1987ab1997bb2997bb2997bb1987ab19779bca186ba9f84b9a085b99f84baa085baa085b99f84b89e83b89e83b79e83b79f83b79f83b79f83b79f83b69e83b69e84b59d81b49c80b59b80b59b80b59b80b59b80b49b7eb39a7bb2997bb2987bb2987ab2987ab2997bb1987ab1987ab19779bba085baa085baa085b99f85baa085baa085b99f84b89e83b79f83b79f83b79f83b79f83b79f83b69e82b59d82b69e83b59d80b49c7fb69c81b59b80b59b80b59b7fb49b7db39a7bb2997bb2987ab3987ab2997bb2997bb1987ab09779b19678bca286bba186bba185baa085b9a087b8a086b9a086b89f85b8a084b8a084b79f83b79f83b79e83b79f83b69d82b69c81b69c80b59c80b69c81b59b80b59b80b59b7eb49b7db39a7cb39a7bb39a7bb4997bb49a7cb2997bb1987ab19678b29777bca288bca288bba186baa187b8a086b8a086b8a086b8a086b8a084b8a084b8a084b79f83b89e83b79f83b79e82b79d82b59c81b59c81b69c81b69c81b59b80b59c7eb59c7eb39a7db2997bb3997ab4997bb4997bb39a7cb2987ab29779b29779bca389bba289baa188b9a187b8a086b79f85b8a085b79f86b8a084b79f83b79f83b79f83b89e83b69f82b79e83b89d83b59c80b49b80b59b80b59b80b59b7fb59c7eb49b7db39a7cb2997bb2997ab3977ab3987ab2997bb3987ab29779b19678bba48abaa388baa288b9a187b8a086b79f85b69e84b8a084b8a084b79f83b79f83b79f83b89e83b79e83b89e83b79d82b69d81b59b80b59b80b69c80b59b7eb49b7db49b7eb49b7db39a7bb2997ab4987bb3987ab2987ab3987ab29779b29779bca48abba389baa288b9a187b9a187b8a085b79f83b79f83b8a084b79f83b79f83b79f83b79e83b89e83b89e83b79d82b59b81b59b80b59b7eb59c7eb49b7db49b7cb49b7db49b7cb39a7bb4997ab4997bb29779b3987ab3987ab3987bb2987abba389baa288baa288b9a187b9a187b8a086b79f83b79f83b79f83b79f83b79f83b79f83b79d82b89d83b79d81b69d81b69c80b49c7eb49c7db59c7eb49b7db39a7cb49b7cb49b7cb39a7bb3987bb3987ab4997bb4997bb4997cb3987bb3987abaa288b9a187b9a187b8a086b8a086b8a085b79f83b79f83b79f83b79f83b79f83b69e82b89e83b69c81b69e80b69e7fb69d7fb59c7eb59c7eb59c7eb59c7db59c7db49b7cb49b7cb39a7bb3987ab3987ab4997bb4997bb4997cb3997cb4997bbaa288b9a188b9a187b8a085b8a084b8a083b79f82b79f83b79f83b69e82b79f83b79f83b79d82b69c80b69d7eb69d7fb59c7eb59c7eb59c7db59c7db49b7cb59b7cb59b7cb59a7cb4997bb4997bb3987ab3987ab4997bb4997cb59a7cb49a7cbaa288baa288b9a187b8a085b8a084b7a083b79f83b79f83b89e83b89e83b79e82b79e81b69d7fb69d7fb69d7fb59d7fb59c7eb59b7eb59c7db59c7db59b7db59a7cb59a7cb59a7cb4997bb4997bb4997bb4997bb5997bb59b7db79c7eb79e80baa288baa288b9a187b8a086b8a084b79f84b79f83b79f83b89d81b79d80b69c7fb69d7fb69d7fb69d7fb69d7fb69d7eb69b7db69b7db69c7eb59c7db59b7cb59a7cb59a7cb69b7db4997cb4997bb4997bb59a7cb59a7cb79e7fb9a082baa083baa287baa287b9a186b9a085b9a085b9a085b79f83b79f81b79c7fb69c7eb69c7eb79c7fb69d7fb69d7fb69d7eb59b7db69b7db69b7db59c7db59c7db59b7cb69b7db69b7db59b7db5997cb59a7cb59a7cb59b7db99f81b9a183b8a083b8a082baa286bba387baa186baa084baa185baa085b9a184b89f82b89e81b79f80b79c7fb79c7fb79e80b79e80b69d7eb69b7db69b7db69b7db69b7db49c7db59b7db69b7db69b7db69b7db59a7cb59b7db79e80b9a083b89f82b89f84b8a084b8a082baa286baa286baa085baa085baa085baa184b9a082b89f81b89f81b79e80b79c7fb79c7fb79e80b79e80b79c7eb59a7cb59a7cb59a7cb59a7db59c7eb59b7db69b7db69b7db69b7db69d7fb8a081b9a084b89e84b79e83b8a084b8a084b8a083baa286baa185baa085baa085b99f85baa083b9a082b89f81b89f81b69d7fb79c7eb79c7eb69d7eb69d7fb59c7eb49b7cb49a7bb4997cb49a7db59a7db69b7eb69b7db69c7eb79e80b9a082b9a183b79f83b79f83b79f83b8a084b8a084b8a083bba186baa085baa085b99f84b9a083b99f83b89f82b89f81b89f81b79d7fb79c7eb79c7eb69c7eb69c7eb59c7db59c7db59b7db59a7cb59c7cb59c7db69c7fb89e7fbaa183baa183b79f82b79f83b8a084b79f83b79f83b9a185b8a085b8a183bba186baa085baa085b9a083b9a082b89f82b89f81b89f82b89e82b89d80b79c7db79c7eb69b7eb69c7fb59c7eb59c7fb59b7eb69c7db59c7cb69d7fb8a083baa286b9a186b9a184b9a185b9a185b8a084b8a084b8a084b8a084b8a085b9a184baa085baa085b99f84b9a082b9a082b9a081b89f80b89f80b89e81b79c7fb79c7db79c7eb69b7eb69c7fb69d7fb69d7fb69d7fb69d7eb79f80bba285baa286b9a186b9a186b9a185b9a185baa286b9a185b9a185b9a185b9a185b9a185b9a185b9a083b9a082b9a082b9a082b9a082b89f81b89f80b79e7fb79f80b79d7fb79c7db79c7eb69b7db69c7fb69d7fb69d7fb79f81b9a183bba386baa286b9a285b7a284b8a185b9a185baa286baa286baa286baa286b9a185b9a185b9a185b9a185b99f82b99f82b99f82b89f81b89f81b89f81b89f80b79e80b69e7fb69c7fb79c7eb79c7eb69b7eb69c7eb69d7eb8a081baa385baa186b9a185b8a386b8a386b7a284b8a185baa286baa286baa286bba387baa286baa286b9a185b9a286baa286ba9f82ba9f82b89f81b79e80b79e80b89f81b89f81b79e80b59c7eb69c7eb69b7eb79c7eb69c7eb79e7fbaa184bba284b9a284b9a185b8a285b8a386b8a386b8a386b8a285baa286baa387baa286bba387baa386baa286b9a185baa386baa285ba9f82b99e81b99e80b89e7fb89d7fb89e80b79e80b69e7fb59c7fb69c7fb69c7db79d7eb89f82bba284baa185b8a085b8a185b7a185b7a285b8a486b9a487b9a487b9a386baa286bba387baa286baa286baa287bba387bba385b8a082b59c7db99e81b89d7fb89d7fb89d7fb89d7fb79d7fb79e80b79e80b69d7eb69d7fb89f80baa183baa285b8a185b8a185b7a285b6a285b7a184b7a286b8a386b9a487baa588b9a387baa387baa387b9a387baa387bca486b9a284b69d7eb49b7bb59c7cb89d80b89d7fb79c7fb89d7fb89d7fb89d7fb89e80b79e80b79d80b89f82baa185baa285b8a185b7a385b7a386b7a285b6a385b7a285b8a386b8a387b9a487baa587baa488b9a388b9a588bba588bba386b79f80b49c7db59c7ab59d7bb49d7db79c80b79c7eb69b7db79c7eb89d7fb89d7fb89d7fb79e81b99f85b9a085b9a185b9a185b9a286b8a386b8a386b8a387b8a386b9a487b9a487b9a487baa588baa587baa58abaa489baa487b9a183b79f7fb69d7db59c7eb69d7cb69e7cb49d7cb89d7fb79c7eb79c7eb79c7eb79d7eb89d7fb89f80b7a083b7a084b8a084b8a184b8a385b8a386b8a386b9a287baa288baa387b9a487b9a487baa588baa688bba689bba589b8a183b79f7fb79f7fb8a07eb79e7fb79e7fb69e7db69e7cb59e7db69b7db79c7eb69c7eb69c7eb79e7fb89f83b79f84b49f83b5a083b6a184b7a285b9a286b8a386b8a387baa288bba289bba388b9a487baa588bca58abda689b9a485b69f80b59e7eb79f80b7a180b8a07fb7a080b7a080b7a07eb69f7eb69e7fb59a7cb59b7db59c7eb69f7fb79f82b79e84b69f85b5a084b5a184b7a184b9a185baa286b9a487b9a487b9a489baa48abaa48abaa589baa688bca487b8a182b6a07fb7a080b69f7fb7a080b7a181b8a180b7a181b7a080b69f7fb6a080b89e80b49a7cb59b7eb59d81b69e83b79f83b79e85b69f84b5a085b6a185b7a186b9a285b9a387baa588b9a488b9a588baa689baa589b9a487b7a181b7a07fb7a181b8a181b7a080b7a080b8a181b8a181b8a181b8a181b7a080b7a080b8a181b8a081b49a7eb39a81b49c82b59d83b79f85b7a085b5a085b5a186b6a186b7a287b8a487b9a487baa588bba689bba689bba789b7a283b69f80b79f7eb8a07eb9a282b9a282b7a080b8a181b8a181b8a181b9a282b9a282b8a181b8a181b7a181b89f80"
+        },
+        "originalIndex": 11,
+        "duplicateOf": null,
+        "reasons": [],
+        "reviewedReasons": [],
+        "selected": true
+      }
+    ],
+    "selectedImageIds": [
+      "S01",
+      "S06",
+      "S12",
+      "S02",
+      "S03",
+      "S04"
+    ],
+    "primaryImageId": "S01",
+    "requiresReview": true,
+    "reasons": []
+  },
+  "brokerApproved": false
+}

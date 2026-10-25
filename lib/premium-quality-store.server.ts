@@ -1,0 +1,20 @@
+import { prisma } from "./prisma";
+import { canonicalPremiumPayload } from "./premium-quality-payload";
+import { PREMIUM_QUALITY_VERSION, stableQualityHash } from "./premium-quality-gate.server";
+import type { Prisma } from "@prisma/client";
+export async function savePremiumAssessment(userId: string, kind: string, payload: unknown, listingId?: string) {
+  const clean = canonicalPremiumPayload(payload, kind);
+  return prisma.premiumQualityAssessment.create({ data: {
+    userId, kind, listingId: listingId ?? null, version: PREMIUM_QUALITY_VERSION,
+    snapshotHash: stableQualityHash(clean), payload: clean as Prisma.InputJsonValue,
+    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+  } });
+}
+export async function readPremiumAssessment(userId: string, id: unknown, kind: string) {
+  if (typeof id !== "string" || !id || id.length > 128) return null;
+  const record = await prisma.premiumQualityAssessment.findFirst({ where: {
+    id, userId, kind, version: PREMIUM_QUALITY_VERSION, expiresAt: { gt: new Date() },
+  } });
+  if (!record || record.snapshotHash !== stableQualityHash(record.payload)) return null;
+  return record;
+}

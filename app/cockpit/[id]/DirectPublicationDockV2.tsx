@@ -18,6 +18,7 @@ import PublicationOrchestratorPanel from "./PublicationOrchestratorPanel";
 
 
 type ListingSnapshot = {
+  premiumQualityReady?: boolean;
   location?: string | null;
   postalCode?: string | null;
   propertyType?: string | null;
@@ -34,44 +35,6 @@ type Readiness = {
   images: boolean;
   text: boolean;
 };
-
-
-function hasGeneratedText(
-  listing: ListingSnapshot
-) {
-  const variants =
-    listing.generatedVariants;
-
-  if (typeof variants === "string") {
-    return variants.trim().length > 0;
-  }
-
-  if (Array.isArray(variants)) {
-    return variants.some((variant) => {
-      if (typeof variant === "string") {
-        return variant.trim().length > 0;
-      }
-
-      if (
-        variant &&
-        typeof variant === "object" &&
-        "text" in variant
-      ) {
-        const text =
-          (variant as { text?: unknown }).text;
-
-        return (
-          typeof text === "string" &&
-          text.trim().length > 0
-        );
-      }
-
-      return false;
-    });
-  }
-
-  return false;
-}
 
 
 export default function DirectPublicationDockV2({
@@ -226,35 +189,10 @@ export default function DirectPublicationDockV2({
   }, [listingId]);
 
 
-  const readiness =
-    useMemo<Readiness>(() => {
-      if (!listing) {
-        return {
-          core: false,
-          images: false,
-          text: false,
-        };
-      }
-
-      const core =
-        Boolean(listing.location?.trim()) &&
-        Boolean(listing.propertyType?.trim()) &&
-        typeof listing.livingArea === "number" &&
-        listing.livingArea > 0 &&
-        typeof listing.rooms === "number" &&
-        listing.rooms > 0 &&
-        typeof listing.price === "number" &&
-        listing.price > 0;
-
-      return {
-        core,
-        images:
-          Array.isArray(listing.images) &&
-          listing.images.length > 0,
-        text:
-          hasGeneratedText(listing),
-      };
-    }, [listing]);
+  const readiness = useMemo<Readiness>(() => {
+    const approved = listing?.premiumQualityReady === true;
+    return { core: approved, images: approved, text: approved };
+  }, [listing]);
 
 
   const readyCount =

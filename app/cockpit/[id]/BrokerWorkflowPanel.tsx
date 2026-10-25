@@ -72,6 +72,7 @@ type ValuationSummary = {
 };
 
 type WorkflowResponse = {
+  premiumQualityReady?: boolean;
   success?: boolean;
 
   error?: string;
@@ -270,6 +271,8 @@ export default function BrokerWorkflowPanel({
    * falls ein automatischer
    * Package-Sync einmal fehlschlaegt.
    */
+  const [premiumQualityReady, setPremiumQualityReady] = useState(false);
+
   const packageSyncAttemptRef =
     useRef("");
 
@@ -315,6 +318,7 @@ export default function BrokerWorkflowPanel({
           }
 
           if (!cancelled) {
+            setPremiumQualityReady(data.premiumQualityReady === true);
             setWorkflow(
               data.workflow
             );
@@ -404,7 +408,8 @@ export default function BrokerWorkflowPanel({
           );
         }
 
-        setWorkflow(
+        setPremiumQualityReady(data.premiumQualityReady === true);
+            setWorkflow(
           data.workflow
         );
 
@@ -474,10 +479,7 @@ export default function BrokerWorkflowPanel({
     };
 
 
-  const objectPackageReady =
-    coreDataReady &&
-    imagesReady &&
-    listingTextReady;
+  const objectPackageReady = premiumQualityReady;
 
   const valuationDone =
     Boolean(
@@ -539,7 +541,8 @@ export default function BrokerWorkflowPanel({
         }
       ) => {
 
-        setWorkflow(
+        setPremiumQualityReady(false);
+            setWorkflow(
           (
             current
           ) => {

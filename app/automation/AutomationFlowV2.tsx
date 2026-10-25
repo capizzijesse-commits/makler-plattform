@@ -1,4 +1,8 @@
 "use client";
+import { isImageReviewTransition, AutopilotReviewRedirect } from "@/lib/autopilot-review-transition";
+import { automationTextFacts } from "@/lib/automation-source-facts";
+import { selectAutomationUploads } from "@/lib/automation-upload-input";
+import { hasUnresolvedExposeConflicts, confirmExposeFactConflicts, type ExposeFactConflict } from "@/lib/expose-core-fact-conflicts";
 
 import { upload } from "@vercel/blob/client";
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
@@ -6,6 +10,12 @@ import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 
 import WorkspaceFrame from "../components/WorkspaceFrame";
+import { buildPropertyFactsFromExpose } from "@/lib/property-facts-adapter";
+import { getUsablePropertyFacts } from "@/lib/property-facts";
+import { validatePublicPropertyFacts } from "@/lib/property-fact-validation";
+import { buildPropertyFactPrompt } from "@/lib/property-fact-prompt";
+import PdfCollageImageReview from "./PdfCollageImageReview";
+import { checkImageExposeConsistency, buildSafeImageRoomPrompt, getSafeImageRoomEvidence } from "@/lib/image-expose-consistency";
 import {
   getInseratAiMarketFromHostname,
   type InseratAiMarket,
@@ -24,8 +34,17 @@ import {
 } from "@/lib/sales-expose/sales-expose-package";
 
 type Extracted = {
+  marketingType?: string;
+  transactionType?: string;
+  currency?: string;
+  rentPeriod?: string;
+  plotArea?: string;
+  commercialArea?: string;
+  commercialUse?: string;
+  factConflicts?: ExposeFactConflict[];
+  requiresManualReview?: boolean;
   projectName: string;
-  countryCode: "CH" | "DE" | "AT";
+  countryCode: "CH" | "DE" | "AT" | "";
   street: string;
   postalCode: string;
   location: string;
@@ -45,9 +64,16 @@ type Variant = {
   highlights?: string[];
 };
 
+// IMAGE_ROOF_CLIENT_T205C2
 type ImageAnalysis = {
+  imageIndex?: number;
   fileName: string;
   analysis: string;
+  roomConfidence?: number | null;
+  room?: string | null;
+  roomIndependentFacts?: { fact: string; confidence: number }[];
+  roofShape?: "flat" | "pitched" | "unknown";
+  roofConfidence?: number;
 };
 
 type Stage = "receive" | "working" | "edit" | "publish";
@@ -57,7 +83,7 @@ const CONTINUE_TO_PUBLISH_KEY = "inserat-ai:dashboard-save-start";
 
 const EMPTY: Extracted = {
   projectName: "",
-  countryCode: "CH",
+  countryCode: "",
   street: "",
   postalCode: "",
   location: "",
@@ -120,11 +146,30 @@ export default function AutomationFlowV2() {
   // AUTOMATION_PLAN_GUARD_V1
   const [automationAccessReady, setAutomationAccessReady] = useState(false);
   const [market, setMarket] = useState<InseratAiMarket>("CH");
+  const [premiumApproval, setPremiumApproval] = useState<{ id: string; key: string; expiresAt: string; imageOrder: string[] } | null>(null);
+  useEffect(() => {
+    if (!premiumApproval) return;
+    const timeout = window.setTimeout(() => setPremiumApproval(null), Math.max(0, Date.parse(premiumApproval.expiresAt) - Date.now()));
+    return () => window.clearTimeout(timeout);
+  }, [premiumApproval]);
+  const sourceAssessmentRef = useRef<string | null>(null);
   const [stage, setStage] = useState<Stage>("receive");
   const [documentFiles, setDocumentFiles] = useState<File[]>([]);
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [imageAnalyses, setImageAnalyses] = useState<ImageAnalysis[]>([]);
+
+  // ROOF_REVIEW_T205D2
+  const [roofReviewApprovedSignature, setRoofReviewApprovedSignature] =
+    useState<string | null>(null);
+  // PDF_COLLAGE_REVIEW_GUARD_T185B
+  // PDF_COLLAGE_SELECTION_T187D
+  const [collageDecisions, setCollageDecisions] =
+    useState<Record<number, "photo" | "floorplan" | "exclude">>({});
+  const [collageApproved, setCollageApproved] = useState(false);
+
+  const [collageReviewPending, setCollageReviewPending] =
+    useState(false);
   // AUTOMATION_NEARBY_FACTS_CLIENT_V1
   type NearbyFact = {
     category:
@@ -144,6 +189,11 @@ export default function AutomationFlowV2() {
   };
 
   const [data, setData] = useState<Extracted>(EMPTY);
+
+  // SUPPLEMENTARY_FACTS_OBJECT_STATE_V1
+  // Zusatzmerkmale gehoeren ausschliesslich zum aktuellen Objekt.
+  const [supplementaryFacts, setSupplementaryFacts] =
+    useState<unknown[]>([]);
 
   const [nearbyFacts, setNearbyFacts] =
     useState<NearbyFacts | null>(null);
@@ -258,6 +308,10 @@ export default function AutomationFlowV2() {
   // AUTOMATION_NEW_LISTING_RESET_V1
   useEffect(() => {
     const handleNewListing = () => {
+      setCollageDecisions({});
+      setCollageApproved(false);
+      /* ROOF_APPROVAL_RESET_T208 */ setRoofReviewApprovedSignature(null);
+      setCollageReviewPending(false);
       automationAbortRef.current?.abort();
       automationAbortRef.current = null;
 
@@ -269,8 +323,9 @@ export default function AutomationFlowV2() {
 
       setData({
         ...EMPTY,
-        countryCode: market,
+        countryCode: "",
       });
+      setSupplementaryFacts([]);
 
       setNearbyFacts(null);
       setVariants([]);
@@ -313,7 +368,6 @@ export default function AutomationFlowV2() {
     const saved = localStorage.getItem("inseratAiMarket");
     const next = detected || (saved === "DE" ? "DE" : "CH");
     setMarket(next);
-    setData((current) => ({ ...current, countryCode: next }));
   }, []);
 
   // AUTOMATION_PLAN_GUARD_V1
@@ -388,19 +442,80 @@ export default function AutomationFlowV2() {
     [imageAnalyses]
   );
 
+  // AUTOMATION_LOCATION_READY_GUARD_V1
+  function isPlausibleAutomationLocation(value: string): boolean {
+    const location = value.trim().replace(/\s+/g, " ");
+
+    if (
+      !location ||
+      location.length > 50 ||
+      location.split(" ").length > 5 ||
+      /[!?;:,0-9]/.test(location) ||
+      /\.\s*$/.test(location) ||
+      !/^[\p{L}][\p{L}\p{M}\s.'\u2019()-]*$/u.test(location) ||
+      /\b(?:stehen|gehoeren|gehören|verfuegung|verfügung|sowie|befinden|verfügt|verfuegt|doppelgarage|technikraum)\b/i.test(location)
+    ) {
+      return false;
+    }
+
+    return true;
+  }
   const requiredMissing = useMemo(() => {
     const missing: string[] = [];
-    if (!data.location.trim()) missing.push("Ort");
+    if (!isPlausibleAutomationLocation(data.location)) missing.push("Ort");
     if (!data.propertyType.trim()) missing.push("Objektart");
+    if (!["CH", "DE", "AT"].includes(data.countryCode)) missing.push("Objektland");
+    for (const conflict of data.factConflicts ?? []) {
+      if (conflict.status !== "manually_resolved" && !data[conflict.field].trim()) missing.push(conflict.field + " (Quellenkonflikt)");
+    }
     return missing;
-  }, [data.location, data.propertyType]);
+  }, [data]);
 
-  const readyToPublish =
-    requiredMissing.length === 0 && variants.length > 0;
+  function premiumDraftKey(facts: Extracted, texts: Variant[], files: File[]) {
+    return JSON.stringify({ sourceAssessmentId: sourceAssessmentRef.current, facts, texts, files: files.map(file => [file.name, file.size, file.lastModified]), collageDecisions, collageApproved });
+  }
+  const readyToPublish = requiredMissing.length === 0 && !hasUnresolvedExposeConflicts(data) && variants.length === 3 &&
+    premiumApproval !== null && premiumApproval.key === premiumDraftKey(data, variants, images) && Date.parse(premiumApproval.expiresAt) > Date.now();
 
 
 
   // AUTOMATION_VARIANT_IMAGE_ORDER_V1
+  const roofConsistency = useMemo(() => {
+    return checkImageExposeConsistency({
+      imageRoofs: imageAnalyses
+        .map((item, index) => {
+          const file = images[index];
+
+          if (!file || file.name !== item.fileName) {
+            return null;
+          }
+
+          return {
+            fileName: item.fileName,
+            shape: item.roofShape ?? "unknown",
+            confidence: item.roofConfidence ?? 0,
+          };
+        })
+        .filter(
+          (item): item is NonNullable<typeof item> => item !== null
+        ),
+    });
+  }, [images, imageAnalyses]);
+
+  const roofReviewSignature = JSON.stringify({
+    images: images.map((file) => ({
+      name: file.name,
+      size: file.size,
+      modified: file.lastModified,
+    })),
+    analyses: imageAnalyses.map((item) => ({
+      name: item.fileName,
+      shape: item.roofShape,
+      confidence: item.roofConfidence,
+    })),
+    issues: roofConsistency.issues,
+  });
+
   const variantImagePreviews = useMemo(() => {
     if (!imagePreviews.length) {
       return [];
@@ -505,6 +620,14 @@ export default function AutomationFlowV2() {
         -1000
       );
 
+      // PDF_GALLERY_FILTER_T197
+      if (
+        images[index]?.name.startsWith("review-collage-") &&
+        collageDecisions[index] === "floorplan"
+      ) {
+        score = -1000;
+      }
+
       const fallbackScore =
         imagePreviews.length - index;
 
@@ -519,7 +642,22 @@ export default function AutomationFlowV2() {
     });
 
     const ranked =
-      [...scored].sort(
+      [...scored]
+        .filter((item) => {
+          const file = images[item.index];
+
+          if (!file?.name.startsWith("review-collage-")) {
+            return true;
+          }
+
+          const decision = collageDecisions[item.index];
+
+          return (
+            collageApproved &&
+            (decision === "photo" || decision === "floorplan")
+          );
+        })
+        .sort(
         (a, b) =>
           b.score - a.score ||
           a.index - b.index
@@ -562,6 +700,8 @@ export default function AutomationFlowV2() {
     imageAnalyses,
     images,
     manualHero,
+    collageDecisions,
+    collageApproved,
   ]);
 
   function setPreviewFiles(nextImages: File[]) {
@@ -622,6 +762,9 @@ export default function AutomationFlowV2() {
     confidence: number;
     reason: string;
     analysis?: string;
+  room?: string | null;
+  roomConfidence?: number | null;
+  roomIndependentFacts?: { fact: string; confidence: number }[];
     base64: string;
   };
 
@@ -648,7 +791,9 @@ export default function AutomationFlowV2() {
         photo.reason === "map" ||
         photo.reason === "property_photo"
           ? photo.reason + "-"
-          : "pdf-"
+          : photo.reason === "collage_segment_requires_review"
+            ? "review-collage-"
+            : "pdf-"
       ) +
         (
           photo.fileName ||
@@ -664,12 +809,13 @@ export default function AutomationFlowV2() {
     files: File[],
     signal: AbortSignal,
     skipPdfPhotoExtraction = false
-  ): Promise<ExtractExposeResult> {
+  ): Promise<ExtractExposeResult & { supplementaryFacts: unknown[] }> {
     if (files.length === 0) {
       return {
         facts: { ...data },
         pdfImages: [],
         pdfAnalyses: [],
+        supplementaryFacts: [],
       };
     }
 
@@ -737,6 +883,9 @@ export default function AutomationFlowV2() {
           file.name
         );
       }
+
+      // EXPOSE_TARGET_MARKET_V1
+      form.append("targetMarket", market);
 
       form.append(
         "skipPdfPhotoExtraction",
@@ -841,6 +990,7 @@ export default function AutomationFlowV2() {
               JSON.stringify({
                 files:
                   uploadedFiles,
+                targetMarket: market,
                 skipPdfPhotoExtraction,
               }),
           }
@@ -863,8 +1013,14 @@ export default function AutomationFlowV2() {
       );
     }
 
+    sourceAssessmentRef.current = typeof payload.sourceAssessmentId === "string" ? payload.sourceAssessmentId : null;
+
+    // COUNTRY_DEFAULT_FROM_SELECTED_MARKET_V1
+    // Preserve an explicitly extracted object country.
+    // Never silently default an unknown DE object to CH.
     const extracted = {
       ...EMPTY,
+      countryCode: "",
       ...(payload.extracted || {}),
     } as Extracted;
 
@@ -920,17 +1076,36 @@ export default function AutomationFlowV2() {
               return null;
             }
 
-            return {
-              fileName:
-                image.name,
-              analysis,
-            };
+            const roofMeta = photo as typeof photo & {
+                roofShape?: unknown;
+                roofConfidence?: unknown;
+              };
+
+              const validRoof =
+                (roofMeta.roofShape === "flat" ||
+                  roofMeta.roofShape === "pitched") &&
+                typeof roofMeta.roofConfidence === "number" &&
+                Number.isFinite(roofMeta.roofConfidence) &&
+                roofMeta.roofConfidence >= 0 &&
+                roofMeta.roofConfidence <= 1;
+
+              return {
+                fileName: image.name,
+                analysis,
+                ...getSafeImageRoomEvidence(photo),
+                roofShape: validRoof
+                  ? roofMeta.roofShape as "flat" | "pitched"
+                  : "unknown" as const,
+                roofConfidence: validRoof
+                  ? roofMeta.roofConfidence as number
+                  : 0,
+              };
           }
         )
         .filter(
           (
             item
-          ): item is ImageAnalysis =>
+          ): item is NonNullable<typeof item> =>
             item !== null
         );
 
@@ -946,10 +1121,16 @@ export default function AutomationFlowV2() {
       }
     );
 
+    const supplementaryFacts: unknown[] =
+      Array.isArray(payload?.supplementaryFacts)
+        ? payload.supplementaryFacts
+        : [];
+
     return {
       facts: extracted,
       pdfImages,
       pdfAnalyses,
+      supplementaryFacts,
     };
   }
 
@@ -1126,6 +1307,11 @@ export default function AutomationFlowV2() {
                       analysis: {
                         imageIndex?: unknown;
                         analysis?: unknown;
+                        roomConfidence?: unknown;
+                        room?: unknown;
+                        roomIndependentFacts?: unknown;
+                        roofShape?: unknown;
+                        roofConfidence?: unknown;
                       }
                     ) =>
                       analysis.imageIndex ===
@@ -1149,6 +1335,33 @@ export default function AutomationFlowV2() {
                     item.original.name,
                   analysis:
                     result.analysis.trim(),
+                  room: typeof result.room === "string" ? result.room : null,
+                  roomIndependentFacts: Array.isArray(result.roomIndependentFacts) ? result.roomIndependentFacts : [],
+                  roomConfidence:
+                    typeof result.roomConfidence === "number" &&
+                    Number.isFinite(result.roomConfidence) &&
+                    result.roomConfidence >= 0 &&
+                    result.roomConfidence <= 1
+                      ? result.roomConfidence
+                      : null,
+                  roofShape:
+                    (result.roofShape === "flat" ||
+                      result.roofShape === "pitched") &&
+                    typeof result.roofConfidence === "number" &&
+                    Number.isFinite(result.roofConfidence) &&
+                    result.roofConfidence >= 0 &&
+                    result.roofConfidence <= 1
+                      ? result.roofShape
+                      : "unknown",
+                  roofConfidence:
+                    (result.roofShape === "flat" ||
+                      result.roofShape === "pitched") &&
+                    typeof result.roofConfidence === "number" &&
+                    Number.isFinite(result.roofConfidence) &&
+                    result.roofConfidence >= 0 &&
+                    result.roofConfidence <= 1
+                      ? result.roofConfidence
+                      : 0,
                 };
               }
             );
@@ -1166,11 +1379,23 @@ export default function AutomationFlowV2() {
         )
         .map(
           ({
+            originalIndex,
             fileName,
             analysis,
+            roomConfidence,
+            room,
+            roomIndependentFacts,
+            roofShape,
+            roofConfidence,
           }) => ({
+            imageIndex: originalIndex,
             fileName,
             analysis,
+            roomConfidence,
+            room,
+            roomIndependentFacts,
+            roofShape,
+            roofConfidence,
           })
         );
 
@@ -1192,25 +1417,73 @@ export default function AutomationFlowV2() {
     return results;
   }
 
+  async function validatePremium(facts: Extracted, texts: Variant[], files: File[], signal: AbortSignal, manualConfirmed = false) {
+    setPremiumApproval(null);
+    const form = new FormData();
+    form.append("facts", JSON.stringify(automationTextFacts({ ...facts, priceOnRequestConfirmed: facts.marketingType === "on_request" && manualConfirmed }, market)));
+    form.append("variants", JSON.stringify(texts));
+    form.append("manualConfirmed", String(manualConfirmed));
+    if (sourceAssessmentRef.current) form.append("sourceAssessmentId", sourceAssessmentRef.current);
+    const imageAssessmentIds: string[] = [];
+    const reviewedFiles: File[] = [];
+    for (const [index, file] of files.entries()) {
+      if (file.name.startsWith("review-collage-") && collageApproved && collageDecisions[index] === "exclude") continue;
+      const prepared = await prepareImage(file);
+      reviewedFiles.push(prepared);
+      const imageForm = new FormData(); imageForm.append("image", prepared, prepared.name);
+      const checked = await fetch("/api/premium-quality/images", { method: "POST", credentials: "include", signal, body: imageForm });
+      const payload = await checked.json().catch(() => ({}));
+      if (!checked.ok || payload.success !== true || typeof payload.assessmentId !== "string") throw new Error(payload.error || "Die Bildprüfung konnte nicht abgeschlossen werden.");
+      imageAssessmentIds.push(payload.assessmentId);
+    }
+    form.append("imageAssessmentIds", JSON.stringify(imageAssessmentIds));
+    const response = await fetch("/api/premium-quality", { method: "POST", credentials: "include", signal, body: form });
+    const result = await response.json().catch(() => ({}));
+    if(response.status===422 && isImageReviewTransition(result)){
+      setStatusText("Die Bilder benötigen Ihre Prüfung. Der Entwurf wird sicher an die Maklerprüfung übergeben …");
+      const handoff=new FormData(); handoff.append("reviewAssessmentId",result.assessmentId);
+      for(const file of reviewedFiles)handoff.append("reviewImages",file,file.name);
+      const saved=await fetch("/api/premium-quality",{method:"POST",credentials:"include",signal,body:handoff});
+      const draft=await saved.json().catch(()=>({}));
+      if(!saved.ok||draft.success!==true||typeof draft.listingId!=="string"||draft.code!=="AUTOPILOT_IMAGE_REVIEW_REQUIRED")throw Error(draft.error||"Der Bildprüfentwurf konnte nicht gespeichert werden.");
+      router.push("/cockpit/"+encodeURIComponent(draft.listingId)+"/edit?review=images");
+      throw new AutopilotReviewRedirect();
+    }
+    if (!response.ok || result.ready !== true || result.status !== "READY" || typeof result.assessmentId !== "string" || !Number.isFinite(Date.parse(result.expiresAt))) {
+      throw new Error(result.error || "Die verbindliche Qualitätsprüfung ist noch nicht bestanden.");
+    }
+    if (signal.aborted) throw new Error("Automation cancelled.");
+    setPremiumApproval({ imageOrder: result.imageSelection?.selectedImageIds ?? [], id: result.assessmentId, key: premiumDraftKey(facts, texts, files), expiresAt: result.expiresAt });
+  }
+
   async function generateListing(
     facts: Extracted,
     analyses: ImageAnalysis[],
-    signal: AbortSignal
+    signal: AbortSignal,
+    supplementaryFacts: unknown[],
+    qualityImages: File[] = images,
+    manualConfirmed = false
   ): Promise<Variant[]> {
-    if (!facts.location.trim() || !facts.propertyType.trim()) {
+    if (!["CH", "DE", "AT"].includes(facts.countryCode)) throw new Error("Bitte das Objektland anhand der Originalunterlagen prüfen und ausdrücklich bestätigen.");
+    if (hasUnresolvedExposeConflicts(facts)) throw new Error("EXPOSE_FACT_CONFLICT_REVIEW_REQUIRED");
+    if (!isPlausibleAutomationLocation(facts.location) || !facts.propertyType.trim()) {
       return [];
     }
 
     setStatusText("Inserat wird automatisch fertiggestellt …");
 
-    const response = await fetch("/api/generate", {
+    const generateRequest = () => fetch("/api/generate", {
       method: "POST",
       credentials: "include",
       signal,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        ...automationTextFacts({ ...facts, priceOnRequestConfirmed: facts.marketingType === "on_request" && manualConfirmed }, market),
+        sourceAssessmentId: sourceAssessmentRef.current,
+        manualFactsConfirmed: manualConfirmed,
         locale: "de",
-        market: facts.countryCode === "DE" ? "DE" : "CH",
+        market: market === "DE" ? "DE" : "CH",
+        marketingType: facts.marketingType, transactionType: facts.transactionType, currency: facts.currency, rentPeriod: facts.rentPeriod, plotArea: facts.plotArea, commercialArea: facts.commercialArea, commercialUse: facts.commercialUse,
         countryCode: facts.countryCode,
         location: facts.location,
         rooms: facts.rooms,
@@ -1219,17 +1492,73 @@ export default function AutomationFlowV2() {
         propertyType: facts.propertyType,
         highlights: facts.highlights,
         styleText: facts.styleText,
-        imageAnalysis: analyses
-          .map(
-            (item, index) =>
-              `Bild ${index + 1} (${item.fileName}):\n${item.analysis}`
-          )
-          .join("\n\n"),
+        propertyFacts: supplementaryFacts,
+        imageEvidence: analyses,
+        imageAnalysis: buildSafeImageRoomPrompt(analyses),
       }),
     });
 
-    const payload = await response.json().catch(() => ({}));
+    // AUTOMATION_GENERATION_RECOVERY_V1
+    let response = await generateRequest();
+    let payload = await response.json().catch(() => ({}));
+
+    const recoverableQualityCodes = new Set([
+      "GERMAN_MARKET_HALF_ROOM_FORMAT",
+      "VARIANTS_TOO_SIMILAR",
+      "OPENINGS_TOO_SIMILAR",
+      "TITLES_TOO_SIMILAR",
+    ]);
+
+    const issues = Array.isArray(payload?.quality?.issues)
+      ? payload.quality.issues
+      : [];
+
+    const recoverableQualityFailure =
+      response.status === 422 &&
+      payload?.code === "AI_FINAL_QUALITY_CHECK_FAILED" &&
+      issues.length > 0 &&
+      issues.every(
+        (issue: { code?: unknown }) =>
+          typeof issue?.code === "string" &&
+          recoverableQualityCodes.has(issue.code)
+      );
+
+    const temporaryServerFailure =
+      [502, 503, 504].includes(response.status);
+
+    if (
+      !signal.aborted &&
+      (recoverableQualityFailure || temporaryServerFailure)
+    ) {
+      setStatusText(
+        "Inserat-AI prüft die Texte erneut und korrigiert die Erstellung automatisch …"
+      );
+
+      console.info("[AUTOMATION GENERATION RECOVERY]", {
+        reason: recoverableQualityFailure
+          ? "recoverable-quality"
+          : "temporary-server",
+        firstStatus: response.status,
+        issueCodes: issues
+          .map((issue: { code?: unknown }) => issue.code)
+          .filter((code: unknown) => typeof code === "string"),
+        retryCount: 1,
+      });
+
+      response = await generateRequest();
+      payload = await response.json().catch(() => ({}));
+    }
+
     if (!response.ok) {
+      if (
+        response.status === 422 &&
+        payload?.code === "AI_FINAL_QUALITY_CHECK_FAILED"
+      ) {
+        throw new Error(
+          "Die automatische Textprüfung konnte noch nicht abgeschlossen werden. Deine Objektdaten bleiben erhalten. Bitte die Texterstellung erneut starten."
+        );
+      }
+
       throw new Error(friendlyError(payload?.error));
     }
 
@@ -1237,10 +1566,12 @@ export default function AutomationFlowV2() {
       ? (payload.variants as Variant[])
       : [];
 
-    if (!nextVariants.length) {
+    if (nextVariants.length !== 3 || payload?.premiumTextQuality?.passed !== true) {
       throw new Error("Es wurde kein Inserattext erzeugt.");
     }
 
+    setVariants(nextVariants);
+    await validatePremium(facts, nextVariants, qualityImages, signal, manualConfirmed);
     return nextVariants;
   }
 
@@ -1249,7 +1580,7 @@ export default function AutomationFlowV2() {
   ) {
     const countryCode =
       String(
-        facts.countryCode || market || ""
+        facts.countryCode || ""
       )
         .trim()
         .toUpperCase();
@@ -1312,6 +1643,13 @@ export default function AutomationFlowV2() {
   }
 
   async function processFiles(nextDocuments: File[], nextImages: File[]) {
+    setPremiumApproval(null);
+    sourceAssessmentRef.current = null;
+
+    setCollageDecisions({});
+    setCollageApproved(false);
+    setRoofReviewApprovedSignature(null);
+    setCollageReviewPending(false);
     if (nextDocuments.length === 0 && nextImages.length === 0) return;
 
     // AUTOMATION_ABORT_SIGNAL_V1
@@ -1342,6 +1680,9 @@ export default function AutomationFlowV2() {
       // Separate uploaded originals always win.
       // If there are no uploaded images, the complete PDF
       // supplies its own extracted property photographs.
+      // Neue Extraktion darf keine alten Objektmerkmale behalten.
+      setSupplementaryFacts([]);
+
       const exposePromise = extractDocuments(
         nextDocuments,
         controller.signal,
@@ -1366,8 +1707,36 @@ export default function AutomationFlowV2() {
         return;
       }
 
-      const facts =
-        exposeResult.facts;
+      const facts = exposeResult.facts;
+
+      setSupplementaryFacts(exposeResult.supplementaryFacts);
+
+      // PROPERTY_FACTS_SHADOW_V1
+      // Bestehenden Generator unveraendert lassen.
+      const propertyFactsStartedAt = performance.now();
+      const propertyFacts = buildPropertyFactsFromExpose({ ...facts, countryCode: facts.countryCode || undefined });
+      const usablePropertyFacts = getUsablePropertyFacts(propertyFacts);
+
+      const propertyFactsValidated =
+        validatePublicPropertyFacts(propertyFacts);
+
+      const propertyFactsPrompt =
+        buildPropertyFactPrompt(propertyFacts);
+
+      // PROPERTY_KNOWLEDGE_PIPELINE_V1
+      // Only metadata: never log customer facts or prompt content.
+      console.log("[AUTOMATION PROPERTY FACTS]", {
+        total: propertyFacts.facts.length,
+        usable: usablePropertyFacts.length,
+        accepted: propertyFactsValidated.accepted.length,
+        rejected: propertyFactsValidated.rejected.length,
+        promptFacts: propertyFactsPrompt.facts.length,
+        omitted: propertyFactsPrompt.omittedCount,
+        promptCharacters: propertyFactsPrompt.payload.length,
+        durationMs: Math.round(
+          (performance.now() - propertyFactsStartedAt) * 100
+        ) / 100,
+      });
 
       // AUTOMATION_FACTS_DIAGNOSTIC_V1
       console.log(
@@ -1385,6 +1754,20 @@ export default function AutomationFlowV2() {
       );
 
       setData(facts);
+      if (hasUnresolvedExposeConflicts(facts) || !facts.countryCode) {
+        manualEditFromReadyRef.current = false;
+        setImageAnalyses([]);
+        if (uploadedAnalysesPromise) {
+          const analysisResult = await Promise.allSettled([uploadedAnalysesPromise]);
+          if (analysisResult[0].status === "fulfilled") setImageAnalyses(analysisResult[0].value);
+        }
+        if (controller.signal.aborted || automationAbortRef.current !== controller) return;
+        setVariants([]);
+        setStage("edit");
+        setStatusText(!facts.countryCode ? "Das Objektland muss anhand der Originalunterlagen geprüft werden." : "Widersprüchliche Exposé-Angaben müssen manuell geklärt werden.");
+        setError("Bitte die betroffenen Werte anhand der Originalunterlagen prüfen, unten eintragen und ausdrücklich bestätigen.");
+        return;
+      }
 
       // Fire-and-forget:
       // location enrichment must not delay
@@ -1405,13 +1788,20 @@ export default function AutomationFlowV2() {
           ...exposeResult.pdfImages,
         ];
 
+      const pendingCollageReview =
+        exposeResult.pdfImages.some((file) =>
+          file.name.startsWith("review-collage-")
+        );
+
+      setCollageReviewPending(pendingCollageReview);
+
       if (effectiveImages.length > 0) {
         setImages(effectiveImages);
         setPreviewFiles(effectiveImages);
       }
 
       if (
-        !facts.location.trim() ||
+        !isPlausibleAutomationLocation(facts.location) ||
         !facts.propertyType.trim()
       ) {
         setStage("edit");
@@ -1458,12 +1848,40 @@ export default function AutomationFlowV2() {
               )
         );
 
-      const variantsPromise =
-        generateListing(
-          facts,
-          [],
-          controller.signal
-        );
+      const variantsPromise = analysesPromise.then(
+        async (resolvedAnalyses) => {
+          if (
+            controller.signal.aborted ||
+            automationAbortRef.current !== controller
+          ) {
+            throw new Error("Automation cancelled.");
+          }
+
+          // ROOF_TEXT_GUARD_T205E
+          // Bei Dachform-Widerspruechen keine ungeprueften
+          // Bildanalysen an die Textgenerierung uebergeben.
+          const textRoofCheck = checkImageExposeConsistency({
+            imageRoofs: resolvedAnalyses.map((item) => ({
+              fileName: item.fileName,
+              shape: item.roofShape ?? "unknown",
+              confidence: item.roofConfidence ?? 0,
+            })),
+          });
+
+          const textSafeAnalyses =
+            textRoofCheck.requiresConfirmation
+              ? []
+              : resolvedAnalyses;
+
+          return generateListing(
+            facts,
+            textSafeAnalyses,
+            controller.signal,
+            exposeResult.supplementaryFacts,
+            effectiveImages
+          );
+        }
+      );
 
       console.log(
         "[AUTOMATION SPEED] parallel-work-start",
@@ -1525,6 +1943,7 @@ export default function AutomationFlowV2() {
         "Bereit zur Veröffentlichung."
       );
     } catch (runError) {
+      if(runError instanceof AutopilotReviewRedirect)return;
       if (controller.signal.aborted) {
         return;
       }
@@ -1595,123 +2014,78 @@ export default function AutomationFlowV2() {
 
   async function handleIncomingFiles(event: ChangeEvent<HTMLInputElement>) {
     const selected = Array.from(event.target.files || []);
-    const incoming = selected.filter(
-      (file) =>
-        file.type === "application/pdf" ||
-        /\.pdf$/i.test(file.name)
-    );
-
-    if (incoming.length !== selected.length) {
-      setError("Bitte ausschliesslich PDF-Dateien hochladen.");
-      event.target.value = "";
-      return;
-    }
     event.target.value = "";
-    if (!incoming.length) return;
-
-    const fileKey = (file: File) =>
-      `${file.name}::${file.size}::${file.lastModified}`;
-
-    const incomingDocuments =
-      incoming.filter(isExposeFile);
-
-    const incomingImages =
-      incoming.filter(isImageFile);
-
-    const nextDocuments =
-      [
-        ...documentFiles,
-        ...incomingDocuments,
-      ].filter(
-        (file, index, files) =>
-          files.findIndex(
-            (candidate) =>
-              fileKey(candidate) ===
-              fileKey(file)
-          ) === index
-      );
-
-    const nextImages =
-      [
-        ...images,
-        ...incomingImages,
-      ]
-        .filter(
-          (file, index, files) =>
-            files.findIndex(
-              (candidate) =>
-                fileKey(candidate) ===
-                fileKey(file)
-            ) === index
-        );
-
-    setDocumentFiles(nextDocuments);
-    setImages(nextImages);
-    setPreviewFiles(nextImages);
-
-    setStatusText(
-      "Dateien ausgew\u00e4hlt. Inserat-AI startet automatisch."
-    );
-
-    await processFiles(nextDocuments, nextImages);
+    if (!selected.length) return;
+    let selection: { documents: File[]; images: File[] };
+    try { selection = selectAutomationUploads(documentFiles, images, selected); }
+    catch (error) { setError(error instanceof Error ? error.message : "Dateien konnten nicht übernommen werden."); return; }
+    setDocumentFiles(selection.documents);
+    setImages(selection.images);
+    setPreviewFiles(selection.images);
+    setStatusText("Dateien ausgewählt. Inserat-AI startet automatisch.");
+    await processFiles(selection.documents, selection.images);
   }
 
   async function finishAfterManualEdit() {
     if (requiredMissing.length > 0) return;
-
-    if (manualEditFromReadyRef.current && variants.length > 0) {
-      if (
-        !variants.every(
-          (variant) => variant.title.trim() && variant.text.trim()
-        )
-      ) {
-        setError("Bitte ergänze Titel und Beschreibung aller Textvarianten.");
-        return;
-      }
-
-      editorSnapshotRef.current = null;
-      manualEditFromReadyRef.current = false;
-      setError("");
-      setStage("publish");
-      setStatusText("Deine Änderungen wurden übernommen.");
-      return;
-    }
-
     setError("");
     setStage("working");
-
+    setPremiumApproval(null);
+    automationAbortRef.current?.abort();
+    const controller = new AbortController();
+    automationAbortRef.current = controller;
     try {
-      automationAbortRef.current?.abort();
-
-      const controller = new AbortController();
-      automationAbortRef.current = controller;
-
-      const nextVariants = await generateListing(
-        data,
-        imageAnalyses,
-        controller.signal
-      );
-      setVariants(nextVariants);
-      setStage("publish");
-      setStatusText("Bereit zur Veröffentlichung.");
-    } catch (generationError) {
-      // MANUAL_AUTOMATION_ABORT_V1
-      if (automationAbortRef.current?.signal.aborted) {
-        return;
+      const reviewedData = { ...confirmExposeFactConflicts(data), requiresManualReview: false };
+      setData(reviewedData);
+      // This explicit action confirms the displayed manual facts. Edited text
+      // always receives a fresh server audit; a previous READY cannot survive edits.
+      if (variants.length === 3) await validatePremium(reviewedData, variants, images, controller.signal, true);
+      else {
+        const nextVariants = await generateListing(reviewedData, imageAnalyses, controller.signal, supplementaryFacts, images, true);
+        setVariants(nextVariants);
       }
-
+      if (controller.signal.aborted) return;
+      editorSnapshotRef.current = null;
+      manualEditFromReadyRef.current = false;
+      setStage("publish");
+      setStatusText("Qualitätsprüfung bestanden. Bereit zur Veröffentlichung.");
+    } catch (error) {
+      if(error instanceof AutopilotReviewRedirect)return;
+      if (controller.signal.aborted) return;
       setStage("edit");
-      setError(
-        generationError instanceof Error
-          ? friendlyError(generationError.message)
-          : "Das Inserat konnte nicht fertiggestellt werden."
-      );
+      setError(error instanceof Error ? error.message : "Die Qualitätsprüfung konnte nicht abgeschlossen werden.");
     }
   }
 
   async function uploadImagesForListing(listingId: string) {
+    const selectedImages = images.flatMap((original, index) => {
+      const segmented = original.name.startsWith("review-collage-");
+      const decision = collageDecisions[index];
+
+      if (
+        segmented &&
+        decision !== "photo" &&
+        decision !== "floorplan"
+      ) {
+        return [];
+      }
+
+      const selected = segmented
+        ? new File(
+            [original],
+            (decision === "floorplan" ? "floorplan-" : "property_photo-") +
+              original.name,
+            { type: original.type }
+          )
+        : original;
+
+      return [{ original: selected, index }];
+    });
+
     await Promise.all(
-      images.map(async (original, index) => {
+      selectedImages.map(async ({ original, index }, originalPosition) => {
+        const position = premiumApproval?.imageOrder.indexOf(String(originalPosition + 1)) ?? -1;
+        if (position < 0) throw new Error("Die Bildauswahl hat keinen gültigen Qualitätsnachweis.");
         const file = await prepareImage(original);
         const form = new FormData();
         form.append("listingId", listingId);
@@ -1739,7 +2113,7 @@ export default function AutomationFlowV2() {
             fileName: file.name,
             mimeType: file.type,
             sizeBytes: file.size,
-            position: index,
+            position,
             analysis: imageAnalyses[index]?.analysis
               ? JSON.stringify({
                   version: "listing-image-analysis-cache-v1",
@@ -1759,6 +2133,38 @@ export default function AutomationFlowV2() {
 
   async function publish() {
     if (!readyToPublish || publishing) return;
+
+    // PDF_COLLAGE_SELECTION_T187D
+    const reviewIndices = images.flatMap((file, index) =>
+      file.name.startsWith("review-collage-") ? [index] : []
+    );
+
+    if (reviewIndices.length > 0) {
+      const reviewed = reviewIndices.every(
+        (index) => collageDecisions[index] !== undefined
+      );
+
+      const containsPhoto = reviewIndices.some(
+        (index) => collageDecisions[index] === "photo"
+      );
+
+      if (!collageApproved || !reviewed || !containsPhoto) {
+        setError(
+          "Bitte alle erkannten Bilder prüfen und die Auswahl bestätigen."
+        );
+        return;
+      }
+    }
+
+    if (
+      roofConsistency.requiresConfirmation &&
+      roofReviewApprovedSignature !== roofReviewSignature
+    ) {
+      setError(
+        "Bitte zuerst die moeglichen Widersprueche zwischen den Fotos pruefen und bestaetigen."
+      );
+      return;
+    }
 
     setPublishing(true);
     setError("");
@@ -1787,6 +2193,8 @@ export default function AutomationFlowV2() {
           price: data.price,
           highlights: data.highlights,
           style: data.styleText,
+          premiumAssessmentId: premiumApproval?.id,
+          plotArea: data.plotArea,
           generatedVariants: variants,
           imageAnalysis: imageAnalysisText,
         }),
@@ -1804,6 +2212,9 @@ export default function AutomationFlowV2() {
         await uploadImagesForListing(listingId);
       }
 
+      const verified = await fetch("/api/premium-quality?listingId=" + encodeURIComponent(listingId), { credentials: "include", cache: "no-store" });
+      const checked = await verified.json().catch(() => ({}));
+      if (!verified.ok || checked.ready !== true) throw new Error("Das gespeicherte Objekt benötigt eine erneute Qualitätsprüfung. Keine Veröffentlichungsfreigabe.");
       window.sessionStorage.setItem(CONTINUE_TO_PUBLISH_KEY, "1");
       router.push(`/cockpit/${encodeURIComponent(listingId)}`);
     } catch (publishError) {
@@ -1825,6 +2236,8 @@ export default function AutomationFlowV2() {
       )
     );
   }
+
+  const AUTOPILOT_UPLOAD_MAINTENANCE = process.env.NODE_ENV !== "development";
 
   const step = stage === "receive" || stage === "working" ? 1 : stage === "edit" ? 2 : 3;
 
@@ -1859,17 +2272,62 @@ export default function AutomationFlowV2() {
           <section className="card">
             {(stage === "receive" || stage === "working") && (
               <>
-                <label className="drop">
+                                {AUTOPILOT_UPLOAD_MAINTENANCE ? (
+                  <>
+                    <div
+                      role="status"
+                      style={{
+                        padding: "20px 24px",
+                        marginBottom: 20,
+                        borderRadius: 16,
+                        border: "1px solid rgba(245, 158, 11, 0.45)",
+                        background: "rgba(245, 158, 11, 0.07)",
+                      }}
+                    >
+                      <h2 style={{ margin: "0 0 12px", fontSize: 22 }}>
+                        Technische Optimierungen
+                      </h2>
+                      <p style={{ margin: "0 0 12px", lineHeight: 1.7 }}>
+                        Wir verbessern derzeit unseren Inserat-AI Autopiloten,
+                        um Ihnen ein noch schnelleres und zuverlässigeres
+                        Erlebnis zu bieten.
+                      </p>
+                      <strong>Wir sind in Kürze wieder für Sie da.</strong>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="drop"
+                      onClick={() =>
+                        window.alert("Wir sind in Kürze wieder für Sie da.")
+                      }
+                      style={{
+                        width: "100%",
+                        color: "inherit",
+                        font: "inherit",
+                        textAlign: "left",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <div className="dropIcon">＋</div>
+                      <div>
+                        <h2>Exposé mit Bildern als PDF hochladen</h2>
+                        <p>Wir sind in Kürze wieder für Sie da.</p>
+                      </div>
+                    </button>
+                  </>
+                ) : (
+<label className="drop">
                   <input
                     type="file"
                     multiple
-                    accept=".pdf,application/pdf"
+                    accept=".pdf,application/pdf,image/jpeg,image/png,image/webp"
                     disabled={stage === "working"}
                     onChange={handleIncomingFiles}
                   />
                   <div className="dropIcon">＋</div>
                   <div>
-                    <h2>{stage === "working" ? "Inserat-AI arbeitet …" : "Exposé mit Bildern als PDF hochladen"}</h2>
+                    <h2>{stage === "working" ? "Inserat-AI arbeitet …" : "PDF-Exposé und Immobilienbilder hochladen"}</h2>
                     <p>
                       {stage === "working"
                         ? "Adresse, Daten, Masse, Bilder und Inserattext werden automatisch verarbeitet."
@@ -1877,6 +2335,7 @@ export default function AutomationFlowV2() {
                     </p>
                   </div>
                 </label>
+                )}
 
                 {stage === "working" && (
                   <div className="workingActions">
@@ -1898,7 +2357,7 @@ export default function AutomationFlowV2() {
                   </div>
                 )}
 
-                {stage === "receive" &&
+                {!AUTOPILOT_UPLOAD_MAINTENANCE && stage === "receive" &&
                   statusText.startsWith("Verarbeitung gestoppt") &&
                   (documentFiles.length > 0 || images.length > 0) && (
                     <button
@@ -1910,6 +2369,13 @@ export default function AutomationFlowV2() {
                     </button>
                   )}
               </>
+            )}
+
+            {stage === "edit" && !AUTOPILOT_UPLOAD_MAINTENANCE && (
+              <label className="drop">
+                <span>PDF oder Einzelbilder zum aktuellen Entwurf ergänzen</span>
+                <input type="file" multiple accept=".pdf,application/pdf,image/jpeg,image/png,image/webp" onChange={handleIncomingFiles} />
+              </label>
             )}
 
             {stage === "receive" && (
@@ -1961,18 +2427,16 @@ export default function AutomationFlowV2() {
                     </div>
 
                     <div className="outputTitleRow">
-                      <h2>Dein Inserat ist bereit</h2>
+                      <h2>{readyToPublish ? "Dein Inserat ist bereit" : "Qualitätsprüfung erforderlich"}</h2>
 
                       <span className="readyBadge">
                         <span className="readyDot" />
-                        READY
+                        {readyToPublish ? "READY" : "REVIEW_REQUIRED"}
                       </span>
                     </div>
 
                     <p>
-                      Vollständig von Inserat-AI erstellt.
-                      Du kannst direkt veröffentlichen oder
-                      den Text noch anpassen.
+                      {readyToPublish ? "Die verbindliche Qualitätsprüfung ist bestanden." : "Änderungen oder fehlende Prüfnachweise verhindern die Freigabe."}
                     </p>
                   </div>
                 </div>
@@ -2449,6 +2913,62 @@ export default function AutomationFlowV2() {
 
                 </div>
 
+                {/* PDF_COLLAGE_COMPONENT_T200B */}
+                {collageReviewPending && (
+                  <PdfCollageImageReview
+                    images={images}
+                    imagePreviews={imagePreviews}
+                    decisions={collageDecisions}
+                    setDecisions={setCollageDecisions}
+                    approved={collageApproved}
+                    setApproved={setCollageApproved}
+                    clearError={() => setError("")}
+                  />
+                )}
+
+                {roofConsistency.requiresConfirmation && (
+                  <div
+                    role="alert"
+                    style={{
+                      padding: 16,
+                      marginBottom: 16,
+                      border: "1px solid #d97706",
+                      borderRadius: 8,
+                    }}
+                  >
+                    <strong>Immobilienfotos bitte prüfen</strong>
+
+                    {roofConsistency.issues.map((issue, index) => (
+                      <p key={index}>{issue.message}</p>
+                    ))}
+
+                    <p>
+                      Unterschiedliche Dachformen bedeuten nicht
+                      zwangsläufig unterschiedliche Immobilien.
+                      Bitte die Objektzugehörigkeit kontrollieren.
+                    </p>
+
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={
+                          roofReviewApprovedSignature === roofReviewSignature
+                        }
+                        onChange={(event) => {
+                          setRoofReviewApprovedSignature(
+                            event.target.checked
+                              ? roofReviewSignature
+                              : null
+                          );
+                          setError("");
+                        }}
+                      />
+                      Ich habe die betreffenden Fotos überprüft
+                      und bestätige ihre Zugehörigkeit zum Objekt.
+                    </label>
+                  </div>
+                )}
+
                 <div className="listingActions">
                   {stage === "publish" && (
                     <button
@@ -2557,12 +3077,39 @@ export default function AutomationFlowV2() {
             )}
                       {(stage === "edit" || stage === "publish") && (
               <div className="review">
+                <fieldset disabled={publishing}>
+                  <legend>Vermarktung und objektspezifische Angaben</legend>
+                  <label>Vermarktungsart
+                    <select value={data.marketingType || ""} onChange={event => setData(current => ({ ...current, marketingType: event.target.value }))}>
+                      <option value="">Bitte prüfen und auswählen</option><option value="sale">Kauf</option><option value="rent">Miete</option><option value="on_request">Preis auf Anfrage</option>
+                    </select>
+                  </label>
+                  {data.marketingType === "on_request" && <label>Angebotsart bei Preis auf Anfrage
+                    <select value={data.transactionType || ""} onChange={event => setData(current => ({ ...current, transactionType: event.target.value }))}>
+                      <option value="">Bitte ausdrücklich bestätigen</option><option value="sale">Kaufangebot</option><option value="rent">Mietangebot</option>
+                    </select>
+                  </label>}
+                  <label>Währung
+                    <select value={data.currency || ""} onChange={event => setData(current => ({ ...current, currency: event.target.value }))}>
+                      <option value="">Nicht bestätigt</option><option value="EUR">EUR</option><option value="CHF">CHF</option>
+                    </select>
+                  </label>
+                  {data.marketingType === "rent" && <label>Mietzeitraum
+                    <select value={data.rentPeriod || ""} onChange={event => setData(current => ({ ...current, rentPeriod: event.target.value }))}>
+                      <option value="">Bitte auswählen</option><option value="month">Monat</option><option value="year">Jahr</option>
+                    </select>
+                  </label>}
+                  <label>Grundstücksfläche (m²)<input value={data.plotArea || ""} onChange={event => setData(current => ({ ...current, plotArea: event.target.value }))} /></label>
+                  <label>Gewerbliche Fläche (m²)<input value={data.commercialArea || ""} onChange={event => setData(current => ({ ...current, commercialArea: event.target.value }))} /></label>
+                  <label>Bestätigte gewerbliche Nutzung<input value={data.commercialUse || ""} onChange={event => setData(current => ({ ...current, commercialUse: event.target.value }))} /></label>
+                  <p>Mit „Prüfen und bestätigen“ bestätigst du die Angaben anhand der Originalunterlagen. Die serverseitigen Prüfungen bleiben erforderlich.</p>
+                </fieldset>
                 <div className="reviewTop">
                   <div>
                     <div className="eyebrow">AUTOMATISCH ERKANNT</div>
                     <h2>{stage === "publish" ? "Alles ist bereit" : "Nur fehlende Angaben ergänzen"}</h2>
                   </div>
-                  <span className="badge">{requiredMissing.length ? `${requiredMissing.length} offen` : "✓ vollständig"}</span>
+                  <span className="badge">{hasUnresolvedExposeConflicts(data) ? "Klärung erforderlich" : requiredMissing.length ? `${requiredMissing.length} offen` : "✓ vollständig"}</span>
                 </div>
 
                 {stage === "publish" && (
@@ -2592,11 +3139,25 @@ export default function AutomationFlowV2() {
                       : ""
                   }`}
                 >
+                  <label>Objektland
+                    <select value={data.countryCode} onChange={event => setData(current => ({ ...current, countryCode: event.target.value as Extracted["countryCode"] }))}>
+                      <option value="">Anhand der Quelle prüfen und auswählen</option>
+                      <option value="DE">Deutschland</option>
+                      <option value="CH">Schweiz</option>
+                      <option value="AT">Österreich</option>
+                    </select>
+                  </label>
                   <Field label="Objektname" value={data.projectName} onChange={(value) => setData({ ...data, projectName: value })} />
                   <Field label="Objektart" value={data.propertyType} required onChange={(value) => setData({ ...data, propertyType: value })} />
                   <Field label="Strasse" value={data.street} onChange={(value) => setData({ ...data, street: value })} />
                   <Field label="PLZ" value={data.postalCode} onChange={(value) => setData({ ...data, postalCode: value })} />
                   <Field label="Ort" value={data.location} required onChange={(value) => setData({ ...data, location: value })} />
+                  {hasUnresolvedExposeConflicts(data) && (
+                    <div role="alert">Quellenkonflikte: {(data.factConflicts ?? []).filter(c => c.status !== "manually_resolved").map(c =>
+                      (c.field === "rooms" ? "Zimmer" : c.field === "livingArea" ? "Wohnfläche" : "Kaufpreis") + ": " +
+                      c.candidates.map(x => x.value + (x.currency ? " " + x.currency : "")).join(" / ")
+                    ).join("; ")}. Bitte Originalunterlagen prüfen und die geklärten Werte manuell bestätigen.</div>
+                  )}
                   <Field label="Zimmer" value={data.rooms} onChange={(value) => setData({ ...data, rooms: value })} />
                   <Field label="Wohnfläche" value={data.livingArea} onChange={(value) => setData({ ...data, livingArea: value })} />
                   <Field label="Preis" value={data.price} onChange={(value) => setData({ ...data, price: value })} />
@@ -2605,7 +3166,7 @@ export default function AutomationFlowV2() {
 
                 {stage === "edit" && !manualEditFromReadyRef.current && (
                   <button className="primary" disabled={requiredMissing.length > 0} onClick={finishAfterManualEdit}>
-                    Fehlende Angaben übernehmen →
+                    {hasUnresolvedExposeConflicts(data) ? "Geprüfte Konfliktwerte bestätigen →" : "Fehlende Angaben übernehmen →"}
                   </button>
                 )}
               </div>

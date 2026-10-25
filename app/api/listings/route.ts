@@ -1,3 +1,7 @@
+import { readPremiumAssessment } from "@/lib/premium-quality-store.server";
+import { listingQualityBinding } from "@/lib/premium-quality.server";
+import type { PremiumFacts } from "@/lib/premium-quality-gate.server";
+import type { ListingTextVariant } from "@/lib/listing-text-quality";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
@@ -300,7 +304,15 @@ export async function POST(request: NextRequest) {
     const usesSingleObjectPayment =
       userPlan === "free";
 
-    const listing = await prisma.listing.create({
+    const premiumReceipt = body.generatedVariants === undefined ? null : await readPremiumAssessment(user.id, body.premiumAssessmentId, "final");
+    if (body.generatedVariants !== undefined) {
+      const payload = premiumReceipt?.payload as unknown as { facts: PremiumFacts; variants: ListingTextVariant[]; images: { contentFingerprint: string }[]; decision: { ready: boolean } } | undefined;
+      if (!payload?.decision.ready || premiumReceipt?.listingId || listingQualityBinding({ ...payload?.facts, ...body, market: listingMarket }, body.generatedVariants as ListingTextVariant[], payload.images.map(image => image.contentFingerprint)) !== listingQualityBinding(payload.facts, payload.variants, payload.images.map(image => image.contentFingerprint))) {
+        return NextResponse.json({ success: false, code: "PREMIUM_QUALITY_NOT_READY", error: "Ein aktueller serverseitiger Qualitätsnachweis ist erforderlich." }, { status: 422 });
+      }
+    }
+    const listing = await prisma.$transaction(async tx => {
+      const listing = await tx.listing.create({
       data: {
         userId: user.id,
         paymentModel: usesSingleObjectPayment
@@ -332,6 +344,7 @@ export async function POST(request: NextRequest) {
           null,
 
         propertyType,
+        plotArea: optionalNumber(body.plotArea),
         rooms: optionalNumber(body.rooms),
         livingArea: optionalNumber(body.livingArea),
         price: price === null ? null : Math.round(price),
@@ -351,6 +364,13 @@ export async function POST(request: NextRequest) {
             ? null
             : JSON.stringify(body.generatedVariants),
       },
+    });
+
+    if (premiumReceipt) {
+      const attached = await tx.premiumQualityAssessment.updateMany({ where: { id: premiumReceipt.id, userId: user.id, listingId: null }, data: { listingId: listing.id } });
+      if (attached.count !== 1) throw new Error("PREMIUM_ASSESSMENT_ALREADY_USED");
+    }
+    return listing;
     });
 
     return NextResponse.json(

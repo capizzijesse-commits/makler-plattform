@@ -1,3 +1,4 @@
+import { assertListingPremiumPublicationReady } from "@/lib/premium-quality.server";
 import "server-only";
 
 import {
@@ -182,6 +183,8 @@ export async function runPublicationAutopilotAfterApproval(
       unknown;
   }
 ) {
+  await assertListingPremiumPublicationReady(input.userId, input.listingId);
+
 
   const capabilities =
     getPlanCapabilities(

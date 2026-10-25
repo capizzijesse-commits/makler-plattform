@@ -1,3 +1,4 @@
+import { isListingPremiumQualityReady } from "@/lib/premium-quality.server";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
@@ -178,6 +179,7 @@ export async function GET(
       success: true,
       listing: {
         ...listingWithDisplayImages,
+        premiumQualityReady: await isListingPremiumQualityReady(user.id, listing.id),
         viewerPlan: userPlan,
         generatedVariants: hasCoreAccess
           ? parseJsonValue(listing.generatedVariants)
@@ -322,6 +324,8 @@ export async function PATCH(
       data: {
         location,
         postalCode: optionalText(body.postalCode),
+        ...(body.street === undefined ? {} : {street:optionalText(body.street)}),
+        ...(body.plotArea === undefined ? {} : {plotArea:optionalNumber(body.plotArea)}),
         propertyType,
         rooms: optionalNumber(body.rooms),
         livingArea: optionalNumber(body.livingArea),

@@ -1,3 +1,6 @@
+import { hasMeaningfulPdfText, pdfDocumentImageIndices } from "./pdf-document-evidence";
+import { join, sep } from "node:path";
+import { pathToFileURL } from "node:url";
 import sharp from "sharp";
 import { createCanvas } from "@napi-rs/canvas";
 
@@ -382,6 +385,10 @@ export async function extractPdfImageCandidates(
         new Uint8Array(pdfBuffer),
       useSystemFonts:
         false,
+      // PDF_IMAGE_WASM_PATH_T169
+      wasmUrl: pathToFileURL(
+        join(process.cwd(), "node_modules", "pdfjs-dist", "wasm") + sep
+      ).href,
     });
 
   const pdf =
@@ -509,6 +516,8 @@ export async function extractPdfImageCandidates(
       const pageNumber
       of pagesToScan
     ) {
+      // Unresolved scan pages stay documents, not automatically cropped photographs.
+      if (!hasMeaningfulPdfText(pageTexts.find(p => p.pageNumber === pageNumber)?.text ?? "")) continue;
       const pageStartedAt =
         performance.now();
 
@@ -579,6 +588,8 @@ export async function extractPdfImageCandidates(
         }
       }
 
+      const pageView = page.getViewport({scale:1});
+      const documentImageIndices = pdfDocumentImageIndices(operatorList,pdfjs.OPS,pageView.width*pageView.height);
       let pageImageIndex = 0;
 
       for (
@@ -594,6 +605,7 @@ export async function extractPdfImageCandidates(
           continue;
         }
 
+        if (documentImageIndices.has(index)) continue;
         pageImageIndex += 1;
 
         const args =

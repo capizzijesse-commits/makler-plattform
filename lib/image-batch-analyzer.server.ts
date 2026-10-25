@@ -1,4 +1,6 @@
 import "server-only";
+import { getSafeImageRoomEvidence, buildSafeImageRoomPrompt, ROOM_INDEPENDENT_VISIBLE_FACTS } from "@/lib/image-expose-consistency";
+
 
 import OpenAI from "openai";
 
@@ -8,14 +10,25 @@ export type ImageBatchInput = {
   bytes: Buffer;
 };
 
+// IMAGE_ROOF_EVIDENCE_T205B2
 export type ImageBatchAnalysis = {
   imageIndex: number;
   analysis: string;
+  roofShape?: "flat" | "pitched" | "unknown";
+  roofConfidence?: number;
+  roomConfidence?: number | null;
+  room?: string | null;
+  roomIndependentFacts?: { fact: string; confidence: number }[];
 };
 
 type BatchAnalysis = {
   imageIndex: number;
+  roofShape?: unknown;
+  roofConfidence?: unknown;
+  category?: unknown;
   room?: unknown;
+  roomConfidence?: unknown;
+  roomIndependentFacts?: unknown;
   condition?: unknown;
   visibleFacts?: unknown;
   strengths?: unknown;
@@ -50,12 +63,41 @@ function cleanList(
     .slice(0, maximum);
 }
 
+function normalizeRoofEvidence(parsed: BatchAnalysis): {
+  roofShape: "flat" | "pitched" | "unknown";
+  roofConfidence: number;
+} {
+  const shape = parsed.roofShape;
+  const confidence = parsed.roofConfidence;
+
+  if (
+    (shape !== "flat" && shape !== "pitched") ||
+    typeof confidence !== "number" ||
+    !Number.isFinite(confidence) ||
+    confidence < 0 ||
+    confidence > 1
+  ) {
+    return {
+      roofShape: "unknown",
+      roofConfidence: 0,
+    };
+  }
+
+  return {
+    roofShape: shape,
+    roofConfidence: confidence,
+  };
+}
+
 function buildAnalysis(
   parsed: BatchAnalysis
 ): string {
+  const safe = getSafeImageRoomEvidence(parsed);
+  if (safe.roomCategoryIssue) return "Manuelle Prüfung erforderlich: " + safe.roomCategoryIssue + ". Keine bestätigten Bildfakten.";
+  if (!safe.room) return buildSafeImageRoomPrompt([safe]) || "Raum oder Bereich: Nicht eindeutig bestimmbar";
   const room =
     cleanText(
-      parsed.room,
+      safe.room,
       "Nicht eindeutig bestimmbar"
     );
 
@@ -207,9 +249,16 @@ export async function analyzeImageBatch(
         "Erfinde keine nicht sichtbaren Fakten. " +
         "Gib ausschliesslich JSON zurueck. " +
         "imageIndex beginnt bei 0 und muss exakt der angegebenen Bildnummer entsprechen.\n\n" +
-        'Format: {"analyses":[{"imageIndex":0,"room":"...","condition":"...","visibleFacts":["..."],"strengths":["..."],"limitations":["..."]}]}\n\n' +
+        'Format: {"analyses":[{"imageIndex":0,"room":"...","category":"other","roomConfidence":0,"roofShape":"unknown","roofConfidence":0,"condition":"...","visibleFacts":["..."],"strengths":["..."],"limitations":["..."]}]}\n\n' +
         "Regeln: room maximal 5 Woerter; condition maximal 10 Woerter; " +
-        "visibleFacts maximal 5 kurze Eintraege; strengths maximal 2; limitations maximal 2.",
+        "category: living, exterior, kitchen, outdoor, dining, bedroom, bathroom, office, hallway, storage, floorplan, document, logo oder other; muss zum Raum passen, bei Unsicherheit other. " +
+        "roomConfidence: Selbsteinschaetzung von 0 bis 1; bei unklarem Raumtyp 0. " +
+        "roomIndependentFacts: nur unabhängig von der Raumnutzung sichtbare Beobachtungen als {fact,confidence}; keine Ableitung aus Möbeln oder Raumnutzung. Erlaubte Merkmale: " + ROOM_INDEPENDENT_VISIBLE_FACTS.join(", ") + ". Bei Unsicherheit weglassen. " +
+        "visibleFacts maximal 5 kurze Eintraege; strengths maximal 2; limitations maximal 2. " +
+        "roofShape: flat nur bei eindeutig sichtbarem Flachdach, pitched nur bei eindeutig sichtbarem geneigtem Dach, sonst unknown. " +
+        "roofConfidence: Selbsteinschaetzung von 0 bis 1; bei unknown immer 0. " +
+        "Bei Innenraeumen, Grundrissen, Detailbildern und unklaren Ansichten immer unknown. " +
+        "Keine Dachform aus Dateinamen oder Vermutungen ableiten.",
     },
   ];
 
@@ -325,6 +374,15 @@ export async function analyzeImageBatch(
               buildAnalysis(
                 item
               ),
+            ...normalizeRoofEvidence(item),
+            ...getSafeImageRoomEvidence(item),
+            roomConfidence:
+              typeof item.roomConfidence === "number" &&
+              Number.isFinite(item.roomConfidence) &&
+              item.roomConfidence >= 0 &&
+              item.roomConfidence <= 1
+                ? item.roomConfidence
+                : null,
           }))
       : [];
 
@@ -405,9 +463,8 @@ export async function analyzeImageBatch(
             }
 
             return {
+              ...single[0],
               imageIndex,
-              analysis:
-                single[0].analysis,
             };
           }
         )

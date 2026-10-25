@@ -245,7 +245,7 @@ function detectRoomType(
   return "unclear";
 }
 
-function roomTypeLabel(
+export function roomTypeLabel(
   roomType: HomeStagingRoomType
 ): string {
   const labels: Record<

@@ -1,0 +1,271 @@
+{
+  "approved": true,
+  "approvalScope": "LOCAL_SYNTHETIC_FIXTURE_ACCEPTANCE_NOT_PAID_EXECUTION",
+  "origin": "SYNTHETIC_FIXTURE_ONLY",
+  "files": [
+    {
+      "id": "S01",
+      "file": "../shared-images/S01.png",
+      "mime": "image/png",
+      "format": "png",
+      "width": 1448,
+      "height": 1086,
+      "bytes": 2895490,
+      "sha256": "2381f07fae891c12689a5a9998cffe223b276fc47506234ef8b44e7f41178e99",
+      "synthetic": true,
+      "humanReferenceRecorded": true,
+      "status": "PASS",
+      "expectedCategory": "living",
+      "allowedNewPropertyFacts": [],
+      "metadata": {
+        "exif": false,
+        "xmp": false,
+        "iptc": false,
+        "icc": false
+      },
+      "unchangedFrom7J": false
+    },
+    {
+      "id": "S02",
+      "file": "../shared-images/S02.jpg",
+      "mime": "image/jpeg",
+      "format": "jpeg",
+      "width": 1448,
+      "height": 1086,
+      "bytes": 262014,
+      "sha256": "f9f85985ba965e2c7965a5ad40828464208bde214d3a778338494d69efeb21ff",
+      "synthetic": true,
+      "humanReferenceRecorded": true,
+      "status": "PASS",
+      "expectedCategory": "kitchen",
+      "allowedNewPropertyFacts": [],
+      "metadata": {
+        "exif": false,
+        "xmp": false,
+        "iptc": false,
+        "icc": false
+      },
+      "unchangedFrom7J": true
+    },
+    {
+      "id": "S03",
+      "file": "../shared-images/S03.jpg",
+      "mime": "image/jpeg",
+      "format": "jpeg",
+      "width": 1448,
+      "height": 1086,
+      "bytes": 350388,
+      "sha256": "d321aa9a4bae9e25a0faecfaf365f384843b80648d55255ca89836e3516593a8",
+      "synthetic": true,
+      "humanReferenceRecorded": true,
+      "status": "PASS",
+      "expectedCategory": "bedroom",
+      "allowedNewPropertyFacts": [],
+      "metadata": {
+        "exif": false,
+        "xmp": false,
+        "iptc": false,
+        "icc": false
+      },
+      "unchangedFrom7J": true
+    },
+    {
+      "id": "S04",
+      "file": "../shared-images/S04.jpg",
+      "mime": "image/jpeg",
+      "format": "jpeg",
+      "width": 1448,
+      "height": 1086,
+      "bytes": 307268,
+      "sha256": "f832b1b5ddaa296012399d017b13054b0d3dfc0e563447eb7992f2a7b4c3989c",
+      "synthetic": true,
+      "humanReferenceRecorded": true,
+      "status": "PASS",
+      "expectedCategory": "bathroom",
+      "allowedNewPropertyFacts": [],
+      "metadata": {
+        "exif": false,
+        "xmp": false,
+        "iptc": false,
+        "icc": false
+      },
+      "unchangedFrom7J": true
+    },
+    {
+      "id": "S05",
+      "file": "../shared-images/S05.jpg",
+      "mime": "image/jpeg",
+      "format": "jpeg",
+      "width": 1448,
+      "height": 1086,
+      "bytes": 449694,
+      "sha256": "e8671265b111bf435aa34753f38787e601f3e256c82466accb5a1a199c133025",
+      "synthetic": true,
+      "humanReferenceRecorded": true,
+      "status": "PASS",
+      "expectedCategory": "exterior",
+      "allowedNewPropertyFacts": [],
+      "metadata": {
+        "exif": false,
+        "xmp": false,
+        "iptc": false,
+        "icc": false
+      },
+      "unchangedFrom7J": true
+    },
+    {
+      "id": "S06",
+      "file": "../shared-images/S06.jpg",
+      "mime": "image/jpeg",
+      "format": "jpeg",
+      "width": 1448,
+      "height": 1086,
+      "bytes": 473133,
+      "sha256": "aadf36999ffad1298f802780b3b8973a7a9d26eee16829ffe6c6ee5980e34af6",
+      "synthetic": true,
+      "humanReferenceRecorded": true,
+      "status": "PASS",
+      "expectedCategory": "exterior",
+      "allowedNewPropertyFacts": [],
+      "metadata": {
+        "exif": false,
+        "xmp": false,
+        "iptc": false,
+        "icc": false
+      },
+      "unchangedFrom7J": true
+    },
+    {
+      "id": "S07",
+      "file": "../shared-images/S07.jpg",
+      "mime": "image/jpeg",
+      "format": "jpeg",
+      "width": 1448,
+      "height": 1086,
+      "bytes": 141519,
+      "sha256": "919558baaf578cb9b5332be06e9722c86836426b8049e89832b2a014acf9437c",
+      "synthetic": true,
+      "humanReferenceRecorded": true,
+      "status": "PASS",
+      "expectedCategory": "floorplan",
+      "allowedNewPropertyFacts": [],
+      "metadata": {
+        "exif": false,
+        "xmp": false,
+        "iptc": false,
+        "icc": false
+      },
+      "unchangedFrom7J": true
+    },
+    {
+      "id": "S08",
+      "file": "../shared-images/S08.jpg",
+      "mime": "image/jpeg",
+      "format": "jpeg",
+      "width": 1448,
+      "height": 1086,
+      "bytes": 157985,
+      "sha256": "8c0f0a7980b99895d23c4df9f1e504204071940e876ece9147157c4f5b2512da",
+      "synthetic": true,
+      "humanReferenceRecorded": true,
+      "status": "PASS",
+      "expectedCategory": "living",
+      "allowedNewPropertyFacts": [],
+      "metadata": {
+        "exif": false,
+        "xmp": false,
+        "iptc": false,
+        "icc": false
+      },
+      "unchangedFrom7J": false
+    },
+    {
+      "id": "S09",
+      "file": "../shared-images/S09.jpg",
+      "mime": "image/jpeg",
+      "format": "jpeg",
+      "width": 1448,
+      "height": 1086,
+      "bytes": 446269,
+      "sha256": "e765c5e428227a538b72552744ee48eb7f42218225f89638123a95f6cbdb1c96",
+      "synthetic": true,
+      "humanReferenceRecorded": true,
+      "status": "PASS",
+      "expectedCategory": "living",
+      "allowedNewPropertyFacts": [],
+      "metadata": {
+        "exif": false,
+        "xmp": false,
+        "iptc": false,
+        "icc": false
+      },
+      "unchangedFrom7J": false
+    },
+    {
+      "id": "S10",
+      "file": "../shared-images/S10.jpg",
+      "mime": "image/jpeg",
+      "format": "jpeg",
+      "width": 1448,
+      "height": 1086,
+      "bytes": 82247,
+      "sha256": "3b13d3612e426e929840ddc874b5189b4a51d77194a9a84bd0ae855d58b8d572",
+      "synthetic": true,
+      "humanReferenceRecorded": true,
+      "status": "PASS",
+      "expectedCategory": "bedroom",
+      "allowedNewPropertyFacts": [],
+      "metadata": {
+        "exif": false,
+        "xmp": false,
+        "iptc": false,
+        "icc": false
+      },
+      "unchangedFrom7J": true
+    },
+    {
+      "id": "S11",
+      "file": "../shared-images/S11.png",
+      "mime": "image/png",
+      "format": "png",
+      "width": 1086,
+      "height": 1448,
+      "bytes": 3076194,
+      "sha256": "2c341645a885a3bdfb5bc932ebc45797559fa91e25a5b1ff12af2c3e89271c4e",
+      "synthetic": true,
+      "humanReferenceRecorded": true,
+      "status": "PASS",
+      "expectedCategory": "exterior",
+      "allowedNewPropertyFacts": [],
+      "metadata": {
+        "exif": false,
+        "xmp": false,
+        "iptc": false,
+        "icc": false
+      },
+      "unchangedFrom7J": true
+    },
+    {
+      "id": "S12",
+      "file": "../shared-images/S12.jpg",
+      "mime": "image/jpeg",
+      "format": "jpeg",
+      "width": 240,
+      "height": 140,
+      "bytes": 3387,
+      "sha256": "dc07a29f5b981950878e1cc1ac3fba43f28c7aa1001466886c50b960eb1ddfcf",
+      "synthetic": true,
+      "humanReferenceRecorded": true,
+      "status": "PASS",
+      "expectedCategory": "other",
+      "allowedNewPropertyFacts": [],
+      "metadata": {
+        "exif": false,
+        "xmp": false,
+        "iptc": false,
+        "icc": false
+      },
+      "unchangedFrom7J": true
+    }
+  ]
+}

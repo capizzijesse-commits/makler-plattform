@@ -1,0 +1,50 @@
+[
+  {
+    "target": "fixtures/quality-8c-original.responses.jsonl",
+    "sourceSha256": "5925a0dd24ce7bc16cf4930d09f9ba4a52eb517ef58ccc88b565676db04347ca",
+    "fixtureSha256": "0f9cce4d9a83d5d4397d229a65ebb5979e53a14d3947ec86101de9069b6febd8",
+    "scope": "Only response content; original source unchanged; no usage/cost/header export"
+  },
+  {
+    "target": "fixtures/quality-8k-original.responses.jsonl",
+    "sourceSha256": "440d3ca59b16c9329d21ec017b84579fb704ef019269e50f6214dbee76ecd74d",
+    "fixtureSha256": "a0b71bb7e0cf759a956d06f6e93fce5525e44759d6d8753bbb51bbe8c7cb1eef",
+    "scope": "Only response content; original source unchanged; no usage/cost/header export"
+  },
+  {
+    "target": "fixtures/quality-8o-original.responses.jsonl",
+    "sourceSha256": "3b38b09b630ee824a4bc6fc4adb45685d6962fa79fab299d9525891aadaac034",
+    "fixtureSha256": "486dc9147eed43928775d75a9dc6916c035cd43bffae90078ad3a48382f48e70",
+    "scope": "Only response content; original source unchanged; no usage/cost/header export"
+  },
+  {
+    "target": "fixtures/quality-8t-original.responses.jsonl",
+    "sourceSha256": "3d5b6882b7bf1012aca89cfcd881c905a96aee725bf7c4b7ad6c41c1bf5fa21a",
+    "fixtureSha256": "488fc416e4fdc5c0eb098f9aa774b5e276a750d78cde9564e4393dac0a6a6a71",
+    "scope": "Only response content; original source unchanged; no usage/cost/header export"
+  },
+  {
+    "target": "fixtures/image-analysis-7y-original.responses.jsonl",
+    "sourceSha256": "beaed0a6c06c8b957de50e687c63077a4f5219688fa29c5d95143f919fdc9f54",
+    "fixtureSha256": "290d25da9673b4178cfd448f588e70f0ce0cc6eb06f27074f9d95299710d0cb6",
+    "scope": "Only response content; original source unchanged; no usage/cost/header export"
+  },
+  {
+    "target": "quality-validation-8c/runs/STARNBERG-QUALITY-8C-d55353f2-13fa-48e5-8615-e4453b6015fe/responses.jsonl",
+    "sourceSha256": "5925a0dd24ce7bc16cf4930d09f9ba4a52eb517ef58ccc88b565676db04347ca",
+    "fixtureSha256": "0f9cce4d9a83d5d4397d229a65ebb5979e53a14d3947ec86101de9069b6febd8",
+    "scope": "Only response content; original source unchanged; no usage/cost/header export"
+  },
+  {
+    "target": "quality-validation-8k/runs/STARNBERG-QUALITY-8K-1ede5e40-6b34-41b1-b107-1c753c29868c/responses.jsonl",
+    "sourceSha256": "440d3ca59b16c9329d21ec017b84579fb704ef019269e50f6214dbee76ecd74d",
+    "fixtureSha256": "a0b71bb7e0cf759a956d06f6e93fce5525e44759d6d8753bbb51bbe8c7cb1eef",
+    "scope": "Only response content; original source unchanged; no usage/cost/header export"
+  },
+  {
+    "target": "quality-validation-8t/runs/STARNBERG-QUALITY-8T-a713412e-3a10-4753-8127-3ab551dc0a4e/responses.jsonl",
+    "sourceSha256": "3d5b6882b7bf1012aca89cfcd881c905a96aee725bf7c4b7ad6c41c1bf5fa21a",
+    "fixtureSha256": "488fc416e4fdc5c0eb098f9aa774b5e276a750d78cde9564e4393dac0a6a6a71",
+    "scope": "Only response content; original source unchanged; no usage/cost/header export"
+  }
+]

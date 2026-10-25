@@ -1,0 +1,5 @@
+      await recordSourceGuard(sourceDiagnostic, sourceAudit);
+      if (sourceAudit.status !== "passed" || sourceAudit.conflicts.some(conflict => conflict.status === "unresolved") || sourceAudit.documents?.some(document => (document.analysis as { requiresReview?: boolean } | undefined)?.requiresReview === true)) {
+        return NextResponse.json({ error: "Die Quellenfakten benötigen eine Prüfung.", code: "PREMIUM_SOURCE_AUDIT_REQUIRED" }, { status: 422 });
+      }
+      verifiedSourceContext =

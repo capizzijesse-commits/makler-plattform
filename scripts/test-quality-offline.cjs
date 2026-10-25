@@ -1,0 +1,13 @@
+'use strict';
+const fs=require('node:fs'),p=require('node:path'),cp=require('node:child_process');
+const root=p.resolve(__dirname,'..'),env={};
+for(const key of ['SystemRoot','WINDIR','ComSpec','PATH','PATHEXT','TEMP','TMP','USERPROFILE','LOCALAPPDATA','APPDATA'])if(process.env[key])env[key]=process.env[key];
+Object.assign(env,{NODE_ENV:'test',NEXT_TELEMETRY_DISABLED:'1'});
+const guard=p.join(root,'tests/support/offline-network-guard.cjs');
+const mode=process.argv[2]??'tests';if(!['tests','types'].includes(mode))throw Error('OFFLINE_TEST_MODE_INVALID');
+const files=fs.readdirSync(p.join(root,'tests')).filter(x=>x.endsWith('.test.cjs')).sort().map(x=>'tests/'+x);
+files.push('tests/support/portable/browser-diagnostics-9n/diagnostics.test.cjs','tests/support/portable/browser-validation-9r/image-simulator.test.cjs','tests/support/portable/browser-validation-9s/image-simulator.test.cjs','tests/support/portable/browser-validation-9s/review-transition.test.cjs');
+const args=mode==='types'?['--require',guard,p.join(root,'node_modules/typescript/bin/tsc'),'--noEmit','--incremental','false']:['--require',guard,'--test','--test-concurrency=2',...files];
+const result=cp.spawnSync(process.execPath,args,{cwd:root,env,stdio:'inherit',windowsHide:true});
+if(result.error)console.error('OFFLINE_TEST_PROCESS_FAILED');
+process.exitCode=result.status??1;

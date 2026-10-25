@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import BrokerReviewPanel from "./BrokerReviewPanel";
 import LocationAssistantPanel, {
   type LocationAssistantData,
 } from "./LocationAssistantPanel";
@@ -44,6 +45,8 @@ type Listing = {
   countryCode?: string | null;
   location: string;
   postalCode: string | null;
+  street?: string | null;
+  plotArea?: number | null;
   propertyType: string;
   rooms: number | null;
   livingArea: number | null;
@@ -60,6 +63,8 @@ type Listing = {
 type EditForm = {
   location: string;
   postalCode: string;
+  street: string;
+  plotArea: string;
   propertyType: string;
   rooms: string;
   livingArea: string;
@@ -71,6 +76,8 @@ type EditForm = {
 const EMPTY_FORM: EditForm = {
   location: "",
   postalCode: "",
+  street: "",
+  plotArea: "",
   propertyType: "",
   rooms: "",
   livingArea: "",
@@ -88,6 +95,7 @@ export default function EditListingPage() {
 
   // COCKPIT_TEXT_VARIANTS_EDITOR_V1
   const [variants, setVariants] = useState<EditorVariant[]>([]);
+  const [editorDirty, setEditorDirty] = useState(false);
   const [canEditVariants, setCanEditVariants] = useState(false);
 
   const [form, setForm] = useState<EditForm>(EMPTY_FORM);
@@ -208,6 +216,8 @@ setImages(
         setForm({
           location: listing.location || "",
           postalCode: listing.postalCode || "",
+          street: listing.street || "",
+          plotArea: listing.plotArea == null ? "" : String(listing.plotArea),
           propertyType: listing.propertyType || "",
           rooms:
             listing.rooms === null ? "" : String(listing.rooms),
@@ -255,7 +265,7 @@ setImages(
             ? (parsedVariants as EditorVariant[]).map(
                 (item) => ({ ...item })
               )
-            : []
+            : Array.from({length:3},()=>({title:"",text:""}))
         );
       } catch (loadError) {
         if (
@@ -622,6 +632,8 @@ async function deleteListingImage(imageId: string) {
           body: JSON.stringify({
             location: form.location,
             postalCode: form.postalCode,
+            street: form.street,
+            plotArea: form.plotArea,
             propertyType: form.propertyType,
             rooms: form.rooms,
             livingArea: form.livingArea,
@@ -650,8 +662,7 @@ async function deleteListingImage(imageId: string) {
         );
       }
 
-      router.push(`/cockpit/${listingId}`);
-      router.refresh();
+      window.location.reload();
     } catch (saveError) {
       setError(
         saveError instanceof Error
@@ -701,7 +712,7 @@ async function deleteListingImage(imageId: string) {
           </p>
         </header>
 
-        <form
+        <form onChangeCapture={event=>{if (!(event.target as HTMLElement).closest("[data-broker-review]")) setEditorDirty(true);}}
           className="editCard"
           onSubmit={handleSubmit}
           autoComplete="off"
@@ -761,6 +772,8 @@ async function deleteListingImage(imageId: string) {
                 />
               </label>
 
+              <label><span>Straße / Hausnummer</span><input value={form.street} onChange={event=>updateField("street",event.target.value)}/></label>
+              <label><span>Grundstücksfläche in m²</span><input inputMode="decimal" value={form.plotArea} onChange={event=>updateField("plotArea",event.target.value)}/></label>
               <label>
                 <span>Zimmer</span>
                 <input
@@ -992,6 +1005,15 @@ async function deleteListingImage(imageId: string) {
     </div>
   )}
 
+  {listingId && <BrokerReviewPanel listingId={listingId} images={images} dirty={editorDirty}
+    onImagesLoaded={(savedImages) => setImages((currentImages) => {
+      const savedById = new Map(savedImages.map((image) => [image.id, image]));
+      return currentImages.map((image) => {
+        const saved = savedById.get(image.id);
+        return saved ? { ...image, position: saved.position, isPrimary: saved.isPrimary } : image;
+      }).sort((a, b) => a.position - b.position);
+    })}
+  />}
   <label
     className={
       imageUploadLimit === 0 || uploadingImages || images.length >= imageUploadLimit

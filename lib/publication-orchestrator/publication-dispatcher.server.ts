@@ -1,3 +1,4 @@
+import { assertListingPremiumPublicationReady } from "@/lib/premium-quality.server";
 import "server-only";
 
 import {
@@ -622,6 +623,8 @@ export async function dispatchPublicationRun(
     );
   }
 
+
+  await assertListingPremiumPublicationReady(userId, listingId);
 
   if (
     run.status ===

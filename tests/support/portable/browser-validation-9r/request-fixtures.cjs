@@ -1,0 +1,1 @@
+const fs=require('fs'),p=require('path');module.exports=require('./request-shapes.json').map((input,i)=>({kind:'inserat_ai_autopilot_vision',input:input.map(m=>({...m,content:(m.content||[]).map(x=>x.type==='input_image'?{...x,image_url:x.image_url+','+fs.readFileSync(p.resolve(__dirname,'../request-images/S'+String(i+1).padStart(2,'0')+'.bin')).toString('base64')}:x)}))}));

@@ -1,0 +1,280 @@
+{
+  "facts": {
+    "locale": "de",
+    "market": "DE",
+    "location": "Starnberg, Bayern",
+    "propertyType": "Einfamilienhaus",
+    "rooms": 6,
+    "livingArea": "178 m²",
+    "plotArea": "620 m²",
+    "price": 1390000,
+    "currency": "EUR",
+    "marketingType": "sale",
+    "highlights": "2 Badezimmer; Baujahr 2020; Energieeffizienzklasse A+; Wärmepumpe; Fußbodenheizung; 2 Stellplätze",
+    "verifiedFeatures": "2 Badezimmer; Baujahr 2020; Energieeffizienzklasse A+; Wärmepumpe; Fußbodenheizung; 2 Stellplätze",
+    "imageAnalysis": ""
+  },
+  "examples": [
+    {
+      "title": "Einfamilienhaus von 2020 auf 620 m² Grundstück in Starnberg",
+      "text": "Das 2020 errichtete Einfamilienhaus in Starnberg, Bayern, umfasst sechs Zimmer und 178 m² Wohnfläche. Zum Haus gehört ein Grundstück mit 620 m² Fläche.\n\nZwei Badezimmer sind vorhanden. Als Heiztechnik sind eine Wärmepumpe und eine Fußbodenheizung angegeben; die Energieeffizienzklasse lautet A+. Hinzu kommen zwei Stellplätze.\n\nDer Kaufpreis beträgt 1.390.000 EUR."
+    },
+    {
+      "title": "Raum für Ihr Zuhause: sechs Zimmer in Starnberg",
+      "text": "Mit sechs Zimmern und 178 m² Wohnfläche präsentiert sich dieses Einfamilienhaus in Starnberg, Bayern. Wer hier sein Zuhause sucht, findet ein Haus aus dem Baujahr 2020 und ein Grundstück von 620 m².\n\nZwei Badezimmer sind vorhanden, ebenso zwei Stellplätze. Eine Wärmepumpe und eine Fußbodenheizung gehören zur Ausstattung; die Energieeffizienzklasse ist A+.\n\nDer Kaufpreis für das Einfamilienhaus liegt bei 1.390.000 EUR."
+    },
+    {
+      "title": "Kaufangebot Starnberg: 178 m² Wohnfläche und sechs Zimmer",
+      "text": "Für 1.390.000 EUR wird in Starnberg, Bayern, ein Einfamilienhaus aus dem Jahr 2020 angeboten. Es umfasst sechs Zimmer und 178 m² Wohnfläche; die Grundstücksfläche beträgt 620 m².\n\nDie Ausstattung umfasst eine Wärmepumpe und eine Fußbodenheizung. Die Energieeffizienzklasse ist A+. Zwei Badezimmer und zwei Stellplätze sind vorhanden."
+    }
+  ],
+  "originalVariants": [
+    {
+      "title": "Einfamilienhaus mit Fußbodenheizung und Wärmepumpe in Starnberg",
+      "text": "Mit einer Fußbodenheizung ausgestattet, bietet dieses Einfamilienhaus in Starnberg eine moderne Heiztechnik, ergänzt durch eine effiziente Wärmepumpe. Das 2020 errichtete Gebäude entspricht der Energieeffizienzklasse A+, was auf einen niedrigen Energiebedarf hinweist. Die Immobilie verfügt über sechs Zimmer, die sich auf eine Wohnfläche von 178 m² verteilen, und steht auf einem 620 m² großen Grundstück.\n\nDas Haus beinhaltet zwei Badezimmer, die den Wohnkomfort ergänzen. Zusätzlich sind zwei Stellplätze vorhanden, die das Angebot abrunden. Die Kombination aus zeitgemäßer Haustechnik und großzügigen Flächen schafft eine solide Grundlage für vielfältige Wohnbedürfnisse.\n\nDer Kaufpreis für dieses Einfamilienhaus beträgt 1.390.000 EUR. Die Immobilie bietet mit ihrem Raumangebot und der Ausstattung eine klare Struktur, ohne weitere Ausstattungsdetails zu beanspruchen."
+    },
+    {
+      "title": "Energieeffiziente Ausstattung mit Wärmepumpe und Fußbodenheizung in Starnberg",
+      "text": "Die Ausstattung mit einer Wärmepumpe und Fußbodenheizung prägt das technische Profil dieses Einfamilienhauses, das im Jahr 2020 errichtet wurde. Die Energieeffizienzklasse A+ unterstreicht die Ausrichtung auf einen modernen Energiestandard. Das Objekt befindet sich in Starnberg, Bayern, und wird zum Kaufpreis von 1.390.000 EUR angeboten.\n\nDas Haus bietet eine Wohnfläche von 178 m², verteilt auf sechs Zimmer. Zwei Badezimmer sind vorhanden, was die Nutzungsmöglichkeiten erweitert. Die Grundstücksfläche beträgt 620 m² und ergänzt das Raumangebot um Außenflächen.\n\nZwei Stellplätze stehen zur Verfügung und ergänzen die Ausstattung des Hauses. Insgesamt verbindet das Objekt eine zeitgemäße Bauweise mit einer durchdachten technischen Ausstattung in einer bayerischen Gemeinde."
+    },
+    {
+      "title": "178 m² Wohnfläche mit 6 Zimmern in Starnberg zu verkaufen",
+      "text": "Dieses Einfamilienhaus in Starnberg, Bayern, bietet eine Wohnfläche von 178 m², verteilt auf sechs Zimmer. Die Immobilie steht zum Verkauf und ist für 1.390.000 EUR angeboten.\n\nDas 2020 errichtete Haus verfügt über zwei Badezimmer. Zur Ausstattung gehören eine Fußbodenheizung sowie eine Wärmepumpe. Die Energieeffizienzklasse des Gebäudes ist A+.\n\nDas Grundstück umfasst eine Fläche von 620 m². Zwei Stellplätze sind ebenfalls vorhanden."
+    }
+  ],
+  "imageCandidates": [
+    {
+      "imageId": "F01",
+      "fileName": "F01-test-anonymisiert.jpg",
+      "contentFingerprint": "adc82039e3d9cf909486fa2a980eb25282cbb7a792042b64f222a2bb8ba2919a",
+      "analysis": {
+        "imageIndex": 1,
+        "room": null,
+        "roomConfidence": 1,
+        "roomIndependentFacts": [
+          {
+            "fact": "Tageslicht",
+            "confidence": 1
+          }
+        ],
+        "condition": "Natürliches Freigelände im guten Zustand",
+        "visibleFacts": [
+          "Berge sichtbar",
+          "Bäume am Rand"
+        ],
+        "category": "outdoor",
+        "sharpnessScore": 50,
+        "exposureScore": 70,
+        "suitabilityConfidence": 0.7,
+        "suitabilityReason": "Natürliche Außenaufnahme mit guter Beleuchtung und schöner Landschaft",
+        "qualityScore": 50,
+        "titleScore": 40,
+        "suitable": true
+      }
+    },
+    {
+      "imageId": "F02",
+      "fileName": "F02-test-anonymisiert.jpg",
+      "contentFingerprint": "da2baa5ecc926c18baa220417d330ff796607db67e675bc8a6d8a5fa87d8dea5",
+      "analysis": {
+        "imageIndex": 2,
+        "room": null,
+        "roomConfidence": 1,
+        "roomIndependentFacts": [
+          {
+            "fact": "Tageslicht",
+            "confidence": 1
+          }
+        ],
+        "condition": "Natürliches Freigelände im guten Zustand",
+        "visibleFacts": [
+          "Großer Baum",
+          "Gutes Wetter"
+        ],
+        "category": "outdoor",
+        "sharpnessScore": 70,
+        "exposureScore": 80,
+        "suitabilityConfidence": 0.8,
+        "suitabilityReason": "Gute Außenansicht mit viel Tageslicht und Natur",
+        "qualityScore": 70,
+        "titleScore": 50,
+        "suitable": true
+      }
+    },
+    {
+      "imageId": "F03",
+      "fileName": "F03-test-anonymisiert.jpg",
+      "contentFingerprint": "d9795ad6be0b073bb3b2e9e3b58db68aa86265dec0908bac6b0464982fffc45a",
+      "analysis": {
+        "imageIndex": 3,
+        "room": "Aussenbereich",
+        "roomConfidence": 1,
+        "roomIndependentFacts": [
+          {
+            "fact": "Tageslicht",
+            "confidence": 1
+          }
+        ],
+        "condition": "Haus außen in gutem Zustand",
+        "visibleFacts": [
+          "Moderner Balkon",
+          "Klare Gebäudestruktur"
+        ],
+        "category": "exterior",
+        "sharpnessScore": 80,
+        "exposureScore": 80,
+        "suitabilityConfidence": 0.9,
+        "suitabilityReason": "Gute Außenaufnahme mit sichtbaren Immobilienmerkmalen",
+        "qualityScore": 80,
+        "titleScore": 80,
+        "suitable": true
+      }
+    },
+    {
+      "imageId": "F04",
+      "fileName": "F04-test-anonymisiert.jpg",
+      "contentFingerprint": "e7d24ef14d7e2440d585c67ef367058b7174faad8effb93a5762ba4962e5c3f0",
+      "analysis": {
+        "imageIndex": 4,
+        "room": "Aussenbereich",
+        "roomConfidence": 1,
+        "roomIndependentFacts": [
+          {
+            "fact": "Tageslicht",
+            "confidence": 1
+          }
+        ],
+        "condition": "Haus außen in gutem Zustand",
+        "visibleFacts": [
+          "Moderner Balkon",
+          "Teile des Gartens sichtbar"
+        ],
+        "category": "exterior",
+        "sharpnessScore": 75,
+        "exposureScore": 75,
+        "suitabilityConfidence": 0.9,
+        "suitabilityReason": "Viele sichtbare Details vom Haus und Außenbereich",
+        "qualityScore": 75,
+        "titleScore": 75,
+        "suitable": true
+      }
+    },
+    {
+      "imageId": "F05",
+      "fileName": "F05-test-anonymisiert.jpg",
+      "contentFingerprint": "451f1f19a80e5e35043f6c4247e4a3c181c646151a1711416176a2b87d9e2be8",
+      "analysis": {
+        "imageIndex": 5,
+        "room": "Aussenbereich",
+        "roomConfidence": 1,
+        "roomIndependentFacts": [
+          {
+            "fact": "Tageslicht",
+            "confidence": 1
+          }
+        ],
+        "condition": "Haus außen in gutem Zustand",
+        "visibleFacts": [
+          "Eingangsbereich mit Gartenzäunen",
+          "Moderner Stil"
+        ],
+        "category": "exterior",
+        "sharpnessScore": 80,
+        "exposureScore": 80,
+        "suitabilityConfidence": 0.85,
+        "suitabilityReason": "Klare Gebäudefront mit Eingangsbereich und Tageslicht",
+        "qualityScore": 80,
+        "titleScore": 70,
+        "suitable": true
+      }
+    },
+    {
+      "imageId": "F06",
+      "fileName": "F06-test-anonymisiert.jpg",
+      "contentFingerprint": "5451b8ab68d74e461b5e2e228e2f42cab72a5ef3314d2adb1fa92c812e706cd2",
+      "analysis": {
+        "imageIndex": 6,
+        "room": "Aussenbereich",
+        "roomConfidence": 1,
+        "roomIndependentFacts": [
+          {
+            "fact": "Tageslicht",
+            "confidence": 1
+          }
+        ],
+        "condition": "Dach mit Solarpanelen in gutem Zustand",
+        "visibleFacts": [
+          "Solaranlage auf Dach",
+          "Gutes Wetter"
+        ],
+        "category": "exterior",
+        "sharpnessScore": 70,
+        "exposureScore": 75,
+        "suitabilityConfidence": 0.7,
+        "suitabilityReason": "Dach mit Solarpanelen sichtbar, gute Lichtverhältnisse",
+        "qualityScore": 70,
+        "titleScore": 40,
+        "suitable": true
+      }
+    },
+    {
+      "imageId": "F07",
+      "fileName": "F07-test-anonymisiert.jpg",
+      "contentFingerprint": "626534b4e1f52484806e7a8bbab46afdfcee540b40f4ed01ffdb736de8a20b97",
+      "analysis": {
+        "imageIndex": 7,
+        "room": "Aussenbereich",
+        "roomConfidence": 1,
+        "roomIndependentFacts": [
+          {
+            "fact": "Tageslicht",
+            "confidence": 1
+          }
+        ],
+        "condition": "Dach mit Solarpanelen in gutem Zustand",
+        "visibleFacts": [
+          "Solaranlage auf Dach",
+          "Blick über Nachbargebäude"
+        ],
+        "category": "exterior",
+        "sharpnessScore": 70,
+        "exposureScore": 75,
+        "suitabilityConfidence": 0.7,
+        "suitabilityReason": "Solaranlage auf Dach sichtbar, Tageslicht gut",
+        "qualityScore": 70,
+        "titleScore": 40,
+        "suitable": true
+      }
+    }
+  ],
+  "galleryProposal": {
+    "status": "PROPOSED_NOT_BROKER_APPROVED",
+    "order": [
+      "F04",
+      "F05",
+      "F06",
+      "F01"
+    ],
+    "primary": "F04",
+    "similarPairs": [
+      [
+        "F03",
+        "F04"
+      ],
+      [
+        "F06",
+        "F07"
+      ]
+    ],
+    "rejected": [
+      "F02",
+      "F03",
+      "F07"
+    ],
+    "pending": [
+      "F01",
+      "F05",
+      "F06"
+    ]
+  }
+}

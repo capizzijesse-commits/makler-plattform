@@ -94,9 +94,45 @@ export function findUnsupportedPropertyFeatures(
     const feature
     of STRICT_PROPERTY_FEATURES
   ) {
+        // FEATURE_NEGATION_GUARD_V2
+    // A bare word match must not verify a negated or uncertain feature.
+    const featureMentions = verifiedFactCorpus
+      .split(/[\n;,]+/)
+      .map((part) => part.trim())
+      .filter((part) => feature.pattern.test(part));
+
+    const isNegativeOrUncertain = (part: string): boolean => {
+      const matches = [
+        ...part.matchAll(
+          new RegExp(feature.pattern.source, "gi")
+        ),
+      ];
+
+      return matches.some((match) => {
+        const index = match.index ?? 0;
+        const before = part.slice(
+          Math.max(0, index - 60),
+          index
+        );
+        const after = part.slice(
+          index + match[0].length,
+          index + match[0].length + 60
+        );
+
+        const negativeBefore =
+          /\b(?:kein(?:e|en|em|er|es)?|ohne|nicht)\s+(?:(?:eigene[nmrs]?|direkte[nmrs]?|separate[nmrs]?)\s+)?$/i.test(before);
+
+        const negativeAfter =
+          /^\s*:?\s*(?:nicht|kein(?:e|en|em|er|es)?|fehlt|fehlend|unbest\u00e4tigt|ungekl\u00e4rt|unklar|fraglich)\b/i.test(after);
+
+        return negativeBefore || negativeAfter;
+      });
+    };
+
     const supported =
-      feature.pattern.test(
-        verifiedFactCorpus
+      featureMentions.length > 0 &&
+      featureMentions.every(
+        (part) => !isNegativeOrUncertain(part)
       );
 
     if (supported) {

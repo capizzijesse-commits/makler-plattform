@@ -464,6 +464,7 @@ if (invalidFile) {
           success?: boolean;
           listingId?: string;
           error?: string;
+          code?: string;
 
           autopilot?: {
             stage?:
@@ -487,6 +488,10 @@ if (invalidFile) {
         return;
       }
 
+      if (runData.code === "AUTOPILOT_IMAGE_REVIEW_REQUIRED") {
+        window.location.href = `/cockpit/${encodeURIComponent(nextListingId)}/edit?review=images`;
+        return;
+      }
       if (
         !runResponse.ok ||
         !runData.success
@@ -497,6 +502,10 @@ if (invalidFile) {
         );
       }
 
+      if (runData.autopilot?.stage === "needs_confirmation") {
+        window.location.href = `/cockpit/${encodeURIComponent(nextListingId)}/edit?review=final`;
+        return;
+      }
       const missingFields =
         Array.isArray(
           runData.autopilot

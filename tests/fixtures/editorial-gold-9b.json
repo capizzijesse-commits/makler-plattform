@@ -1,0 +1,18 @@
+{
+  "origin": "EDITORIAL_REFERENCE_NOT_MODEL_OUTPUT",
+  "source": "User task 9B, reference texts in assistant response; synthetic Starnberg facts only",
+  "variants": [
+    {
+      "title": "Baujahr 2020: Einfamilienhaus mit sechs Zimmern in Starnberg",
+      "text": "Dieses Einfamilienhaus in Starnberg, Bayern, wurde 2020 errichtet. Es umfasst 178 m² Wohnfläche und steht auf einem 620 m² großen Grundstück.\n\nDas Haus verfügt über sechs Zimmer und zwei Badezimmer. Eine Wärmepumpe und eine Fußbodenheizung gehören zur Ausstattung; die Energieeffizienzklasse lautet A+.\n\nDer Kaufpreis beträgt 1.390.000 EUR. Zwei Stellplätze sind vorhanden."
+    },
+    {
+      "title": "Wohnen in Starnberg: sechs Zimmer auf 178 m²",
+      "text": "In Starnberg, Bayern, erwartet Sie ein Einfamilienhaus mit sechs Zimmern und 178 m² Wohnfläche. Zwei Badezimmer gehören ebenfalls zum Haus.\n\nDer Kaufpreis beträgt 1.390.000 EUR. Das Grundstück misst 620 m².\n\nDas Haus stammt aus dem Jahr 2020 und verfügt über eine Wärmepumpe sowie eine Fußbodenheizung. Die Energieeffizienzklasse ist A+. Zwei Stellplätze sind vorhanden."
+    },
+    {
+      "title": "Einfamilienhaus in Starnberg – Kaufpreis 1.390.000 EUR",
+      "text": "Für 1.390.000 EUR wird dieses Einfamilienhaus in Starnberg, Bayern, zum Kauf angeboten. Das 2020 errichtete Haus hat die Energieeffizienzklasse A+ und ist mit einer Wärmepumpe sowie einer Fußbodenheizung ausgestattet.\n\nDie Wohnfläche beträgt 178 m² bei sechs Zimmern; hinzu kommen zwei Badezimmer. Das Grundstück ist 620 m² groß. Zwei Stellplätze sind vorhanden."
+    }
+  ]
+}

@@ -1,3 +1,11 @@
+import { premiumGenerationContract, premiumEditorialAngle, premiumRepairInstructions, applyPremiumRepairScope, editorialRepairIssues, PREMIUM_EDITORIAL_CODES, coreFactRepairBrief, missingCoreFactRequirements, assertRepairSourceFactsPreserved } from '@/lib/premium-editorial-generation';
+import { listingOfferContext, listingOfferInstructions } from "@/lib/listing-offer-context";
+import { evaluatePremiumTextQuality } from "@/lib/premium-quality-gate.server";
+import { auditPremiumTexts } from "@/lib/premium-text-audit.server";
+import { premiumSources, premiumSourceContext } from "@/lib/premium-quality.server";
+import { requestMaterialFactAudit } from "@/lib/premium-fact-audit.server";
+import { buildSafeImageRoomPrompt } from "@/lib/image-expose-consistency";
+import { findRoomCountContradictions } from "@/lib/listing-room-count-guard";
 import OpenAI from "openai";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -47,7 +55,15 @@ const SUPPORTED_MARKETS = [
 type SupportedMarket =
   (typeof SUPPORTED_MARKETS)[number];
 
+import { buildSupplementaryPropertyFacts } from "@/lib/property-facts-ingest";
+import { selectLanguageForAcceptedFactsDE } from "@/lib/real-estate-language-facts-de";
+import { inspectEditorialQualityDE } from "@/lib/listing-editorial-quality-de";
+import { normalizeGermanOrthographyDE } from "@/lib/listing-orthography-de";
+
 type GenerateBody = {
+  sourceAssessmentId?: unknown;
+  manualFactsConfirmed?: unknown;
+  marketingType?: unknown; transactionType?: unknown; currency?: unknown; rentPeriod?: unknown; plotArea?: unknown; commercialArea?: unknown; commercialUse?: unknown; priceOnRequestConfirmed?: unknown;
   listingId?: unknown;
   locale?: unknown;
   market?: unknown;
@@ -59,6 +75,8 @@ type GenerateBody = {
   highlights?: unknown;
   styleText?: unknown;
   imageAnalysis?: unknown;
+  imageEvidence?: unknown;
+  propertyFacts?: unknown;
 };
 
 type GeneratedVariant = {
@@ -217,6 +235,8 @@ function toPromptValue(
   fallback: string,
   maxLength = 4000
 ): string {
+  if (typeof value === "number" && Number.isFinite(value)) value = String(value);
+
   if (typeof value !== "string") {
     return fallback;
   }
@@ -411,6 +431,16 @@ function buildGenerationPrompt(
           "Begriffe wie Aufzug, Stellplatz, Tiefgaragenstellplatz, Außenstellplatz oder Einbauküche dürfen nur verwendet werden, wenn die entsprechende Tatsache durch die Objektdaten belegt ist.",
           "Ersetze konkrete eingegebene Objektmerkmale nicht blind durch andere Begriffe und erfinde keine zusätzlichen Eigenschaften.",
           "Behalte Eigennamen, Ortsnamen, Zahlen, Flächen und ausdrücklich angegebene Sachverhalte unverändert bei.",
+           // GERMAN_PREMIUM_EDITORIAL_V2
+           "Schreibe wie ein erfahrener deutscher Immobilienredakteur: präzise, souverän, natürlich und ohne mechanische Werbesprache.",
+           "Verbinde zusammengehörige belegte Merkmale in flüssigen Sätzen, statt sie nur aufzuzählen.",
+           "Vermeide wiederholte Satzanfänge und nahezu identische Absatzstrukturen.",
+           "Verwende keine künstlichen Zusammenfassungen wie 'Die Kombination aus', 'Insgesamt bietet das Haus' oder 'definiert das Gesamtbild'.",
+           "Kommentiere weder fehlende Informationen noch Exposés, Grundrisse oder technische Zeichnungen als Informationsquelle.",
+           "Beende die Beschreibung mit einer konkreten belegten Eigenschaft statt mit allgemeinem Lob.",
+           "Behaupte keinen guten Gebäudezustand, keine Energieeinsparung und keine besondere Wohnqualität ohne ausreichende ausdrückliche Fakten.",
+           "Gib jeder der drei Varianten eine eigenständige Struktur und einen anderen belegten Schwerpunkt.",
+           "Erfinde keine Ausblicke, Raumverbindungen, Sanierungen, Ausstattungen oder Nutzungsmöglichkeiten.",
         ]
       : config.languageRules;
 
@@ -451,7 +481,7 @@ function buildGenerationPrompt(
       8000
     ),
     imageAnalysis: toPromptValue(
-      body.imageAnalysis,
+      buildSafeImageRoomPrompt(body.imageEvidence),
       config.emptyValue,
       20000
     ),
@@ -467,6 +497,80 @@ function buildGenerationPrompt(
     buildObjectSpecificFactFirewall(
       facts
     );
+  // PROMPT_EVIDENCE_SEPARATION_V1
+  // Original facts remain unchanged for downstream quality checks.
+  const splitPromptEvidence = (value: string): string[] =>
+    value
+      .split(/[;\r\n]+/)
+      .map((part) => part.trim())
+      .filter(Boolean);
+
+  const isNonPromotionalEvidence = (value: string): boolean =>
+    /^(?:kein(?:e|en|er|es)?|ohne)\s+\S/i.test(value) ||
+    /\b(?:nicht\s+(?:vorhanden|bestätigt|belegt|nachgewiesen)|unbestätigt|unklar)\b/i.test(value);
+
+  const highlightItems = splitPromptEvidence(facts.highlights);
+  const imageItems = splitPromptEvidence(facts.imageAnalysis);
+
+  const descriptionFacts = {
+    structuredSupplementaryFacts: buildSupplementaryPropertyFacts(
+      body.propertyFacts,
+      market
+    ),
+    location: facts.location,
+    propertyType: facts.propertyType,
+    rooms: facts.rooms,
+    livingArea: facts.livingArea,
+    price: facts.price,
+    userReportedHighlights: highlightItems.filter(
+      (item) => !isNonPromotionalEvidence(item)
+    ),
+    imageObservations: imageItems.filter(
+      (item) => !isNonPromotionalEvidence(item)
+    ),
+  };
+
+  // EDITORIAL_LANGUAGE_DE_V1
+  // Only use facts already accepted by the existing server pipeline.
+  // Guidance never creates or independently verifies a property fact.
+  const editorialLanguageDEPrompt =
+    isGermany
+      ? (() => {
+          const suggestions =
+            selectLanguageForAcceptedFactsDE(
+              descriptionFacts.structuredSupplementaryFacts
+            ).map((entry) => ({
+              term: entry.term,
+              editorialGuidance: entry.editorialGuidance,
+              prohibitedInference: entry.prohibitedInference,
+            }));
+
+          if (suggestions.length === 0) {
+            return "";
+          }
+
+          return [
+            "GERMAN REAL ESTATE EDITORIAL LANGUAGE GUIDANCE:",
+            "These are optional language suggestions, not new property facts.",
+            "Use a term only when its corresponding fact appears in OBJECT FACTS.",
+            "Preserve the source fact's reported or verified provenance.",
+            "Never infer additional equipment, quality, savings or legal status.",
+            "Do not force every suggestion into every variant.",
+            "Do not reproduce guidance text as listing content.",
+            "Observe every prohibited inference.",
+            JSON.stringify(suggestions),
+          ].join("\n");
+        })()
+      : "";
+
+  const nonPromotionalConstraints = {
+    excludedOrUncertainHighlights: highlightItems.filter(
+      isNonPromotionalEvidence
+    ),
+    excludedOrUncertainImageObservations: imageItems.filter(
+      isNonPromotionalEvidence
+    ),
+  };
   const system = `
 You are the senior real estate editorial engine of Inserat-AI for the ${marketAdjective} market.
 
@@ -530,54 +634,11 @@ The style profile influences tone and sentence rhythm only.
 It must never be treated as proof of a property characteristic.
 
 MANDATORY VARIANT ARCHITECTURES:
-
-GLOBAL DIVERSITY CONTRACT:
-- Treat the three variants as three independent editorial concepts, not as rewrites of one base text.
-- Select one primary sales angle for each variant before writing.
-- A primary angle must not be reused by another variant.
-- Do not mention every available fact in every variant.
-- Shared core facts such as location, property type, room count, living area and price may be repeated when useful.
-- Secondary facts should normally appear in no more than two variants.
-- Do not present the same facts in the same sequence.
-- Do not reuse the same conclusion, viewing invitation or final argument.
-- The title, first sentence and first paragraph of every variant must be independently conceived.
-- In no more than one variant may the first sentence begin with the property type.
-- Never create artificial diversity by replacing individual words with synonyms.
-
-VARIANT 1 - FACTUAL PROPERTY PROFILE:
-- Lead with one or two concrete numerical or physical facts.
-- Use a precise and restrained broker style.
-- Recommended structure:
-  1. Core property profile
-  2. Verified layout and equipment
-  3. Relevant practical information
-- Prioritise dimensions, room offer, documented equipment and included items.
-- Avoid emotional target-group language.
-- Avoid decorative adjectives.
-- Do not begin with "Diese Immobilie", "Diese Wohnung", "In dieser Wohnung", a greeting or a question.
-
-VARIANT 2 - CONCRETE USE AND DAILY LIFE:
-- Begin with a specific usable feature, room relationship or outdoor area.
-- Do not begin with room count, living area or the same fact used to open variant 1.
-- Recommended structure:
-  1. Concrete use or daily-life benefit
-  2. Supporting property features
-  3. Carefully justified target-group relevance
-- Explain suitability through evidence instead of labels.
-- Do not simply call a property family-friendly, suitable for commuters or ideal for couples.
-- State the concrete reason only when supported, for example separate rooms, a lift, a balcony or a documented transport time.
-- Do not invent a lifestyle scene, resident or daily routine.
-
-VARIANT 3 - DISTINCTIVE FEATURE OR MARKET ANGLE:
-- Begin with one verified differentiating feature not used as an opening before.
-- Possible angles include outdoor space, architecture, condition, flexibility, parking, accessibility, materials or a documented location advantage.
-- Recommended structure:
-  1. Distinctive verified feature
-  2. Concise supporting context
-  3. Independent closing perspective
-- Do not repeat the complete property summary from variants 1 and 2.
-- Do not begin with "Diese moderne", "Dieses attraktive Objekt" or another generic evaluation.
-- Use a concise, contemporary editorial rhythm without unsupported sales language.
+- Use the assigned STRUCTURED EDITORIAL FACT PLAN through the complete body; preserve every supplied required fact. Optional facts add supported detail only. Omit unknown topics without inventing substitutes.
+- VARIANT 1: ${premiumEditorialAngle(0)}
+- VARIANT 2: ${premiumEditorialAngle(1)}
+- VARIANT 3: ${premiumEditorialAngle(2)}
+- Adapt the section flow to the object. No fixed sentences, compulsory lifestyle benefit, target group or filler closing.
 
 FACT INTERPRETATION RULES:
 - A room count alone does not prove the existence of a living room, bedroom, kitchen, bathroom, office or another named room.
@@ -653,10 +714,45 @@ ${isGermany
 - Do not use unsupported superlatives.
 
 BODY RULES:
+EDITORIAL_DEPTH_AND_PRECISION_V2:
+- Write as a highly experienced real-estate editor preparing a finished professional portal listing.
+- Make the description substantial through concrete documented details, not through adjectives, filler or repeated statements.
+- With extensive evidence, develop roughly three or four purposeful paragraphs. With limited evidence, use fewer paragraphs.
+- Introduce the property and its chosen editorial focus precisely.
+- Develop the documented spatial characteristics and equipment in a coherent order; do not imply unverified adjacency or room functions.
+- Give documented outdoor areas, building technology, renovations and parking appropriate space when relevant.
+- Preserve meaningful technical specifications and exact figures instead of replacing them with vague generalisations.
+- Describe renovation measures by their documented scope and date; never infer an improved structural condition or energy performance.
+- Explain a practical benefit only when it follows directly from an explicit fact and does not require assumptions.
+- Use varied sentence structures, natural transitions and polished, restrained real-estate language.
+- Avoid repetitive opening patterns, mechanical feature lists and formulaic summary sentences.
+- End with a final concrete documented detail or a natural conclusion that does not introduce a new promise.
+- All three variants must cover the essential facts while differing in introduction, paragraph order, emphasis and rhythm.
+- Never invent additional facts to achieve the preferred word count.
+
+EDITORIAL_FACT_DISCIPLINE_V1:
+- Write only the finished real-estate listing, never internal verification commentary.
+- Do not mention that facts, images, equipment details or documents are missing, unconfirmed or not documented.
+- Do not turn negative or uncertain features into selling points. If a feature is absent, do not invent a reason for its absence.
+- Do not infer architectural decisions, floor-plan quality, room connections, condition, maintenance, accessibility or lifestyle benefits from the property type or room count alone.
+- A separate kitchen does not prove a particular floor-plan arrangement, door, layout or design intention.
+- Visible rooms in image analysis are evidence for describing visible characteristics, not a reason to announce what an image shows or documents.
+- Never claim that a surface is easy to maintain, rooms are particularly flexible, or a layout is functional unless explicitly supported.
+- Avoid formulaic references to the listing, its documentation, its price being included in the location, or the absence of additional location information.
+- Prefer precise sentences with different syntactic structures. Do not restate the same room count, floor area or location in several sentences.
+- With limited verified facts, write a shorter coherent property portrait rather than filler. A well-written concise text is preferable to an artificially extended description.
+
 - Write a complete professional real estate listing, not a teaser, summary, caption or social-media post.
-- Each body must contain 120 to 180 useful words.
-- Use 3 or 4 complete paragraphs and 8 to 12 complete sentences.
-- Silently verify that every body contains at least 110 words before returning JSON.
+${isGermany
+  ? `- Aim for 180 to 280 useful words when sufficient verified property facts exist; otherwise write a shorter, complete listing.
+- Never invent, repeat or pad information to reach a word target.
+- Every sentence must add meaningful, supported property information.
+- Use a natural professional structure without filler.`
+  : `- Aim for 180 to 280 useful words when sufficient verified property facts exist; otherwise write a shorter, complete listing.
+- Never repeat, invent or pad information to reach a word target.
+- Keep the description concise when only limited facts are available.
+- Every paragraph must contribute relevant property information.
+- Use natural, polished Swiss Standard German without filler.`}
 - The first paragraph should introduce the property and its primary verified angle.
 - The following paragraph or paragraphs should develop documented features, layout, outdoor space, parking or location information.
 ${isGermany
@@ -677,7 +773,16 @@ ${isGermany
   : "- Use Swiss spelling and Swiss real estate terminology for German output."
 }
 OBJECT FACTS:
-${JSON.stringify(facts, null, 2)}
+${JSON.stringify(descriptionFacts, null, 2)}
+
+${editorialLanguageDEPrompt}
+
+NON-PROMOTIONAL EXCLUSIONS AND UNCERTAINTIES:
+${JSON.stringify(nonPromotionalConstraints, null, 2)}
+- These entries are restrictions, not selling points.
+- Never turn their absence or uncertainty into a property advantage.
+- Never contradict an explicitly absent feature.
+- User-reported highlights and image observations are not independent verification.
 
 OUTPUT FORMAT:
 {
@@ -818,9 +923,28 @@ async function requestInitialVariants(
   const variantTasks = [
     {
       variantNumber: 1,
-      angle: `
+      angle:
+        prompt.market === "DE"
+          ? `
+GERMAN_EDITORIAL_ANGLE_V4_1_RESIDENTIAL:
+- Editorial identity: living spaces, room composition and documented outdoor characteristics.
+- Open with a concrete, verified spatial or residential feature; do not begin with the property type, town, room count or living-area figure when another verified feature is available.
+- Develop the documented arrangement of living areas and exterior features without assuming room connections or lifestyle benefits.
+- Introduce property type, living area and room count naturally after the opening.
+- Include essential verified equipment later, without turning the description into an inventory.
+- Write fluent, sophisticated German with varied syntax, precise verbs and meaningful transitions.
+- No generic claims about atmosphere, suitability, peaceful surroundings or residential quality.
+`.trim()
+          : `
 FACT-FIRST VARIANT:
-- Lead with the property's strongest verified core facts.
+PREMIUM_EDITORIAL_VARIANTS_CH_V1:
+- Produce a complete, representative Swiss property portrait with the authority and refinement of an experienced real-estate editor.
+- Open with a concrete, verified characterising feature, not an interchangeable phrase such as "Das Haus bietet".
+- Establish the essential property facts naturally, then develop the documented interior, exterior and technical characteristics in a clear thematic sequence.
+- Use three purposeful paragraphs when the available facts justify them; avoid repeating measurements or object type.
+- Choose precise verbs and varied sentence structures instead of chaining sentences beginning with "Das Haus", "Die Immobilie" or "Zudem".
+- Let the final paragraph end on a substantive documented feature, not generic praise or a summary of previously mentioned facts.
+- The result must read as a polished, complete portal listing rather than an inventory of features.
 - Prefer property type, rooms, living area, layout or another documented primary characteristic.
 - Structure the title around a concrete property fact.
 - Keep the opening direct, professional and portal-ready.
@@ -828,9 +952,27 @@ FACT-FIRST VARIANT:
     },
     {
       variantNumber: 2,
-      angle: `
+      angle:
+        prompt.market === "DE"
+          ? `
+GERMAN_EDITORIAL_ANGLE_V4_2_EQUIPMENT:
+- Editorial identity: verified equipment, distinguishing fittings and technical features.
+- Open with a specific documented equipment or construction feature, not the property type, town, room count or living-area figure.
+- Select one genuinely documented highlight; if none exists, use a precise factual opening without inventing a distinguishing feature.
+- Explain related interior, exterior and technical details in a coherent professional sequence.
+- Integrate property type, room count and living area in the main text without copying the opening structure of variant one.
+- Preserve technical terminology, capacities and dates precisely without claiming efficiency gains or exceptional quality.
+- Use natural, confident German rather than feature-by-feature database language.
+- Avoid generic praise, lifestyle claims and unsupported conclusions.
+`.trim()
+          : `
 FEATURE-FIRST VARIANT:
-- Lead with the strongest verified differentiating feature.
+- Write an independently composed Swiss property portrait led by a documented outdoor, spatial or permanent visual feature.
+- Create a distinctive opening centred on that feature, without adding imagined moods, lifestyles, sunshine, views or room relationships.
+- Describe the feature concretely before integrating property size, rooms, building characteristics and equipment in a different sequence from the classic portrait.
+- Use elegant, natural language and meaningful paragraph transitions instead of a mechanical list of amenities.
+- Avoid repeating the same opening facts or paragraph arrangement used by a fact-first description.
+- Close with a concrete relevant detail, never with an unsupported claim about the property's suitability or value.
 - Prefer documented outdoor space, parking, layout, permanent visual characteristics or another explicit highlight.
 - Do not repeat the opening structure of a fact-first listing.
 - Build the title around a verified feature rather than generic praise.
@@ -838,9 +980,26 @@ FEATURE-FIRST VARIANT:
     },
     {
       variantNumber: 3,
-      angle: `
+      angle:
+        prompt.market === "DE"
+          ? `
+GERMAN_EDITORIAL_ANGLE_V4_3_PROPERTY_PORTRAIT:
+- Editorial identity: a precise, classical and independently composed real-estate portrait.
+- Begin with the verified property type and a meaningful documented core fact, such as room count or living area.
+- Establish the property dimensions before developing the documented interiors, outdoor areas and equipment.
+- Use a composed editorial narrative with measured, elegant wording rather than a catalogue of specifications.
+- Give each verified characteristic its proper context; do not infer quality, condition, views or benefits.
+- Use a clearly different opening strategy from the residential and equipment-led variants.
+- Avoid rhetorical questions, generic closing formulas and unsupported neighbourhood descriptions.
+`.trim()
+          : `
 ALTERNATIVE SALES-ANGLE VARIANT:
-- Use a clearly different editorial structure.
+- Create a technically precise, sophisticated Swiss property description with its own editorial structure.
+- Begin with a distinctive documented equipment, construction or renovation detail when available; otherwise select another supported primary characteristic.
+- Preserve technical capacities, dates and renovation scope accurately without inferring savings, modernisation of the whole building, structural quality or market value.
+- Develop the documented property facts in logically connected paragraphs rather than repeating the inventory and order of the other variants.
+- Incorporate the essential living-area, room and outdoor facts naturally, without giving each fact the same sentence pattern.
+- Finish with a substantive documented aspect rather than generic assurances, marketing conclusions or invented benefits.
 - Lead with verified spatial, architectural, location or usage facts when available.
 - Do not invent suitability for a target group.
 - Use a title and opening construction that differ clearly from the first two intended variants.
@@ -879,10 +1038,148 @@ ${variantTask.variantNumber}
 
 ASSIGNED EDITORIAL ANGLE:
 ${variantTask.angle}
+FINAL ASSIGNED PLAN:
+${premiumEditorialAngle(variantTask.variantNumber - 1)}
+
+FINAL_EDITORIAL_CONSTRAINTS_V1:
+- Use only directly documented, positive property facts.
+- Do not mention absent, denied, uncertain or unverified amenities in the sales description.
+- Do not turn a missing feature into a design decision, advantage or disadvantage.
+- Never infer which room is adjacent to another, or where a material is installed, unless explicitly documented.
+- Never infer maintenance quality, condition, layout quality, target groups or flexible usage from basic property facts.
+- Do not describe the evidence, image analysis, missing information or internal checks.
+- Every sentence must communicate a verified property fact. Omit any sentence that adds only generic praise or interpretation.
+- Keep the text concise when verified facts are limited. Do not invent details to reach a target length.
 
 IMPORTANT:
 - Return exactly one complete listing.
-- The body must still contain 120 to 180 useful words.
+${prompt.market === "DE"
+  ? `GERMAN_PARALLEL_EDITORIAL_V3:
+You are writing a publishable German property listing for a professional real-estate agency.
+Write fluent, confident German prose with precise grammar, natural sentence rhythm and an individual editorial voice.
+
+EDITORIAL APPROACH:
+- Follow the ASSIGNED EDITORIAL ANGLE as the main perspective of this variant.
+- Develop the documented property characteristics in a coherent narrative, not as a succession of inventory statements.
+- Begin with a specific, verified aspect of the property. Avoid formulaic openings.
+- Connect related facts naturally; vary sentence length and sentence structure.
+- Give each paragraph a clear purpose without repeating the same information.
+- Avoid technical-sounding introductions, generic praise, lifestyle promises, filler and standard closing formulas.
+- Make the final sentence substantive and property-specific, not a sales slogan.
+
+GERMAN_PREMIUM_EDITORIAL_V7:
+
+GERMAN_PREMIUM_EDITORIAL_V8_COMPOSITION:
+
+Write the final listing as original real-estate prose, not as a sequence
+of facts translated into sentences. Follow the assigned editorial
+perspective while preserving all important verified facts.
+
+EDITORIAL COMPOSITION:
+- Begin with one specific, documented feature appropriate to the assigned
+  perspective. Establish why that feature belongs at the centre of this
+  particular description through factual detail, not praise.
+- Each paragraph must advance the property portrait with new verified
+  information. Do not restate earlier specifications in different words.
+- Build transitions from genuinely connected facts only. When no factual
+  connection exists, begin a clean new sentence or paragraph.
+- Prefer simple, precise professional German over inflated advertising
+  language. Vary sentence length naturally.
+- Mention the property type, room count and living area accurately and
+  naturally, preferably together in one clear passage.
+- Preserve relevant source-supported features without turning any
+  paragraph into a catalogue.
+
+THREE DISTINCT EDITORIAL COMPOSITIONS:
+- Residential perspective: lead with verified interior space or outdoor
+  characteristics. Develop the spatial description before moving to
+  equipment and parking.
+- Equipment perspective: lead with a defining documented installation
+  or fitting. Explain its actual presence and relation to other documented
+  equipment without speculating about savings, efficiency or comfort.
+- Classical property portrait: start with property identity and dimensions;
+  develop interior, exterior and equipment in a balanced professional order.
+- These are different editorial structures, not the same text with
+  substituted introductory sentences.
+
+ENDING STANDARD:
+- The last paragraph must introduce or complete substantive verified
+  information. Do not recap the property, recommend it to a buyer or
+  conclude with a generic judgement.
+- Never end with phrases equivalent to "rundet das Angebot ab",
+  "für unterschiedliche Bedürfnisse", "verbindet Komfort und Qualität",
+  "ein ideales Zuhause" or "eine attraktive Gelegenheit".
+- If all important facts have already been presented, end naturally
+  after the final factual sentence. Do not invent a closing sentence.
+
+SOURCE DISCIPLINE:
+- No inferred quietness, family suitability, garden condition, views,
+  room connections, architectural style, energy savings or condition.
+- A photograph is not proof of a location characteristic or building
+  condition. Preserve uncertain relationships as separate observations.
+- Never manufacture additional details to make prose longer.
+- Deliver a complete, publishable listing with its own clear title
+  and meaningful paragraphs.
+
+EDITORIAL STANDARD:
+Write like a highly experienced German real-estate editor preparing a finished listing for a discerning professional agency.
+
+The result must sound natural, confident, precise and composed. It should never sound like an AI summarising property data, an automated catalogue or an advertising template.
+
+COMPOSITION:
+- Build a clear, independently written property portrait around the assigned editorial perspective.
+- Give each paragraph a meaningful subject and a logical progression.
+- Connect facts only when their relationship is explicitly documented.
+- Alternate shorter direct statements with moderately developed sentences.
+- Prefer concrete descriptions over abstract commentary about the property's appeal.
+- Do not force three paragraphs to follow an identical sequence across variants.
+- Never add a concluding summary merely because the text has reached its final paragraph.
+
+LANGUAGE:
+- Use idiomatic, polished standard German appropriate for the German property market.
+- Express property type, living area and room count with natural grammatical relationships.
+- Never attach a building's entire living area or room count to the description of an individual technical installation.
+- Avoid repeating the same introductory sentence structure.
+- Prefer specific subjects and verbs over repetitive phrases beginning with "Das Haus", "Die Immobilie", "Zudem" or "Ergänzt wird".
+- Do not manufacture elegant-sounding transitions where two facts have no documented relationship.
+- Avoid administrative or mechanical expressions such as "dokumentierte Ausstattungsmerkmale", "definiert das Angebot", "unterstreicht den praktischen Nutzen" and "die Kombination aus".
+- Do not address hypothetical purchasers, explain marketing value or describe which target groups might appreciate the home.
+- Avoid phrases such as "stellt einen konkreten Mehrwert dar", "zeichnet sich durch ... aus" and "präsentiert sich in einem sehr guten Zustand" unless the statement is fully supported and genuinely contributes factual information.
+
+FACTUAL PRECISION:
+- Treat property condition, quality, surroundings, views, accessibility, energy benefits and room relationships as claims requiring explicit evidence.
+- Never infer building condition from photographs or from the presence of modern equipment.
+- Describe a terrace, garden or panorama only to the extent established by the source facts.
+- Do not invent furniture capacity, dimensions, views, construction quality or advantages.
+- Keep all relevant verified property characteristics, including meaningful equipment details.
+- Never repeat a feature merely to increase the number of words.
+
+THREE INDEPENDENT CONCEPTS:
+- Residential: compose the narrative around documented living spaces and outdoor characteristics.
+- Equipment: develop the portrait through distinctive verified fittings and building technology without writing a technical catalogue.
+- Classical: establish the essential dimensions and property identity, then present interiors and exterior characteristics in a balanced sequence.
+- Each concept must have its own introduction, thematic order and phrasing.
+
+ENDING:
+- End naturally on a relevant, verified property detail.
+- No generic buyer appeal, no empty praise, no recap of all features and no artificial final conclusion.
+STRUCTURE AND DEPTH:
+- Write three meaningful paragraphs with two to four complete sentences each when the facts permit.
+- Do not assign the same paragraph roles to every variant.
+- Residential angle: lead with a verified spatial feature, develop the rooms and outdoor setting, and weave in technical facts only where they fit.
+- Equipment angle: lead with a distinctive documented fitting or building-system feature, then connect it naturally to the property portrait; do not turn the introduction into a technical specification sheet.
+- Classical property portrait: establish the essential property dimensions first, then develop the interior, outdoor areas and equipment in an independently composed sequence.
+- Each paragraph should advance the description with new verified information. Never repeat a feature to fill space.
+- Aim for 180 to 280 substantive words only when enough distinct, verified facts exist.
+- With limited evidence, prefer a shorter, polished and complete listing.
+- Never repeat information or invent details merely to satisfy a length target.
+
+FACTUAL INTEGRITY:
+- Every concrete property claim must follow from the supplied OBJECT FACTS.
+- Preserve quantities, areas, dates, equipment and legal or financial conditions exactly.
+- Do not infer room connections, views, surroundings, condition, accessibility or included purchase-price items.
+- Do not present a subjective marketing judgement as a documented property condition.`
+  : "- Aim for 180 to 280 useful words when sufficient verified property facts exist; otherwise write a shorter, complete listing. Never pad or repeat information."}
 - Keep all factual and anti-cliche rules from above.
 - Do not shorten the result into a teaser or social-media post.
 - Do not claim knowledge about the two other generated texts.
@@ -910,7 +1207,7 @@ IMPORTANT:
               presence_penalty:
                 0.15,
               max_tokens:
-                520,
+                1100,
               response_format: {
                 type:
                   "json_object",
@@ -1104,6 +1401,25 @@ IMPORTANT:
   );
 }
 
+function isGermanyEquipmentOnlyInclusion(value: string): boolean {
+  // GERMANY_EQUIPMENT_INCLUSION_CONTEXT_V2
+  const text = value.toLocaleLowerCase("de-DE")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // Real financial or contractual inclusion must still be audited.
+  if (
+    /\b(?:kaufpreis|preis|mietpreis|miete|preislich|inbegriffen)\b/u.test(text) ||
+    /(?:€|eur\b|euro\b|chf\b|im angebot enthalten)/u.test(text)
+  ) {
+    return false;
+  }
+
+  return (
+    /\bküche\s+inklusive\s+(?:einer?\s+)?kochinsel\b/u.test(text) ||
+    /\bwärmepumpe\s+inklusive\s+(?:einer?\s+)?(?:fußbodenheizung|fussbodenheizung|bodenheizung)\b/u.test(text)
+  );
+}
 type GermanyFactAuditCode =
   | "PROPERTY_STRUCTURE"
   | "ROOM_LAYOUT"
@@ -1297,6 +1613,20 @@ function isGermanyAiAuditFindingActionable(
   if (
     finding.code === "PRICE_OR_INCLUSION"
   ) {
+    // GERMANY_KITCHEN_ISLAND_INCLUSION_V1
+    // "Küche inklusive Kochinsel" describes equipment,
+    // not automatically inclusion in the purchase price.
+    // Explicit financial inclusion claims remain auditable.
+    if (
+      finding.field === "sentence" &&
+      /\bküche\s+inklusive\s+(?:einer\s+)?kochinsel\b/
+        .test(text) &&
+      !/\b(?:kaufpreis|im\s+preis|preislich|im\s+angebot\s+enthalten|inbegriffen)\b/
+        .test(text)
+    ) {
+      return false;
+    }
+
     const inclusionClaim =
       /(im kaufpreis enthalten|im preis enthalten|inbegriffen|inklusive|im angebot enthalten)/
         .test(text);
@@ -1312,7 +1642,8 @@ function isGermanyAiAuditFindingActionable(
       return false;
     }
 
-    return inclusionClaim;
+    return inclusionClaim &&
+      !isGermanyEquipmentOnlyInclusion(finding.text);
   }
 
   if (
@@ -1581,7 +1912,8 @@ function buildGermanyDeterministicHardFindings(
 
         if (
           claimsIncludedPrice &&
-          !hasIncludedPriceFact
+          !hasIncludedPriceFact &&
+          !isGermanyEquipmentOnlyInclusion(entry.text)
         ) {
           pushFinding(
             variantNumber,
@@ -1853,306 +2185,8 @@ async function requestGermanyFactAudit(
   prompt: PromptBundle,
   variants: ListingTextVariant[]
 ): Promise<GermanyFactAuditResult> {
-  const startedAt = Date.now();
-
-  const auditVariants =
-    variants.map(
-      (variant, index) => ({
-        variantNumber: index + 1,
-        title: variant.title,
-        sentences:
-          splitGermanyAuditSentences(
-            variant.text
-          ).map(
-            (sentence, sentenceIndex) => ({
-              sentenceNumber:
-                sentenceIndex + 1,
-              text: sentence,
-            })
-          ),
-      })
-    );
-
-  const completion =
-    await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: `
-You are the HARD FACT auditor for Inserat-AI Germany.
-
-You are NOT a copywriter and NOT a style critic.
-
-Your sole task is to identify MATERIAL factual claims that could give a prospective buyer, tenant or broker an incorrect understanding of the property.
-
-Do NOT report harmless marketing language, ordinary wording, stylistic weakness or obvious neutral descriptions of an explicitly stated feature.
-
-REPORT ONLY claims that belong to one of these codes:
-
-PROPERTY_STRUCTURE
-- Invented building type, number of floors, number of units, freestanding construction or other building structure.
-
-ROOM_LAYOUT
-- Invented named rooms, room relationships, floor distribution, direct room connections or a specific layout.
-
-PRICE_OR_INCLUSION
-- Invented inclusion in purchase price, rent or offer.
-- Invented separate price or financial condition.
-
-AVAILABILITY_OR_LEGAL_STATUS
-- Vacancy presented as immediate move-in, immediate handover or guaranteed availability.
-- Invented tenancy, legal, approval or contractual status.
-
-ACCESSIBILITY
-- Elevator presented as barrier-free access when barrier-free access was not explicitly supplied.
-- Invented step-free or unrestricted accessibility.
-
-LOCATION_OR_INFRASTRUCTURE
-- Invented central, prestigious, established, quiet or prime location.
-- Invented transport, schools, shopping, infrastructure or amenities.
-
-UTILITY_OR_SERVICING
-- Erschlossen expanded into specific water, electricity, wastewater, telecom or other connections.
-- Erschlossen expanded into immediate construction, reduced costs, faster approval or simpler planning.
-
-PHYSICAL_RELATIONSHIP
-- Invented direct access, connection or physical relationship between terrace, garden, rooms, garage, courtyard or other features.
-
-CONDITION_OR_RENOVATION_SCOPE
-- Renoviert expanded into fully/comprehensively renovated, modern standard or a specific quality condition.
-- Renovierungsbedürftig expanded into extensive/comprehensive works, exact required works or costs.
-- Older windows do not prove that replacement is mandatory.
-
-OWNERSHIP_OR_USE_RIGHT
-- Invented private, communal, exclusive or legally assigned use.
-- Invented ownership association or rights.
-
-OTHER_MATERIAL_FACT
-- Use only for another concrete factual statement that would materially alter a buyer's understanding.
-
-IMPORTANT SAFE STATEMENTS — DO NOT REPORT:
-- A balcony or terrace may be called an Außenbereich, Außenfläche or space outdoors.
-- A garden may be called an Außenbereich or Gartenfläche.
-- A Keller or Kellerabteil may be described as storage space.
-- A garage or parking space may be described as a place to park a vehicle.
-- A Besprechungsraum may be described as a room for meetings.
-- A Teeküche may be described as usable for preparing drinks or small refreshments.
-- An Einbauküche may be described as a kitchen for preparing food.
-- An Aufzug may be described as providing or easing vertical access. Do not infer barrier-free access.
-- Explicit barrierefreier Zugang may be described as barrier-free access and may neutrally be said to facilitate access.
-- Direct apartment access by elevator may be repeated exactly and may neutrally be described as direct access.
-- Renovierungsbedürftig supports the neutral statement that renovation is required.
-- A stated propertyType may be repeated naturally.
-- Bahnhof 900 m entfernt or Schule 600 m entfernt may be repeated exactly or described as Nähe zum Bahnhof / Nähe zur Schule.
-- A neutral statement that OBJECT FACTS contain no further information is allowed.
-- A statement such as "vermietet, was für Kapitalanleger interessant sein kann" is marketing framing, not a material factual error.
-- Words such as praktisch, interessant, attraktiv, hochwertig, großzügig, modern or komfortabel are marketing language by themselves. Do not report them unless they are used to assert a concrete unsupported fact.
-- Do not report generic target-group language unless it falsely asserts a concrete property fact.
-
-Examples:
-
-SAFE:
-"Der Balkon bietet zusätzlichen Außenraum."
-"Ein Besprechungsraum steht für Meetings zur Verfügung."
-"Der Keller bietet zusätzlichen Stauraum."
-"Der barrierefreie Zugang erleichtert den Zutritt."
-"Die Wohnung ist vermietet, was für Kapitalanleger interessant sein kann."
-
-REPORT:
-"Die Wohnung befindet sich in einem Mehrparteienhaus."
-when OBJECT FACTS only say Eigentumswohnung.
-
-REPORT:
-"Der Tiefgaragenstellplatz ist im Kaufpreis enthalten."
-when inclusion was not explicitly supplied.
-
-REPORT:
-"Die Wohnung ist sofort bezugsfrei."
-when OBJECT FACTS only say leerstehend.
-
-REPORT:
-"Der Aufzug gewährleistet barrierefreien Zugang."
-when barrierefreier Zugang was not explicitly supplied.
-
-REPORT:
-"Das erschlossene Grundstück verfügt über Strom-, Wasser- und Abwasseranschlüsse."
-when OBJECT FACTS only say erschlossen.
-
-REPORT:
-"Die fünf Zimmer verteilen sich auf zwei Etagen."
-when floors were not supplied.
-
-When uncertain whether something is merely marketing language or a material factual error, DO NOT report it.
-
-Return JSON only.
-
-OUTPUT:
-{
-  "findings": [
-    {
-      "variantNumber": 1,
-      "field": "sentence",
-      "sentenceNumber": 3,
-      "text": "Exact sentence containing the material error",
-      "code": "PROPERTY_STRUCTURE",
-      "reason": "Short factual explanation"
-    }
-  ]
-}
-
-If there is no material factual error, return {"findings":[]}.
-`.trim(),
-        },
-        {
-          role: "user",
-          content: `
-TARGET MARKET:
-Germany
-
-OBJECT FACTS:
-${JSON.stringify(
-  prompt.facts,
-  null,
-  2
-)}
-
-FINAL TEXTS TO AUDIT:
-${JSON.stringify(
-  auditVariants,
-  null,
-  2
-)}
-`.trim(),
-        },
-      ],
-      temperature: 0,
-      max_tokens: 1400,
-      response_format: {
-        type: "json_object",
-      },
-    });
-
-  const content =
-    completion.choices[0]
-      ?.message?.content ?? "";
-
-  let parsed:
-    | { findings?: unknown }
-    | undefined;
-
-  try {
-    parsed = JSON.parse(content) as {
-      findings?: unknown;
-    };
-  } catch {
-    parsed = undefined;
-  }
-
-  const rawFindings =
-    Array.isArray(parsed?.findings)
-      ? parsed.findings
-      : [];
-
-  const allowedCodes =
-    new Set<GermanyFactAuditCode>([
-      "PROPERTY_STRUCTURE",
-      "ROOM_LAYOUT",
-      "PRICE_OR_INCLUSION",
-      "AVAILABILITY_OR_LEGAL_STATUS",
-      "ACCESSIBILITY",
-      "LOCATION_OR_INFRASTRUCTURE",
-      "UTILITY_OR_SERVICING",
-      "PHYSICAL_RELATIONSHIP",
-      "CONDITION_OR_RENOVATION_SCOPE",
-      "OWNERSHIP_OR_USE_RIGHT",
-      "OTHER_MATERIAL_FACT",
-    ]);
-
-  const findings:
-    GermanyFactAuditFinding[] = [];
-
-  for (const value of rawFindings) {
-    if (
-      !value ||
-      typeof value !== "object"
-    ) {
-      continue;
-    }
-
-    const finding =
-      value as Record<string, unknown>;
-
-    const variantNumber =
-      typeof finding.variantNumber === "number"
-        ? Math.trunc(finding.variantNumber)
-        : Number.NaN;
-
-    const field =
-      finding.field === "title" ||
-      finding.field === "sentence"
-        ? finding.field
-        : null;
-
-    const sentenceNumber =
-      typeof finding.sentenceNumber === "number"
-        ? Math.trunc(finding.sentenceNumber)
-        : null;
-
-    const text =
-      typeof finding.text === "string"
-        ? finding.text.trim()
-        : "";
-
-    const reason =
-      typeof finding.reason === "string"
-        ? finding.reason.trim()
-        : "";
-
-    const rawCode =
-      typeof finding.code === "string"
-        ? finding.code.trim()
-        : "";
-
-    if (
-      !Number.isInteger(variantNumber) ||
-      variantNumber < 1 ||
-      variantNumber > 3 ||
-      !field ||
-      !text ||
-      !allowedCodes.has(
-        rawCode as GermanyFactAuditCode
-      )
-    ) {
-      continue;
-    }
-
-    findings.push({
-      variantNumber,
-      field,
-      sentenceNumber:
-        field === "sentence"
-          ? sentenceNumber
-          : null,
-      text,
-      code:
-        rawCode as GermanyFactAuditCode,
-      reason,
-    });
-  }
-
-  const finalFindings =
-    finalizeGermanyFactAuditFindings(
-      prompt.facts,
-      variants,
-      findings
-    );
-
-  return {
-    findings: finalFindings,
-    durationMs:
-      Date.now() - startedAt,
-  };
+  const audit = await requestMaterialFactAudit(openai, prompt, variants);
+  return { ...audit, findings: finalizeGermanyFactAuditFindings(prompt.facts, variants, audit.findings) };
 }
 
 function cleanGermanySurgicalFragment(
@@ -2180,6 +2214,152 @@ function splitGermanyFinalDeliverySentences(
     .filter(Boolean);
 }
 
+// GERMANY_EDITORIAL_DELIVERY_V1
+// Format only: never create or alter a property fact.
+function formatGermanyEditorialParagraphs(
+  sentences: string[]
+): string {
+  const clean = sentences
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+
+  if (clean.length < 4) {
+    return clean.join(" ");
+  }
+
+  if (clean.length < 6) {
+    const cut = Math.floor(clean.length / 2);
+    return [
+      clean.slice(0, cut).join(" "),
+      clean.slice(cut).join(" "),
+    ].join("\n\n");
+  }
+
+  const first = Math.floor(clean.length / 3);
+  const second = Math.floor((clean.length * 2) / 3);
+
+  return [
+    clean.slice(0, first).join(" "),
+    clean.slice(first, second).join(" "),
+    clean.slice(second).join(" "),
+  ].join("\n\n");
+}
+
+function normalizeGermanyEditorialTitle(
+  title: string
+): string {
+  // Reorder only this explicit, factual German title pattern.
+  const match = title.match(
+    /^Einfamilienhaus mit (\d+(?:[.,]\d+)?\s*m(?:²|2)) Wohnfläche und (\d+(?:[.,]\d+)?) Zimmern(.*)$/iu
+  );
+
+  if (!match) {
+    return title;
+  }
+
+  return `${match[2]}-Zimmer-Einfamilienhaus mit ${match[1]} Wohnfläche${match[3]}`;
+}
+// GERMANY_EDITORIAL_POLISH_V1
+// Only grammatical and meaning-preserving phrase corrections.
+// No additions of property facts.
+function polishGermanyEditorialGrammar(
+  text: string
+): string {
+  return text
+    .replace(
+      /\bmit einer offenen Wohn- und Essbereich\b/giu,
+      "mit einem offenen Wohn- und Essbereich"
+    )
+    .replace(
+      /\bDie Architektur des Gebäudes zeigt große Fensterflächen\./gu,
+      "Große Fensterflächen prägen das Gebäude."
+    )
+    .replace(
+      /\bTechnisch ist das Haus mit\b/gu,
+      "Das Haus ist mit"
+    )
+    .replace(
+      /\bFür den Fahrzeugpark stehen\b/gu,
+      "Zum Parken stehen"
+    );
+}
+// GERMANY_LOCATION_CLAIM_GUARD_V1
+// Only explicit source-highlight evidence can retain a location claim.
+// Image observations and generic location names are not evidence.
+// GERMANY_EDITORIAL_FINAL_V6
+// Conservative removal of generic conclusions and unsupported condition claims.
+function filterGermanyWeakEditorialSentences(
+  sentences: string[],
+  facts: unknown
+): string[] {
+  const sourceFacts = JSON.stringify(facts ?? {})
+    .toLocaleLowerCase("de-DE");
+
+  const conditionDocumented =
+    /\bsehr gut(?:er|en|em|es)? zustand\b|\bzustand\s*:\s*sehr gut\b/iu
+      .test(sourceFacts);
+
+  const genericConclusion =
+    /\b(?:definiert das angebot|konkreten mehrwert dar|unterstreicht den praktischen nutzen des objekts|das angebot richtet sich an käufer)\b/iu;
+
+  const strongConditionClaim =
+    /\bsehr gut(?:er|en|em|es)? zustand\b/iu;
+
+  return sentences.filter((sentence) => {
+    if (genericConclusion.test(sentence)) {
+      return false;
+    }
+
+    if (
+      strongConditionClaim.test(sentence) &&
+      !conditionDocumented
+    ) {
+      return false;
+    }
+
+    return true;
+  });
+}
+function filterGermanyUnsupportedLocationSentences(
+  sentences: string[],
+  facts: unknown
+): string[] {
+  const quietLocation =
+    /\bruhig\w*.{0,40}\b(?:wohnlage|lage|wohngebiet|wohnumfeld|umfeld|nachbarschaft|umgebung|straße|strasse|quartier|siedlung)\b|\bidyllisch\w*.{0,40}\b(?:lage|wohnlage|umfeld)\b/iu;
+
+  const familyLocation =
+    /\bfamilienfreundlich\w*.{0,40}\b(?:wohnlage|lage|wohngebiet|wohnumfeld|umfeld|nachbarschaft|umgebung|quartier|siedlung)\b/iu;
+
+  const unsupportedFamilyImpression =
+    /\bfamilienfreundlich\w*.{0,40}\b(?:ausstrahlung|charakter|atmosphäre|wirkung|ambiente)\b/iu;
+
+  const documented =
+    facts &&
+    typeof facts === "object" &&
+    "highlights" in facts &&
+    typeof facts.highlights === "string"
+      ? facts.highlights
+      : "";
+
+  const quietDocumented = quietLocation.test(documented);
+  const familyDocumented = familyLocation.test(documented);
+
+  return sentences.filter((sentence) => {
+    if (unsupportedFamilyImpression.test(sentence)) {
+      return false;
+    }
+
+    if (quietLocation.test(sentence) && !quietDocumented) {
+      return false;
+    }
+
+    if (familyLocation.test(sentence) && !familyDocumented) {
+      return false;
+    }
+
+    return true;
+  });
+}
 function normalizeGermanyFinalVariantsForDelivery(
   variants: ListingTextVariant[],
   facts: unknown
@@ -2647,12 +2827,15 @@ function normalizeGermanyFinalVariantsForDelivery(
           }
         );
 
+      const safeSentences =
+        filterGermanyUnsupportedLocationSentences(cleaned, facts);
+
       return {
         ...variant,
         text:
-          cleaned.length > 0
-            ? cleaned.join(" ").trim()
-            : variant.text,
+          safeSentences.length > 0
+            ? formatGermanyEditorialParagraphs(safeSentences)
+            : "",
       };
     }
   );
@@ -2673,7 +2856,9 @@ function dedupeGermanyVariantTitles(
   return variants.map(
     (variant, index) => {
       let title =
-        variant.title.trim();
+        normalizeGermanyEditorialTitle(
+          variant.title.trim()
+        );
 
       if (
         /^Eine Einbauküche ist vorhanden\.?$/i
@@ -2843,6 +3028,24 @@ function repairGermanyHardFactFragment(
     }
 
     return cleanGermanySurgicalFragment(repaired);
+  }
+  // GERMANY_MATERIAL_QUALITY_REPAIR_V1
+  // Remove an unsupported material quality judgement.
+  // Retain the flooring claim only with explicit source evidence.
+  if (
+    finding.code === "CONDITION_OR_RENOVATION_SCOPE" &&
+    finding.field === "sentence" &&
+    /mit hochwertigen Materialien versehen,\s*darunter Holzböden/iu
+      .test(original)
+  ) {
+    if (!/\bholzböden\b/u.test(factsText)) {
+      return null;
+    }
+
+    return original.replace(
+      /mit hochwertigen Materialien versehen,\s*darunter Holzböden/giu,
+      "mit Holzböden ausgestattet"
+    );
   }
   // FINAL: Renovierungsumfang neutralisieren.
   if (
@@ -3101,40 +3304,54 @@ function repairGermanyHardFactFragment(
   if (
     finding.code === "PRICE_OR_INCLUSION"
   ) {
+    // GERMANY_PRICE_REPAIR_FACT_GUARD_V1    // GERMANY_PRICE_REPAIR_MULTI_FACT_V1
+    // Retain both explicitly verified equipment facts,
+    // without claiming either is included in the price.
     if (
-      /tiefgaragenstellplatz/i
+      finding.field === "sentence" &&
+      /einbauküche/i.test(repaired) &&
+      /wärmepumpe/i.test(repaired) &&
+      /einbauküche/.test(factsText) &&
+      /wärmepumpe/.test(factsText) &&
+      /(?:im\s+(?:kaufpreis|preis)\s+enthalten|im\s+angebot\s+enthalten|inbegriffen)/i
         .test(repaired)
     ) {
-      if (
-        /separat/i.test(factsText)
-      ) {
-        return "Ein Tiefgaragenstellplatz ist separat erhältlich.";
+      return "Eine Einbauküche und eine Wärmepumpe sind vorhanden.";
+    }
+
+    // A neutral equipment statement requires explicit source evidence.
+    // Unsupported price claims must never create new property facts.
+    if (
+      /tiefgaragenstellplatz/i.test(repaired)
+    ) {
+      if (!/tiefgaragenstellplatz/.test(factsText)) {
+        return finding.field === "sentence" ? "" : null;
       }
 
       return "Ein Tiefgaragenstellplatz ist vorhanden.";
     }
 
-    if (
-      /einbauküche/i.test(repaired)
-    ) {
+    if (/einbauküche/i.test(repaired)) {
+      if (!/einbauküche/.test(factsText)) {
+        return finding.field === "sentence" ? "" : null;
+      }
+
       return "Eine Einbauküche ist vorhanden.";
     }
 
-    repaired = repaired
-      .replace(
-        /,\s*(?:der|die|das)\s+(?:im\s+)?(?:kaufpreis|preis|angebot)\s+(?:enthalten|inbegriffen)\s+ist(?:\s+und[^.]*)?/gi,
-        ""
-      )
-      .replace(
-        /\s+(?:im\s+)?(?:kaufpreis|preis|angebot)\s+(?:enthalten|inbegriffen)/gi,
-        ""
-      );
+    // For explicit financial inclusion claims with no verified
+    // inclusion fact, remove the unsupported sentence, not its facts.
+    if (
+      /(?:im\s+(?:kaufpreis|preis)\s+enthalten|im\s+angebot\s+enthalten|inbegriffen)/i
+        .test(repaired)
+    ) {
+      return finding.field === "sentence" ? "" : null;
+    }
 
-    return cleanGermanySurgicalFragment(
-      repaired
-    );
+    // Ambiguous findings require further audit rather than
+    // silently changing or approving the original statement.
+    return null;
   }
-
   if (
     finding.code === "AVAILABILITY_OR_LEGAL_STATUS"
   ) {
@@ -3326,6 +3543,188 @@ function repairGermanyHardFactFragment(
   return null;
 }
 
+/*
+ * GERMANY_BOUNDED_AI_FACT_REPAIR_V1
+ * One bounded repair call. Only exact flagged sentences
+ * may change. Every candidate requires a fresh audit.
+ */
+async function requestGermanyBoundedFactRepair(
+  openai: OpenAI,
+  prompt: PromptBundle,
+  variants: ListingTextVariant[],
+  findings: GermanyFactAuditFinding[]
+): Promise<ListingTextVariant[] | null> {
+  const eligible = findings
+    .filter((finding) =>
+      finding.field === "sentence" &&
+      finding.variantNumber >= 1 &&
+      finding.variantNumber <= variants.length &&
+      typeof finding.text === "string" &&
+      finding.text.trim().length > 0
+    )
+    .slice(0, 3);
+
+  if (eligible.length === 0) {
+    return null;
+  }
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      {
+        role: "system",
+        content: `
+You are a conservative German real-estate fact editor.
+
+Repair only the explicitly flagged sentences.
+Remove or neutralize the unsupported assertion.
+Preserve all property facts that are actually supported.
+Never add numbers, equipment, condition claims,
+room relationships, financial terms or location claims.
+Do not rewrite any other sentence.
+Do not invent information to improve style or word count.
+If a sentence cannot be repaired safely, omit its repair.
+Return valid JSON only:
+{"repairs":[{"variantNumber":1,"original":"exact original sentence","replacement":"corrected sentence"}]}
+`.trim(),
+      },
+      {
+        role: "user",
+        content: JSON.stringify({
+          facts: prompt.facts,
+          findings: eligible.map((finding) => ({
+            variantNumber: finding.variantNumber,
+            original: finding.text,
+            code: finding.code,
+            reason: finding.reason,
+          })),
+        }),
+      },
+    ],
+    temperature: 0,
+    max_tokens: 900,
+    response_format: {
+      type: "json_object",
+    },
+  });
+
+  const content =
+    completion.choices[0]?.message?.content ?? "";
+
+  let parsed: unknown;
+
+  try {
+    parsed = JSON.parse(content);
+  } catch {
+    return null;
+  }
+
+  if (
+    !parsed ||
+    typeof parsed !== "object" ||
+    !("repairs" in parsed)
+  ) {
+    return null;
+  }
+
+  const items = (parsed as { repairs: unknown }).repairs;
+
+  if (!Array.isArray(items)) {
+    return null;
+  }
+
+  const patched = variants.map((variant) => ({
+    ...variant,
+  }));
+
+  let appliedCount = 0;
+
+  for (const value of items.slice(0, 3)) {
+    if (!value || typeof value !== "object") {
+      continue;
+    }
+
+    const item = value as Record<string, unknown>;
+
+    const variantNumber = item.variantNumber;
+    const originalSentence = item.original;
+    const replacement = item.replacement;
+
+    if (
+      typeof variantNumber !== "number" ||
+      !Number.isInteger(variantNumber) ||
+      typeof originalSentence !== "string" ||
+      typeof replacement !== "string"
+    ) {
+      continue;
+    }
+
+    const matchingFinding = eligible.find(
+      (finding) =>
+        finding.variantNumber === variantNumber &&
+        finding.text === originalSentence
+    );
+
+    if (!matchingFinding) {
+      continue;
+    }
+
+    const index = variantNumber - 1;
+    const target = patched[index];
+
+    if (!target) {
+      continue;
+    }
+
+    const candidate = replacement.trim();
+
+    if (
+      !candidate ||
+      candidate === originalSentence ||
+      candidate.length > originalSentence.length + 80
+    ) {
+      continue;
+    }
+
+    // No new numeric facts may be introduced.
+    const allowedNumbers = new Set(
+      (
+        originalSentence +
+        " " +
+        JSON.stringify(prompt.facts ?? {})
+      ).match(/\d+(?:[.,]\d+)?/g) ?? []
+    );
+
+    const replacementNumbers =
+      candidate.match(/\d+(?:[.,]\d+)?/g) ?? [];
+
+    if (
+      replacementNumbers.some(
+        (number) => !allowedNumbers.has(number)
+      )
+    ) {
+      continue;
+    }
+
+    // Only an exactly matching, unique sentence may change.
+    if (target.text.split(originalSentence).length !== 2) {
+      continue;
+    }
+
+    target.text = target.text.replace(
+      originalSentence,
+      candidate
+    );
+
+    appliedCount += 1;
+  }
+
+  if (appliedCount === 0) {
+    return null;
+  }
+
+  return patched;
+}
 function applyGermanySurgicalHardFactRepairs(
   variants: ListingTextVariant[],
   findings: GermanyFactAuditFinding[],
@@ -3498,8 +3897,8 @@ NON-NEGOTIABLE REPAIR RULES:
 - A bare feature may be mentioned neutrally. Do not add an assumed benefit.
 - Do not add atmosphere, comfort, quality, security or lifestyle judgements.
 - Prefer concrete and factual sentences over advertising language.
-- Each repaired variant must still be a complete real estate listing of approximately 120 to 180 words.
-- Use 3 or 4 natural paragraphs per variant.
+- Length follows available supported information. Preserve complete safe content; no word quota or padding.
+- Use purposeful paragraphs where the supplied information supports them.
 - Do not reduce the repair to a short factual summary.
 - Avoid database-style wording such as "aufgeführt", "angegeben", "erfasst", "ausgewiesen" or "Objektmerkmale".
 - Do not write a teaser, social-media caption or portal preview.
@@ -3656,6 +4055,48 @@ function getFailingVariantIndexes(
           null
     );
 
+  // SIMILARITY_PAIR_TARGETED_REPAIR_V1
+  // Keep the better variant; rewrite only its weaker partner.
+  if (
+    indexes.size === 0 &&
+    variantCount === 3
+  ) {
+    const globalErrors = quality.issues.filter(
+      (issue) =>
+        issue.severity === "error" &&
+        issue.variantIndex === null
+    );
+
+    if (
+      globalErrors.length === 1 &&
+      globalErrors[0].code === "VARIANTS_TOO_SIMILAR"
+    ) {
+      const pair = globalErrors[0].message.match(
+        /Varianten?\s+(\d+)\s+und\s+(\d+)/iu
+      );
+
+      if (pair) {
+        const first = Number(pair[1]) - 1;
+        const second = Number(pair[2]) - 1;
+
+        if (
+          first >= 0 &&
+          second >= 0 &&
+          first < variantCount &&
+          second < variantCount &&
+          first !== second
+        ) {
+          const weaker =
+            (quality.scores[first] ?? 0) <
+            (quality.scores[second] ?? 0)
+              ? first
+              : second;
+
+          return [weaker];
+        }
+      }
+    }
+  }
   if (
     indexes.size === 0 &&
     hasGlobalError
@@ -3757,6 +4198,8 @@ Return only valid JSON.
         {
           role: "user",
           content: `
+${premiumGenerationContract({ ...prompt.facts, market:prompt.market, locale, verifiedFeatures:prompt.facts.highlights })}
+${failingIndexes.map(index=>coreFactRepairBrief({ ...prompt.facts, market:prompt.market, locale },currentVariants[index])).join("\n")}
 TARGET LANGUAGE:
 ${prompt.targetLanguage}
 
@@ -3781,9 +4224,9 @@ QUALITY PROBLEMS TO REMOVE:
 ${blockingProblems}
 
 VARIANT ARCHITECTURE:
-- Variant 1: precise factual property profile.
-- Variant 2: concrete use based only on explicit facts.
-- Variant 3: one distinct verified feature or neutral market angle.
+${[0, 1, 2].map(index => 'Variant ' + (index + 1) + ': ' + premiumEditorialAngle(index)).join('\n')}
+
+${premiumRepairInstructions(quality.issues.filter(issue => issue.severity === 'error').map(issue => issue.code + ': ' + issue.message))}
 
 STRICT REPAIR RULES:
 - Return only the requested failed variants.
@@ -3800,13 +4243,13 @@ STRICT REPAIR RULES:
 - Never use phrases such as "nicht angegeben", "nicht spezifiziert", "keine Angaben", "keine Informationen", "weitere Informationen", "Objektunterlagen", "Verkaufsunterlagen", "Verkaufsdokumentation", "weitere Ausk\u00fcnfte", "Pr\u00fcfung", "vor Ort beurteilen" or equivalent meta/process language.
 - Never infer practical, comfortable, flexible, versatile, adaptable, quiet, solid, attractive or similar qualitative benefits unless explicitly present in OBJECT FACTS.
 - Do not describe suitability, potential, lifestyle benefits or usage possibilities unless explicitly supported by OBJECT FACTS.
-- For Swiss German, always use Swiss spelling with ss and never \u00df.
+${prompt.market === "DE" ? "- Keep German orthography with ß where appropriate." : "- For Swiss German, use ss instead of ß."}
 - Every rewritten variant must have its own distinct title. Never reuse the same title for two variants.
-- The rewritten variant should contain approximately 85 to 120 words.
-- Use 2 or 3 complete paragraphs and approximately 5 to 8 complete sentences.
+- Preserve complete supported content. Length follows information, without a word quota.
+- Use purposeful paragraphs where the supported information calls for them.
 - Produce a polished professional real estate listing, not a teaser, checklist, database summary or explanation.
 - Develop only the verified property facts into coherent prose. Rephrase and structure them naturally instead of inventing new content.
-- Do not copy the failed text.
+- Preserve unaffected safe content. Change only the flagged defect; retain all supported facts.
 - Do not explain the repair.
 
 OUTPUT FORMAT:
@@ -3843,7 +4286,9 @@ OUTPUT FORMAT:
 
 function mergeTargetedRepairs(
   variants: ListingTextVariant[],
-  repairs: TargetedRepair[]
+  repairs: TargetedRepair[],
+  quality?: ListingQualityResult,
+  facts: Record<string,unknown> = {}
 ): ListingTextVariant[] {
   const merged =
     variants.map(
@@ -3865,10 +4310,11 @@ function mergeTargetedRepairs(
       continue;
     }
 
-    merged[index] = {
-      title: repair.title,
-      text: repair.text,
-    };
+    const candidate = { title: repair.title, text: repair.text };
+    const issues = quality?.issues.filter(issue => issue.severity === 'error' && (issue.variantIndex === index || issue.variantIndex === null)).map(issue => issue.code + ': ' + issue.message) ?? [];
+    merged[index] = applyPremiumRepairScope(variants[index], candidate, issues, facts);
+    assertRepairSourceFactsPreserved(facts,variants[index],merged[index]);
+    if(missingCoreFactRequirements(facts,merged[index]).length)throw Error("REPAIR_REQUIRED_FACT_STILL_MISSING");
   }
 
   return merged;
@@ -4419,57 +4865,17 @@ function buildPublishableFallbackVariant(
         )
       : "";
 
-  const factCorpus =
-    Object.values(facts)
-      .map(
-        (value) =>
-          String(value ?? "")
-      )
-      .join(" ")
-      .toLocaleLowerCase(
-        "de-CH"
-      );
-
-  const hasBalcony =
-    /\bbalkon\b/i.test(
-      factCorpus
-    );
-
-  const hasTerrace =
-    /\bterrasse\b/i.test(
-      factCorpus
-    );
-
-  const hasParkingHall =
-    /\beinstellhallenplatz\b/i.test(
-      factCorpus
-    );
-
-  const hasParkingSpace =
-    /\bgaragenplatz\b/i.test(
-      factCorpus
-    );
-
-  const hasGarage =
-    !hasParkingHall &&
-    !hasParkingSpace &&
-    /\bgarage\b/i.test(
-      factCorpus
-    );
-
-  const hasLift =
-    /\blift\b/i.test(
-      factCorpus
-    );
-
-  const hasGarden =
-    /\b(?:garten|gartensitzplatz)\b/i
-      .test(factCorpus);
-
-  const hasStorage =
-    /\b(?:keller|redui|reduit)\b/i
-      .test(factCorpus);
-
+  // FALLBACK_VERIFIED_FEATURES_ONLY_V1
+  // Do not infer positive amenities from highlights or image analysis.
+  // The fallback currently has no structured verified-feature input.
+  const hasBalcony = false;
+  const hasTerrace = false;
+  const hasParkingHall = false;
+  const hasParkingSpace = false;
+  const hasGarage = false;
+  const hasLift = false;
+  const hasGarden = false;
+  const hasStorage = false;
   const features: string[] =
     [];
 
@@ -4594,21 +5000,9 @@ function buildPublishableFallbackVariant(
     `Dieses Immobilienangebot in ${locationLabel} stellt ${article} ${roomPropertyLabel} in den Mittelpunkt.`,
   ];
 
-  const overviewByVariant = [
-    "Zimmerzahl und Wohnfl\u00e4che bilden die Grundlage f\u00fcr die erste r\u00e4umliche Einordnung.",
+  const overviewByVariant = ["", "", ""];
 
-    "Die wichtigsten Angaben betreffen Standort, Objektart, Zimmerzahl und Wohnfl\u00e4che.",
-
-    "Das Angebot wird durch seine klar benannten Fl\u00e4chen- und Ausstattungsmerkmale beschrieben.",
-  ];
-
-  const summaryByVariant = [
-    "Damit sind die wesentlichen Informationen f\u00fcr eine erste Pr\u00fcfung der Immobilie zusammengefasst.",
-
-    "Die vorhandenen Objektdaten vermitteln einen klaren ersten Eindruck der Immobilie.",
-
-    "Zimmerzahl und Wohnfl\u00e4che geben einen kompakten \u00dcberblick \u00fcber das Raumangebot.",
-  ];
+  const summaryByVariant = ["", "", ""];
 
   const closingByVariant = [
     [
@@ -4679,7 +5073,7 @@ function buildPublishableFallbackVariant(
         .filter(Boolean)
         .join(" "),
 
-      closingByVariant[0][0],
+      "",
     ],
 
     [
@@ -4711,7 +5105,7 @@ function buildPublishableFallbackVariant(
         .filter(Boolean)
         .join(" "),
 
-      closingByVariant[1][0],
+      "",
     ],
 
     [
@@ -4738,7 +5132,7 @@ function buildPublishableFallbackVariant(
         .filter(Boolean)
         .join(" "),
 
-      closingByVariant[2][0],
+      "",
     ],
   ];
 
@@ -4764,35 +5158,7 @@ function buildPublishableFallbackVariant(
       .filter(Boolean)
       .length;
 
-  const additionalClosingSentences =
-    closingByVariant[
-      variantIndex
-    ] ??
-    closingByVariant[0];
-
-  let text =
-    paragraphs.join("\n\n");
-
-  for (
-    const sentence of
-    additionalClosingSentences.slice(1)
-  ) {
-    if (
-      countWords(text) >= 115
-    ) {
-      break;
-    }
-
-    const lastIndex =
-      paragraphs.length - 1;
-
-    paragraphs[lastIndex] =
-      `${paragraphs[lastIndex]} ${sentence}`;
-
-    text =
-      paragraphs.join("\n\n");
-  }
-
+  const text = paragraphs.join("\n\n");
   return {
     title:
       titleByVariant[
@@ -5044,8 +5410,7 @@ function repairVariantLocally(
         (
           issue.code ===
             "CLAIM_WITHOUT_EVIDENCE" ||
-          issue.code ===
-            "UNPROFESSIONAL_META_COPY"
+          issue.code === "UNPROFESSIONAL_META_COPY" || issue.code === "ROOM_MATERIAL_WITHOUT_EVIDENCE"
         )
     );
 
@@ -5053,6 +5418,29 @@ function repairVariantLocally(
     return variant;
   }
 
+  // LOCAL_ROOM_MATERIAL_REPAIR_V1
+  // Correct only the demonstrated unsupported room-to-parkett claim.
+  const hasRoomMaterialIssue = repairableIssues.some(
+    (issue) => issue.code === "ROOM_MATERIAL_WITHOUT_EVIDENCE"
+  );
+
+  const hasParkettEvidence = String(facts.highlights ?? "")
+    .split(/[;\r\n]+/)
+    .some(
+      (item) =>
+        /\bparkett(?:boden)?\b/i.test(item) &&
+        !/^\s*(?:kein(?:e|en|er|es)?|ohne)\s/i.test(item) &&
+        !/\b(?:nicht bestätigt|nicht belegt|unbestätigt)\b/i.test(item)
+    );
+
+  const roomMaterialSafeText = hasRoomMaterialIssue
+    ? variant.text.replace(
+        /\bDas Wohnzimmer ist mit Parkettboden ausgestattet(?:,\s*was[^.!?]*)?[.!?]/gi,
+        hasParkettEvidence
+          ? "Zur Ausstattung gehört Parkettboden."
+          : ""
+      )
+    : variant.text;
   const metaCopyPattern =
     /\bbest(?:aetigte|\u00e4tigte)\s+eckdaten\b\s*[:\-]?\s*/gi;
 
@@ -5067,7 +5455,7 @@ function repairVariantLocally(
   metaCopyPattern.lastIndex = 0;
 
   let paragraphs =
-    variant.text
+    roomMaterialSafeText
       .replace(
         metaCopyPattern,
         ""
@@ -5313,6 +5701,16 @@ export async function POST(
         }
       );
     }
+    let verifiedSourceContext: string | undefined;
+    if (body.sourceAssessmentId) {
+      const sourceAudit = await premiumSources(user.id, body.sourceAssessmentId, body, body.manualFactsConfirmed === true);
+      if (sourceAudit.status !== "passed" || sourceAudit.conflicts.some(conflict => conflict.status === "unresolved") || sourceAudit.documents?.some(document => (document.analysis as { requiresReview?: boolean } | undefined)?.requiresReview === true)) {
+        return NextResponse.json({ error: "Die Quellenfakten benötigen eine Prüfung.", code: "PREMIUM_SOURCE_AUDIT_REQUIRED" }, { status: 422 });
+      }
+      verifiedSourceContext = await premiumSourceContext(user.id, body.sourceAssessmentId);
+      body.imageEvidence = [];
+      body.imageAnalysis = "";
+    }
     const openai = new OpenAI({
       apiKey,
     });
@@ -5323,10 +5721,16 @@ export async function POST(
         locale
       );
 
+    const offerContext = listingOfferContext(body);
+    Object.assign(prompt.facts, offerContext);
+    prompt.user += listingOfferInstructions(offerContext);
+    prompt.user = premiumGenerationContract({ ...body, ...prompt.facts, market, locale }) + prompt.user;
+
     const qualityFacts: Record<
       string,
       unknown
     > = {
+      ...offerContext,
       market,
       location:
         prompt.facts.location,
@@ -5349,6 +5753,7 @@ export async function POST(
     // Schneller Standardlauf:
     // Nur eine OpenAI-Generierung pro Anfrage.
     // Qualitätsprüfung und Faktenkorrektur erfolgen danach lokal.
+    let aiRepairAttempts=0;
     const enableFullAiRepair =
       false;
 
@@ -5536,6 +5941,64 @@ export async function POST(
       }
     }
 
+    // LOCAL_BEFORE_TARGETED_AI_V1
+    // First try the existing local Swiss repairs without an API call.
+    // The subsequent targeted AI pass runs only if quality still fails.
+    for (
+      let localPass = 0;
+      localPass < 4 &&
+      market === "CH" &&
+      !selectedQuality.passed;
+      localPass += 1
+    ) {
+      const hasRepairableLocalError =
+        selectedQuality.issues.some(
+          (issue) =>
+            issue.severity ===
+              "error" &&
+            (
+              issue.code ===
+                "CLAIM_WITHOUT_EVIDENCE" ||
+              issue.code === "UNPROFESSIONAL_META_COPY" || issue.code === "ROOM_MATERIAL_WITHOUT_EVIDENCE"
+            )
+        );
+
+      if (!hasRepairableLocalError) {
+        break;
+      }
+
+      const locallyRepairedVariants =
+        repairVariantsLocally(
+          selectedVariants,
+          selectedQuality,
+          prompt.facts,
+          locale
+        );
+
+      const variantsChanged =
+        JSON.stringify(
+          locallyRepairedVariants
+        ) !==
+        JSON.stringify(
+          selectedVariants
+        );
+
+      if (!variantsChanged) {
+        break;
+      }
+
+      repairAttempted = true;
+
+      selectedVariants =
+        locallyRepairedVariants;
+
+      selectedQuality =
+        evaluateListingQuality(
+          selectedVariants,
+          locale,
+          qualityFacts
+        );
+    }
     for (
       let targetedPass = 0;
       targetedPass <
@@ -5564,9 +6027,27 @@ export async function POST(
        * durch requestTargetedVariantRepairs()
        * vollst?ndig unver?ndert.
        */
+      // GERMANY_SKIP_WORD_COUNT_ONLY_REPAIR_V1
+      // A non-blocking length warning must not trigger a
+      // full rewrite that can discard verified property facts.
+      if (
+        market === "DE" &&
+        selectedQuality.issues.length > 0 &&
+        selectedQuality.issues.every(
+          (issue) =>
+            issue.severity !== "error" &&
+            issue.code === "WORD_COUNT_OUTSIDE_TARGET"
+        )
+      ) {
+        console.info("[DE TARGETED REPAIR SKIPPED]", {
+          reason: "word_count_warning_only",
+        });
+        break;
+      }
+
       try {
-        const targetedRepairs =
-          await requestTargetedVariantRepairs(
+        if(++aiRepairAttempts>2)throw Error("TEXT_REPAIR_ATTEMPT_LIMIT");
+const targetedRepairs = await requestTargetedVariantRepairs(
             openai,
             prompt,
             locale,
@@ -5604,7 +6085,8 @@ export async function POST(
         const targetedVariants =
           mergeTargetedRepairs(
             selectedVariants,
-            targetedRepairs
+            targetedRepairs,
+            selectedQuality, { ...qualityFacts, locale, market, verifiedFeatures:prompt.facts.highlights }
           );
 
         const targetedQuality =
@@ -5678,7 +6160,18 @@ export async function POST(
               )
           );
 
-        if (!improved) {
+        if (
+          !improved ||
+          (
+            getTotalWordCount(selectedVariants) > 0 &&
+            getTotalWordCount(targetedVariants) <
+              getTotalWordCount(selectedVariants) * 0.85 &&
+            targetedBlockingCount >= currentBlockingCount
+          )
+        ) {
+          console.info("[TARGETED REPAIR REJECTED]", {
+            reason: "not_improved_or_unjustified_shortening",
+          });
           break;
         }
 
@@ -5697,64 +6190,12 @@ export async function POST(
       }
     }
 
-    for (
-      let localPass = 0;
-      localPass < 4 &&
-      market === "CH" &&
-      !selectedQuality.passed;
-      localPass += 1
-    ) {
-      const hasRepairableLocalError =
-        selectedQuality.issues.some(
-          (issue) =>
-            issue.severity ===
-              "error" &&
-            (
-              issue.code ===
-                "CLAIM_WITHOUT_EVIDENCE" ||
-              issue.code ===
-                "UNPROFESSIONAL_META_COPY"
-            )
-        );
-
-      if (!hasRepairableLocalError) {
-        break;
-      }
-
-      const locallyRepairedVariants =
-        repairVariantsLocally(
-          selectedVariants,
-          selectedQuality,
-          prompt.facts,
-          locale
-        );
-
-      const variantsChanged =
-        JSON.stringify(
-          locallyRepairedVariants
-        ) !==
-        JSON.stringify(
-          selectedVariants
-        );
-
-      if (!variantsChanged) {
-        break;
-      }
-
-      repairAttempted = true;
-
-      selectedVariants =
-        locallyRepairedVariants;
-
-      selectedQuality =
-        evaluateListingQuality(
-          selectedVariants,
-          locale,
-          qualityFacts
-        );
-    }
     // SELECTIVE_PUBLISHABLE_FALLBACK
+    // DISABLE_LOW_QUALITY_SWISS_FALLBACK_V1
+    // Do not replace AI variants with short template-based descriptions.
+    const enableSelectivePublishableFallback = false;
     if (
+      enableSelectivePublishableFallback &&
       !selectedQuality.passed &&
       locale === "de" &&
       market === "CH"
@@ -5918,7 +6359,7 @@ export async function POST(
      * repetitive F?lltexte.
      */
     const enableLocalShortCompletion =
-      true;
+      false;
 
     if (
       enableLocalShortCompletion &&
@@ -6089,6 +6530,79 @@ export async function POST(
               );
           }
 
+          // GERMANY_BOUNDED_AI_FACT_REPAIR_INTEGRATION_V1
+          // Preserve the existing variants unless the full
+          // follow-up fact and quality checks pass.
+          if (germanyFactAudit.findings.length > 0) {
+            try {
+              if(++aiRepairAttempts>2)throw Error("TEXT_REPAIR_ATTEMPT_LIMIT");
+const boundedCandidate = await requestGermanyBoundedFactRepair(
+                  openai,
+                  prompt,
+                  selectedVariants,
+                  germanyFactAudit.findings
+                );
+
+              if (boundedCandidate) {
+                const candidateAudit =
+                  await requestGermanyFactAudit(
+                    openai,
+                    prompt,
+                    boundedCandidate
+                  );
+
+                const candidateQuality =
+                  evaluateListingQuality(
+                    boundedCandidate,
+                    locale,
+                    qualityFacts
+                  );
+
+                const candidateBlockingIssues =
+                  candidateQuality.issues.filter((issue) => {
+                    if (issue.severity !== "error") {
+                      return false;
+                    }
+
+                    if (
+                      issue.code === "VARIANTS_TOO_SIMILAR" ||
+                      issue.code === "OPENINGS_TOO_SIMILAR" ||
+                      issue.code === "TITLES_TOO_SIMILAR"
+                    ) {
+                      return true;
+                    }
+
+                    return !isGermanyNonBlockingQualityIssue(issue);
+                  });
+
+                const accepted =
+                  candidateAudit.findings.length === 0 &&
+                  candidateBlockingIssues.length === 0 &&
+                  boundedCandidate.length === 3;
+
+                console.info("[DE BOUNDED FACT REPAIR]", {
+                  accepted,
+                  remainingFindings:
+                    candidateAudit.findings.length,
+                  blockingIssues:
+                    candidateBlockingIssues.length,
+                });
+
+                if (accepted) {
+                  selectedVariants = boundedCandidate;
+                  selectedQuality = candidateQuality;
+                  germanyFactAudit = candidateAudit;
+                }
+              }
+            } catch (boundedRepairError) {
+              console.warn(
+                "[DE BOUNDED FACT REPAIR FAILED]",
+                boundedRepairError instanceof Error
+                  ? boundedRepairError.name
+                  : "unknown_error"
+              );
+            }
+          }
           console.info(
             "[Inserat-AI V4B.1] Germany post-repair fact audit",
             {
@@ -6107,56 +6621,61 @@ export async function POST(
           auditError
         );
 
-        germanyFactAudit = {
-          findings:
-            finalizeGermanyFactAuditFindings(
-              prompt.facts,
-              selectedVariants,
-              []
-            ),
-          durationMs: 0,
-        };
+        throw new Error("PREMIUM_FACT_AUDIT_FAILED");
       }
     }
 
-    const nonBlockingFallbackCodes =
-      new Set([
-        "VARIANTS_TOO_SIMILAR",
-        "OPENINGS_TOO_SIMILAR",
-        "TITLES_TOO_SIMILAR",
-      ]);
+    // TEXT_QUALITY_STRICT_SIMILARITY_GATE_V2
+    // Similarity errors must block delivery in both markets.
+    const similarityBlockingCodes = new Set([
+      "VARIANTS_TOO_SIMILAR",
+      "OPENINGS_TOO_SIMILAR",
+      "TITLES_TOO_SIMILAR",
+    ]);
 
+    // GERMANY_EARLY_HALF_ROOM_NORMALIZATION_V1
+    // Normalize before the early quality gate can return HTTP 422.
+    if (market === "DE") {
+      const normalizedRooms = selectedVariants.map((variant) => ({
+        ...variant,
+        title: variant.title.replace(/(\d+)\s*½/gu, "$1,5"),
+        text: variant.text.replace(/(\d+)\s*½/gu, "$1,5"),
+      }));
+
+      if (
+        normalizedRooms.some(
+          (variant, index) =>
+            variant.title !== selectedVariants[index].title ||
+            variant.text !== selectedVariants[index].text
+        )
+      ) {
+        selectedVariants = normalizedRooms;
+        selectedQuality = evaluateListingQuality(
+          selectedVariants,
+          locale,
+          qualityFacts
+        );
+      }
+    }
     const blockingQualityIssues =
-      selectedQuality.issues.filter(
-        (issue) => {
-          if (
-            issue.severity !==
-              "error"
-          ) {
-            return false;
-          }
+      selectedQuality.issues.filter((issue) => {
+        if (issue.severity !== "error") {
+          return false;
+        }
 
-          if (
-            market === "DE" &&
-            isGermanyNonBlockingQualityIssue(
-              issue
-            )
-          ) {
-            return false;
-          }
-
-          if (
-            publishableFallbackUsed &&
-            nonBlockingFallbackCodes.has(
-              issue.code
-            )
-          ) {
-            return false;
-          }
-
+        if (similarityBlockingCodes.has(issue.code)) {
           return true;
         }
-      );
+
+        if (
+          market === "DE" &&
+          isGermanyNonBlockingQualityIssue(issue)
+        ) {
+          return false;
+        }
+
+        return true;
+      });
 
     if (
       selectedVariants.length !== 3 ||
@@ -6465,8 +6984,9 @@ export async function POST(
 
             cleanedText =
               cleanedText
+                // Preserve paragraph boundaries; collapse only horizontal whitespace.
                 .replace(
-                  /\s{2,}/g,
+                  /[^\S\r\n]{2,}/g,
                   " "
                 )
                 .replace(
@@ -6474,6 +6994,20 @@ export async function POST(
                   "$1"
                 )
                 .trim();
+
+            // GERMANY_EDITORIAL_POLISH_DELIVERY_V1
+            cleanedText =
+              polishGermanyEditorialGrammar(cleanedText);
+            // GERMAN_META_CLEANUP_LOSS_DIAGNOSTICS_V1
+            // Log counts only, never property text.
+            const wordsBefore = countListingWords(variant.text);
+            const wordsAfter = countListingWords(cleanedText);
+
+            console.info("[DE META CLEANUP]", {
+              wordsBefore,
+              wordsAfter,
+              removedWords: Math.max(0, wordsBefore - wordsAfter),
+            });
 
             return {
               ...variant,
@@ -6497,9 +7031,393 @@ export async function POST(
             market
           )
       );
-    return NextResponse.json({
-      variants:
+    // GERMANY_FINAL_LOCATION_DELIVERY_GUARD_V1
+    // Runs after presentation cleanup, before final quality validation.
+    if (market === "DE") {
+      selectedVariants = selectedVariants.map((variant) => {
+        const deliverySentences =
+          splitGermanyFinalDeliverySentences(variant.text);
+
+        const safeSentences =
+          filterGermanyWeakEditorialSentences(
+            filterGermanyUnsupportedLocationSentences(
+              deliverySentences,
+              prompt.facts
+            ),
+            prompt.facts
+          );
+
+        if (safeSentences.length === deliverySentences.length) {
+          return variant;
+        }
+
+        return {
+          ...variant,
+          text:
+            safeSentences.length > 0
+              ? formatGermanyEditorialParagraphs(safeSentences)
+              : "",
+        };
+      });
+    }
+    // GERMANY_FINAL_HALF_ROOM_NOTATION_V1
+    // Format only. Preserve the numerical room count.
+    if (market === "DE") {
+      selectedVariants = selectedVariants.map((variant) => ({
+        ...variant,
+        title: variant.title.replace(/(\d+)\s*½/gu, "$1,5"),
+        text: variant.text.replace(/(\d+)\s*½/gu, "$1,5"),
+      }));
+    }
+    // FINAL_MARKET_QUALITY_GATE_V1
+    // Validate the exact variants delivered to the client.
+    let finalDeliveryQuality =
+      evaluateListingQuality(
         selectedVariants,
+        locale,
+        qualityFacts
+      );
+
+    const premiumEditorialIssues = editorialRepairIssues({ ...qualityFacts, market, locale, verifiedFeatures: prompt.facts.highlights }, selectedVariants);
+    if (premiumEditorialIssues.length) {
+      finalDeliveryQuality = { ...finalDeliveryQuality, passed: false, issues: [...finalDeliveryQuality.issues, ...premiumEditorialIssues] };
+    }
+
+    let finalBlockingIssues =
+      finalDeliveryQuality.issues.filter(
+        (issue) => {
+          if (issue.severity !== "error") {
+            return false;
+          }
+
+          if (
+            issue.code === "VARIANTS_TOO_SIMILAR" ||
+            issue.code === "OPENINGS_TOO_SIMILAR" ||
+            issue.code === "TITLES_TOO_SIMILAR"
+          ) {
+            return true;
+          }
+
+          if (
+            market === "DE" &&
+            isGermanyNonBlockingQualityIssue(issue)
+          ) {
+            return false;
+          }
+
+          return true;
+        }
+      );
+
+    // FINAL_TARGETED_SELF_HEALING_V1
+    // One bounded targeted attempt for similarity and evidence-bound premium findings.
+    // Never bypass the final quality gate or the German fact audit.
+    const finalEditorialRepairCodes = new Set([
+      ...PREMIUM_EDITORIAL_CODES,
+      "VARIANTS_TOO_SIMILAR",
+      "OPENINGS_TOO_SIMILAR",
+      "TITLES_TOO_SIMILAR",
+    ]);
+
+    if (
+      selectedVariants.length === 3 &&
+      finalBlockingIssues.length > 0 &&
+      finalBlockingIssues.every((issue) =>
+        finalEditorialRepairCodes.has(issue.code)
+      )
+    ) {
+      try {
+        const repairStartedAt = Date.now();
+
+        if(++aiRepairAttempts>2)throw Error("TEXT_REPAIR_ATTEMPT_LIMIT");
+const targetedRepairs = await requestTargetedVariantRepairs(
+            openai,
+            prompt,
+            locale,
+            selectedVariants,
+            finalDeliveryQuality
+          );
+
+        if (targetedRepairs.length > 0) {
+          let candidateVariants =
+            mergeTargetedRepairs(
+              selectedVariants,
+              targetedRepairs,
+              finalDeliveryQuality, { ...qualityFacts, locale, market, verifiedFeatures:prompt.facts.highlights }
+            ).map((variant) =>
+              normalizeVariantPresentation(
+                variant,
+                prompt.facts,
+                locale,
+                market
+              )
+            );
+
+          if (market === "DE") {
+            candidateVariants = candidateVariants.map(
+              (variant) => {
+                const sentences =
+                  splitGermanyFinalDeliverySentences(
+                    variant.text
+                  );
+
+                const safeSentences =
+                  filterGermanyWeakEditorialSentences(
+                    filterGermanyUnsupportedLocationSentences(
+                      sentences,
+                      prompt.facts
+                    ),
+                    prompt.facts
+                  );
+
+                const safeText =
+                  safeSentences.length === sentences.length
+                    ? variant.text
+                    : safeSentences.length > 0
+                      ? formatGermanyEditorialParagraphs(
+                          safeSentences
+                        )
+                      : "";
+
+                return {
+                  ...variant,
+                  title: variant.title.replace(
+                    /(\d+)\s*½/gu,
+                    "$1,5"
+                  ),
+                  text: safeText.replace(
+                    /(\d+)\s*½/gu,
+                    "$1,5"
+                  ),
+                };
+              }
+            );
+          }
+
+          const candidateQuality =
+            evaluateListingQuality(
+              candidateVariants,
+              locale,
+              qualityFacts
+            );
+
+          const candidateEditorialIssues = editorialRepairIssues({ ...qualityFacts, market, locale, verifiedFeatures: prompt.facts.highlights }, candidateVariants);
+          if (candidateEditorialIssues.length) {
+            candidateQuality.passed = false;
+            candidateQuality.issues.push(...candidateEditorialIssues);
+          }
+
+          const candidateBlockingIssues =
+            candidateQuality.issues.filter((issue) => {
+              if (issue.severity !== "error") {
+                return false;
+              }
+
+              if (
+                issue.code === "VARIANTS_TOO_SIMILAR" ||
+                issue.code === "OPENINGS_TOO_SIMILAR" ||
+                issue.code === "TITLES_TOO_SIMILAR"
+              ) {
+                return true;
+              }
+
+              if (
+                market === "DE" &&
+                isGermanyNonBlockingQualityIssue(issue)
+              ) {
+                return false;
+              }
+
+              return true;
+            });
+
+          let factsVerified = true;
+
+          if (
+            market === "DE" &&
+            candidateVariants.length === 3 &&
+            candidateBlockingIssues.length === 0
+          ) {
+            const candidateFactAudit =
+              await requestGermanyFactAudit(
+                openai,
+                prompt,
+                candidateVariants
+              );
+
+            factsVerified =
+              candidateFactAudit.findings.length === 0;
+          }
+
+          const candidateChanged =
+            JSON.stringify(candidateVariants) !==
+            JSON.stringify(selectedVariants);
+
+          if (
+            candidateChanged &&
+            candidateVariants.length === 3 &&
+            candidateBlockingIssues.length === 0 &&
+            factsVerified
+          ) {
+            selectedVariants = candidateVariants;
+            finalDeliveryQuality = candidateQuality;
+            finalBlockingIssues = [];
+
+            repairAttempted = true;
+            attempts += 1;
+
+            console.info(
+              "[FINAL SELF HEALING]",
+              {
+                result: "recovered",
+                market,
+                repairCount: targetedRepairs.length,
+                durationMs: Date.now() - repairStartedAt,
+              }
+            );
+          } else {
+            console.info(
+              "[FINAL SELF HEALING]",
+              {
+                result: "rejected",
+                market,
+                remainingErrors:
+                  candidateBlockingIssues.map(
+                    (issue) => issue.code
+                  ),
+                factsVerified,
+                durationMs: Date.now() - repairStartedAt,
+              }
+            );
+          }
+        }
+      } catch (repairError) {
+        console.warn(
+          "[FINAL SELF HEALING]",
+          {
+            result: "failed",
+            errorType:
+              repairError instanceof Error
+                ? repairError.name
+                : "unknown",
+          }
+        );
+      }
+    }
+    if (
+      selectedVariants.length !== 3 ||
+      finalBlockingIssues.length > 0
+    ) {
+      console.warn(
+        "FINAL LISTING QUALITY CHECK FAILED:",
+        {
+          market,
+          locale,
+          issues: finalBlockingIssues,
+        }
+      );
+
+      invalidateUltraSpeedCache(
+        ultraSpeedKey
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "Die finalen Textvarianten haben die Qualitätsprüfung nicht bestanden.",
+          code:
+            "AI_FINAL_QUALITY_CHECK_FAILED",
+          quality: {
+            passed: false,
+            issues: finalBlockingIssues,
+          },
+        },
+        {
+          status: 422,
+        }
+      );
+    }
+    // FINAL_ROOM_COUNT_SOURCE_GUARD_T144B
+    // Check all three final variants against the submitted room count.
+    const roomCountIssues = findRoomCountContradictions(
+      prompt.facts.rooms,
+      selectedVariants
+    );
+
+    if (roomCountIssues.length > 0) {
+      invalidateUltraSpeedCache(ultraSpeedKey);
+
+      return NextResponse.json(
+        {
+          error: "Die Textvarianten enthalten eine widersprüchliche Zimmerzahl.",
+          code: "ROOM_COUNT_CONTRADICTION",
+          quality: {
+            passed: false,
+            issueCount: roomCountIssues.length,
+            issues: roomCountIssues,
+          },
+        },
+        { status: 422 }
+      );
+    }
+    // GERMAN_WORD_DEPTH_DIAGNOSTICS_V1
+    // Metadata only. No description or identifying property data in logs.
+    if (market === "DE") {
+      const deliveredWordCounts = selectedVariants.map((variant) =>
+        (variant.text ?? "").trim().split(/\s+/u).filter(Boolean).length
+      );
+
+      console.info("[DE TEXT DEPTH]", {
+        wordCounts: deliveredWordCounts,
+        below180: deliveredWordCounts.filter((count) => count < 180).length,
+        repairAttempted,
+        publishableFallbackUsed,
+      });
+    }
+
+    // EDITORIAL_DIAGNOSTICS_DE_V1
+    // Diagnostic only: no repair, no blocking, no property text in logs.
+    if (market === "DE") {
+      const editorialIssueCounts = {
+        SOURCE_REFERENCE: 0,
+        GENERIC_CONCLUSION: 0,
+        CONDITION_CLAIM: 0,
+        UNSUPPORTED_BENEFIT: 0,
+        DE_ORTHOGRAPHY: 0,
+      };
+
+      for (const variant of selectedVariants) {
+        const editorialIssues = inspectEditorialQualityDE(
+          `${variant.title ?? ""}\n${variant.text ?? ""}`
+        );
+
+        for (const issue of editorialIssues) {
+          editorialIssueCounts[issue.code] += 1;
+        }
+      }
+
+      console.info("[DE EDITORIAL QUALITY]", {
+        variantCount: selectedVariants.length,
+        issueCounts: editorialIssueCounts,
+      });
+    }
+
+    // FINAL_ORTHOGRAPHY_DE_V1
+    // Apply after the existing final quality gate.
+    // No change to property facts, numbers, prices, or CH output.
+    const deliveredVariants = market === "DE" ? selectedVariants.map(variant => ({
+      ...variant, title: normalizeGermanOrthographyDE(variant.title ?? ""), text: normalizeGermanOrthographyDE(variant.text ?? ""),
+    })) : selectedVariants;
+    const premiumFacts = { ...qualityFacts, market, locale, verifiedFeatures: prompt.facts.highlights };
+    const finalFactAudit = await auditPremiumTexts(openai, premiumFacts, deliveredVariants, verifiedSourceContext, body.manualFactsConfirmed === true);
+    const premiumTextQuality = evaluatePremiumTextQuality(premiumFacts, deliveredVariants, finalFactAudit);
+    if (!premiumTextQuality.passed) return NextResponse.json({
+      error: "Die abschliessende Fakten- und Textprüfung ist nicht bestanden.", code: "PREMIUM_TEXT_QUALITY_FAILED",
+      quality: { passed: false, issues: premiumTextQuality.issues },
+    }, { status: 422 });
+    return NextResponse.json({
+      variants: deliveredVariants,
+      premiumTextQuality: { passed: true },
       locale,
       market,
       ultraSpeed: {

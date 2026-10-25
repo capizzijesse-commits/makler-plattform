@@ -13,5 +13,10 @@
       "path": "/api/internal/portal-publish-worker",
       "schedule": "20 3 * * *"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "codex/quality-ocr-area-7b": false
+    }
+  }
 }

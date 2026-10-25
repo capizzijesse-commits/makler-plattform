@@ -1,3 +1,4 @@
+import { isListingPremiumQualityReady, isListingBrokerApproved } from "@/lib/premium-quality.server";
 import type {
   NextRequest,
 } from "next/server";
@@ -229,10 +230,7 @@ async function loadPackageReadiness(
     imagesReady,
     listingTextReady,
 
-    ready:
-      coreDataReady &&
-      imagesReady &&
-      listingTextReady,
+    ready: await isListingPremiumQualityReady(userId, listingId),
   };
 }
 
@@ -432,6 +430,7 @@ export async function GET(
         valuation:
           null,
 
+        premiumQualityReady: await isListingPremiumQualityReady(user.id, listing.id),
         persisted:
           false,
       });
@@ -446,6 +445,7 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
+      premiumQualityReady: await isListingPremiumQualityReady(user.id, listing.id),
       workflow,
       valuation,
       persisted:
@@ -659,6 +659,12 @@ export async function PATCH(
      * Der Vermarktungsauftrag bleibt eine manuelle Best?tigung.
      */
 
+    if (["marketing_approved", "publication_started", "published"].includes(String(body.action)) && !await isListingBrokerApproved(user.id, listing.id)) {
+      return NextResponse.json({success:false,code:"CURRENT_BROKER_APPROVAL_REQUIRED",error:"Bitte den aktuellen Text-, Fakten- und Bildstand im Objekteditor ausdrücklich freigeben."},{status:422});
+    }
+    if (["package_prepared", "marketing_approved", "publication_started", "published"].includes(String(body.action)) && !await isListingPremiumQualityReady(user.id, listing.id)) {
+      return NextResponse.json({ success: false, code: "PREMIUM_QUALITY_NOT_READY", error: "Das aktuelle Objekt hat die Qualitätsprüfung nicht bestanden." }, { status: 422 });
+    }
     if (
       body.action ===
         "package_prepared"

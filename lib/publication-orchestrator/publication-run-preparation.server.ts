@@ -1,3 +1,4 @@
+import { assertListingPremiumPublicationReady } from "@/lib/premium-quality.server";
 import "server-only";
 
 import {
@@ -50,6 +51,8 @@ export async function createPreparedPublicationRun(
   input:
     CreatePreparedPublicationRunInput
 ) {
+  await assertListingPremiumPublicationReady(input.userId, input.listingId);
+
 
   if (!input.userId.trim()) {
     throw new Error(
