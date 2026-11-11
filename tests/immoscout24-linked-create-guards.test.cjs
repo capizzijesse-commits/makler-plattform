@@ -23,6 +23,8 @@ test("Anforderung ist authentifiziert, Same-Origin und ausdruecklich bestaetigt"
   assert.match(route, /getAuthenticatedUser\(request\)/);
   assert.match(route, /EXPLICIT_SANDBOX_CONFIRMATION_REQUIRED/);
   assert.match(route, /useSandboxTestAddress !== true/);
+  assert.match(route, /IMMOSCOUT24_DE_SANDBOX_TEST_LISTING_ID/);
+  assert.match(route, /SANDBOX_TEST_LISTING_NOT_APPROVED/);
 });
 
 test("Objekte sind dem richtigen Nutzer und Testkonto zugeordnet", () => {
