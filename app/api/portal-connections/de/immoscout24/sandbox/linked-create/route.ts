@@ -98,6 +98,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Vor jedem Write das genau eine freigegebene Musterobjekt erzwingen.
+    // Ein beliebiges Kundenobjekt darf niemals in die Sandbox geraten.
+    const allowedListingId =
+      process.env.IMMOSCOUT24_DE_SANDBOX_TEST_LISTING_ID?.trim();
+
+    if (!allowedListingId || allowedListingId !== listingId) {
+      return response(
+        { success: false, error: "SANDBOX_TEST_LISTING_NOT_APPROVED" },
+        403
+      );
+    }
+
     const connection = await prisma.portalConnection.findFirst({
       where: {
         userId: user.id,
