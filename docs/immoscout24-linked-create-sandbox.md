@@ -19,6 +19,7 @@ Ende-zu-Ende-Szenario noch den normalen Portal-Publish-Worker.
 
 Nur in Vercel Preview (bzw. lokalem Entwicklungsmodus), nur mit:
 - `IMMOSCOUT24_DE_LINKED_CREATE_ENABLED=1`, explizit gesetzt **nur in der isolierten Vorschau**
+- `IMMOSCOUT24_DE_SANDBOX_TEST_LISTING_ID=<exakte ID des freigegebenen Musterobjekts>` (Pflicht)
 - `IMMOSCOUT24_DE_ENVIRONMENT=sandbox`
 - vorhandenen geschützten Sandbox-OAuth-Zugangsdaten und gültiger Sandbox-Verbindung
 - authentifizierter Same-Origin-Anfrage sowie deutscher, bezahlter/inkludierter Objektfreigabe
