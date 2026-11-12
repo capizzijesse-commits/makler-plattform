@@ -44,6 +44,8 @@ type Listing = {
   countryCode?: string | null;
   location: string;
   postalCode: string | null;
+  street: string | null;
+  houseNumber: string | null;
   propertyType: string;
   rooms: number | null;
   livingArea: number | null;
@@ -60,6 +62,8 @@ type Listing = {
 type EditForm = {
   location: string;
   postalCode: string;
+  street: string;
+  houseNumber: string;
   propertyType: string;
   rooms: string;
   livingArea: string;
@@ -71,6 +75,8 @@ type EditForm = {
 const EMPTY_FORM: EditForm = {
   location: "",
   postalCode: "",
+  street: "",
+  houseNumber: "",
   propertyType: "",
   rooms: "",
   livingArea: "",
@@ -208,6 +214,8 @@ setImages(
         setForm({
           location: listing.location || "",
           postalCode: listing.postalCode || "",
+          street: listing.street ?? "",
+          houseNumber: listing.houseNumber ?? "",
           propertyType: listing.propertyType || "",
           rooms:
             listing.rooms === null ? "" : String(listing.rooms),
@@ -622,6 +630,8 @@ async function deleteListingImage(imageId: string) {
           body: JSON.stringify({
             location: form.location,
             postalCode: form.postalCode,
+            street: form.street,
+            houseNumber: form.houseNumber,
             propertyType: form.propertyType,
             rooms: form.rooms,
             livingArea: form.livingArea,
@@ -631,8 +641,7 @@ async function deleteListingImage(imageId: string) {
             ...(canEditVariants && variants.length === 3
               ? { generatedVariants: variants }
               : {}),
-            locationDescription,
-            locationData,
+            ...(canEditVariants ? { locationDescription, locationData } : {}),
           }),
         }
       );
@@ -746,6 +755,30 @@ async function deleteListingImage(imageId: string) {
                       : "z. B. 8400"
                   }
                   inputMode="numeric"
+                />
+              </label>
+
+              <label>
+                <span>{market === "DE" ? "Straße" : "Strasse"}</span>
+                <input
+                  name="listing-street"
+                  autoComplete="off"
+                  value={form.street}
+                  onChange={(event) =>
+                    updateField("street", event.target.value)
+                  }
+                />
+              </label>
+
+              <label>
+                <span>Hausnummer</span>
+                <input
+                  name="listing-house-number"
+                  autoComplete="off"
+                  value={form.houseNumber}
+                  onChange={(event) =>
+                    updateField("houseNumber", event.target.value)
+                  }
                 />
               </label>
 

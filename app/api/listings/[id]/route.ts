@@ -322,6 +322,10 @@ export async function PATCH(
       data: {
         location,
         postalCode: optionalText(body.postalCode),
+        ...(body.street !== undefined && { street: optionalText(body.street) }),
+        ...(body.houseNumber !== undefined && {
+          houseNumber: optionalText(body.houseNumber),
+        }),
         propertyType,
         rooms: optionalNumber(body.rooms),
         livingArea: optionalNumber(body.livingArea),

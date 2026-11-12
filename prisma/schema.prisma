@@ -636,6 +636,7 @@ model Listing {
 
   projectName String?
   street      String?
+  houseNumber String?
   location    String
   postalCode  String?
   latitude    Float?
